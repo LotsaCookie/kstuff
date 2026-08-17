@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-STUFF</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="theme-dark nav-top">
+    
+    <div id="app-container">
+        <nav id="navbar">
+            <div id="nav-logo">K</div>
+
+            <button class="nav-btn active" data-target="home">
+                <i class="ph ph-house"></i> <span>Home</span>
+            </button>
+            <button class="nav-btn" data-target="games">
+                <i class="ph ph-game-controller"></i> <span>Games</span>
+            </button>
+            <button class="nav-btn" data-target="apps">
+                <i class="ph ph-app-window"></i> <span>Apps</span>
+            </button>
+            <button class="nav-btn" data-target="settings">
+                <i class="ph ph-gear"></i> <span>Settings</span>
+            </button>
+        </nav>
+
+        <main id="content-area">
+            <section id="home" class="page active">
+                <div class="hero-container">
+                    <span class="hero-subtitle">Welcome to</span>
+                    <h1 class="hero-title">K-STUFF</h1>
+                    <p class="hero-desc">Your central hub for exploring the best games and apps.</p>
+                </div>
+            </section>
+
+            <section id="games" class="page">
+                <h1>Games</h1>
+                <p>Browse our extensive collection of games here.</p>
+                
+                <div class="filter-bar">
+                    <div class="modern-select-wrapper">
+                        <i class="ph ph-funnel"></i>
+                        <select id="games-category-select" class="modern-select">
+                            <option value="All">Loading Categories...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="item-grid" id="games-grid"></div>
+                <div class="pagination-bar" id="games-pagination"></div>
+            </section>
+
+            <section id="apps" class="page">
+                <h1>Apps</h1>
+                <p>Browsr our extensive collection of apps here.</p>
+                
+                <div class="filter-bar">
+                    <div class="modern-select-wrapper">
+                        <i class="ph ph-funnel"></i>
+                        <select id="apps-category-select" class="modern-select">
+                            <option value="All">Loading Categories...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="item-grid" id="apps-grid"></div>
+                <div class="pagination-bar" id="apps-pagination"></div>
+            </section>
+
+            <section id="settings" class="page">
+                <h1>System Settings</h1>
+                
+                <div class="settings-card">
+                    <div class="setting-group">
+                        <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
+                        <select id="theme-select">
+                            <option value="theme-dark">Solid Dark (Default)</option>
+                            <option value="theme-light">Solid Light</option>
+                            <option value="theme-grad-blue">Ocean Gradient</option>
+                            <option value="theme-grad-purple">Sunset Gradient</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
+                        <select id="nav-select">
+                            <option value="nav-top">Top (Default)</option>
+                            <option value="nav-left">Left Sidebar</option>
+                            <option value="nav-right">Right Sidebar</option>
+                            <option value="nav-bottom">Bottom</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
+                        <select id="text-select">
+                            <option value="text-show">Show Text (Default)</option>
+                            <option value="text-hide">Hide Text</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="content-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modal-title"></span>
+                <div class="modal-actions">
+                    <button id="modal-fullscreen-btn" title="Toggle Fullscreen"><i class="ph ph-corners-out"></i></button>
+                    <button id="modal-close-btn" title="Close"><i class="ph ph-x"></i></button>
+                </div>
+            </div>
+            <iframe id="modal-iframe" src=""></iframe>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
