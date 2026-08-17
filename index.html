@@ -19,8 +19,7 @@
                         let e = document.createElement(s ? 'script' : 'link');
                         if (s) { e.src = f; } 
                         else { e.rel = 'stylesheet'; e.href = f; }
-                        if (s) document.body.appendChild(e);
-                        else document.head.appendChild(e);
+                        document.head.appendChild(e);
                         return;
                     }
                     let e = document.createElement(s ? 'script' : 'link');
@@ -28,8 +27,7 @@
                     else { e.rel = 'stylesheet'; e.href = p[i] + f; }
                     e.onload = () => {};
                     e.onerror = () => { e.remove(); i++; t(); };
-                    if (s) document.body.appendChild(e);
-                    else document.head.appendChild(e);
+                    document.head.appendChild(e);
                 }
                 t();
             }
@@ -60,11 +58,11 @@
                 <div class="hero-container">
                     <span class="hero-subtitle">Welcome to</span>
                     <h1 class="hero-title">K-STUFF</h1>
-                    <p class="hero-desc">Your central hub for exploring the best games and applications.</p>
+                    <p class="hero-desc">Your central hub for exploring the best games and apps.</p>
                 </div>
             </section>
             <section id="games" class="page">
-                <h1>Games Catalog</h1>
+                <h1>Games</h1>
                 <p>Browse our extensive collection of games here.</p>
                 <div class="filter-bar">
                     <div class="modern-select-wrapper">
@@ -78,8 +76,8 @@
                 <div class="pagination-bar" id="games-pagination"></div>
             </section>
             <section id="apps" class="page">
-                <h1>Applications</h1>
-                <p>Discover productivity, utility, and creative apps.</p>
+                <h1>Apps</h1>
+                <p>Browse our extensive collection of apps here.</p>
                 <div class="filter-bar">
                     <div class="modern-select-wrapper">
                         <i class="ph ph-funnel"></i>
@@ -92,7 +90,7 @@
                 <div class="pagination-bar" id="apps-pagination"></div>
             </section>
             <section id="settings" class="page">
-                <h1>System Settings</h1>
+                <h1>Settings</h1>
                 <div class="settings-card">
                     <div class="setting-group">
                         <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
