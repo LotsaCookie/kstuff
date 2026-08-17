@@ -10,13 +10,19 @@
             const p = [
                 "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
                 "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
-                "https://raw.githack.com/lotsacookie/kstuff/main/",
-                ""
+                "https://raw.githack.com/lotsacookie/kstuff/main/"
             ];
             function l(f, s) {
                 let i = 0;
                 function t() {
-                    if (i >= p.length) return;
+                    if (i >= p.length) {
+                        let e = document.createElement(s ? 'script' : 'link');
+                        if (s) { e.src = f; } 
+                        else { e.rel = 'stylesheet'; e.href = f; }
+                        if (s) document.body.appendChild(e);
+                        else document.head.appendChild(e);
+                        return;
+                    }
                     let e = document.createElement(s ? 'script' : 'link');
                     if (s) { e.src = p[i] + f; } 
                     else { e.rel = 'stylesheet'; e.href = p[i] + f; }
@@ -30,14 +36,12 @@
             l('style.css', 0);
             l('script.js', 1);
         })();
-       </script>
+    </script>
 </head>
 <body class="theme-dark nav-top">
-    
     <div id="app-container">
         <nav id="navbar">
             <div id="nav-logo">K</div>
-
             <button class="nav-btn active" data-target="home">
                 <i class="ph ph-house"></i> <span>Home</span>
             </button>
@@ -51,20 +55,17 @@
                 <i class="ph ph-gear"></i> <span>Settings</span>
             </button>
         </nav>
-
         <main id="content-area">
             <section id="home" class="page active">
                 <div class="hero-container">
                     <span class="hero-subtitle">Welcome to</span>
                     <h1 class="hero-title">K-STUFF</h1>
-                    <p class="hero-desc">Your central hub for exploring the best games and apps.</p>
+                    <p class="hero-desc">Your central hub for exploring the best games and applications.</p>
                 </div>
             </section>
-
             <section id="games" class="page">
-                <h1>Games</h1>
+                <h1>Games Catalog</h1>
                 <p>Browse our extensive collection of games here.</p>
-                
                 <div class="filter-bar">
                     <div class="modern-select-wrapper">
                         <i class="ph ph-funnel"></i>
@@ -73,15 +74,12 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="item-grid" id="games-grid"></div>
                 <div class="pagination-bar" id="games-pagination"></div>
             </section>
-
             <section id="apps" class="page">
-                <h1>Apps</h1>
-                <p>Browsr our extensive collection of apps here.</p>
-                
+                <h1>Applications</h1>
+                <p>Discover productivity, utility, and creative apps.</p>
                 <div class="filter-bar">
                     <div class="modern-select-wrapper">
                         <i class="ph ph-funnel"></i>
@@ -90,14 +88,11 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="item-grid" id="apps-grid"></div>
                 <div class="pagination-bar" id="apps-pagination"></div>
             </section>
-
             <section id="settings" class="page">
                 <h1>System Settings</h1>
-                
                 <div class="settings-card">
                     <div class="setting-group">
                         <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
@@ -108,7 +103,6 @@
                             <option value="theme-grad-purple">Sunset Gradient</option>
                         </select>
                     </div>
-
                     <div class="setting-group">
                         <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
                         <select id="nav-select">
@@ -118,7 +112,6 @@
                             <option value="nav-bottom">Bottom</option>
                         </select>
                     </div>
-
                     <div class="setting-group">
                         <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
                         <select id="text-select">
@@ -130,7 +123,6 @@
             </section>
         </main>
     </div>
-
     <div id="content-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
