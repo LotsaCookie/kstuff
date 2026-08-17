@@ -99,19 +99,19 @@
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
 
-        if (savedTheme) {
+        if (savedTheme && themeSelect) {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
             body.classList.add(savedTheme);
             themeSelect.value = savedTheme;
         }
 
-        if (savedNavPos) {
+        if (savedNavPos && navSelect) {
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(savedNavPos);
             navSelect.value = savedNavPos;
         }
 
-        if (savedTextVis) {
+        if (savedTextVis && textSelect) {
             if (savedTextVis === 'text-hide') {
                 body.classList.add('text-hide');
                 textSelect.value = 'text-hide';
@@ -129,63 +129,78 @@
                 btn.classList.add('active');
 
                 const targetId = btn.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
+                const targetPage = document.getElementById(targetId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
 
                 if (targetId === 'home') {
-                    navLogo.classList.remove('show');
+                    if (navLogo) navLogo.classList.remove('show');
                     body.classList.remove('show-logo');
                 } else {
-                    navLogo.classList.add('show');
+                    if (navLogo) navLogo.classList.add('show');
                     body.classList.add('show-logo');
                 }
             });
         });
 
-        themeSelect.addEventListener('change', (event) => {
-            const newTheme = event.target.value;
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-            body.classList.add(newTheme);
-            localStorage.setItem('kstuff_theme', newTheme);
-        });
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (event) => {
+                const newTheme = event.target.value;
+                body.className = body.className.replace(/\btheme-\S+/g, '').trim();
+                body.classList.add(newTheme);
+                localStorage.setItem('kstuff_theme', newTheme);
+            });
+        }
 
-        navSelect.addEventListener('change', (event) => {
-            const newPosition = event.target.value;
-            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-            body.classList.add(newPosition);
-            localStorage.setItem('kstuff_nav_pos', newPosition);
-        });
+        if (navSelect) {
+            navSelect.addEventListener('change', (event) => {
+                const newPosition = event.target.value;
+                body.className = body.className.replace(/\bnav-\S+/g, '').trim();
+                body.classList.add(newPosition);
+                localStorage.setItem('kstuff_nav_pos', newPosition);
+            });
+        }
 
-        textSelect.addEventListener('change', (event) => {
-            const textValue = event.target.value;
-            if (textValue === 'text-hide') {
-                body.classList.add('text-hide');
-            } else {
-                body.classList.remove('text-hide');
-            }
-            localStorage.setItem('kstuff_text_vis', textValue);
-        });
+        if (textSelect) {
+            textSelect.addEventListener('change', (event) => {
+                const textValue = event.target.value;
+                if (textValue === 'text-hide') {
+                    body.classList.add('text-hide');
+                } else {
+                    body.classList.remove('text-hide');
+                }
+                localStorage.setItem('kstuff_text_vis', textValue);
+            });
+        }
 
-        modalCloseBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
-            modalIframe.src = '';
-        });
-
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => {
                 modalOverlay.classList.remove('active');
                 modalIframe.src = '';
-            }
-        });
+            });
+        }
 
-        modalFullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-                modalIframe.requestFullscreen().catch(err => {
-                    console.error(err);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        });
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    modalOverlay.classList.remove('active');
+                    modalIframe.src = '';
+                }
+            });
+        }
+
+        if (modalFullscreenBtn) {
+            modalFullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    modalIframe.requestFullscreen().catch(err => {
+                        console.error(err);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+        }
 
         let gamesData = [];
         let appsData = [];
@@ -201,44 +216,48 @@
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
 
-                gamesSelect.innerHTML = '';
-                appsSelect.innerHTML = '';
+                if (gamesSelect) {
+                    gamesSelect.innerHTML = '';
+                    categories.Games.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        gamesSelect.appendChild(option);
+                    });
+                    gamesSelect.addEventListener('change', (e) => {
+                        currentGameCategory = e.target.value;
+                        currentGamePage = 1;
+                        renderGames();
+                    });
+                }
 
-                categories.Games.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    gamesSelect.appendChild(option);
-                });
-
-                categories.Apps.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    appsSelect.appendChild(option);
-                });
-
-                gamesSelect.addEventListener('change', (e) => {
-                    currentGameCategory = e.target.value;
-                    currentGamePage = 1;
-                    renderGames();
-                });
-
-                appsSelect.addEventListener('change', (e) => {
-                    currentAppCategory = e.target.value;
-                    currentAppPage = 1;
-                    renderApps();
-                });
+                if (appsSelect) {
+                    appsSelect.innerHTML = '';
+                    categories.Apps.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        appsSelect.appendChild(option);
+                    });
+                    appsSelect.addEventListener('change', (e) => {
+                        currentAppCategory = e.target.value;
+                        currentAppPage = 1;
+                        renderApps();
+                    });
+                }
             })
             .catch(err => {
                 console.error(err);
-                document.getElementById('games-category-select').innerHTML = '<option value="All">Error</option>';
-                document.getElementById('apps-category-select').innerHTML = '<option value="All">Error</option>';
+                const gamesSelect = document.getElementById('games-category-select');
+                const appsSelect = document.getElementById('apps-category-select');
+                if (gamesSelect) gamesSelect.innerHTML = '<option value="All">Error</option>';
+                if (appsSelect) appsSelect.innerHTML = '<option value="All">Error</option>';
             });
 
         function renderGames() {
             const gamesGrid = document.getElementById('games-grid');
             const gamesPagination = document.getElementById('games-pagination');
+            if (!gamesGrid) return;
             
             const filteredData = currentGameCategory === "All" 
                 ? gamesData 
@@ -262,27 +281,29 @@
                     </div>
                 `;
                 card.addEventListener('click', async () => {
-                    modalTitle.textContent = `Loading ${item.title}...`;
-                    modalOverlay.classList.add('active');
+                    if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
+                    if (modalOverlay) modalOverlay.classList.add('active');
 
                     const finalUrl = await resolveAndGetUrl(item.url);
-                    modalTitle.textContent = item.title;
-                    modalIframe.src = finalUrl;
+                    if (modalTitle) modalTitle.textContent = item.title;
+                    if (modalIframe) modalIframe.src = finalUrl;
                 });
                 gamesGrid.appendChild(card);
             });
 
-            gamesPagination.innerHTML = '';
-            if (totalPages > 1) {
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = `page-btn ${i === currentGamePage ? 'active' : ''}`;
-                    pageBtn.textContent = i;
-                    pageBtn.addEventListener('click', () => {
-                        currentGamePage = i;
-                        renderGames();
-                    });
-                    gamesPagination.appendChild(pageBtn);
+            if (gamesPagination) {
+                gamesPagination.innerHTML = '';
+                if (totalPages > 1) {
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageBtn = document.createElement('button');
+                        pageBtn.className = `page-btn ${i === currentGamePage ? 'active' : ''}`;
+                        pageBtn.textContent = i;
+                        pageBtn.addEventListener('click', () => {
+                            currentGamePage = i;
+                            renderGames();
+                        });
+                        gamesPagination.appendChild(pageBtn);
+                    }
                 }
             }
         }
@@ -290,6 +311,7 @@
         function renderApps() {
             const appsGrid = document.getElementById('apps-grid');
             const appsPagination = document.getElementById('apps-pagination');
+            if (!appsGrid) return;
             
             const filteredData = currentAppCategory === "All" 
                 ? appsData 
@@ -313,27 +335,29 @@
                     </div>
                 `;
                 card.addEventListener('click', async () => {
-                    modalTitle.textContent = `Loading ${item.title}...`;
-                    modalOverlay.classList.add('active');
+                    if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
+                    if (modalOverlay) modalOverlay.classList.add('active');
 
                     const finalUrl = await resolveAndGetUrl(item.url);
-                    modalTitle.textContent = item.title;
-                    modalIframe.src = finalUrl;
+                    if (modalTitle) modalTitle.textContent = item.title;
+                    if (modalIframe) modalIframe.src = finalUrl;
                 });
                 appsGrid.appendChild(card);
             });
 
-            appsPagination.innerHTML = '';
-            if (totalPages > 1) {
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = `page-btn ${i === currentAppPage ? 'active' : ''}`;
-                    pageBtn.textContent = i;
-                    pageBtn.addEventListener('click', () => {
-                        currentAppPage = i;
-                        renderApps();
-                    });
-                    appsPagination.appendChild(pageBtn);
+            if (appsPagination) {
+                appsPagination.innerHTML = '';
+                if (totalPages > 1) {
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageBtn = document.createElement('button');
+                        pageBtn.className = `page-btn ${i === currentAppPage ? 'active' : ''}`;
+                        pageBtn.textContent = i;
+                        pageBtn.addEventListener('click', () => {
+                            currentAppPage = i;
+                            renderApps();
+                        });
+                        appsPagination.appendChild(pageBtn);
+                    }
                 }
             }
         }
