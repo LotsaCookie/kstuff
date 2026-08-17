@@ -4,8 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>K-STUFF</title>
-    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        (function(){
+            const p = [
+                "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
+                "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
+                "https://raw.githack.com/lotsacookie/kstuff/main/",
+                ""
+            ];
+            function l(f, s) {
+                let i = 0;
+                function t() {
+                    if (i >= p.length) return;
+                    let e = document.createElement(s ? 'script' : 'link');
+                    if (s) { e.src = p[i] + f; } 
+                    else { e.rel = 'stylesheet'; e.href = p[i] + f; }
+                    e.onload = () => {};
+                    e.onerror = () => { e.remove(); i++; t(); };
+                    if (s) document.body.appendChild(e);
+                    else document.head.appendChild(e);
+                }
+                t();
+            }
+            l('style.css', 0);
+            l('script.js', 1);
+        })();
+       </script>
 </head>
 <body class="theme-dark nav-top">
     
@@ -118,6 +143,5 @@
             <iframe id="modal-iframe" src=""></iframe>
         </div>
     </div>
-    <script src="script.js"></script>
 </body>
 </html>
