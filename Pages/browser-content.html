@@ -36,7 +36,7 @@
         .tab-bar {
             display: flex;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 6px 8px 0 8px;
@@ -722,7 +722,6 @@
             urlInput.value = '';
         }
 
-        // Continuously poll iframe location/title when available (same-origin support)
         setInterval(() => {
             if (activeTabId === null) return;
             const tab = tabs.find(t => t.id === activeTabId);
@@ -749,7 +748,6 @@
                     }
                 }
             } catch (e) {
-                // Cross-origin restriction blocks reading location.href continuously for external domains
             }
         }, 200);
 
