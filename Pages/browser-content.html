@@ -7,8 +7,8 @@
     <style>
         :root {
             --bg-color: transparent;
-            --surface-color: rgba(0, 0, 0, 0.25);
-            --surface-hover: rgba(0, 0, 0, 0.25);
+            --surface-color: rgba(0, 0, 0, 0.05);
+            --surface-hover: rgba(0, 0, 0, 0.05);
             --text-color: #ffffff;
             --text-muted: #a1a1aa;
             --accent-color: #ffffff;
@@ -35,7 +35,7 @@
         .tab-bar {
             display: flex;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 6px 8px 0 8px;
@@ -49,7 +49,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             border-bottom: none;
             padding: 8px 12px;
@@ -67,17 +67,17 @@
         }
 
         .tab.active {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             border-color: var(--border-color);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             transform: translateY(0);
             opacity: 1;
             box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
         }
 
         .tab:hover:not(.active) {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             opacity: 1;
         }
@@ -98,7 +98,7 @@
         }
 
         .tab-close {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
             border: none;
             color: var(--text-muted);
             width: 18px;
@@ -118,7 +118,7 @@
         }
 
         .new-tab-tab-btn {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             width: 32px;
@@ -135,7 +135,7 @@
         }
 
         .new-tab-tab-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             border-color: rgba(255, 255, 255, 0.3);
         }
@@ -145,7 +145,7 @@
             align-items: center;
             gap: 10px;
             padding: 10px 16px;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border-color);
@@ -155,7 +155,7 @@
         }
 
         .nav-btn {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             cursor: pointer;
@@ -169,7 +169,7 @@
         }
 
         .nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             border-color: rgba(255, 255, 255, 0.3);
         }
@@ -185,7 +185,7 @@
             min-width: 120px;
             display: flex;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 4px 6px 4px 16px;
@@ -193,7 +193,7 @@
         }
 
         .url-bar-container:focus-within {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border-color: rgba(255, 255, 255, 0.3);
             box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
         }
@@ -213,7 +213,7 @@
         }
 
         .icon-action-btn {
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             cursor: pointer;
@@ -228,7 +228,7 @@
         }
 
         .icon-action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             border-color: rgba(255, 255, 255, 0.3);
         }
@@ -240,7 +240,7 @@
         }
 
         .action-btn {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             color: var(--text-color);
             border: 1px solid var(--border-color);
             padding: 6px 14px;
@@ -254,7 +254,7 @@
         }
 
         .action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border-color: rgba(255, 255, 255, 0.3);
             color: var(--text-color);
         }
@@ -294,7 +294,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
         }
 
         .new-tab-title {
@@ -321,7 +321,7 @@
 
         .bookmark-card {
             position: relative;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(8px);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -337,7 +337,7 @@
 
         .bookmark-card:hover {
             transform: translateY(-3px);
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border-color: rgba(255, 255, 255, 0.3);
         }
 
@@ -345,7 +345,7 @@
             position: absolute;
             top: 6px;
             right: 6px;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             width: 20px;
@@ -374,7 +374,7 @@
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-color);
             display: flex;
@@ -394,7 +394,7 @@
         }
 
         .add-shortcut-btn {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(8px);
             border: 1px dashed var(--border-color);
             color: var(--text-color);
@@ -410,7 +410,7 @@
         }
 
         .add-shortcut-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
+            background-color: rgba(0, 0, 0, 0.05);
             border-color: rgba(255, 255, 255, 0.3);
         }
 
