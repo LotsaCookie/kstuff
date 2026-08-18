@@ -354,13 +354,6 @@ body.show-logo.nav-right #navbar {
     to { opacity: 1; transform: translateY(0); }
 }
 
-#settings.page.active {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
 .settings-card {
     background: var(--nav-bg);
     padding: 2rem;
@@ -639,6 +632,21 @@ body.show-logo.nav-right #navbar {
     border: none;
 }
 
+.settings-modal-content {
+    height: auto;
+    max-height: 85vh;
+    width: 460px;
+    max-width: 90vw;
+}
+
+.modal-settings-body {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 1.5rem !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+}
+
 @media (max-width: 768px) {
     #navbar {
         padding: 0.28rem;
@@ -673,4 +681,4 @@ body.show-logo.nav-right #navbar {
         width: 41px;
         padding-top: 0.55rem;
     }
-}
+        }
