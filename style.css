@@ -299,31 +299,28 @@ body.show-logo.nav-right #navbar {
 
 .nav-divider {
     background-color: var(--text-color);
-    opacity: 0.2; /* Complies with the theme dynamically */
-    border-radius: 10px; /* Rounded edges */
+    opacity: 0.2; 
+    border-radius: 10px; 
     flex-shrink: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Top & Bottom Navbar rules */
 .nav-top .nav-divider, 
 .nav-bottom .nav-divider {
     width: 2px;
-    height: calc(100% - 16px); /* Prevents touching the top/bottom edges */
-    margin-left: auto; /* Pushes everything after it to the right */
+    height: calc(100% - 16px); 
+    margin-left: auto; 
     align-self: center;
 }
 
-/* Left & Right Navbar rules */
 .nav-left .nav-divider, 
 .nav-right .nav-divider {
     height: 2px;
-    width: calc(100% - 24px); /* Prevents touching the left/right edges */
-    margin-top: auto; /* Pushes everything after it to the bottom */
+    width: calc(100% - 24px); 
+    margin-top: auto; 
     align-self: center;
 }
 
-/* Adjust divider width when the text is hidden (navbar gets thinner) */
 body.text-hide .nav-left .nav-divider, 
 body.text-hide .nav-right .nav-divider {
     width: calc(100% - 16px);
@@ -350,7 +347,8 @@ body.text-hide .nav-right .nav-divider {
 }
 
 #home.page.active, 
-#music.page.active {
+#music.page.active,
+#ai.page.active {
     display: flex;
     flex-direction: column;
     height: calc(100% + 6rem);
