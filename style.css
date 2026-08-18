@@ -6,7 +6,7 @@
 
 :root {
     --nav-size: 70px;
-    --nav-width: 210px;
+    --nav-width: 240px; /* Widened to fit larger text */
     --transition-speed: 0.3s;
 }
 
@@ -148,8 +148,8 @@ body.show-logo.nav-right #navbar {
     justify-content: center;
     padding: 0 1.25rem;
     height: 52px;
-    min-height: 52px; /* Forces height to stay 52px */
-    flex-shrink: 0; /* Prevents flexbox from squishing the button vertically */
+    min-height: 52px;
+    flex-shrink: 0; 
     width: max-content;
     min-width: 52px;
     cursor: pointer;
@@ -159,19 +159,19 @@ body.show-logo.nav-right #navbar {
 }
 
 .nav-btn i {
-    font-size: 1.4rem;
+    font-size: 1.55rem; /* Larger icon */
     flex-shrink: 0;
     transition: font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-btn span {
     display: block;
-    max-width: 150px;
-    margin-left: 0.75rem;
+    max-width: 170px; /* Widened for larger text */
+    margin-left: 0.85rem; /* Slightly more gap between icon and text */
     white-space: nowrap;
     overflow: hidden;
     opacity: 1;
-    font-size: 1.1rem;
+    font-size: 1.2rem; /* Larger text */
     line-height: normal;
     transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, font-size 0.3s ease;
 }
@@ -188,7 +188,7 @@ body.show-logo.nav-right #navbar {
 }
 
 .text-hide .nav-btn i {
-    font-size: 1.7rem; /* Makes the icon larger when text is hidden */
+    font-size: 1.8rem; /* Even larger icon when text is hidden */
     margin: 0;
 }
 
