@@ -404,6 +404,7 @@ body.show-logo.nav-right #navbar {
     border-radius: 12px;
     padding: 0.5rem 1rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 220px;
 }
 
 .modern-select-wrapper.search-wrapper {
@@ -664,4 +665,4 @@ body.show-logo.nav-right #navbar {
         width: 75px;
         padding-top: 1rem;
     }
-                                      }
+    }
