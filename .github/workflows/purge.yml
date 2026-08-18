@@ -1,0 +1,14 @@
+name: Purge CDN Cache
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger jsDelivr Purge
+        run: |
+          curl -I "https://purge.jsdelivr.net/gh/lotsacookie/kstuff@main/"
