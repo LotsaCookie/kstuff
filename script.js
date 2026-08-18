@@ -83,8 +83,8 @@
         ];
 
         const truffledTable = [
-            { url: "https://truffled.lol", img: "/png/logo.png", final: "" },
-            { url: "", img: "/png/logo.png", final: "" }
+            { url: "https://truffled.lol/", img: "png/logo.png", final: "" },
+            { url: "", img: "png/logo.png", final: "" }
         ];
 
         function testImageUrl(testUrl) {
