@@ -13,4 +13,4 @@ jobs:
     steps:
       - name: Trigger jsDelivr Purge
         run: |
-          curl -I "https://purge.jsdelivr.net/gh/lotsacookie/kstuff@main/*"
+          curl -I "https://purge.jsdelivr.net/gh/lotsacookie/kstuff@main/"
