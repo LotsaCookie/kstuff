@@ -20,6 +20,25 @@
         const modalCloseBtn = document.getElementById('modal-close-btn');
         const modalFullscreenBtn = document.getElementById('modal-fullscreen-btn');
 
+        const p = [
+            "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
+            "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
+            "https://raw.githack.com/lotsacookie/kstuff/main/",
+            ""
+        ];
+
+        async function fetchAsset(path) {
+            for (const proxy of p) {
+                try {
+                    const response = await fetch(proxy + path);
+                    if (response.ok) {
+                        return await response.json();
+                    }
+                } catch (err) {}
+            }
+            throw new Error("All proxies failed for " + path);
+        }
+
         const scramTable = [
             { url: "https://kstuff.neocities.org", img: "/kstuff.png", final: "/embed.html#" },
             { url: "https://example-scram-backup.com", img: "/favicon.ico", final: "/embed.html#" }
@@ -193,9 +212,7 @@
         if (modalFullscreenBtn) {
             modalFullscreenBtn.addEventListener('click', () => {
                 if (!document.fullscreenElement) {
-                    modalIframe.requestFullscreen().catch(err => {
-                        console.error(err);
-                    });
+                    modalIframe.requestFullscreen().catch(err => {});
                 } else {
                     document.exitFullscreen();
                 }
@@ -210,8 +227,7 @@
         let currentAppPage = 1;
         const itemsPerPage = 50;
 
-        fetch('JSON/categories.json')
-            .then(response => response.json())
+        fetchAsset('JSON/categories.json')
             .then(categories => {
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
@@ -247,7 +263,6 @@
                 }
             })
             .catch(err => {
-                console.error(err);
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
                 if (gamesSelect) gamesSelect.innerHTML = '<option value="All">Error</option>';
@@ -362,20 +377,18 @@
             }
         }
 
-        fetch('JSON/games.json')
-            .then(response => response.json())
+        fetchAsset('JSON/games.json')
             .then(data => {
                 gamesData = data;
                 renderGames();
             })
-            .catch(err => console.error(err));
+            .catch(err => {});
 
-        fetch('JSON/apps.json')
-            .then(response => response.json())
+        fetchAsset('JSON/apps.json')
             .then(data => {
                 appsData = data;
                 renderApps();
             })
-            .catch(err => console.error(err));
+            .catch(err => {});
     }
 })();
