@@ -41,6 +41,25 @@
             throw new Error("All proxies failed for " + path);
         }
 
+        async function loadProxyIframe(id, path) {
+            const iframe = document.getElementById(id);
+            if (!iframe) return;
+            const cacheBuster = "?_=" + Date.now();
+            for (const proxy of p) {
+                try {
+                    const url = proxy + path + (proxy ? cacheBuster : "");
+                    const response = await fetch(url, { method: 'HEAD' });
+                    if (response.ok) {
+                        iframe.src = url;
+                        return;
+                    }
+                } catch (err) {}
+            }
+        }
+
+        loadProxyIframe('home-iframe', 'Pages/browser.html');
+        loadProxyIframe('music-iframe', 'Pages/music.html');
+
         const scramTable = [
             { url: "https://kstuff.neocities.org", img: "/kstuff.png", final: "/embed.html#" },
             { url: "https://example-scram-backup.com", img: "/favicon.ico", final: "/embed.html#" }
