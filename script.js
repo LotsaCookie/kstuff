@@ -60,59 +60,34 @@
             return new Promise((resolve) => {
                 let isDone = false;
                 const img = new Image();
-
-                img.onload = () => {
-                    if (!isDone) {
-                        isDone = true;
-                        resolve(true);
-                    }
-                };
-
-                img.onerror = () => {
-                    if (!isDone) {
-                        isDone = true;
-                        resolve(false);
-                    }
-                };
-
+                img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
+                img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
                 img.src = testUrl + "?_=" + Date.now();
-
-                setTimeout(() => {
-                    if (!isDone) {
-                        isDone = true;
-                        resolve(false);
-                    }
-                }, 3000);
+                setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
             });
         }
 
         async function getWorkingConfig(table) {
             for (const entry of table) {
-                const testUrl = entry.url + entry.img;
-                const success = await testImageUrl(testUrl);
-                if (success) {
-                    return entry;
-                }
+                if (await testImageUrl(entry.url + entry.img)) return entry;
             }
             return table[0];
         }
 
         async function resolveAndGetUrl(originalUrl) {
             let resolvedUrl = originalUrl;
-
             if (resolvedUrl.includes('${scram}')) {
-                const working = await getWorkingConfig(scramTable);
-                resolvedUrl = resolvedUrl.replace('${scram}', working.url + working.final);
+                const w = await getWorkingConfig(scramTable);
+                resolvedUrl = resolvedUrl.replace('${scram}', w.url + w.final);
             }
             if (resolvedUrl.includes('${static}')) {
-                const working = await getWorkingConfig(staticTable);
-                resolvedUrl = resolvedUrl.replace('${static}', working.url + working.final);
+                const w = await getWorkingConfig(staticTable);
+                resolvedUrl = resolvedUrl.replace('${static}', w.url + w.final);
             }
             if (resolvedUrl.includes('${uv}')) {
-                const working = await getWorkingConfig(uvTable);
-                resolvedUrl = resolvedUrl.replace('${uv}', working.url + working.final);
+                const w = await getWorkingConfig(uvTable);
+                resolvedUrl = resolvedUrl.replace('${uv}', w.url + w.final);
             }
-
             return resolvedUrl;
         }
 
@@ -125,13 +100,11 @@
             body.classList.add(savedTheme);
             themeSelect.value = savedTheme;
         }
-
         if (savedNavPos && navSelect) {
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(savedNavPos);
             navSelect.value = savedNavPos;
         }
-
         if (savedTextVis && textSelect) {
             if (savedTextVis === 'text-hide') {
                 body.classList.add('text-hide');
@@ -146,14 +119,11 @@
             btn.addEventListener('click', () => {
                 navBtns.forEach(b => b.classList.remove('active'));
                 pages.forEach(p => p.classList.remove('active'));
-
                 btn.classList.add('active');
 
                 const targetId = btn.getAttribute('data-target');
                 const targetPage = document.getElementById(targetId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                }
+                if (targetPage) targetPage.classList.add('active');
 
                 if (targetId === 'home') {
                     if (navLogo) navLogo.classList.remove('show');
@@ -166,32 +136,24 @@
         });
 
         if (themeSelect) {
-            themeSelect.addEventListener('change', (event) => {
-                const newTheme = event.target.value;
+            themeSelect.addEventListener('change', (e) => {
                 body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-                body.classList.add(newTheme);
-                localStorage.setItem('kstuff_theme', newTheme);
+                body.classList.add(e.target.value);
+                localStorage.setItem('kstuff_theme', e.target.value);
             });
         }
-
         if (navSelect) {
-            navSelect.addEventListener('change', (event) => {
-                const newPosition = event.target.value;
+            navSelect.addEventListener('change', (e) => {
                 body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-                body.classList.add(newPosition);
-                localStorage.setItem('kstuff_nav_pos', newPosition);
+                body.classList.add(e.target.value);
+                localStorage.setItem('kstuff_nav_pos', e.target.value);
             });
         }
-
         if (textSelect) {
-            textSelect.addEventListener('change', (event) => {
-                const textValue = event.target.value;
-                if (textValue === 'text-hide') {
-                    body.classList.add('text-hide');
-                } else {
-                    body.classList.remove('text-hide');
-                }
-                localStorage.setItem('kstuff_text_vis', textValue);
+            textSelect.addEventListener('change', (e) => {
+                if (e.target.value === 'text-hide') body.classList.add('text-hide');
+                else body.classList.remove('text-hide');
+                localStorage.setItem('kstuff_text_vis', e.target.value);
             });
         }
 
@@ -201,7 +163,6 @@
                 modalIframe.src = '';
             });
         }
-
         if (modalOverlay) {
             modalOverlay.addEventListener('click', (e) => {
                 if (e.target === modalOverlay) {
@@ -210,7 +171,6 @@
                 }
             });
         }
-
         if (modalFullscreenBtn) {
             modalFullscreenBtn.addEventListener('click', () => {
                 if (!document.fullscreenElement) {
@@ -225,6 +185,8 @@
         let appsData = [];
         let currentGameCategory = "All";
         let currentAppCategory = "All";
+        let currentGameSearch = "";
+        let currentAppSearch = "";
         let currentGamePage = 1;
         let currentAppPage = 1;
         const itemsPerPage = 50;
@@ -233,6 +195,8 @@
             .then(categories => {
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
+                const gamesSearch = document.getElementById('games-search');
+                const appsSearch = document.getElementById('apps-search');
 
                 if (gamesSelect) {
                     gamesSelect.innerHTML = '';
@@ -263,12 +227,28 @@
                         renderApps();
                     });
                 }
+
+                if (gamesSearch) {
+                    gamesSearch.addEventListener('input', (e) => {
+                        currentGameSearch = e.target.value.toLowerCase().trim();
+                        currentGamePage = 1;
+                        renderGames();
+                    });
+                }
+
+                if (appsSearch) {
+                    appsSearch.addEventListener('input', (e) => {
+                        currentAppSearch = e.target.value.toLowerCase().trim();
+                        currentAppPage = 1;
+                        renderApps();
+                    });
+                }
             })
             .catch(err => {
-                const gamesSelect = document.getElementById('games-category-select');
-                const appsSelect = document.getElementById('apps-category-select');
-                if (gamesSelect) gamesSelect.innerHTML = '<option value="All">Error</option>';
-                if (appsSelect) appsSelect.innerHTML = '<option value="All">Error</option>';
+                const gs = document.getElementById('games-category-select');
+                const as = document.getElementById('apps-category-select');
+                if (gs) gs.innerHTML = '<option value="All">Error</option>';
+                if (as) as.innerHTML = '<option value="All">Error</option>';
             });
 
         function renderGames() {
@@ -276,9 +256,11 @@
             const gamesPagination = document.getElementById('games-pagination');
             if (!gamesGrid) return;
             
-            const filteredData = currentGameCategory === "All" 
-                ? gamesData 
-                : gamesData.filter(item => item.category === currentGameCategory);
+            const filteredData = gamesData.filter(item => {
+                const matchesCategory = currentGameCategory === "All" || item.category === currentGameCategory;
+                const matchesSearch = item.title.toLowerCase().includes(currentGameSearch);
+                return matchesCategory && matchesSearch;
+            });
 
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
             if (currentGamePage > totalPages) currentGamePage = 1;
@@ -300,7 +282,6 @@
                 card.addEventListener('click', async () => {
                     if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
                     if (modalOverlay) modalOverlay.classList.add('active');
-
                     const finalUrl = await resolveAndGetUrl(item.url);
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalIframe) modalIframe.src = finalUrl;
@@ -330,9 +311,11 @@
             const appsPagination = document.getElementById('apps-pagination');
             if (!appsGrid) return;
             
-            const filteredData = currentAppCategory === "All" 
-                ? appsData 
-                : appsData.filter(item => item.category === currentAppCategory);
+            const filteredData = appsData.filter(item => {
+                const matchesCategory = currentAppCategory === "All" || item.category === currentAppCategory;
+                const matchesSearch = item.title.toLowerCase().includes(currentAppSearch);
+                return matchesCategory && matchesSearch;
+            });
 
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
             if (currentAppPage > totalPages) currentAppPage = 1;
@@ -354,7 +337,6 @@
                 card.addEventListener('click', async () => {
                     if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
                     if (modalOverlay) modalOverlay.classList.add('active');
-
                     const finalUrl = await resolveAndGetUrl(item.url);
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalIframe) modalIframe.src = finalUrl;
@@ -379,18 +361,7 @@
             }
         }
 
-        fetchAsset('Json/g.json')
-            .then(data => {
-                gamesData = data;
-                renderGames();
-            })
-            .catch(err => {});
-
-        fetchAsset('Json/a.json')
-            .then(data => {
-                appsData = data;
-                renderApps();
-            })
-            .catch(err => {});
+        fetchAsset('Json/g.json').then(data => { gamesData = data; renderGames(); }).catch(err => {});
+        fetchAsset('Json/a.json').then(data => { appsData = data; renderApps(); }).catch(err => {});
     }
 })();
