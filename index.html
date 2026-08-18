@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Hello there -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
@@ -45,7 +44,7 @@
         })();
     </script>
 </head>
-<body class="theme-dark nav-left text-hide">
+<body class="theme-sakura nav-left text-hide">
     <div id="app-container">
         <nav id="navbar">
             <div id="nav-logo">K</div>
@@ -58,7 +57,6 @@
             <button class="nav-btn" data-target="apps">
                 <i class="ph ph-app-window"></i> <span>Apps</span>
             </button>
-            <!-- NEW MUSIC BUTTON -->
             <button class="nav-btn" data-target="music">
                 <i class="ph ph-music-notes"></i> <span>Music</span>
             </button>
@@ -67,12 +65,9 @@
             </button>
         </nav>
         <main id="content-area">
-            
-            <!-- HOME SECTION NOW USES IFRAME -->
             <section id="home" class="page active">
                 <iframe id="home-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
-            
             <section id="games" class="page">
                 <div class="filter-bar">
                     <div class="modern-select-wrapper search-wrapper">
@@ -105,37 +100,40 @@
                 <div class="item-grid" id="apps-grid"></div>
                 <div class="pagination-bar" id="apps-pagination"></div>
             </section>
-            
-            <!-- MUSIC SECTION NOW USES IFRAME -->
             <section id="music" class="page">
                 <iframe id="music-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
-
             <section id="settings" class="page">
                 <div class="settings-card">
                     <div class="setting-group">
                         <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
                         <select id="theme-select">
-                            <option value="theme-dark">Solid Dark (Default)</option>
-                            <option value="theme-light">Solid Light</option>
-                            <option value="theme-grad-blue">Ocean Gradient</option>
-                            <option value="theme-grad-purple">Sunset Gradient</option>
+                            <option value="theme-sakura" selected>Sakura</option>
+                            <option value="theme-dark">Dark</option>
+                            <option value="theme-light">Light</option>
+                            <option value="theme-ocean">Ocean</option>
+                            <option value="theme-sunset">Sunset</option>
+                            <option value="theme-emerald">Emerald</option>
+                            <option value="theme-midnight">Midnight</option>
+                            <option value="theme-cyber">Cyber</option>
+                            <option value="theme-ruby">Ruby</option>
+                            <option value="theme-latte">Latte</option>
                         </select>
                     </div>
                     <div class="setting-group">
                         <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
                         <select id="nav-select">
                             <option value="nav-top">Top</option>
-                            <option value="nav-left" selected>Left Sidebar (Default)</option>
-                            <option value="nav-right">Right Sidebar</option>
+                            <option value="nav-left" selected>Left</option>
+                            <option value="nav-right">Right</option>
                             <option value="nav-bottom">Bottom</option>
                         </select>
                     </div>
                     <div class="setting-group">
                         <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
                         <select id="text-select">
-                            <option value="text-show">Show Text</option>
-                            <option value="text-hide" selected>Hide Text (Default)</option>
+                            <option value="text-show">Show</option>
+                            <option value="text-hide" selected>Hide</option>
                         </select>
                     </div>
                 </div>
