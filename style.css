@@ -171,17 +171,17 @@ body.show-logo.nav-right #navbar {
     background: rgba(128, 128, 128, 0.2);
 }
 
+.text-hide .nav-btn {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .text-hide .nav-btn span {
     max-width: 0;
     margin-left: 0;
     opacity: 0;
     transition: max-width 0.3s ease, margin 0.3s ease, opacity 0.1s ease;
-}
-
-.text-hide.nav-left .nav-btn, .text-hide.nav-right .nav-btn {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
 }
 
 #content-area {
@@ -559,8 +559,7 @@ body.show-logo.nav-right #navbar {
         font-size: 0.7rem;
         max-width: 100%;
         text-align: center;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
     }
 
     .nav-left #navbar, .nav-right #navbar {
