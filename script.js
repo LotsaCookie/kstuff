@@ -20,6 +20,9 @@
         const modalCloseBtn = document.getElementById('modal-close-btn');
         const modalFullscreenBtn = document.getElementById('modal-fullscreen-btn');
 
+        const settingsModal = document.getElementById('settings-modal');
+        const settingsCloseBtn = document.getElementById('settings-modal-close-btn');
+
         const p = [
             "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
             "https://raw.githack.com/lotsacookie/kstuff/main/",
@@ -61,8 +64,7 @@
         loadProxyContentAsIframe('home-iframe', 'Pages/browser.html');
         loadProxyContentAsIframe('music-iframe', 'Pages/music.html');
 
-        const scramTable = [
-        ];
+        const scramTable = [];
 
         const staticTable = [
             { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
@@ -172,11 +174,21 @@
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                navBtns.forEach(b => b.classList.remove('active'));
+                const targetId = btn.getAttribute('data-target');
+
+                if (targetId === 'settings') {
+                    if (settingsModal) settingsModal.classList.add('active');
+                    return;
+                }
+
+                navBtns.forEach(b => {
+                    if (b.getAttribute('data-target') !== 'settings') {
+                        b.classList.remove('active');
+                    }
+                });
                 pages.forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
 
-                const targetId = btn.getAttribute('data-target');
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) targetPage.classList.add('active');
 
@@ -232,6 +244,19 @@
                     modalIframe.requestFullscreen().catch(err => {});
                 } else {
                     document.exitFullscreen();
+                }
+            });
+        }
+
+        if (settingsCloseBtn) {
+            settingsCloseBtn.addEventListener('click', () => {
+                if (settingsModal) settingsModal.classList.remove('active');
+            });
+        }
+        if (settingsModal) {
+            settingsModal.addEventListener('click', (e) => {
+                if (e.target === settingsModal) {
+                    settingsModal.classList.remove('active');
                 }
             });
         }
