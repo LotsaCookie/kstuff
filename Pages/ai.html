@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .coming-soon-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+        }
+
+        .coming-soon-content {
+            text-align: center;
+            animation: pulseFade 2.5s infinite ease-in-out;
+        }
+
+        .coming-soon-content h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .coming-soon-content p {
+            font-size: 1.1rem;
+            margin: 0;
+            color: #d1d5db;
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="coming-soon-overlay">
+        <div class="coming-soon-content">
+            <h1>COMING SOON</h1>
+            <p>You've come across an unfinished page; this will arrive along with much more content!</p>
+        </div>
+    </div>
+
+</body>
+</html>
