@@ -503,3 +503,38 @@ body.show-logo.nav-right #navbar {
     height: 100%;
     border: none;
 }
+
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.modern-select-wrapper.search-wrapper {
+    width: 260px; 
+}
+
+.modern-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font-size: inherit;
+    outline: none;
+    padding: 8px 12px 8px 38px; 
+}
+
+.modern-select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.modern-select-wrapper i {
+    position: absolute;
+    left: 12px;
+    pointer-events: none;
+}
