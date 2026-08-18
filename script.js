@@ -72,14 +72,19 @@
         ];
 
         const uvTable = [
-        { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.net", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.info", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.icu", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.education", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://datacrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
+            { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.net", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.info", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.icu", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.education", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://datacrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+            { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
+        ];
+
+        const truffledTable = [
+            { url: "https://truffled.lol", img: "/logo.png", final: "" },
+            { url: "", img: "/logo.png", final: "" }
         ];
 
         function testImageUrl(testUrl) {
@@ -113,6 +118,10 @@
             if (resolvedUrl.includes('${uv}')) {
                 const w = await getWorkingConfig(uvTable);
                 resolvedUrl = resolvedUrl.replace('${uv}', w.url + w.final);
+            }
+            if (resolvedUrl.includes('${truffled}')) {
+                const w = await getWorkingConfig(truffledTable);
+                resolvedUrl = resolvedUrl.replace('${truffled}', w.url + w.final);
             }
             return resolvedUrl;
         }
