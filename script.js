@@ -191,12 +191,29 @@
         let currentAppPage = 1;
         const itemsPerPage = 50;
 
+        const gamesSearch = document.getElementById('games-search');
+        const appsSearch = document.getElementById('apps-search');
+
+        if (gamesSearch) {
+            gamesSearch.addEventListener('input', (e) => {
+                currentGameSearch = e.target.value.toLowerCase().trim();
+                currentGamePage = 1;
+                renderGames();
+            });
+        }
+
+        if (appsSearch) {
+            appsSearch.addEventListener('input', (e) => {
+                currentAppSearch = e.target.value.toLowerCase().trim();
+                currentAppPage = 1;
+                renderApps();
+            });
+        }
+
         fetchAsset('Json/categories.json')
             .then(categories => {
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
-                const gamesSearch = document.getElementById('games-search');
-                const appsSearch = document.getElementById('apps-search');
 
                 if (gamesSelect) {
                     gamesSelect.innerHTML = '';
@@ -223,22 +240,6 @@
                     });
                     appsSelect.addEventListener('change', (e) => {
                         currentAppCategory = e.target.value;
-                        currentAppPage = 1;
-                        renderApps();
-                    });
-                }
-
-                if (gamesSearch) {
-                    gamesSearch.addEventListener('input', (e) => {
-                        currentGameSearch = e.target.value.toLowerCase().trim();
-                        currentGamePage = 1;
-                        renderGames();
-                    });
-                }
-
-                if (appsSearch) {
-                    appsSearch.addEventListener('input', (e) => {
-                        currentAppSearch = e.target.value.toLowerCase().trim();
                         currentAppPage = 1;
                         renderApps();
                     });
