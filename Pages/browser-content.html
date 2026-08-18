@@ -600,7 +600,11 @@
 
             const tab = tabs.find(t => t.id === tabId);
             if (tab) {
-                urlInput.value = tab.mode === 'iframe' ? tab.url : '';
+                if (tab.mode === 'iframe') {
+                    urlInput.value = tab.url;
+                } else {
+                    urlInput.value = '';
+                }
             }
         }
 
@@ -648,9 +652,6 @@
                 const tabEl = document.querySelector(`.tab[data-id="${tabId}"]`);
                 if (tabEl) {
                     tabEl.querySelector('.tab-title').textContent = tab.title;
-                    const faviconImg = tabEl.querySelector('.tab-favicon');
-                    faviconImg.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-                    faviconImg.style.display = 'block';
                 }
 
                 const iframe = document.querySelector(`.tab-view[data-id="${tabId}"] .browser-iframe`);
@@ -718,6 +719,37 @@
             urlInput.value = '';
         }
 
+        // Continuously poll iframe location/title when available (same-origin support)
+        setInterval(() => {
+            if (activeTabId === null) return;
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (!tab || tab.mode !== 'iframe') return;
+
+            const viewEl = document.querySelector(`.tab-view[data-id="${activeTabId}"]`);
+            if (!viewEl) return;
+            const iframe = viewEl.querySelector('.browser-iframe');
+            if (!iframe) return;
+
+            try {
+                if (iframe.contentWindow && iframe.contentWindow.location) {
+                    const currentLoc = iframe.contentWindow.location.href;
+                    if (currentLoc && currentLoc !== 'about:blank' && currentLoc !== tab.url) {
+                        tab.url = currentLoc;
+                        urlInput.value = currentLoc;
+                    }
+                    if (iframe.contentDocument && iframe.contentDocument.title) {
+                        tab.title = iframe.contentDocument.title;
+                        const tabEl = document.querySelector(`.tab[data-id="${activeTabId}"]`);
+                        if (tabEl) {
+                            tabEl.querySelector('.tab-title').textContent = tab.title;
+                        }
+                    }
+                }
+            } catch (e) {
+                // Cross-origin restriction blocks reading location.href continuously for external domains
+            }
+        }, 200);
+
         newTabPlusBtn.addEventListener('click', () => createNewTab());
 
         enterBtn.addEventListener('click', () => {
@@ -737,7 +769,11 @@
             if (viewEl) {
                 const iframe = viewEl.querySelector('.browser-iframe');
                 if (iframe.style.display === 'block' && iframe.src) {
-                    iframe.contentWindow.location.reload();
+                    try {
+                        iframe.contentWindow.location.reload();
+                    } catch (e) {
+                        iframe.src = iframe.src;
+                    }
                 }
             }
         });
