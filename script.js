@@ -21,16 +21,18 @@
         const modalFullscreenBtn = document.getElementById('modal-fullscreen-btn');
 
         const p = [
+            "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
+            "https://raw.githack.com/lotsacookie/kstuff/main/",
             "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
             "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
-            "https://raw.githack.com/lotsacookie/kstuff/main/",
             ""
         ];
 
         async function fetchAsset(path) {
+            const cacheBuster = "?_=" + Date.now();
             for (const proxy of p) {
                 try {
-                    const response = await fetch(proxy + path);
+                    const response = await fetch(proxy + path + (proxy ? cacheBuster : ""));
                     if (response.ok) {
                         return await response.json();
                     }
@@ -73,7 +75,7 @@
                     }
                 };
 
-                img.src = testUrl;
+                img.src = testUrl + "?_=" + Date.now();
 
                 setTimeout(() => {
                     if (!isDone) {
@@ -392,4 +394,3 @@
             .catch(err => {});
     }
 })();
-
