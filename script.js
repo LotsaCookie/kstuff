@@ -67,7 +67,7 @@
         ];
 
         const staticTable = [
-            { url: "https://kstuff.neocities.org", img: "/kstuff.png", final: "/embed.html#" },
+            { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
             { url: "https://example-static-backup.com", img: "/favicon.ico", final: "/embed.html#" }
         ];
 
@@ -85,6 +85,11 @@
         const truffledTable = [
             { url: "https://truffled.lol/", img: "png/logo.png", final: "" },
             { url: "", img: "png/logo.png", final: "" }
+        ];
+
+        const frogieeTable = [
+            { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "" },
+            { url: "https://example-frogiee-backup.com", img: "/favicon.ico", final: "" }
         ];
 
         function testImageUrl(testUrl) {
@@ -122,6 +127,10 @@
             if (resolvedUrl.includes('${truffled}')) {
                 const w = await getWorkingConfig(truffledTable);
                 resolvedUrl = resolvedUrl.replace('${truffled}', w.url + w.final);
+            }
+            if (resolvedUrl.includes('${frogiee}')) {
+                const w = await getWorkingConfig(frogieeTable);
+                resolvedUrl = resolvedUrl.replace('${frogiee}', w.url + w.final);
             }
             return resolvedUrl;
         }
