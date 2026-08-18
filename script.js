@@ -229,7 +229,7 @@
         let currentAppPage = 1;
         const itemsPerPage = 50;
 
-        fetchAsset('JSON/categories.json')
+        fetchAsset('Json/categories.json')
             .then(categories => {
                 const gamesSelect = document.getElementById('games-category-select');
                 const appsSelect = document.getElementById('apps-category-select');
@@ -379,14 +379,14 @@
             }
         }
 
-        fetchAsset('JSON/games.json')
+        fetchAsset('Json/g.json')
             .then(data => {
                 gamesData = data;
                 renderGames();
             })
             .catch(err => {});
 
-        fetchAsset('JSON/apps.json')
+        fetchAsset('Json/a.json')
             .then(data => {
                 appsData = data;
                 renderApps();
