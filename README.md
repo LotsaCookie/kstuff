@@ -1,2 +1,7 @@
 # K-STUFF
-A single file version of K-STUFF
+
+Coming Soon: 
+
+Cloud Gaming,
+Music,
+Browser
