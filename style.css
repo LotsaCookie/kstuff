@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-weight: bold !important;
 }
 
 :root {
@@ -21,6 +22,7 @@ body {
     height: 100vh;
     overflow: hidden;
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+    font-weight: bold;
 }
 
 .theme-dark {
@@ -142,7 +144,7 @@ body.show-logo.nav-right #navbar {
     background: transparent;
     border: none;
     color: var(--text-color);
-    font-weight: 500;
+    font-weight: 900 !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -160,6 +162,7 @@ body.show-logo.nav-right #navbar {
 
 .nav-btn i {
     font-size: 1.55rem;
+    font-weight: 900 !important;
     flex-shrink: 0;
     transition: font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -172,6 +175,7 @@ body.show-logo.nav-right #navbar {
     overflow: hidden;
     opacity: 1;
     font-size: 1.2rem;
+    font-weight: 900 !important;
     line-height: normal;
     transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, font-size 0.3s ease;
 }
@@ -208,11 +212,13 @@ body.show-logo.nav-right #navbar {
     display: flex;
     flex-direction: column;
     position: relative;
+    font-weight: bold;
 }
 
 .page {
     display: none;
     animation: fadeIn 0.4s ease;
+    font-weight: bold;
 }
 
 .page.active {
@@ -247,7 +253,7 @@ body.show-logo.nav-right #navbar {
 
 .hero-subtitle {
     font-size: 1.25rem;
-    font-weight: 500;
+    font-weight: 900 !important;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     opacity: 0.6;
@@ -256,7 +262,7 @@ body.show-logo.nav-right #navbar {
 
 .hero-title {
     font-size: 4.5rem;
-    font-weight: 800;
+    font-weight: 900 !important;
     letter-spacing: -0.02em;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, var(--text-color), rgba(128, 128, 128, 0.7));
@@ -266,17 +272,20 @@ body.show-logo.nav-right #navbar {
 
 .hero-desc {
     font-size: 1.2rem;
+    font-weight: bold;
     opacity: 0.8;
     max-width: 500px;
 }
 
 .page h1 {
     font-size: 2.5rem;
+    font-weight: 900 !important;
     margin-bottom: 0.5rem;
 }
 
 .page p {
     font-size: 1.1rem;
+    font-weight: bold;
     opacity: 0.8;
     margin-bottom: 2rem;
 }
@@ -311,13 +320,14 @@ body.show-logo.nav-right #navbar {
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
-    font-weight: 600;
+    font-weight: 900 !important;
 }
 
 .setting-group select {
     width: 100%;
     padding: 0.75rem;
     font-size: 1rem;
+    font-weight: bold;
     border-radius: 8px;
     border: 1px solid rgba(128, 128, 128, 0.3);
     background: var(--card-bg);
@@ -356,6 +366,7 @@ body.show-logo.nav-right #navbar {
 
 .modern-select-wrapper i {
     font-size: 1.4rem;
+    font-weight: 900 !important;
     margin-right: 0.5rem;
     opacity: 0.8;
 }
@@ -365,7 +376,7 @@ body.show-logo.nav-right #navbar {
     border: none;
     color: var(--text-color);
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 900 !important;
     outline: none;
     cursor: pointer;
     padding: 0.25rem 0.5rem;
@@ -378,6 +389,7 @@ body.show-logo.nav-right #navbar {
     border: none;
     color: var(--text-color);
     font-size: 1.05rem;
+    font-weight: bold;
     outline: none;
     padding: 0.25rem 0.5rem;
 }
@@ -385,7 +397,7 @@ body.show-logo.nav-right #navbar {
 .modern-select option {
     background: var(--nav-bg);
     color: var(--text-color);
-    font-weight: 500;
+    font-weight: bold;
 }
 
 .item-grid {
@@ -432,6 +444,7 @@ body.show-logo.nav-right #navbar {
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     transition: opacity 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+    font-weight: bold;
 }
 
 .round-btn:hover .overlay {
@@ -442,12 +455,14 @@ body.show-logo.nav-right #navbar {
 
 .overlay h3 {
     font-size: 1.4rem;
+    font-weight: 900 !important;
     margin-bottom: 0.5rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .overlay p {
     font-size: 0.95rem;
+    font-weight: bold;
     opacity: 0.95;
     margin: 0;
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
@@ -467,7 +482,7 @@ body.show-logo.nav-right #navbar {
     color: var(--text-color);
     padding: 0.5rem 0.9rem;
     border-radius: 8px;
-    font-weight: 600;
+    font-weight: 900 !important;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -510,6 +525,7 @@ body.show-logo.nav-right #navbar {
     box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     transform: scale(0.9);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: bold;
 }
 
 .modal-overlay.active .modal-content {
@@ -527,7 +543,7 @@ body.show-logo.nav-right #navbar {
 
 #modal-title {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: 900 !important;
 }
 
 .modal-actions {
@@ -540,6 +556,7 @@ body.show-logo.nav-right #navbar {
     border: none;
     color: var(--text-color);
     font-size: 1.25rem;
+    font-weight: 900 !important;
     cursor: pointer;
     padding: 0.4rem;
     border-radius: 6px;
