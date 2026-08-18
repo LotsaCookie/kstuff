@@ -309,8 +309,9 @@
         }
 
         .bookmarks-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
             gap: 16px;
             width: 100%;
             max-width: 600px;
@@ -321,6 +322,7 @@
         }
 
         .bookmark-card {
+            width: 110px;
             position: relative;
             background-color: rgba(0, 0, 0, 0.05);
             backdrop-filter: blur(8px);
