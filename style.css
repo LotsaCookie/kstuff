@@ -295,6 +295,40 @@ body.show-logo.nav-right #navbar {
     pointer-events: none;
 }
 
+/* --- Divider & Settings Button Positioning --- */
+
+.nav-divider {
+    background-color: var(--text-color);
+    opacity: 0.2; /* Complies with the theme dynamically */
+    border-radius: 10px; /* Rounded edges */
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Top & Bottom Navbar rules */
+.nav-top .nav-divider, 
+.nav-bottom .nav-divider {
+    width: 2px;
+    height: calc(100% - 16px); /* Prevents touching the top/bottom edges */
+    margin-left: auto; /* Pushes everything after it to the right */
+    align-self: center;
+}
+
+/* Left & Right Navbar rules */
+.nav-left .nav-divider, 
+.nav-right .nav-divider {
+    height: 2px;
+    width: calc(100% - 24px); /* Prevents touching the left/right edges */
+    margin-top: auto; /* Pushes everything after it to the bottom */
+    align-self: center;
+}
+
+/* Adjust divider width when the text is hidden (navbar gets thinner) */
+body.text-hide .nav-left .nav-divider, 
+body.text-hide .nav-right .nav-divider {
+    width: calc(100% - 16px);
+}
+
 #content-area {
     flex-grow: 1;
     padding: 3rem;
@@ -727,4 +761,4 @@ body.show-logo.nav-right #navbar {
         width: var(--nav-width-mobile);
         padding-top: 0.55rem;
     }
-    }
+}
