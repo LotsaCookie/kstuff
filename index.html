@@ -103,43 +103,10 @@
             <section id="music" class="page">
                 <iframe id="music-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
-            <section id="settings" class="page">
-                <div class="settings-card">
-                    <div class="setting-group">
-                        <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
-                        <select id="theme-select">
-                            <option value="theme-sakura" selected>Sakura</option>
-                            <option value="theme-dark">Dark</option>
-                            <option value="theme-light">Light</option>
-                            <option value="theme-ocean">Ocean</option>
-                            <option value="theme-sunset">Sunset</option>
-                            <option value="theme-emerald">Emerald</option>
-                            <option value="theme-midnight">Midnight</option>
-                            <option value="theme-cyber">Cyber</option>
-                            <option value="theme-ruby">Ruby</option>
-                            <option value="theme-latte">Latte</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
-                        <select id="nav-select">
-                            <option value="nav-top">Top</option>
-                            <option value="nav-left" selected>Left</option>
-                            <option value="nav-right">Right</option>
-                            <option value="nav-bottom">Bottom</option>
-                        </select>
-                    </div>
-                    <div class="setting-group">
-                        <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
-                        <select id="text-select">
-                            <option value="text-show">Show</option>
-                            <option value="text-hide" selected>Hide</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
+
+    <!-- Content Modal -->
     <div id="content-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -150,6 +117,51 @@
                 </div>
             </div>
             <iframe id="modal-iframe" src=""></iframe>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content settings-modal-content">
+            <div class="modal-header">
+                <span id="settings-modal-title"><i class="ph ph-gear"></i> Settings</span>
+                <div class="modal-actions">
+                    <button id="settings-modal-close-btn" title="Close"><i class="ph ph-x"></i></button>
+                </div>
+            </div>
+            <div class="settings-card modal-settings-body">
+                <div class="setting-group">
+                    <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
+                    <select id="theme-select">
+                        <option value="theme-sakura" selected>Sakura</option>
+                        <option value="theme-dark">Dark</option>
+                        <option value="theme-light">Light</option>
+                        <option value="theme-ocean">Ocean</option>
+                        <option value="theme-sunset">Sunset</option>
+                        <option value="theme-emerald">Emerald</option>
+                        <option value="theme-midnight">Midnight</option>
+                        <option value="theme-cyber">Cyber</option>
+                        <option value="theme-ruby">Ruby</option>
+                        <option value="theme-latte">Latte</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
+                    <select id="nav-select">
+                        <option value="nav-top">Top</option>
+                        <option value="nav-left" selected>Left</option>
+                        <option value="nav-right">Right</option>
+                        <option value="nav-bottom">Bottom</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
+                    <select id="text-select">
+                        <option value="text-show">Show</option>
+                        <option value="text-hide" selected>Hide</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 </body>
