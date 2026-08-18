@@ -7,13 +7,43 @@
 }
 
 :root {
-    --nav-size: 38.5px; /* 55% of 70px */
-    --nav-width: 132px; /* 55% of 240px */
+    --nav-size: 38.5px; 
+    --nav-width: 132px; 
+    --btn-size: 29px;
+    --btn-icon-size: 0.85rem;
+    --btn-text-size: 0.7rem;
+    --btn-icon-hide-size: 1rem;
     --transition-speed: 0.3s;
 }
 
 body.text-hide {
-    --nav-width: 44px; /* 55% of 80px */
+    --nav-width: 44px;
+}
+
+/* Nav Size: Medium */
+body.size-medium {
+    --nav-size: 48px;
+    --nav-width: 150px;
+    --btn-size: 38px;
+    --btn-icon-size: 1.1rem;
+    --btn-text-size: 0.85rem;
+    --btn-icon-hide-size: 1.3rem;
+}
+body.size-medium.text-hide {
+    --nav-width: 52px;
+}
+
+/* Nav Size: Large */
+body.size-large {
+    --nav-size: 58px;
+    --nav-width: 170px;
+    --btn-size: 48px;
+    --btn-icon-size: 1.35rem;
+    --btn-text-size: 1rem;
+    --btn-icon-hide-size: 1.6rem;
+}
+body.size-large.text-hide {
+    --nav-width: 62px;
 }
 
 body {
@@ -201,11 +231,11 @@ body.show-logo.nav-right #navbar {
     align-items: center;
     justify-content: center;
     padding: 0 0.7rem;
-    height: 29px;
-    min-height: 29px;
+    height: var(--btn-size);
+    min-height: var(--btn-size);
     flex-shrink: 0; 
     width: max-content;
-    min-width: 29px;
+    min-width: var(--btn-size);
     cursor: pointer;
     border-radius: 7px;
     opacity: 1;
@@ -213,7 +243,7 @@ body.show-logo.nav-right #navbar {
 }
 
 .nav-btn i {
-    font-size: 0.85rem;
+    font-size: var(--btn-icon-size);
     font-weight: 900 !important;
     flex-shrink: 0;
     filter: brightness(0.5);
@@ -227,7 +257,7 @@ body.show-logo.nav-right #navbar {
     white-space: nowrap;
     overflow: hidden;
     opacity: 0.6;
-    font-size: 0.7rem;
+    font-size: var(--btn-text-size);
     font-weight: 900 !important;
     line-height: normal;
     transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, font-size 0.3s ease;
@@ -246,13 +276,13 @@ body.show-logo.nav-right #navbar {
 }
 
 .text-hide .nav-btn {
-    width: 29px;
-    height: 29px;
+    width: var(--btn-size);
+    height: var(--btn-size);
     padding: 0;
 }
 
 .text-hide .nav-btn i {
-    font-size: 1rem;
+    font-size: var(--btn-icon-hide-size);
     margin: 0;
 }
 
@@ -648,6 +678,22 @@ body.show-logo.nav-right #navbar {
 }
 
 @media (max-width: 768px) {
+    :root {
+        --btn-icon-size: 0.75rem;
+        --btn-text-size: 0.55rem;
+        --nav-width-mobile: 41px;
+    }
+    body.size-medium {
+        --btn-icon-size: 0.95rem;
+        --btn-text-size: 0.7rem;
+        --nav-width-mobile: 48px;
+    }
+    body.size-large {
+        --btn-icon-size: 1.15rem;
+        --btn-text-size: 0.85rem;
+        --nav-width-mobile: 56px;
+    }
+
     #navbar {
         padding: 0.28rem;
         gap: 0.14rem;
@@ -664,21 +710,21 @@ body.show-logo.nav-right #navbar {
     }
 
     .nav-btn i {
-        font-size: 0.75rem;
+        font-size: var(--btn-icon-size);
         margin-bottom: 1px;
     }
 
     .nav-btn span {
         display: block;
         margin-left: 0;
-        font-size: 0.55rem;
+        font-size: var(--btn-text-size);
         max-width: 100%;
         text-align: center;
         white-space: normal;
     }
 
     .nav-left #navbar, .nav-right #navbar {
-        width: 41px;
+        width: var(--nav-width-mobile);
         padding-top: 0.55rem;
     }
-        }
+    }
