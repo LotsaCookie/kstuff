@@ -4,4 +4,6 @@ Coming Soon:
 
 Cloud Gaming,
 Music,
-Browser
+Accounts,
+Chat,
+AI
