@@ -1,729 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-STUFF Browser</title>
-    <style>
-        :root {
-            --bg-color: transparent;
-            --surface-color: rgba(0, 0, 0, 0.25);
-            --surface-hover: rgba(0, 0, 0, 0.25);
-            --text-color: #ffffff;
-            --text-muted: #a1a1aa;
-            --accent-color: #ffffff;
-            --accent-hover: #e4e4e7;
-            --border-color: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UV URL Loader</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  #iframeContainer {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+  #viewerIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    animation: pulse 2s infinite;
+    z-index: 9999;
+  }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        html, body {
-            background-color: transparent;
-            color: var(--text-color);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .tab-bar {
-            display: flex;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 6px 8px 0 8px;
-            gap: 6px;
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-            flex-shrink: 0;
-        }
-
-        .tab {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            border-bottom: none;
-            padding: 8px 14px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            font-size: 13px;
-            color: var(--text-muted);
-            cursor: pointer;
-            max-width: 180px;
-            min-width: 120px;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            transform: translateY(2px);
-            opacity: 0.8;
-        }
-
-        .tab.active {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            border-color: var(--border-color);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-            transform: translateY(0);
-            opacity: 1;
-            box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .tab:hover:not(.active) {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            opacity: 1;
-        }
-
-        .tab-title {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .tab-close {
-            background: rgba(0, 0, 0, 0.25);
-            border: none;
-            color: var(--text-muted);
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.2s, color 0.2s;
-        }
-
-        .tab-close:hover {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-
-        .new-tab-tab-btn {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            margin-left: 4px;
-        }
-
-        .new-tab-tab-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .browser-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 16px;
-            background-color: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-            z-index: 10;
-            flex-shrink: 0;
-        }
-
-        .nav-btn {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
-            flex-shrink: 0;
-        }
-
-        .nav-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .nav-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
-
-        .url-bar-container {
-            flex: 1;
-            min-width: 120px;
-            display: flex;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 4px 6px 4px 16px;
-            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
-        }
-
-        .url-bar-container:focus-within {
-            background-color: rgba(0, 0, 0, 0.25);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-        }
-
-        .url-input {
-            flex: 1;
-            min-width: 0;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 14px;
-            outline: none;
-        }
-
-        .url-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .icon-action-btn {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 6px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
-            flex-shrink: 0;
-            margin-right: 4px;
-        }
-
-        .icon-action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .icon-action-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
-
-        .action-btn {
-            background-color: rgba(0, 0, 0, 0.25);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s, color 0.2s;
-            flex-shrink: 0;
-            margin-left: 4px;
-        }
-
-        .action-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
-            border-color: rgba(255, 255, 255, 0.3);
-            color: var(--text-color);
-        }
-
-        .viewport {
-            flex: 1;
-            position: relative;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .tab-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.25s ease-in-out;
-        }
-
-        .tab-view.active {
-            display: flex;
-            opacity: 1;
-            z-index: 2;
-        }
-
-        .new-tab-page {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.25);
-        }
-
-        .new-tab-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            color: #ffffff;
-            margin-bottom: 30px;
-            text-align: center;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .bookmarks-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 16px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 24px;
-            max-height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .bookmark-card {
-            position: relative;
-            background-color: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-            text-align: center;
-        }
-
-        .bookmark-card:hover {
-            transform: translateY(-3px);
-            background-color: rgba(0, 0, 0, 0.25);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .remove-bookmark-btn {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s, background 0.2s, color 0.2s;
-        }
-
-        .bookmark-card:hover .remove-bookmark-btn {
-            opacity: 1;
-        }
-
-        .remove-bookmark-btn:hover {
-            background-color: #ef4444;
-            color: #ffffff;
-            border-color: #ef4444;
-        }
-
-        .bookmark-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.25);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 15px;
-        }
-
-        .bookmark-name {
-            font-size: 12px;
-            color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-        }
-
-        .add-shortcut-btn {
-            background-color: rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(8px);
-            border: 1px dashed var(--border-color);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s, border-color 0.2s;
-        }
-
-        .add-shortcut-btn:hover {
-            background-color: rgba(0, 0, 0, 0.25);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .browser-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: transparent;
-            display: none;
-        }
-
-        #hidden-init-iframe {
-            display: none !important;
-        }
-    </style>
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
 </head>
 <body>
 
-    <div class="tab-bar" id="tab-bar">
-        <div id="tabs-container" style="display: flex; gap: 6px; flex: 1; overflow-x: auto;"></div>
-        <button class="new-tab-tab-btn" id="new-tab-plus-btn" title="New Tab">+</button>
-    </div>
+<div id="overlay"></div>
 
-    <header class="browser-header">
-        <button class="nav-btn" id="home-btn" title="New Tab Page">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        </button>
-        <button class="nav-btn" id="reload-btn" title="Reload">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </button>
-        
-        <div class="url-bar-container">
-            <input type="text" class="url-input" id="url-input" placeholder="Enter URL or search..." />
-            <button class="icon-action-btn" id="bookmark-btn" title="Add Bookmark">
-                <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-            </button>
-            <button class="action-btn" id="enter-btn">Enter</button>
-        </div>
-    </header>
+<div id="iframeContainer">
+  <iframe id="viewerIframe" allowfullscreen></iframe>
+</div>
 
-    <div class="viewport" id="viewport"></div>
+<script>
+const uvTable = [
+    { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.net", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.info", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.icu", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.education", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://datacrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+    { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
+];
 
-    <iframe id="hidden-init-iframe" src="https://tutoring4free.org/uv.html?site=example.com"></iframe>
+function testImageUrl(testUrl) {
+    return new Promise((resolve) => {
+        let isDone = false;
+        const img = new Image();
+        img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
+        img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
+        img.src = testUrl + "?_=" + Date.now();
+        setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
+    });
+}
 
-    <script>
-        function encode(str) {
-            if (!str) return str;
-            return encodeURIComponent(
-                str
-                    .toString()
-                    .split('')
-                    .map((char, ind) =>
-                        ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char
-                    )
-                    .join('')
-            );
-        }
+async function getWorkingConfig(table) {
+    for (const entry of table) {
+        if (await testImageUrl(entry.url + entry.img)) return entry;
+    }
+    return table[0];
+}
 
-        let tabs = [];
-        let activeTabId = null;
-        let nextTabId = 1;
+async function resolveAndBuildUrl() {
+    const placeholderUrl = "${uv}";
+    const w = await getWorkingConfig(uvTable);
+    const baseUrl = w.url + w.final;
+    const finalUrl = baseUrl + "https://lotsacookie.github.io/kstuff/Pages/browser-content.html";
+    return finalUrl;
+}
 
-        let bookmarks = [
-            { name: 'Google', url: 'https://www.google.com' },
-            { name: 'Example', url: 'https://example.com' },
-            { name: 'Wikipedia', url: 'https://www.wikipedia.org' }
-        ];
+(async () => {
+    const url = await resolveAndBuildUrl();
+    const iframe = document.getElementById('viewerIframe');
+    iframe.src = url;
+    setTimeout(() => {
+        document.getElementById('iframeContainer').style.opacity = 1;
+    }, 3000);
+    setTimeout(() => {
+        document.getElementById('overlay').remove();
+    }, 5000);
+})();
+</script>
 
-        const tabsContainer = document.getElementById('tabs-container');
-        const viewport = document.getElementById('viewport');
-        const urlInput = document.getElementById('url-input');
-        const enterBtn = document.getElementById('enter-btn');
-        const reloadBtn = document.getElementById('reload-btn');
-        const homeBtn = document.getElementById('home-btn');
-        const bookmarkBtn = document.getElementById('bookmark-btn');
-        const newTabPlusBtn = document.getElementById('new-tab-plus-btn');
-
-        function createNewTab(initialUrl = '') {
-            const tabId = nextTabId++;
-            const tab = {
-                id: tabId,
-                title: 'New Tab',
-                url: initialUrl,
-                mode: initialUrl ? 'iframe' : 'newtab',
-                iframeSrc: initialUrl ? "https://tutoring4free.org/uv/" + encode(initialUrl) : ''
-            };
-
-            tabs.push(tab);
-
-            const tabEl = document.createElement('div');
-            tabEl.className = 'tab';
-            tabEl.dataset.id = tabId;
-            tabEl.innerHTML = `
-                <span class="tab-title">${tab.title}</span>
-                <button class="tab-close" title="Close Tab">&times;</button>
-            `;
-
-            tabEl.addEventListener('click', (e) => {
-                if (e.target.classList.contains('tab-close')) return;
-                switchTab(tabId);
-            });
-
-            tabEl.querySelector('.tab-close').addEventListener('click', () => {
-                closeTab(tabId);
-            });
-
-            tabsContainer.appendChild(tabEl);
-
-            const viewEl = document.createElement('div');
-            viewEl.className = 'tab-view';
-            viewEl.dataset.id = tabId;
-            viewEl.innerHTML = `
-                <div class="new-tab-page" style="display: ${tab.mode === 'newtab' ? 'flex' : 'none'};">
-                    <h1 class="new-tab-title">K-STUFF</h1>
-                    <div class="bookmarks-container"></div>
-                    <button class="add-shortcut-btn"><span>+</span> Add Shortcut</button>
-                </div>
-                <iframe class="browser-iframe" src="${tab.iframeSrc}" style="display: ${tab.mode === 'iframe' ? 'block' : 'none'};"></iframe>
-            `;
-
-            setupNewTabPageEvents(viewEl, tabId);
-            viewport.appendChild(viewEl);
-
-            switchTab(tabId);
-            if (initialUrl) {
-                loadUrlInTab(tabId, initialUrl, false);
-            }
-        }
-
-        function setupNewTabPageEvents(viewEl, tabId) {
-            const bmContainer = viewEl.querySelector('.bookmarks-container');
-            const addBtn = viewEl.querySelector('.add-shortcut-btn');
-
-            renderBookmarksForView(bmContainer, tabId);
-
-            addBtn.addEventListener('click', () => {
-                const name = prompt("Enter shortcut name:");
-                if (!name) return;
-                const url = prompt("Enter URL (e.g., https://example.com):");
-                if (!url) return;
-                bookmarks.push({ name, url });
-                refreshAllBookmarks();
-            });
-        }
-
-        function renderBookmarksForView(container, tabId) {
-            container.innerHTML = '';
-            bookmarks.forEach((bm, index) => {
-                const card = document.createElement('div');
-                card.className = 'bookmark-card';
-                card.innerHTML = `
-                    <button class="remove-bookmark-btn" title="Remove Shortcut">&times;</button>
-                    <div class="bookmark-icon">${bm.name.charAt(0).toUpperCase()}</div>
-                    <span class="bookmark-name">${bm.name}</span>
-                `;
-
-                card.querySelector('.remove-bookmark-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    bookmarks.splice(index, 1);
-                    refreshAllBookmarks();
-                });
-
-                card.addEventListener('click', () => {
-                    loadUrlInTab(tabId, bm.url, true);
-                });
-
-                container.appendChild(card);
-            });
-        }
-
-        function refreshAllBookmarks() {
-            document.querySelectorAll('.tab-view').forEach(viewEl => {
-                const tabId = parseInt(viewEl.dataset.id);
-                const bmContainer = viewEl.querySelector('.bookmarks-container');
-                if (bmContainer) {
-                    renderBookmarksForView(bmContainer, tabId);
-                }
-            });
-        }
-
-        function switchTab(tabId) {
-            activeTabId = tabId;
-
-            document.querySelectorAll('.tab').forEach(el => {
-                if (parseInt(el.dataset.id) === tabId) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
-
-            document.querySelectorAll('.tab-view').forEach(el => {
-                if (parseInt(el.dataset.id) === tabId) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
-
-            const tab = tabs.find(t => t.id === tabId);
-            if (tab) {
-                urlInput.value = tab.mode === 'iframe' ? tab.url : '';
-            }
-        }
-
-        function closeTab(tabId) {
-            const index = tabs.findIndex(t => t.id === tabId);
-            if (index === -1) return;
-
-            tabs.splice(index, 1);
-
-            document.querySelector(`.tab[data-id="${tabId}"]`)?.remove();
-            document.querySelector(`.tab-view[data-id="${tabId}"]`)?.remove();
-
-            if (tabs.length === 0) {
-                createNewTab();
-            } else if (activeTabId === tabId) {
-                const newActive = tabs[Math.max(0, index - 1)];
-                switchTab(newActive.id);
-            }
-        }
-
-        function loadUrlInTab(tabId, inputVal, updateInput = true) {
-            if (!inputVal) return;
-
-            let targetUrl = inputVal.trim();
-            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-                if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
-                    targetUrl = 'https://' + targetUrl;
-                } else {
-                    targetUrl = 'https://www.google.com/search?q=' + encodeURIComponent(targetUrl);
-                }
-            }
-
-            const tab = tabs.find(t => t.id === tabId);
-            if (!tab) return;
-
-            tab.url = targetUrl;
-            tab.title = targetUrl.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
-            tab.mode = 'iframe';
-            tab.iframeSrc = "https://tutoring4free.org/uv/" + encode(targetUrl);
-
-            const tabEl = document.querySelector(`.tab[data-id="${tabId}"]`);
-            if (tabEl) {
-                tabEl.querySelector('.tab-title').textContent = tab.title;
-            }
-
-            const viewEl = document.querySelector(`.tab-view[data-id="${tabId}"]`);
-            if (viewEl) {
-                viewEl.querySelector('.new-tab-page').style.display = 'none';
-                const iframe = viewEl.querySelector('.browser-iframe');
-                iframe.style.display = 'block';
-                iframe.src = tab.iframeSrc;
-            }
-
-            if (updateInput && activeTabId === tabId) {
-                urlInput.value = targetUrl;
-            }
-        }
-
-        function showNewTabPageForActiveTab() {
-            const tab = tabs.find(t => t.id === activeTabId);
-            if (!tab) return;
-
-            tab.mode = 'newtab';
-            tab.url = '';
-            tab.title = 'New Tab';
-            tab.iframeSrc = '';
-
-            const tabEl = document.querySelector(`.tab[data-id="${activeTabId}"]`);
-            if (tabEl) {
-                tabEl.querySelector('.tab-title').textContent = 'New Tab';
-            }
-
-            const viewEl = document.querySelector(`.tab-view[data-id="${activeTabId}"]`);
-            if (viewEl) {
-                viewEl.querySelector('.browser-iframe').style.display = 'none';
-                viewEl.querySelector('.browser-iframe').src = '';
-                viewEl.querySelector('.new-tab-page').style.display = 'flex';
-            }
-
-            urlInput.value = '';
-        }
-
-        newTabPlusBtn.addEventListener('click', () => createNewTab());
-
-        enterBtn.addEventListener('click', () => {
-            if (activeTabId !== null) {
-                loadUrlInTab(activeTabId, urlInput.value);
-            }
-        });
-
-        urlInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && activeTabId !== null) {
-                loadUrlInTab(activeTabId, urlInput.value);
-            }
-        });
-
-        reloadBtn.addEventListener('click', () => {
-            const viewEl = document.querySelector(`.tab-view.active`);
-            if (viewEl) {
-                const iframe = viewEl.querySelector('.browser-iframe');
-                if (iframe.style.display === 'block' && iframe.src) {
-                    iframe.contentWindow.location.reload();
-                }
-            }
-        });
-
-        homeBtn.addEventListener('click', showNewTabPageForActiveTab);
-
-        bookmarkBtn.addEventListener('click', () => {
-            const currentUrl = urlInput.value;
-            if (!currentUrl) return;
-            const name = prompt("Enter shortcut name:", currentUrl);
-            if (!name) return;
-            bookmarks.push({ name, url: currentUrl });
-            refreshAllBookmarks();
-            alert("Shortcut added successfully!");
-        });
-
-        createNewTab();
-    </script>
 </body>
 </html>
