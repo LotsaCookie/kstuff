@@ -241,7 +241,7 @@
     "title": "Poly Track",
     "description": "",
     "category": "Driving",
-    "url": "https://powerschool.com.de/stuff/selfhosted/polytrack",
+    "url": "${frogiee}stuff/selfhosted/polytrack",
     "image": "https://www.kizgame.com/thumbs/polytrack_small.webp"
   },
   {
@@ -332,7 +332,7 @@
     "title": "Geometry Dash Lite",
     "description": "",
     "category": "Platformer",
-    "url": "https://powerschool.com.de/stuff/selfhosted/gdlite/",
+    "url": "${frogiee}stuff/selfhosted/gdlite/",
     "image": "https://static.wikia.nocookie.net/logopedia/images/4/41/Geometry_Dash_Icon.svg"
   },
   {
@@ -1746,7 +1746,7 @@
     "title": "Tanuki Sunset",
     "description": "",
     "category": "Racing",
-    "url": "https://powerschool.com.de/stuff/selfhosted/tanuki-sunset/",
+    "url": "${frogiee}stuff/selfhosted/tanuki-sunset/",
     "image": "https://19230981230981309813098123098123.104.36.84.31.nip.io/images/games/tanukisunset-min.png"
   },
   {
@@ -1858,7 +1858,7 @@
     "title": "Learn to Fly",
     "description": "",
     "category": "Strategy",
-    "url": "https://powerschool.com.de/stuff/selfhosted/flash/game/learn-to-fly.html",
+    "url": "${frogiee}stuff/selfhosted/flash/game/learn-to-fly.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_lUVoJ2I2ufCyp78V48Fqy7eK5HA5qCMqg&s"
   },
   {
