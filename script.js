@@ -41,24 +41,25 @@
             throw new Error("All proxies failed for " + path);
         }
 
-        async function loadProxyIframe(id, path) {
+        async function loadProxyContentAsIframe(id, path) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
             const cacheBuster = "?_=" + Date.now();
             for (const proxy of p) {
                 try {
                     const url = proxy + path + (proxy ? cacheBuster : "");
-                    const response = await fetch(url, { method: 'HEAD' });
+                    const response = await fetch(url);
                     if (response.ok) {
-                        iframe.src = url;
+                        const htmlContent = await response.text();
+                        iframe.srcdoc = htmlContent;
                         return;
                     }
                 } catch (err) {}
             }
         }
 
-        loadProxyIframe('home-iframe', 'Pages/browser.html');
-        loadProxyIframe('music-iframe', 'Pages/music.html');
+        loadProxyContentAsIframe('home-iframe', 'Pages/browser.html');
+        loadProxyContentAsIframe('music-iframe', 'Pages/music.html');
 
         const scramTable = [
             { url: "https://kstuff.neocities.org", img: "/kstuff.png", final: "/embed.html#" },
