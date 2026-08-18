@@ -5,5 +5,4 @@ Coming Soon:
 Cloud Gaming,
 Music,
 Accounts,
-Chat,
-AI
+Chat
