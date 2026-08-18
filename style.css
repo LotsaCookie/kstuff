@@ -142,14 +142,15 @@ body.show-logo.nav-right #navbar {
     background: transparent;
     border: none;
     color: var(--text-color);
-    font-size: 1.1rem;
     font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1.25rem; /* Pure horizontal padding */
-    height: 52px; /* Hard height forces perfect Y-axis center */
-    width: max-content; /* Auto-widens to perfectly wrap icon + text */
+    padding: 0 1.25rem;
+    height: 52px;
+    min-height: 52px; /* Forces height to stay 52px */
+    flex-shrink: 0; /* Prevents flexbox from squishing the button vertically */
+    width: max-content;
     min-width: 52px;
     cursor: pointer;
     border-radius: 12px;
@@ -158,7 +159,7 @@ body.show-logo.nav-right #navbar {
 }
 
 .nav-btn i {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     flex-shrink: 0;
     transition: font-size 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -181,16 +182,22 @@ body.show-logo.nav-right #navbar {
 }
 
 .text-hide .nav-btn {
-    width: 52px; /* Squishes down to a perfect square */
+    width: 52px;
+    height: 52px;
     padding: 0;
+}
+
+.text-hide .nav-btn i {
+    font-size: 1.7rem; /* Makes the icon larger when text is hidden */
+    margin: 0;
 }
 
 .text-hide .nav-btn span {
     max-width: 0;
     margin-left: 0;
     opacity: 0;
-    font-size: 0; /* Completely removes invisible text bulk that breaks vertical centering */
-    line-height: 0; /* Ensures the span claims absolutely no Y-axis space */
+    font-size: 0; 
+    line-height: 0; 
     pointer-events: none;
 }
 
@@ -556,6 +563,7 @@ body.show-logo.nav-right #navbar {
         padding: 0.5rem 0.4rem;
         width: auto;
         height: auto;
+        min-height: auto;
         font-size: 0.75rem;
         text-align: center;
     }
