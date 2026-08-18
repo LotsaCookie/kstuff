@@ -126,19 +126,28 @@
             body.classList.add(savedTheme);
             themeSelect.value = savedTheme;
         }
-        if (savedNavPos && navSelect) {
+
+        if (savedNavPos) {
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(savedNavPos);
-            navSelect.value = savedNavPos;
+            if (navSelect) navSelect.value = savedNavPos;
+        } else {
+            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
+            body.classList.add('nav-left');
+            if (navSelect) navSelect.value = 'nav-left';
         }
-        if (savedTextVis && textSelect) {
+
+        if (savedTextVis) {
             if (savedTextVis === 'text-hide') {
                 body.classList.add('text-hide');
-                textSelect.value = 'text-hide';
+                if (textSelect) textSelect.value = 'text-hide';
             } else {
                 body.classList.remove('text-hide');
-                textSelect.value = 'text-show';
+                if (textSelect) textSelect.value = 'text-show';
             }
+        } else {
+            body.classList.add('text-hide');
+            if (textSelect) textSelect.value = 'text-hide';
         }
 
         navBtns.forEach(btn => {
