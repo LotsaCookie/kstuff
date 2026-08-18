@@ -3,30 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>K-STUFF</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
         (function(){
             const p = [
+                "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
+                "https://raw.githack.com/lotsacookie/kstuff/main/",
                 "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
                 "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
-                "https://raw.githack.com/lotsacookie/kstuff/main/"
+                ""
             ];
             function l(f, s) {
                 let i = 0;
+                const cacheBuster = "?i_=" + Date.now();
                 function t() {
-                    if (i >= p.length) {
-                        let e = document.createElement(s ? 'script' : 'link');
-                        if (s) { e.src = f; } 
-                        else { e.rel = 'stylesheet'; e.href = f; }
+                    let e = document.createElement(s ? 'script' : 'link');
+                    let currentProxy = p[i];
+                    let targetUrl = currentProxy ? (currentProxy + f + cacheBuster) : (f + cacheBuster);
+
+                    if (s) { e.src = targetUrl; } 
+                    else { e.rel = 'stylesheet'; e.href = targetUrl; }
+
+                    if (i >= p.length - 1) {
                         document.head.appendChild(e);
                         return;
                     }
-                    let e = document.createElement(s ? 'script' : 'link');
-                    if (s) { e.src = p[i] + f; } 
-                    else { e.rel = 'stylesheet'; e.href = p[i] + f; }
-                    e.onload = () => {};
-                    e.onerror = () => { e.remove(); i++; t(); };
+
+                    e.onerror = () => {
+                        e.remove();
+                        i++;
+                        t();
+                    };
                     document.head.appendChild(e);
                 }
                 t();
@@ -58,7 +66,7 @@
                 <div class="hero-container">
                     <span class="hero-subtitle">Welcome to</span>
                     <h1 class="hero-title">K-STUFF</h1>
-                    <p class="hero-desc">Your central hub for exploring the best games and apps.</p>
+                    <p class="hero-desc">Your central hub for exploring the best games and applications.</p>
                 </div>
             </section>
             <section id="games" class="page">
