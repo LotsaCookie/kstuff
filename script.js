@@ -64,6 +64,7 @@
 
         loadProxyContentAsIframe('home-iframe', 'Pages/browser.html');
         loadProxyContentAsIframe('music-iframe', 'Pages/music.html');
+        loadProxyContentAsIframe('ai-iframe', 'Pages/ai.html');
 
         const scramTable = [];
 
