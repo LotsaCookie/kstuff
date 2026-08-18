@@ -534,3 +534,37 @@ body.show-logo.nav-right #navbar {
     height: 100%;
     border: none;
 }
+
+@media (max-width: 768px) {
+    #navbar {
+        padding: 0.5rem;
+        gap: 0.25rem;
+    }
+    
+    .nav-btn {
+        flex-direction: column;
+        padding: 0.5rem 0.4rem;
+        font-size: 0.75rem;
+        text-align: center;
+    }
+
+    .nav-btn i {
+        font-size: 1.25rem;
+        margin-bottom: 2px;
+    }
+
+    .nav-btn span {
+        display: block;
+        margin-left: 0;
+        font-size: 0.7rem;
+        max-width: 100%;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .nav-left #navbar, .nav-right #navbar {
+        width: 75px;
+        padding-top: 1rem;
+    }
+}
