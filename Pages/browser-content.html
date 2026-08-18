@@ -455,9 +455,9 @@
         let nextTabId = 1;
 
         let bookmarks = JSON.parse(localStorage.getItem('kstuff_bookmarks')) || [
-            { name: 'Google', url: 'https://www.google.com' },
-            { name: 'Example', url: 'https://example.com' },
-            { name: 'Wikipedia', url: 'https://www.wikipedia.org' }
+            { name: 'DuckDuckGo', url: 'https://duckduckgo.com' },
+            { name: 'now.gg', url: 'https://now.gg' },
+            { name: 'Realtime HTML', url: 'https://realtimehtml.com' }
         ];
 
         function saveBookmarks() {
@@ -657,10 +657,18 @@
                 if (iframe) {
                     iframe.onload = () => {
                         try {
-                            if (iframe.contentDocument && iframe.contentDocument.title) {
-                                tab.title = iframe.contentDocument.title;
-                                if (tabEl) {
-                                    tabEl.querySelector('.tab-title').textContent = tab.title;
+                            if (iframe.contentDocument) {
+                                if (iframe.contentDocument.title) {
+                                    tab.title = iframe.contentDocument.title;
+                                    if (tabEl) {
+                                        tabEl.querySelector('.tab-title').textContent = tab.title;
+                                    }
+                                }
+                                const iconLink = iframe.contentDocument.querySelector("link[rel*='icon']");
+                                if (iconLink && iconLink.href && tabEl) {
+                                    const faviconImg = tabEl.querySelector('.tab-favicon');
+                                    faviconImg.src = iconLink.href;
+                                    faviconImg.style.display = 'block';
                                 }
                             }
                         } catch (err) {}
@@ -750,4 +758,4 @@
         createNewTab();
     </script>
 </body>
-                                       </html>
+</html>
