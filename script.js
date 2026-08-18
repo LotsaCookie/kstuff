@@ -62,8 +62,6 @@
         loadProxyContentAsIframe('music-iframe', 'Pages/music.html');
 
         const scramTable = [
-            { url: "https://kstuff.neocities.org", img: "/kstuff.png", final: "/embed.html#" },
-            { url: "https://example-scram-backup.com", img: "/favicon.ico", final: "/embed.html#" }
         ];
 
         const staticTable = [
@@ -88,7 +86,7 @@
         ];
 
         const frogieeTable = [
-            { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "" },
+            { url: "https://frogiesarcade.win/", img: "stuff/logo.png", final: "" },
             { url: "https://example-frogiee-backup.com", img: "/favicon.ico", final: "" }
         ];
 
