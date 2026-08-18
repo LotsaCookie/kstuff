@@ -147,21 +147,30 @@ body.text-hide .nav-right #navbar {
 
 body.show-logo.nav-left #navbar, 
 body.show-logo.nav-right #navbar {
-    padding-top: 6rem;
+    padding-top: 5.5rem;
 }
 
 #nav-logo {
     position: absolute;
-    font-size: 2.2rem;
-    font-weight: 900;
+    font-size: 1.6rem;
+    font-weight: 900 !important;
     color: var(--text-color);
+    background: var(--card-bg);
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-top #nav-logo, .nav-bottom #nav-logo {
-    left: 2rem;
+    left: 1.5rem;
     top: 50%;
     transform: translateY(-50%) scale(0.5);
 }
@@ -654,4 +663,4 @@ body.show-logo.nav-right #navbar {
         width: 75px;
         padding-top: 1rem;
     }
-}
+                                      }
