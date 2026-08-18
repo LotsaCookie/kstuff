@@ -147,13 +147,13 @@ body.show-logo.nav-right #navbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.75rem 1.25rem;
+    padding: 0 1.25rem; /* Pure horizontal padding */
+    height: 52px; /* Hard height forces perfect Y-axis center */
+    width: max-content; /* Auto-widens to perfectly wrap icon + text */
+    min-width: 52px;
     cursor: pointer;
     border-radius: 12px;
     opacity: 0.6;
-    width: auto;
-    min-width: 52px;
-    height: 52px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -164,20 +164,15 @@ body.show-logo.nav-right #navbar {
 }
 
 .nav-btn span {
-    display: inline-block;
+    display: block;
     max-width: 150px;
     margin-left: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     opacity: 1;
-    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-}
-
-.nav-left .nav-btn, .nav-right .nav-btn {
-    width: calc(var(--nav-width) - 24px);
-    justify-content: center;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    font-size: 1.1rem;
+    line-height: normal;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, font-size 0.3s ease;
 }
 
 .nav-btn:hover, .nav-btn.active {
@@ -186,23 +181,16 @@ body.show-logo.nav-right #navbar {
 }
 
 .text-hide .nav-btn {
-    width: 52px;
-    min-width: 52px;
+    width: 52px; /* Squishes down to a perfect square */
     padding: 0;
-    justify-content: center;
-    align-items: center;
-    margin: 0 auto;
-}
-
-.text-hide .nav-btn i {
-    font-size: 1.6rem;
-    margin: 0;
 }
 
 .text-hide .nav-btn span {
     max-width: 0;
     margin-left: 0;
     opacity: 0;
+    font-size: 0; /* Completely removes invisible text bulk that breaks vertical centering */
+    line-height: 0; /* Ensures the span claims absolutely no Y-axis space */
     pointer-events: none;
 }
 
@@ -566,6 +554,8 @@ body.show-logo.nav-right #navbar {
     .nav-btn {
         flex-direction: column;
         padding: 0.5rem 0.4rem;
+        width: auto;
+        height: auto;
         font-size: 0.75rem;
         text-align: center;
     }
@@ -588,4 +578,4 @@ body.show-logo.nav-right #navbar {
         width: 75px;
         padding-top: 1rem;
     }
-    }
+}
