@@ -7,13 +7,13 @@
 }
 
 :root {
-    --nav-size: 70px;
-    --nav-width: 240px; 
+    --nav-size: 38.5px; /* 55% of 70px */
+    --nav-width: 132px; /* 55% of 240px */
     --transition-speed: 0.3s;
 }
 
 body.text-hide {
-    --nav-width: 80px;
+    --nav-width: 44px; /* 55% of 80px */
 }
 
 body {
@@ -113,8 +113,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: 0.28rem;
+    padding: 0.55rem;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -135,32 +135,32 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.75rem;
-    padding-top: 2rem;
+    gap: 0.4rem;
+    padding-top: 1.1rem;
 }
 
 body.text-hide .nav-left #navbar, 
 body.text-hide .nav-right #navbar {
-    gap: 0.4rem;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    gap: 0.22rem;
+    padding-left: 0.28rem;
+    padding-right: 0.28rem;
 }
 
 body.show-logo.nav-left #navbar, 
 body.show-logo.nav-right #navbar {
-    padding-top: 5.5rem;
+    padding-top: 3rem;
 }
 
 #nav-logo {
     position: absolute;
-    font-size: 1.6rem;
+    font-size: 0.9rem;
     font-weight: 900 !important;
     color: var(--text-color);
     background: var(--card-bg);
     border: 1px solid rgba(128, 128, 128, 0.3);
-    border-radius: 12px;
-    width: 46px;
-    height: 46px;
+    border-radius: 7px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -171,13 +171,13 @@ body.show-logo.nav-right #navbar {
 }
 
 .nav-top #nav-logo, .nav-bottom #nav-logo {
-    left: 1.5rem;
+    left: 0.8rem;
     top: 50%;
     transform: translateY(-50%) scale(0.5);
 }
 
 .nav-left #nav-logo, .nav-right #nav-logo {
-    top: 1.5rem;
+    top: 0.8rem;
     left: 50%;
     transform: translateX(-50%) scale(0.5);
 }
@@ -200,20 +200,20 @@ body.show-logo.nav-right #navbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1.25rem;
-    height: 52px;
-    min-height: 52px;
+    padding: 0 0.7rem;
+    height: 29px;
+    min-height: 29px;
     flex-shrink: 0; 
     width: max-content;
-    min-width: 52px;
+    min-width: 29px;
     cursor: pointer;
-    border-radius: 12px;
+    border-radius: 7px;
     opacity: 1;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-btn i {
-    font-size: 1.55rem;
+    font-size: 0.85rem;
     font-weight: 900 !important;
     flex-shrink: 0;
     filter: brightness(0.5);
@@ -222,12 +222,12 @@ body.show-logo.nav-right #navbar {
 
 .nav-btn span {
     display: block;
-    max-width: 170px;
-    margin-left: 0.85rem;
+    max-width: 93px;
+    margin-left: 0.47rem;
     white-space: nowrap;
     overflow: hidden;
     opacity: 0.6;
-    font-size: 1.2rem;
+    font-size: 0.7rem;
     font-weight: 900 !important;
     line-height: normal;
     transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, font-size 0.3s ease;
@@ -246,13 +246,13 @@ body.show-logo.nav-right #navbar {
 }
 
 .text-hide .nav-btn {
-    width: 52px;
-    height: 52px;
+    width: 29px;
+    height: 29px;
     padding: 0;
 }
 
 .text-hide .nav-btn i {
-    font-size: 1.8rem;
+    font-size: 1rem;
     margin: 0;
 }
 
@@ -641,36 +641,36 @@ body.show-logo.nav-right #navbar {
 
 @media (max-width: 768px) {
     #navbar {
-        padding: 0.5rem;
-        gap: 0.25rem;
+        padding: 0.28rem;
+        gap: 0.14rem;
     }
     
     .nav-btn {
         flex-direction: column;
-        padding: 0.5rem 0.4rem;
+        padding: 0.28rem 0.22rem;
         width: auto;
         height: auto;
         min-height: auto;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
         text-align: center;
     }
 
     .nav-btn i {
-        font-size: 1.25rem;
-        margin-bottom: 2px;
+        font-size: 0.75rem;
+        margin-bottom: 1px;
     }
 
     .nav-btn span {
         display: block;
         margin-left: 0;
-        font-size: 0.7rem;
+        font-size: 0.55rem;
         max-width: 100%;
         text-align: center;
         white-space: normal;
     }
 
     .nav-left #navbar, .nav-right #navbar {
-        width: 75px;
-        padding-top: 1rem;
+        width: 41px;
+        padding-top: 0.55rem;
     }
-    }
+}
