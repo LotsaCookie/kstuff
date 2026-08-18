@@ -121,10 +121,14 @@
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
 
-        if (savedTheme && themeSelect) {
+        if (savedTheme) {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
             body.classList.add(savedTheme);
-            themeSelect.value = savedTheme;
+            if (themeSelect) themeSelect.value = savedTheme;
+        } else {
+            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
+            body.classList.add('theme-sakura');
+            if (themeSelect) themeSelect.value = 'theme-sakura';
         }
 
         if (savedNavPos) {
