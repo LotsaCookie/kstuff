@@ -11,6 +11,7 @@
         const themeSelect = document.getElementById('theme-select');
         const navSelect = document.getElementById('nav-select');
         const textSelect = document.getElementById('text-select');
+        const sizeSelect = document.getElementById('size-select');
         const navLogo = document.getElementById('nav-logo');
         const body = document.body;
 
@@ -138,6 +139,7 @@
         const savedTheme = localStorage.getItem('kstuff_theme');
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
+        const savedNavSize = localStorage.getItem('kstuff_nav_size');
 
         if (savedTheme) {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
@@ -170,6 +172,16 @@
         } else {
             body.classList.add('text-hide');
             if (textSelect) textSelect.value = 'text-hide';
+        }
+
+        if (savedNavSize) {
+            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
+            body.classList.add(savedNavSize);
+            if (sizeSelect) sizeSelect.value = savedNavSize;
+        } else {
+            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
+            body.classList.add('size-small');
+            if (sizeSelect) sizeSelect.value = 'size-small';
         }
 
         navBtns.forEach(btn => {
@@ -221,6 +233,13 @@
                 if (e.target.value === 'text-hide') body.classList.add('text-hide');
                 else body.classList.remove('text-hide');
                 localStorage.setItem('kstuff_text_vis', e.target.value);
+            });
+        }
+        if (sizeSelect) {
+            sizeSelect.addEventListener('change', (e) => {
+                body.className = body.className.replace(/\bsize-\S+/g, '').trim();
+                body.classList.add(e.target.value);
+                localStorage.setItem('kstuff_nav_size', e.target.value);
             });
         }
 
