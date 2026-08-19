@@ -172,7 +172,7 @@
     ];
 
     // ==========================================
-    // 2. COUNTER-BASED PARALLEL RACING CACHE
+    // 2. PARALLEL RACING WITH BLOCKPAGE PROTECTION
     // ==========================================
     const workingConfigCache = new Map();
 
@@ -180,10 +180,34 @@
         return new Promise((resolve) => {
             let isDone = false;
             const img = new Image();
-            img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
-            img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
+            
+            img.onload = () => {
+                if (!isDone) {
+                    isDone = true;
+                    // Check naturalWidth to filter out school filter HTML block pages (which return 200 OK with 0 width)
+                    if (img.naturalWidth > 0) {
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                }
+            };
+            
+            img.onerror = () => { 
+                if (!isDone) { 
+                    isDone = true; 
+                    resolve(false); 
+                } 
+            };
+            
             img.src = testUrl + "?_=" + Date.now();
-            setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
+            
+            setTimeout(() => { 
+                if (!isDone) { 
+                    isDone = true; 
+                    resolve(false); 
+                } 
+            }, 3000);
         });
     }
 
