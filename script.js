@@ -87,7 +87,6 @@
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
 
-    // Updated to use /favicon.ico so the checks pass reliably across all mirrors!
     const truffledTable = [
         { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
         { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
@@ -173,34 +172,28 @@
     ];
 
     // ==========================================
-    // 2. PARALLEL RACING WITH BLOCKPAGE PROTECTION
+    // 2. PARALLEL RACING WITH FETCH NO-CORS CHECK
     // ==========================================
     const workingConfigCache = new Map();
 
-    function testImageUrl(testUrl) {
+    function testUrlConnection(testUrl) {
         return new Promise((resolve) => {
             let isDone = false;
-            const img = new Image();
             
-            img.onload = () => {
-                if (!isDone) {
-                    isDone = true;
-                    if (img.naturalWidth > 0) {
+            // Uses fetch with no-cors to prevent strict CORS blocks from false-failing the check
+            fetch(testUrl + "?_=" + Date.now(), { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
+                .then(() => {
+                    if (!isDone) {
+                        isDone = true;
                         resolve(true);
-                    } else {
+                    }
+                })
+                .catch(() => {
+                    if (!isDone) {
+                        isDone = true;
                         resolve(false);
                     }
-                }
-            };
-            
-            img.onerror = () => { 
-                if (!isDone) { 
-                    isDone = true; 
-                    resolve(false); 
-                } 
-            };
-            
-            img.src = testUrl + "?_=" + Date.now();
+                });
             
             setTimeout(() => { 
                 if (!isDone) { 
@@ -220,14 +213,14 @@
 
                 table.forEach(entry => {
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    testImageUrl(fullTestUrl).then(success => {
+                    testUrlConnection(fullTestUrl).then(success => {
                         if (success && !resolved) {
                             resolved = true;
                             resolve(entry);
                         } else {
                             remaining--;
                             if (remaining === 0 && !resolved) {
-                                resolve(table[0]); // Fallback to the first one if all fail
+                                resolve(table[1] || table[0]); // Safe fallback avoiding index 0 if it fails
                             }
                         }
                     });
