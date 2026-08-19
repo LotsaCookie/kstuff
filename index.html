@@ -12,14 +12,26 @@
     });
     </script>
     <script>
-        (function(){
+        (async function(){
+            let commitHash = 'main'; // Safe fallback
+            try {
+                const res = await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');
+                if (res.ok) {
+                    const data = await res.json();
+                    commitHash = data.sha; // Gets the unique commit hash (e.g., 'a1b2c3d...')
+                }
+            } catch (e) {
+                console.warn("API check failed, using 'main' branch fallback.");
+            }
+
             const p = [
                 "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
                 "https://raw.githack.com/lotsacookie/kstuff/main/",
-                "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
+                `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitHash}/`,
                 "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
                 ""
             ];
+
             function l(f, s) {
                 let i = 0;
                 const cacheBuster = "?i_=" + Date.now();
