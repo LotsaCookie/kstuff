@@ -86,7 +86,14 @@
 
         const truffledTable = [
             { url: "https://truffled.lol/", img: "png/logo.png", final: "" },
-            { url: "", img: "png/logo.png", final: "" }
+            { url: "https://boon.busse.li/", img: "png/logo.png", final: "" },
+            { url: "https://buff.loscantarostemuco.cl/", img: "png/logo.png", final: "" },
+            { url: "https://hibrooklyn.site/", img: "png/logo.png", final: "" },
+            { url: "https://for-ravipati03121e3.shared-with.de/", img: "png/logo.png", final: "" },
+            { url: "https://tutoring-services.org", img: "png/logo.png", final: "" },
+            { url: "https://mathteachersforhire.org", img: "png/logo.png", final: "" },
+            { url: "https://classlink.com.de", img: "png/logo.png", final: "" },
+            { url: "https://geometrycalculatorhelprvhs.college", img: "png/logo.png", final: "" }
         ];
 
         const frogieeTable = [
