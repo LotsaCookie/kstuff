@@ -172,15 +172,14 @@
     ];
 
     // ==========================================
-    // 2. PARALLEL RACING WITH FETCH NO-CORS CHECK
+    // 2. DYNAMIC AUTO-ROTATING CONNECTION CHECKER
     // ==========================================
-    const workingConfigCache = new Map();
+    const activeTableIndexes = {};
 
     function testUrlConnection(testUrl) {
         return new Promise((resolve) => {
             let isDone = false;
             
-            // Uses fetch with no-cors to prevent strict CORS blocks from false-failing the check
             fetch(testUrl + "?_=" + Date.now(), { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
                 .then(() => {
                     if (!isDone) {
@@ -204,34 +203,37 @@
         });
     }
 
-    function getWorkingConfig(table) {
-        if (!table || table.length === 0) return Promise.resolve(null);
-        if (!workingConfigCache.has(table)) {
-            const promise = new Promise((resolve) => {
-                let resolved = false;
-                let remaining = table.length;
-
-                table.forEach(entry => {
-                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    testUrlConnection(fullTestUrl).then(success => {
-                        if (success && !resolved) {
-                            resolved = true;
-                            resolve(entry);
-                        } else {
-                            remaining--;
-                            if (remaining === 0 && !resolved) {
-                                resolve(table[1] || table[0]); // Safe fallback avoiding index 0 if it fails
-                            }
-                        }
-                    });
-                });
-            });
-            workingConfigCache.set(table, promise);
+    // Automatically cycles through mirrors on demand if one drops or blocks
+    async function getWorkingConfig(table) {
+        if (!table || table.length === 0) return null;
+        
+        if (activeTableIndexes[table] === undefined) {
+            activeTableIndexes[table] = 0;
         }
-        return workingConfigCache.get(table);
+
+        let startIndex = activeTableIndexes[table];
+        let attempts = 0;
+
+        while (attempts < table.length) {
+            const entry = table[startIndex];
+            const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+            
+            const isAlive = await testUrlConnection(fullTestUrl);
+            if (isAlive) {
+                activeTableIndexes[table] = startIndex; // Lock in the healthy mirror
+                return entry;
+            }
+
+            // Move to the next mirror index seamlessly
+            startIndex = (startIndex + 1) % table.length;
+            attempts++;
+        }
+
+        // Failsafe fallback if all mirrors block
+        return table[0];
     }
 
-    // Eagerly trigger background tests instantly
+    // Eagerly trigger background tests
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
@@ -308,25 +310,26 @@
 
         async function resolveAndGetUrl(originalUrl) {
             let resolvedUrl = originalUrl;
+            
+            async function getFreshUrl(table) {
+                const w = await getWorkingConfig(table);
+                return w ? w.url + w.final : '';
+            }
+
             if (resolvedUrl.includes('${scram}')) {
-                const w = await getWorkingConfig(scramTable);
-                if (w) resolvedUrl = resolvedUrl.replace('${scram}', w.url + w.final);
+                resolvedUrl = resolvedUrl.replace('${scram}', await getFreshUrl(scramTable));
             }
             if (resolvedUrl.includes('${static}')) {
-                const w = await getWorkingConfig(staticTable);
-                if (w) resolvedUrl = resolvedUrl.replace('${static}', w.url + w.final);
+                resolvedUrl = resolvedUrl.replace('${static}', await getFreshUrl(staticTable));
             }
             if (resolvedUrl.includes('${uv}')) {
-                const w = await getWorkingConfig(uvTable);
-                if (w) resolvedUrl = resolvedUrl.replace('${uv}', w.url + w.final);
+                resolvedUrl = resolvedUrl.replace('${uv}', await getFreshUrl(uvTable));
             }
             if (resolvedUrl.includes('${truffled}')) {
-                const w = await getWorkingConfig(truffledTable);
-                if (w) resolvedUrl = resolvedUrl.replace('${truffled}', w.url + w.final);
+                resolvedUrl = resolvedUrl.replace('${truffled}', await getFreshUrl(truffledTable));
             }
             if (resolvedUrl.includes('${frogiee}')) {
-                const w = await getWorkingConfig(frogieeTable);
-                if (w) resolvedUrl = resolvedUrl.replace('${frogiee}', w.url + w.final);
+                resolvedUrl = resolvedUrl.replace('${frogiee}', await getFreshUrl(frogieeTable));
             }
             
             resolvedUrl = resolvedUrl.replace(/([^:]\/)\/+/g, '$1');
