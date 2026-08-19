@@ -172,7 +172,7 @@
     ];
 
     // ==========================================
-    // 2. TRUE-DETECTION CONNECTION CHECKER (BLOCK-PAGE PROOF)
+    // 2. TRUE-DETECTION CONNECTION CHECKER (SAFE PARALLEL)
     // ==========================================
     const activeTableIndexes = {};
 
@@ -184,7 +184,6 @@
             img.onload = () => {
                 if (!isDone) {
                     isDone = true;
-                    // If a web filter intercepts and serves HTML, naturalWidth will be 0
                     if (img.naturalWidth > 0) {
                         resolve(true);
                     } else {
@@ -218,25 +217,24 @@
             activeTableIndexes[table] = 0;
         }
 
-        let startIndex = activeTableIndexes[table];
-        let attempts = 0;
-
-        while (attempts < table.length) {
-            const entry = table[startIndex];
+        // Test all URLs in parallel simultaneously, returning null on failure (safe for all browsers)
+        const checkPromises = table.map(async (entry) => {
             const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-            
             const isAlive = await testUrlConnection(fullTestUrl);
-            if (isAlive) {
-                activeTableIndexes[table] = startIndex; 
-                return entry;
+            return isAlive ? entry : null;
+        });
+
+        try {
+            const results = await Promise.all(checkPromises);
+            const workingEntry = results.find(entry => entry !== null);
+            
+            if (workingEntry) {
+                activeTableIndexes[table] = table.indexOf(workingEntry);
+                return workingEntry;
             }
+        } catch (err) {}
 
-            startIndex = (startIndex + 1) % table.length;
-            attempts++;
-        }
-
-        // If ALL checks fail (e.g. strict CORS/network restrictions), 
-        // fall back safely to the last active index instead of hard-resetting to index 0.
+        // If ALL checks fail, fall back safely to the last active index instead of hard-resetting to index 0
         return table[activeTableIndexes[table]] || table[0];
     }
 
