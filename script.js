@@ -137,7 +137,7 @@
             { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
             { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
             { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-            { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" }
         ];
 
         const uvTable = [
@@ -246,11 +246,25 @@
             });
         }
 
-        async function getWorkingConfig(table) {
-            for (const entry of table) {
-                if (await testImageUrl(entry.url + entry.img)) return entry;
+        // Cache map to remember working configs (so we only test tables ONE time per session)
+        const workingConfigCache = new Map();
+
+        function getWorkingConfig(table) {
+            // If we've already started or finished finding the working url for this table, just return it.
+            if (!workingConfigCache.has(table)) {
+                const promise = (async () => {
+                    for (const entry of table) {
+                        // Safely combine urls ensuring exactly one slash separates them
+                        const testUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                        if (await testImageUrl(testUrl)) {
+                            return entry;
+                        }
+                    }
+                    return table[0]; // fallback
+                })();
+                workingConfigCache.set(table, promise);
             }
-            return table[0];
+            return workingConfigCache.get(table);
         }
 
         async function resolveAndGetUrl(originalUrl) {
@@ -275,7 +289,7 @@
                 const w = await getWorkingConfig(frogieeTable);
                 resolvedUrl = resolvedUrl.replace('${frogiee}', w.url + w.final);
             }
-            // Clean up any double slashes introduced by concatenation (except after protocol)
+            
             resolvedUrl = resolvedUrl.replace(/([^:]\/)\/+/g, '$1');
             return resolvedUrl;
         }
@@ -605,7 +619,6 @@
             }
         }
 
-        // Fetch and process games data, handling ${truffled} placeholder by fetching Json/truffled.json
         fetchAsset('Json/g.json').then(async data => {
             let finalGames = [];
             for (const item of data) {
@@ -614,7 +627,7 @@
                         const truffledData = await fetchAsset('Json/truffled.json');
                         if (truffledData && truffledData.games) {
                             const w = await getWorkingConfig(truffledTable);
-                            const base = (w.url + w.final).replace(/\/+$/, '');
+                            const base = (w.url).replace(/\/+$/, '');
                             for (const g of truffledData.games) {
                                 finalGames.push({
                                     title: g.name,
