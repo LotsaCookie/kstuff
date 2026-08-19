@@ -1046,14 +1046,14 @@
     "title": "GTA: Vice City",
     "description": "",
     "category": "Shooter",
-    "url": "${static}https://archive.org/web/20251218133144if_/https://cdn.dos.zone/vcsky/release/vc-sky-en-v2/index.html?lang=en",
+    "url": "${truffled}/games/vicecity/index.html",
     "image": "https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg"
   },
   {
     "title": "Gunspin",
     "description": "",
     "category": "Arcade",
-    "url": "https://19230981230981309813098123098123.104.36.84.31.nip.io/assets/allgames/gunspin-main/index.html",
+    "url": "${truffled}/games/gunspin/index.html",
     "image": "https://play-lh.googleusercontent.com/fLqvWSVq5rENEvu32xl0hf96wwSHVwQm-_9xc6KZg9Vgv9PbAtf1CyBYW7i1mlAXoSA"
   },
   {
@@ -2404,14 +2404,14 @@
     "title": "Vex",
     "description": "",
     "category": "Platformer",
-    "url": "https://script.google.com/macros/s/AKfycbxwyDsC49pauwYS59k4k10ptEAWo-6qgJf2nyvPt3i52bikDw98aFuDgvSPRWaIsnr8/exec",
+    "url": "${truffled}/games/vex/index.html",
     "image": "https://tse1.mm.bing.net/th/id/OIP.khbk4pXlQiFV87_RgBf91QAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
     "title": "Vex 2",
     "description": "",
     "category": "Platformer",
-    "url": "https://script.google.com/macros/s/AKfycbw-bG6zR30e-46eH-18-pKhu7UoYer7F-blrfWBWSd9SrSscIYAs3QNtx6BLR61hsEgEw/exec",
+    "url": "${truffled}/gamefile/vex2.html",
     "image": "https://tse1.mm.bing.net/th/id/OIP.gxBLxJBteAz4zVFEdSmQLQAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
@@ -2481,7 +2481,7 @@
     "title": "We Become What We Behold",
     "description": "",
     "category": "Puzzle",
-    "url": "https://html-classic.itch.zone/html/300364/index.html",
+    "url": "${truffled}/gamefile/wbwwb.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-we-become-what-we-behold/poki-we-become-what-we-behold-icon-filled-256.png"
   },
   {
@@ -2516,7 +2516,7 @@
     "title": "Yume Nikki",
     "description": "",
     "category": "Adventure",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/433.html",
+    "url": "${truffled}/gamefile/yume.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjRBQf6W4UyXzvn02jbTOcG6aptEr0iZE3MQ&s"
   },
   {
