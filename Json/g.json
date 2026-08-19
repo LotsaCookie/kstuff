@@ -199,13 +199,6 @@
     "title": "Balatro",
     "description": "",
     "category": "Cards",
-    "url": "https://ud-gles3games.shared-oma.k8s.n2i.io/?deeplinksApp=com.playstack.balatro.android&autofitOnConnect=false&autoUnmute=true&sendPlayerEvents=true&showMessages=false&hideUntilAppStarted=false&status=false&retryOnError=true&showReloadOnDisconnect=true",
-    "image": "https://faang-cse391-25wi-b0b5d120fce8ff214d99c92141153a1ec83cf32798b76.pages.cs.washington.edu/assets/images/balatro.jpg"
-  },
-  {
-    "title": "Balatro",
-    "description": "",
-    "category": "Cards",
     "url": "${truffled}/games/balatro/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS63YgK5AFm3MZJTuBdcYV4dx0dM9wm2_rqTw&s"
   },
