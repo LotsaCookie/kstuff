@@ -35,10 +35,24 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPtt27aNc80dh2QxgSxqQnt2L8gs20AVVxrQ&s"
   },
   {
+    "title": "30",
+    "description": "",
+    "category": "Puzzle",
+    "url": "${truffled}/games/30dolar/index.html",
+    "image": ""
+  },
+  {
     "title": "20 Minutes Till Dawn",
     "description": "",
     "category": "Action",
     "url": "${truffled}/games/20minutesbog/index.html",
+    "image": ""
+  },
+    {
+    "title": "60 Seconds, Webport",
+    "description": "",
+    "category": "Action",
+    "url": "${truffled}/games/60/index.html",
     "image": ""
   },
   {
@@ -56,10 +70,31 @@
     "image": "https://play-lh.googleusercontent.com/lvW5OtTJihsNXMEg-SwNoad5XKe955irRJ4n0jxf9BDHCosrYBJ7ES-XnR2z4GIbIr0=w240-h480-rw"
   },
   {
+    "title": "Achievement Unlocked",
+    "description": "",
+    "category": "Action",
+    "url": "${truffled}/games/achieveunlocked/index.html",
+    "image": ""
+  },
+  {
+    "title": "Achievement Unlocked 2",
+    "description": "",
+    "category": "Action",
+    "url": "${truffled}/games/achivement2/index.html",
+    "image": ""
+  },
+  {
+    "title": "Achievement Unlocked 3",
+    "description": "",
+    "category": "Action",
+    "url": "${truffled}/games/achivement3/index.html",
+    "image": ""
+  },
+  {
     "title": "AdVenture Capatalist",
     "description": "",
     "category": "Idle",
-    "url": "",
+    "url": "${truffled}/games/adventure/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.LR4KzCF5uJVoHZd2qHMJ6QAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
