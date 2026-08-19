@@ -185,14 +185,14 @@
     "title": "Bad Parenting",
     "description": "",
     "category": "Horror",
-    "url": "",
+    "url": "${truffled}/games/bad/index.html",
     "image": "https://img.tapimg.net/market/images/5d968568b46ddc878df8521d2389c02f.jpg"
   },
   {
     "title": "Bad Piggies",
     "description": "",
     "category": "Puzzle",
-    "url": "${static}https://archive.org/embed/bad-piggies-flash-2",
+    "url": "${truffled}/gamefile/piggies.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTclmySjSLNua4e0reW0mo3OIUKkIUQ2wos1Q&s"
   },
   {
@@ -283,14 +283,14 @@
     "title": "Bloons TD",
     "description": "",
     "category": "Strategy",
-    "url": "https://games.thel1ama.com/projects/bloonstd/index.html",
+    "url": "${truffled}/games/bloonstd/index.html",
     "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple/v4/99/2d/3a/992d3af1-69d0-f4ca-3e31-26b9f3dd9d00/source/512x512bb.jpg"
   },
   {
     "title": "Bloons TD 2",
     "description": "",
     "category": "Strategy",
-    "url": "https://games.thel1ama.com/projects/bloonstd2/index.html",
+    "url": "${truffled}/games/bloonstd2/index.html",
     "image": "https://th.bing.com/th/id/R.9dcd5afd5d626c8d355f6e9c1daa7f2f?rik=knr1xiHENRHsRg&riu=http%3a%2f%2f1.bp.blogspot.com%2f-ZStL5BdZmhE%2fUpDeHbNDOBI%2fAAAAAAAABRk%2fOorcv503zn0%2fs400%2fBloons%2bTD%2b2.jpeg&ehk=ZygWrc%2bXCDdXpXgKqT17teHXYvM3CIBlLQy4TAoAVs8%3d&risl=&pid=ImgRaw&r=0"
   },
   {
@@ -528,7 +528,7 @@
     "title": "Crossy Road",
     "description": "",
     "category": "Platformer",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/24.html",
+    "url": "${truffled}/gamefile/crossy.html",
     "image": "https://cdn.jim-nielsen.com/ios/512/crossy-road-endless-arcade-2014-12-02.png?rf=1024"
   },
   {
