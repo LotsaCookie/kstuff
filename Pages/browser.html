@@ -75,15 +75,28 @@ function testImageUrl(testUrl) {
     });
 }
 
-async function getWorkingConfig(table) {
-    for (const entry of table) {
-        if (await testImageUrl(entry.url + entry.img)) return entry;
-    }
-    return table[0];
+function getWorkingConfig(table) {
+    return new Promise((resolve) => {
+        let resolved = false;
+        let remaining = table.length;
+
+        table.forEach(entry => {
+            testImageUrl(entry.url + entry.img).then(success => {
+                if (success && !resolved) {
+                    resolved = true;
+                    resolve(entry);
+                } else {
+                    remaining--;
+                    if (remaining === 0 && !resolved) {
+                        resolve(table[0]); // Fallback to the first one if all fail
+                    }
+                }
+            });
+        });
+    });
 }
 
 async function resolveAndBuildUrl() {
-    const placeholderUrl = "${uv}";
     const w = await getWorkingConfig(uvTable);
     const baseUrl = w.url + w.final;
     const finalUrl = baseUrl + "https://lotsacookie.github.io/kstuff/Pages/browser-content.html";
