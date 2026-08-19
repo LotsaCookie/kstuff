@@ -395,7 +395,7 @@
     "title": "Infinite Craft",
     "description": "",
     "category": "Puzzle",
-    "url": "https://infinite-craft.org",
+    "url": "${uv}https://infinite-craft.org",
     "image": "https://play-lh.googleusercontent.com/YJFHGSmrMGuUqyWZ0oZDgDtDErIU2jQY3yT_PG9IRL6s5dBLmKXrXQShM3n8HFoPhkM=w240-h480-rw"
   },
   {
@@ -595,13 +595,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-pgLkder9WBLY5dW82cGOaBFXi4jt3t27AA&s"
   },
   {
-    "title": "NZP Team",
-    "description": "",
-    "category": "Fps",
-    "url": "https://html-classic.itch.zone/html/10457406/nzp-team.github.io-main/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl5Jruo-FnfePRqxJrKnOfbjLCkeThoY-L1Q&s"
-  },
-  {
     "title": "Boxing Random",
     "description": "",
     "category": "Multiplayer",
@@ -626,7 +619,7 @@
     "title": "Live From Bikini Bottom 2",
     "description": "",
     "category": "Adventure",
-    "url": "https://toongo.io/e/spongebob-live-from-bikini-bottom-2/index.html",
+    "url": "${uv}https://toongo.io/e/spongebob-live-from-bikini-bottom-2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnZB5RXBy4zwBWq9Iz3p5XRyDTLJZr4c0IpQ&s"
   },
   {
@@ -696,21 +689,21 @@
     "title": "Retro Games",
     "description": "",
     "category": "Arcade",
-    "url": "https://www.retrogames.onl/",
+    "url": "${uv}https://www.retrogames.onl/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEqQT_FBlpSZpmPso3SSdUS_F3ai4pPO8cEA&s"
   },
   {
     "title": "Tactical Weapon Pack",
     "description": "",
     "category": "Shooting",
-    "url": "https://games.thel1ama.com/projects/tactical-weapon-pack-2/index.html",
+    "url": "${uv}https://games.thel1ama.com/projects/tactical-weapon-pack-2/index.html",
     "image": "https://i1.sndcdn.com/artworks-gPwKoygveZBgNPYL-alnJUQ-t500x500.jpg"
   },
   {
     "title": "Stickman Golf",
     "description": "",
     "category": "Puzzle",
-    "url": "https://games.thel1ama.com/projects/stickman-golf/index.html",
+    "url": "${uv}https://games.thel1ama.com/projects/stickman-golf/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKctbsTZRhjh16iuFjKrn7rMoS-Dzcg7qoOr8nnGz9Iijbxb_aRTf5z8rg42hhj4YvuRY&usqp=CAU"
   },
   {
@@ -756,13 +749,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH--GY3wEACsRlvhlBN1ILZrt9hqxa1JfKmA&s"
   },
   {
-    "title": "Brawl Stars",
-    "description": "",
-    "category": "Multiplayer",
-    "url": "${scram}https://www.easyfun.gg/embed/brawl-stars.html?start=1",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWcObezKPZlhYm4YDR84lgjhs74zelk-fPeA&s"
-  },
-  {
     "title": "People Playground",
     "description": "",
     "category": "Simulation",
@@ -777,20 +763,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhB42QBXN3M3heY3e9oMJGMWRWMgG1VmEz9Q&s"
   },
   {
-    "title": "Ark Survival Evolved",
-    "description": "",
-    "category": "Adventure",
-    "url": "${scram}http://easyfun.gg/embed/ark-survival-evolved-cloud-online",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkr5vcePZYYjVIS1DQmHA4nbq1n62vA0BT_w&s"
-  },
-  {
-    "title": "Fallout Shelter",
-    "description": "",
-    "category": "Rpg",
-    "url": "https://loungef2x.web.app/embed.html#http://easyfun.gg/embed/fallout-shelter-cloud-online.html?start=1",
-    "image": "https://assets-prd.ignimgs.com/2022/02/16/falloutshelter-sq-1645052830357.jpg"
-  },
-  {
     "title": "Baldi's Basics",
     "description": "",
     "category": "Horror",
@@ -798,31 +770,10 @@
     "image": "https://is2-ssl.mzstatic.com/image/thumb/Purple123/v4/9a/2c/dc/9a2cdc52-a3ce-35f7-67cd-93f97546a3dd/source/512x512bb.jpg"
   },
   {
-    "title": "Solar Smash",
-    "description": "",
-    "category": "Simulation",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/118.html",
-    "image": "https://play-lh.googleusercontent.com/9oKsgghjeohO1ztpmG6SrIMAVLn8sAhwsRGKHuOaqfMghYWiFHJ1osjwf_fAaMQZA5Y"
-  },
-  {
-    "title": "Pojav Launcher",
-    "description": "",
-    "category": "Adventure",
-    "url": "${scram}http://easyfun.gg/embed/pojavlauncher-cloud-online.html?start=1",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwXU1is1-_Uym9AncXdE-bqEFts3VZfJzh-A&s"
-  },
-  {
-    "title": "Clash of Clans",
-    "description": "",
-    "category": "Action",
-    "url": "${scram}http://easyfun.gg/embed/clash-of-clans.html?start=1",
-    "image": "https://play-lh.googleusercontent.com/LByrur1mTmPeNr0ljI-uAUcct1rzmTve5Esau1SwoAzjBXQUby6uHIfHbF9TAT51mgHm"
-  },
-  {
     "title": "Karate Bros",
     "description": "",
     "category": "Multiplayer",
-    "url": "https://karatebros.io/",
+    "url": "${uv}https://karatebros.io/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoZIWSvfN6kZa5GEl5WuDsan1nk2ya-eAybg&s"
   },
   {
@@ -831,13 +782,6 @@
     "category": "Multiplayer",
     "url": "${truffled}/games/1on1soccer/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZtp5bQH1i4_x-3u2hrpFV9DBSx2GHsbx4Mg&s"
-  },
-  {
-    "title": "Stumble Guys",
-    "description": "",
-    "category": "Action",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/stumble-guys?eedaaddddaaadd",
-    "image": "https://play-lh.googleusercontent.com/1b4arZ2f3fyfZKMBpFnYIIyPRgf0pqs2jfRg_8z3sSrVa66Mr13opXH5Rq4W6HDGQJQ"
   },
   {
     "title": "Bouncy Heroes",
@@ -850,7 +794,7 @@
     "title": "Clicker Heroes",
     "description": "",
     "category": "Idle",
-    "url": "https://monkeygg2.netlify.app/games/clicker-heroes-updated/",
+    "url": "${uv}https://monkeygg2.netlify.app/games/clicker-heroes-updated/",
     "image": "https://cf.geekdo-images.com/HSUPOhNu-1EOYpyfV8cVyg__opengraph/img/IH2_qV-a_h8ihPJvVi8eGFMbPZk=/fit-in/1200x630/filters:strip_icc()/pic6978375.jpg"
   },
   {
@@ -864,15 +808,8 @@
     "title": "Plinko",
     "description": "",
     "category": "All",
-    "url": "https://plinko-web-game.netlify.app/",
+    "url": "${uv}https://plinko-web-game.netlify.app/",
     "image": "https://thvnext.bing.com/th/id/OIP.b1v3SZP7-J3RPy0tsiBtWQHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Gravity Mod",
-    "description": "",
-    "category": "Simulation",
-    "url": "https://kstuff.neocities.org/data/proxies/scramjet#embed=https://cdn.kiz10.com/upload/games/htmlgames/gravity-mod/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9b2zcwLeQDbNYIxbKNs7lrxRN5R5rvXqN6w&s"
   },
   {
     "title": "Time Shooter 1",
@@ -934,7 +871,7 @@
     "title": "Four Colors Multiplayer",
     "description": "",
     "category": "Multiplayer",
-    "url": "https://html5.gamedistribution.com/f2520bae00624e93a4f4614732fa259e",
+    "url": "${uv}https://html5.gamedistribution.com/f2520bae00624e93a4f4614732fa259e",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlYoXsLkUGZAfmYy_D0heUV7Njc0Z5-BfD8gyvLKqhzK0OC3hfnwxKmK5iwFJ_6f_hHvg&usqp=CAU"
   },
   {
@@ -978,13 +915,6 @@
     "category": "Fps",
     "url": "${truffled}/games/hl-main/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnxSCpxbn9B6cd2nDNvYJBQaT2ZDeD8ndWmQ&s"
-  },
-  {
-    "title": "Half Life 2",
-    "description": "",
-    "category": "Fps",
-    "url": "https://03210eu.imeatyourfatmotger.205.209.125.106.nip.io/games/hl2/index.html",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.Cz3WkMy7lvdrwDFuMW5qvAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "The Open House",
@@ -1039,21 +969,21 @@
     "title": "3D Bowling",
     "description": "",
     "category": "Puzzle",
-    "url": "https://3d-bowling.game-files.crazygames.com/3d-bowling/1/index.html",
+    "url": "${uv}https://3d-bowling.game-files.crazygames.com/3d-bowling/1/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPtt27aNc80dh2QxgSxqQnt2L8gs20AVVxrQ&s"
   },
   {
     "title": "Universal Paperclips",
     "description": "",
     "category": "Idle",
-    "url": "https://www.decisionproblem.com/paperclips/index2.html",
+    "url": "${uv}https://www.decisionproblem.com/paperclips/index2.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh6SA1Zbj57O73Ynwow04gRGK5BhoDVyyZ4NIbc2PEWejs8Q_d3KrMZgYL5Mw-afvSwUY&usqp=CAU"
   },
   {
     "title": "Bit Planes",
     "description": "",
     "category": "Action",
-    "url": "https://medv.io/bit-planes/",
+    "url": "${uv}https://medv.io/bit-planes/",
     "image": "https://rocketgames.imgix.net/uploads/games/b/bit-planes/bit-planes.16800f.jpg?auto=format,compress,enhance&w=314&dpr=1"
   },
   {
@@ -1074,7 +1004,7 @@
     "title": "DeadSwitch 3'",
     "description": "",
     "category": "Action",
-    "url": "https://deadswitch3.com/play",
+    "url": "${uv}https://deadswitch3.com/play",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSswsmXZOohkxoeIpq-S_XQTx_cdIOZnsfFLA&s"
   },
   {
@@ -1085,9 +1015,9 @@
     "image": "https://assets-prd.ignimgs.com/2023/10/23/amanda1-1698094066372.jpg"
   },
   {
-    "title": "Baldurs gate 2",
+    "title": "Baldurs Gate 2",
     "description": "",
-    "category": "Rpg",
+    "category": "RPG",
     "url": "${truffled}/games/baldurs-gate-2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYdelP221WauXMgvWb0QoRX9r4vW0JohaEfg&s"
   },
@@ -1108,7 +1038,7 @@
   {
     "title": "DeltaRune",
     "description": "",
-    "category": "Rpg",
+    "category": "RPG",
     "url": "${truffled}/games/deltarune/index.html",
     "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTFbJ6zpawFpZAAUO1UHfgoLBb6liCKV12_mVb4MVio7wIVeQ1k9gSemC9Ar7PYsiFtdYzf_w"
   },
@@ -1136,7 +1066,7 @@
   {
     "title": "ULTRAKILL PRELUDE",
     "description": "",
-    "category": "Fps",
+    "category": "FPS",
     "url": "https://html-classic.itch.zone/html/15139480/ultrakill/index.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.MH9mD8rBvxxUXQle0lhL8AAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
@@ -1151,7 +1081,7 @@
     "title": "Slither.io",
     "description": "",
     "category": "Multiplayer",
-    "url": "https://slither.io/",
+    "url": "${uv}https://slither.io/",
     "image": "https://tse3.mm.bing.net/th/id/OIP.v89jDtmngenHLXE7zv629AAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1179,22 +1109,8 @@
     "title": "Candy Crush",
     "description": "",
     "category": "Puzzle",
-    "url": "https://q10games.com/Candy_Crush/candy-crush/index.html",
+    "url": "${uv}https://q10games.com/Candy_Crush/candy-crush/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.wJ-5mmeqZ7Thia3KAk1m3AHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Plants Vs Zombies Heroes",
-    "description": "",
-    "category": "Action",
-    "url": "${scram}https://www.easyfun.gg/embed/plants-vs-zombies-heroes-cloud-online.html?start=1",
-    "image": "https://tse2.mm.bing.net/th/id/OIP.4f5leiNAPDayFNDE7ho2WgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Melon Sandbox",
-    "description": "",
-    "category": "Simulation",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/melon-sandbox?eadd",
-    "image": "https://tse2.mm.bing.net/th/id/OIP.SugOkLXQpKCE0dnnfsDVBwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Golf Orbit",
@@ -1207,7 +1123,7 @@
     "title": "Deer Adventure Simulator",
     "description": "",
     "category": "Adventure",
-    "url": "https://deer-adventure.1games.io/",
+    "url": "${uv}https://deer-adventure.1games.io/",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/c13ff474-1686-43f3-a537-ac6e559f4e1c/deer-simulator.png"
   },
   {
@@ -1242,7 +1158,7 @@
     "title": "Bloons TD 4",
     "description": "",
     "category": "Strategy",
-    "url": "https://www.addictinggames.com/embed/html5-games/20543",
+    "url": "${truffled}/games/btd4/index.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.CVJ-AaRA88cyf8PclFar_AAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1291,7 +1207,7 @@
     "title": "Flash Guitar Hero 2",
     "description": "",
     "category": "Rhythm",
-    "url": "https://flashguitarhero.com/play-flash-guitar-hero",
+    "url": "${uv}https://flashguitarhero.com/play-flash-guitar-hero",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQA8Nz4RLOsP-d4kO1YFizrlBA1ut3_tXjkw&s"
   },
   {
@@ -1305,7 +1221,7 @@
     "title": "FNF Mods",
     "description": "",
     "category": "Rhythm",
-    "url": "https://fnfmods.io/",
+    "url": "${uv}https://fnfmods.io/",
     "image": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/89/1b/a8/891ba835-8776-e249-c1fe-f3b5e199f54f/artwork.jpg/1200x1200bf-60.jpg"
   },
   {
@@ -1319,7 +1235,7 @@
     "title": "Godzilla Daikaiju Battle Royale",
     "description": "",
     "category": "Action",
-    "url": "https://play.quotesgames.com/03/Godzilla-Daikaiju/",
+    "url": "${uv}https://play.quotesgames.com/03/Godzilla-Daikaiju/",
     "image": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/47264ce6-f9be-440a-8fe5-de7b40f003e7/dfrjt84-1b05b4ec-e705-4219-a4b5-b3f4214ad8c8.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiO1t7InBhdGgiOiJcL2ZcLzQ3MjY0Y2U2LWY5YmUtNDQwYS04ZmU1LWRlN2I0MGYwMDNlN1wvZGZyanQ4NC0xYjA1YjRlYy1lNzA1LTQyMTktYTRiNS1iM2Y0MjE0YWQ4YzgucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.DnGXH_ptbgbSyqD4psRr4oKVnbDWUoBAMMpJxgmoBDs"
   },
   {
@@ -1333,7 +1249,7 @@
     "title": "Jelly Car Worlds",
     "description": "",
     "category": "Arcade",
-    "url": "https://www.coolmathgames.com/0-jellycar-worlds/play",
+    "url": "${uv}https://www.coolmathgames.com/0-jellycar-worlds/play",
     "image": "https://tse1.mm.bing.net/th/id/OIP.Cvdkjc_tszeupxYDzlkt6wHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1382,7 +1298,7 @@
     "title": "Hollow Knight",
     "description": "",
     "category": "Adventure",
-    "url": "https://truffled.lol/games/hk/index.html",
+    "url": "${truffled}/games/hk/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRys8QTIG00GRlxNz42yo8CpswiMM9rELCQkg&s"
   },
   {
@@ -1403,14 +1319,14 @@
     "title": "Bendy And The Ink Machine",
     "description": "",
     "category": "Horror",
-    "url": "${truffled}/games/BATIM/BATIM/index.html",
+    "url": "${truffled}/games/bendy/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1wjFuS4ZWhKwCZYYoT0_BBqwLx2xs6ZS3q2uFvAF3aumfcJMO6BBLoHgHzTkU-tCArJfIuyLQa5VTYgMRZxHVwQjjV4IDw35B2Xtylw"
   },
   {
     "title": "Infinite Wordle",
     "description": "",
     "category": "Puzzle",
-    "url": "https://gregcameron.com/infinite-wordle/",
+    "url": "${uv}https://gregcameron.com/infinite-wordle/",
     "image": "https://wordle-nyt.org/upload/cache/upload/imgs/infinite-wordle-game-m270x290.webp"
   },
   {
@@ -1433,13 +1349,6 @@
     "category": "Fps",
     "url": "https://shellshock.io",
     "image": "https://www.kizgame.com/thumbs/shell-shockers_small.webp"
-  },
-  {
-    "title": "Wrestle Bros",
-    "description": "",
-    "category": "Adventure",
-    "url": "https://kstuffhost.neocities.org/selfhosted/wrestlebros",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRohVdiEVDYy6BiVk8G-_KtqrjBqbRyPJ8sbA&s"
   },
   {
     "title": "Football Bros",
@@ -1529,7 +1438,7 @@
     "title": "Drift Boss",
     "description": "",
     "category": "Driving",
-    "url": "https://swordslasher.com/games/drift-boss2/",
+    "url": "${uv}https://swordslasher.com/games/drift-boss2/",
     "image": "https://tse3.mm.bing.net/th/id/OIP.3YI1VVsAQSv9M3YReZjvpgHaHa?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
