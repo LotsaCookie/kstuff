@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Mobile AI Chat</title>
     <style>
         :root {
-            --bg-color: rgba(18, 18, 18, 0.1);
-            --chat-bg: rgba(30, 30, 30, 0.1);
-            --sidebar-bg: rgba(24, 24, 24, 0.1);
+            --bg-color: rgba(0, 0, 0, 0.08);
+            --chat-bg: rgba(0, 0, 0, 0.08);
+            --sidebar-bg: rgba(0, 0, 0, 0.08);
             --text-color: #e3e3e3;
-            --user-bubble: rgba(43, 43, 43, 0.1);
-            --ai-bubble: rgba(37, 37, 37, 0.1);
+            --user-bubble: rgba(0, 0, 0, 0.08);
+            --ai-bubble: rgba(0, 0, 0, 0.08);
             --accent-color: #a8c7fa;
-            --input-bg: rgba(42, 42, 42, 0.1);
-            --hover-color: rgba(51, 51, 51, 0.1);
-            --danger-color: rgba(242, 139, 130, 0.1);
-            --danger-text: #2b2b2b;
+            --input-bg: rgba(0, 0, 0, 0.08);
+            --hover-color: rgba(0, 0, 0, 0.08);
+            --danger-color: rgba(255, 100, 100, 0.2);
+            --danger-text: #ff8b8b;
         }
 
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-color);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--text-color);
             margin: 0;
             display: flex;
@@ -30,7 +31,7 @@
 
         #sidebar {
             width: 280px;
-            background-color: var(--sidebar-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
@@ -61,7 +62,7 @@
         }
 
         #new-chat-btn {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--text-color);
             border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 10px 12px;
@@ -95,16 +96,16 @@
             align-items: center;
             font-size: 0.9rem;
             color: var(--text-color);
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.08);
             transition: background 0.2s;
         }
 
         .chat-item:hover {
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .chat-item.active {
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
             border-left: 4px solid var(--accent-color);
         }
 
@@ -128,7 +129,7 @@
         }
 
         .action-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #9aa0a6;
             cursor: pointer;
@@ -142,7 +143,7 @@
 
         .action-btn:hover {
             color: var(--text-color);
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         #main-content {
@@ -151,11 +152,11 @@
             flex-direction: column;
             height: 100vh;
             width: 100%;
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         header {
-            background-color: var(--sidebar-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             padding: 12px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
@@ -171,7 +172,7 @@
         }
 
         #menu-toggle {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-color);
             cursor: pointer;
@@ -184,11 +185,11 @@
         }
 
         #menu-toggle:hover {
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         #model-picker-btn {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--text-color);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 14px;
@@ -208,8 +209,6 @@
 
         #status-text {
             display: none;
-            font-size: 0.85rem;
-            color: #9aa0a6;
         }
 
         #chat-container {
@@ -219,7 +218,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .message {
@@ -229,20 +228,29 @@
             line-height: 1.5;
             word-wrap: break-word;
             font-size: 0.95rem;
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .user-message {
-            background-color: var(--user-bubble);
+            background-color: rgba(0, 0, 0, 0.08);
             align-self: flex-end;
             border-bottom-right-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .ai-message {
-            background-color: var(--ai-bubble);
+            background-color: rgba(0, 0, 0, 0.08);
             align-self: flex-start;
             border-bottom-left-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .error-message {
+            background-color: rgba(255, 0, 0, 0.15);
+            color: #ff8b8b;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            font-family: monospace;
+            font-size: 0.85rem;
         }
 
         .message-img {
@@ -255,13 +263,13 @@
         #attachment-preview {
             display: none;
             padding: 8px 15px 0 15px;
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             gap: 8px;
             align-items: center;
         }
 
         .preview-chip {
-            background-color: var(--input-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 6px 12px;
             border-radius: 12px;
@@ -279,7 +287,7 @@
         }
 
         .remove-attachment {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             border: none;
             color: #9aa0a6;
             cursor: pointer;
@@ -287,11 +295,11 @@
         }
 
         .remove-attachment:hover {
-            color: var(--danger-color);
+            color: var(--danger-text);
         }
 
         #input-container {
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             padding: 15px 20px;
             display: flex;
             gap: 10px;
@@ -300,7 +308,7 @@
         }
 
         #attach-btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-color);
             cursor: pointer;
@@ -313,7 +321,7 @@
         }
 
         #attach-btn:hover:not(:disabled) {
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--accent-color);
         }
 
@@ -324,7 +332,7 @@
 
         textarea {
             flex: 1;
-            background-color: var(--input-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--text-color);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
@@ -339,9 +347,9 @@
         textarea:focus { border-color: var(--accent-color); }
 
         button#send-btn {
-            background-color: var(--accent-color);
-            color: #000;
-            border: none;
+            background-color: rgba(0, 0, 0, 0.08);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 10px 20px;
             border-radius: 20px;
             font-weight: bold;
@@ -358,9 +366,9 @@
         .spinner {
             width: 14px;
             height: 14px;
-            border: 2px solid rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
-            border-top-color: #000;
+            border-top-color: #fff;
             animation: spin 0.8s linear infinite;
         }
 
@@ -371,8 +379,9 @@
         #overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             display: none;
             z-index: 999;
         }
@@ -381,8 +390,9 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(4px);
+            background: rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -395,7 +405,7 @@
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
         .modal-box {
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 18px;
             padding: 24px;
@@ -410,7 +420,7 @@
         .modal-box h3 { margin: 0; font-size: 1.1rem; font-weight: 600; }
         .modal-box p { margin: 0; font-size: 0.95rem; color: #9aa0a6; line-height: 1.4; }
         .modal-box input {
-            background-color: var(--input-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-color);
             border-radius: 10px;
@@ -431,7 +441,7 @@
             padding: 8px 16px;
             border-radius: 14px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.08);
             color: var(--text-color);
             font-weight: 600;
             font-size: 0.9rem;
@@ -439,16 +449,16 @@
             transition: opacity 0.2s;
         }
         .modal-btn:hover { opacity: 0.85; }
-        .modal-btn.primary { background-color: var(--accent-color); color: #000; border: none; }
-        .modal-btn.secondary { background-color: var(--input-bg); }
-        .modal-btn.danger { background-color: var(--danger-color); color: var(--danger-text); border: none; }
+        .modal-btn.primary { background-color: rgba(0, 0, 0, 0.08); }
+        .modal-btn.secondary { background-color: rgba(0, 0, 0, 0.08); }
+        .modal-btn.danger { background-color: var(--danger-color); color: var(--danger-text); border-color: rgba(255, 100, 100, 0.3); }
 
         #model-modal-box {
             max-width: 440px;
             max-height: 80vh;
             display: flex;
             flex-direction: column;
-            background-color: var(--chat-bg);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .model-list-container {
@@ -456,7 +466,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 55vh;
+            max-height: 50vh;
             padding-right: 4px;
         }
 
@@ -470,7 +480,7 @@
         }
 
         .model-option-card {
-            background-color: var(--input-bg);
+            background-color: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px 14px;
             border-radius: 12px;
@@ -483,12 +493,12 @@
 
         .model-option-card:hover {
             border-color: var(--accent-color);
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .model-option-card.selected {
             border-color: var(--accent-color);
-            background-color: var(--hover-color);
+            background-color: rgba(0, 0, 0, 0.08);
         }
 
         .model-card-header {
@@ -507,7 +517,7 @@
             font-size: 0.75rem;
             padding: 2px 8px;
             border-radius: 8px;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--accent-color);
             font-weight: 500;
@@ -549,7 +559,8 @@
             <h3>Select AI Model</h3>
             <p style="margin: 0;">Choose a model to load locally into your browser:</p>
             <div class="model-list-container" id="model-list-container"></div>
-            <div class="modal-buttons">
+            <div class="modal-buttons" style="justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px; margin-top: 4px;">
+                <button id="clear-cache-btn" class="modal-btn danger">Clear Model Cache</button>
                 <button id="model-modal-close" class="modal-btn secondary">Close</button>
             </div>
         </div>
@@ -566,7 +577,7 @@
                     </svg>
                 </button>
                 <button id="model-picker-btn">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                     <span id="current-model-label">Select Model</span>
                 </button>
             </div>
@@ -574,7 +585,7 @@
         </header>
 
         <div id="chat-container">
-            <div class="message ai-message">Hello, how may I assist you?</div>
+            <!-- Messages render here -->
         </div>
 
         <div id="attachment-preview"></div>
@@ -596,47 +607,6 @@
 
     <script type="module">
         import * as webllm from "https://esm.run/@mlc-ai/web-llm";
-
-        // Comprehensive pool of public free CORS proxies table
-        const CORS_PROXIES = [
-            (url) => url,                                                               // 1. Direct Connection
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,                 // 2. Corsproxy.io
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,    // 3. AllOrigins Raw
-            (url) => `https://thingproxy.freeboard.io/fetch/${url}`,                     // 4. ThingProxy
-            (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, // 5. CodeTabs Proxy
-            (url) => `https://proxy.cors.sh/${url}`,                                     // 6. CORS.sh Proxy
-            (url) => `https://cors.x2u.in/?${encodeURIComponent(url)}`,                  // 7. CORS x2u
-            (url) => `https://corsfix.com/?${encodeURIComponent(url)}`                   // 8. Corsfix
-        ];
-
-        // Override fetch to automatically rotate through CORS proxies in the background until one works
-        const originalFetch = window.fetch;
-        window.fetch = async function(resource, init) {
-            let url = typeof resource === 'string' ? resource : resource.url;
-            
-            // Skip data/blob URLs or internal requests
-            if (!url || !url.startsWith('http://') && !url.startsWith('https://')) {
-                return originalFetch(resource, init);
-            }
-            if (url.startsWith('data:') || url.startsWith('blob:') || url.includes(window.location.host)) {
-                return originalFetch(resource, init);
-            }
-
-            let lastError;
-            for (const proxyFn of CORS_PROXIES) {
-                try {
-                    const targetUrl = proxyFn(url);
-                    const response = await originalFetch(targetUrl, init);
-                    if (response.ok || response.type === 'opaque') {
-                        return response;
-                    }
-                    lastError = new Error(`HTTP error! status: ${response.status}`);
-                } catch (err) {
-                    lastError = err;
-                }
-            }
-            throw lastError || new Error('All CORS proxies failed to fetch: ' + url);
-        };
 
         const GREETING_TEXT = "Hello, how may I assist you?";
         
@@ -663,6 +633,7 @@
         const modelModalOverlay = document.getElementById('model-modal-overlay');
         const modelModalClose = document.getElementById('model-modal-close');
         const modelListContainer = document.getElementById('model-list-container');
+        const clearCacheBtn = document.getElementById('clear-cache-btn');
 
         let isModelReady = false;
 
@@ -681,6 +652,248 @@
 
         const ICON_EDIT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
         const ICON_DELETE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+        // === UI & STATE MANAGEMENT ===
+
+        function saveChats() {
+            localStorage.setItem('ai_chats', JSON.stringify(chats));
+            if (currentChatId) {
+                localStorage.setItem('ai_current_chat_id', currentChatId);
+            } else {
+                localStorage.removeItem('ai_current_chat_id');
+            }
+        }
+
+        function renderChatList() {
+            chatListEl.innerHTML = '';
+            chats.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span class="chat-title">${chat.title}</span>
+                    <div class="chat-actions">
+                        <button class="action-btn edit-btn" title="Rename">${ICON_EDIT}</button>
+                        <button class="action-btn delete-btn" title="Delete">${ICON_DELETE}</button>
+                    </div>
+                `;
+                
+                // Rename Chat
+                item.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showModal({
+                        title: 'Rename Chat',
+                        showInput: true,
+                        defaultValue: chat.title,
+                        confirmText: 'Save',
+                        onConfirm: (newTitle) => {
+                            if (newTitle && newTitle.trim()) {
+                                chat.title = newTitle.trim();
+                                saveChats();
+                                renderChatList();
+                            }
+                        }
+                    });
+                });
+
+                // Delete Chat
+                item.querySelector('.delete-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showModal({
+                        title: 'Delete Chat',
+                        message: 'Are you sure you want to delete this chat?',
+                        confirmText: 'Delete',
+                        isDanger: true,
+                        onConfirm: () => {
+                            chats = chats.filter(c => c.id !== chat.id);
+                            if (currentChatId === chat.id) {
+                                currentChatId = chats.length ? chats[0].id : null;
+                                if (currentChatId) loadChat(currentChatId);
+                                else createNewChat();
+                            }
+                            saveChats();
+                            renderChatList();
+                        }
+                    });
+                });
+
+                // Load Chat
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) toggleSidebar();
+                    loadChat(chat.id);
+                });
+
+                chatListEl.appendChild(item);
+            });
+        }
+
+        function createNewChat() {
+            currentChatId = Date.now().toString();
+            chats.unshift({ id: currentChatId, title: 'New Chat', messages: [] });
+            saveChats();
+            renderChatList();
+            loadChat(currentChatId);
+        }
+
+        function loadChat(id) {
+            currentChatId = id;
+            saveChats();
+            renderChatList();
+            chatContainer.innerHTML = '';
+            
+            const chat = chats.find(c => c.id === id);
+            if (!chat || chat.messages.length === 0) {
+                addMessageToUI('ai', GREETING_TEXT);
+                return;
+            }
+
+            chat.messages.forEach(msg => {
+                let contentText = "";
+                let imgUrl = null;
+
+                if (typeof msg.content === 'string') {
+                    contentText = msg.content;
+                } else if (Array.isArray(msg.content)) {
+                    const textPart = msg.content.find(p => p.type === 'text');
+                    const imgPart = msg.content.find(p => p.type === 'image_url');
+                    if (textPart) contentText = textPart.text;
+                    if (imgPart) imgUrl = imgPart.image_url.url;
+                }
+                addMessageToUI(msg.role === 'user' ? 'user' : 'ai', contentText, imgUrl);
+            });
+            scrollToBottom();
+        }
+
+        function addMessageToUI(role, text, imageUrl = null, isError = false) {
+            const msgDiv = document.createElement('div');
+            let className = role === 'user' ? 'user-message' : 'ai-message';
+            if (isError) className += ' error-message';
+            
+            msgDiv.className = `message ${className}`;
+            
+            let html = '';
+            if (imageUrl) {
+                html += `<img src="${imageUrl}" class="message-img" />`;
+            }
+            
+            const formattedText = text
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') 
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
+                .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px;">$1</code>')
+                .replace(/\n/g, '<br>');
+                
+            html += `<div>${formattedText}</div>`;
+            msgDiv.innerHTML = html;
+            chatContainer.appendChild(msgDiv);
+            scrollToBottom();
+            return msgDiv; 
+        }
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // === CHAT SEND & RECEIVE LOGIC ===
+        
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if ((!text && !attachedFile) || !isModelReady) return;
+
+            if (!currentChatId || !chats.find(c => c.id === currentChatId)) {
+                createNewChat();
+            }
+
+            const chat = chats.find(c => c.id === currentChatId);
+            
+            let messageContent;
+            let uiImageUrl = null;
+
+            if (attachedFile) {
+                if (attachedFile.type === 'image') {
+                    messageContent = [
+                        { type: "text", text: text || "Describe this image." },
+                        { type: "image_url", image_url: { url: attachedFile.dataUrl } }
+                    ];
+                    uiImageUrl = attachedFile.dataUrl;
+                } else if (attachedFile.type === 'text') {
+                    const combinedText = `Attached File (${attachedFile.name}):\n\`\`\`\n${attachedFile.content}\n\`\`\`\n\nUser Input: ${text}`;
+                    messageContent = combinedText;
+                }
+            } else {
+                messageContent = text;
+            }
+
+            addMessageToUI('user', text, uiImageUrl);
+            chat.messages.push({ role: 'user', content: messageContent });
+            
+            if (chat.title === 'New Chat' && text) {
+                chat.title = text.substring(0, 30) + (text.length > 30 ? '...' : '');
+                renderChatList();
+            }
+            saveChats();
+
+            userInput.value = '';
+            userInput.style.height = '24px';
+            clearAttachment();
+            
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            attachBtn.disabled = true;
+            sendBtn.innerHTML = `<div class="spinner"></div><span>Thinking</span>`;
+
+            try {
+                const messagesForEngine = [
+                    { role: "system", content: "You are a helpful AI assistant." },
+                    ...chat.messages.map(m => ({
+                        role: m.role,
+                        content: m.content
+                    }))
+                ];
+
+                const asyncChunkGenerator = await engine.chat.completions.create({
+                    messages: messagesForEngine,
+                    stream: true,
+                    temperature: 0.7
+                });
+
+                const aiMsgBubble = addMessageToUI('ai', '');
+                let aiFullResponse = "";
+
+                for await (const chunk of asyncChunkGenerator) {
+                    const delta = chunk.choices[0]?.delta?.content || "";
+                    aiFullResponse += delta;
+                    
+                    const formattedDelta = aiFullResponse
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
+                        .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px;">$1</code>')
+                        .replace(/\n/g, '<br>');
+                        
+                    aiMsgBubble.innerHTML = `<div>${formattedDelta}</div>`;
+                    scrollToBottom();
+                }
+
+                chat.messages.push({ role: 'assistant', content: aiFullResponse });
+                saveChats();
+
+            } catch (error) {
+                console.error("Inference Error:", error);
+                const errorText = error.message || String(error);
+                addMessageToUI('ai', `**Inference Error:**<br>${errorText}<br><br>*Tip: If this says 'Out of Memory', try switching to a smaller model in the top menu or starting a new chat.*`, null, true);
+                
+                chat.messages.pop();
+                saveChats();
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = "<span>Send</span>";
+                updateAttachmentSupport(selectedModel);
+                userInput.focus();
+            }
+        }
+
+        // === MODALS & ATTACHMENT LOGIC ===
 
         function renderModelModalOptions() {
             modelListContainer.innerHTML = '';
@@ -736,6 +949,49 @@
         modelModalClose.addEventListener('click', closeModelModal);
         modelModalOverlay.addEventListener('click', (e) => {
             if (e.target === modelModalOverlay) closeModelModal();
+        });
+
+        // === CLEAR AI MODEL CACHE ONLY ===
+        clearCacheBtn.addEventListener('click', () => {
+            closeModelModal();
+            showModal({
+                title: 'Clear AI Model Cache',
+                message: 'This will purge all downloaded WebLLM AI model weights from your device memory. Your chat history will not be deleted.',
+                confirmText: 'Clear Model Cache',
+                isDanger: true,
+                onConfirm: async () => {
+                    statusText.innerText = "Clearing model cache...";
+                    try {
+                        // WebLLM native clear cache
+                        if (webllm.clearModelCache) {
+                            await webllm.clearModelCache();
+                        } else {
+                            // Manual fallback purge for WebLLM cache stores
+                            const cacheNames = await caches.keys();
+                            for (const name of cacheNames) {
+                                if (name.includes('webllm') || name.includes('mlc') || name.includes('wasm')) {
+                                    await caches.delete(name);
+                                }
+                            }
+                        }
+                        showModal({
+                            title: 'Cache Cleared',
+                            message: 'Model cache purged successfully. Re-select a model to download fresh weights.',
+                            confirmText: 'OK',
+                            showCancel: false,
+                            onConfirm: () => { window.location.reload(); }
+                        });
+                    } catch (err) {
+                        console.error("Cache Clear Error:", err);
+                        showModal({
+                            title: 'Error',
+                            message: 'Failed to clear model cache: ' + err.message,
+                            confirmText: 'OK',
+                            showCancel: false
+                        });
+                    }
+                }
+            });
         });
 
         function updateHeaderModelLabel(modelId) {
@@ -859,6 +1115,8 @@
         menuToggle.addEventListener('click', toggleSidebar);
         overlay.addEventListener('click', toggleSidebar);
 
+        // === WEBLLM INITIALIZATION ===
+
         async function initModel(modelId) {
             isModelReady = false;
             userInput.disabled = true;
@@ -890,241 +1148,39 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            initChats();
-            updateHeaderModelLabel(selectedModel);
-            await initModel(selectedModel);
-        });
+        // === APP START ===
 
-        function initChats() {
-            if (chats.length === 0) {
-                createNewChat(false);
-            } else {
-                if (!currentChatId || !chats.some(c => c.id === currentChatId)) {
+        window.addEventListener('DOMContentLoaded', async () => {
+            renderChatList();
+            if (chats.length > 0) {
+                if (!currentChatId || !chats.find(c => c.id === currentChatId)) {
                     currentChatId = chats[0].id;
                 }
-                loadChatIntoView(currentChatId);
+                loadChat(currentChatId);
+            } else {
+                addMessageToUI('ai', GREETING_TEXT);
             }
-            renderChatList();
-        }
 
-        function createNewChat(switchTo = true) {
-            const newChat = {
-                id: 'chat_' + Date.now(),
-                title: 'New Chat',
-                messages: [{ role: "assistant", content: GREETING_TEXT }]
-            };
-            chats.unshift(newChat);
-            saveChatsToStorage();
-
-            if (switchTo) {
-                currentChatId = newChat.id;
-                loadChatIntoView(currentChatId);
-                if (window.innerWidth <= 768) toggleSidebar();
-            }
-            renderChatList();
-        }
-
-        function saveChatsToStorage() {
-            localStorage.setItem('ai_chats', JSON.stringify(chats));
-            localStorage.setItem('ai_current_chat_id', currentChatId);
-        }
-
-        function loadChatIntoView(chatId) {
-            currentChatId = chatId;
-            saveChatsToStorage();
-            chatContainer.innerHTML = '';
+            sendBtn.addEventListener('click', sendMessage);
             
-            const chat = chats.find(c => c.id === chatId);
-            if (chat) {
-                chat.messages.forEach(msg => {
-                    appendMessageUI(msg.content, msg.role === 'user' ? 'user-message' : 'ai-message', msg.image);
-                });
-            }
-            renderChatList();
-        }
-
-        function renderChatList() {
-            chatListEl.innerHTML = '';
-            chats.forEach(chat => {
-                const item = document.createElement('div');
-                item.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-                
-                const titleSpan = document.createElement('span');
-                titleSpan.className = 'chat-title';
-                titleSpan.innerText = chat.title;
-                titleSpan.addEventListener('click', () => {
-                    loadChatIntoView(chat.id);
-                    if (window.innerWidth <= 768) toggleSidebar();
-                });
-
-                const actions = document.createElement('div');
-                actions.className = 'chat-actions';
-
-                const renameBtn = document.createElement('button');
-                renameBtn.className = 'action-btn';
-                renameBtn.innerHTML = ICON_EDIT;
-                renameBtn.title = 'Rename chat';
-                renameBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showModal({
-                        title: 'Rename Chat',
-                        showInput: true,
-                        defaultValue: chat.title,
-                        confirmText: 'Save',
-                        onConfirm: (newTitle) => {
-                            if (newTitle && newTitle.trim()) {
-                                chat.title = newTitle.trim();
-                                saveChatsToStorage();
-                                renderChatList();
-                            }
-                        }
-                    });
-                });
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'action-btn';
-                deleteBtn.innerHTML = ICON_DELETE;
-                deleteBtn.title = 'Delete chat';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (chats.length === 1) {
-                        showModal({
-                            title: 'Cannot Delete',
-                            message: 'You must keep at least one active chat session.',
-                            confirmText: 'OK',
-                            showCancel: false
-                        });
-                        return;
-                    }
-
-                    showModal({
-                        title: 'Delete Chat',
-                        message: `Are you sure you want to delete "${chat.title}"?`,
-                        confirmText: 'Delete',
-                        isDanger: true,
-                        onConfirm: () => {
-                            chats = chats.filter(c => c.id !== chat.id);
-                            if (currentChatId === chat.id) {
-                                currentChatId = chats[0].id;
-                                loadChatIntoView(currentChatId);
-                            } else {
-                                saveChatsToStorage();
-                                renderChatList();
-                            }
-                        }
-                    });
-                });
-
-                actions.appendChild(renameBtn);
-                actions.appendChild(deleteBtn);
-                item.appendChild(titleSpan);
-                item.appendChild(actions);
-                chatListEl.appendChild(item);
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
             });
-        }
-
-        newChatBtn.addEventListener('click', () => createNewChat(true));
-
-        async function sendMessage() {
-            if (!isModelReady) return;
-            let text = userInput.value.trim();
-            const hasAttachment = attachedFile !== null;
-            if (!text && !hasAttachment) return;
-
-            if (hasAttachment && attachedFile.type === 'text') {
-                text = `[Attached Document: ${attachedFile.name}]\n\`\`\`\n${attachedFile.content}\n\`\`\`\n\n${text}`;
-            }
-
-            const imagePayload = (hasAttachment && attachedFile.type === 'image') ? attachedFile.dataUrl : null;
-
-            appendMessageUI(text, 'user-message', imagePayload);
-            userInput.value = '';
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-            if (!attachBtn.disabled) attachBtn.disabled = true;
-
-            const currentChat = chats.find(c => c.id === currentChatId);
-            if (currentChat) {
-                let userMessageContent = text;
-                if (imagePayload && selectedModel.toLowerCase().includes('vision')) {
-                    userMessageContent = [
-                        { type: "text", text: text || "Describe this image." },
-                        { type: "image_url", image_url: { url: imagePayload } }
-                    ];
-                }
-
-                currentChat.messages.push({ role: "user", content: userMessageContent, image: imagePayload });
-                if (currentChat.title === 'New Chat') {
-                    currentChat.title = text.length > 25 ? text.substring(0, 25) + '...' : text;
-                }
-                saveChatsToStorage();
-                renderChatList();
-            }
-
-            clearAttachment();
-            const aiBubble = appendMessageUI("Thinking...", 'ai-message');
-
-            try {
-                let currentReply = "";
-                const completion = await engine.chat.completions.create({
-                    messages: currentChat.messages,
-                    stream: true
-                });
-
-                for await (const chunk of completion) {
-                    const delta = chunk.choices[0]?.delta?.content || "";
-                    currentReply += delta;
-                    aiBubble.innerText = currentReply;
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }
-
-                currentChat.messages.push({ role: "assistant", content: currentReply });
-                saveChatsToStorage();
-
-            } catch (e) {
-                aiBubble.innerText = "Error producing a response locally.";
-                console.error(e);
-            } finally {
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-                updateAttachmentSupport(selectedModel);
-                userInput.focus();
-            }
-        }
-
-        function appendMessageUI(text, className, imageSrc = null) {
-            const el = document.createElement('div');
-            el.className = `message ${className}`;
             
-            if (imageSrc) {
-                const img = document.createElement('img');
-                img.src = imageSrc;
-                img.className = 'message-img';
-                el.appendChild(img);
-            }
+            userInput.addEventListener('input', function() {
+                this.style.height = '24px';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
 
-            let displayString = text;
-            if (Array.isArray(text)) {
-                const textObj = text.find(t => t.type === 'text');
-                displayString = textObj ? textObj.text : "";
-            }
+            newChatBtn.addEventListener('click', () => {
+                if (window.innerWidth <= 768) toggleSidebar();
+                createNewChat();
+            });
 
-            const textSpan = document.createElement('div');
-            textSpan.innerText = displayString;
-            el.appendChild(textSpan);
-
-            chatContainer.appendChild(el);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return el;
-        }
-
-        sendBtn.addEventListener('click', sendMessage);
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+            await initModel(selectedModel);
         });
     </script>
 </body>
