@@ -10,14 +10,14 @@
     "title": "10 Minutes Till Dawn",
     "description": "",
     "category": "Action",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/430.html",
+    "url": "",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqM9W7wg_x9UhungjXwrpdufMgdQ3FBIYSLg7YYW3Oh-Czol-S_iEPe87dr_WeAzDY9ZE&usqp=CAU"
   },
   {
     "title": "1v1.LOL",
     "description": "",
     "category": "Action",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/58.html",
+    "url": "",
     "image": "https://img.utdstc.com/icon/983/22a/98322a3b2be892eed31589906ffd949b68bcccc9a21ba562987965b5ec6bc6de:200"
   },
   {
@@ -59,7 +59,7 @@
     "title": "Age Of Conflict",
     "description": "",
     "category": "Simulation",
-    "url": "https://monkeygg2.netlify.app/games/ages-of-conflict/",
+    "url": "${uv}https://monkeygg2.netlify.app/games/ages-of-conflict/",
     "image": "https://img.itch.zone/aW1nLzk4MzM5ODkucG5n/original/cwAxxR.png"
   },
   {
@@ -68,13 +68,6 @@
     "category": "Horror",
     "url": "${truffled}/games/amanda-the-adventurer/index.html",
     "image": "https://assets-prd.ignimgs.com/2023/10/23/amanda1-1698094066372.jpg"
-  },
-  {
-    "title": "Among Us",
-    "description": "",
-    "category": "Multiplayer",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/among-us?Asddadsasdddd",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRhB42QBXN3M3heY3e9oMJGMWRWMgG1VmEz9Q&s"
   },
   {
     "title": "Angry Birds",
@@ -87,7 +80,7 @@
     "title": "Animation Throwdown",
     "description": "",
     "category": "Cards",
-    "url": "https://www.kongregate.com/en/games/throwdown/animation-throwdown",
+    "url": "${uv}https://www.kongregate.com/en/games/throwdown/animation-throwdown",
     "image": "https://tse3.mm.bing.net/th/id/OIP.C0tn1PKzcJGyFEJ7fRZAlwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -108,7 +101,7 @@
     "title": "ArmedForces.IO",
     "description": "",
     "category": "Shooter",
-    "url": "https://unblocked-games.s3.amazonaws.com/games/2021/unity3/armedforces-io/index.html",
+    "url": "${uv}https://unblocked-games.s3.amazonaws.com/games/2021/unity3/armedforces-io/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ931GCtIBiWcI53KOhLlmfIinkJbdkBOl3tg&s"
   },
   {
@@ -122,14 +115,14 @@
     "title": "Awesome Tank 2",
     "description": "",
     "category": "Action",
-    "url": "https://www.coolmathgames.com/0-awesome-tanks-2/play",
+    "url": "${uv}https://www.coolmathgames.com/0-awesome-tanks-2/play",
     "image": "https://tse2.mm.bing.net/th/id/OIP.yu4XM-c-b-5K6PmaCnwrCgAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Awesome Tanks",
     "description": "",
     "category": "Action",
-    "url": "https://www.coolmathgames.com/0-awesome-tanks/play",
+    "url": "${uv}https://www.coolmathgames.com/0-awesome-tanks/play",
     "image": "https://tse3.mm.bing.net/th/id/OIP.kdSY13tRZS3SYcallcNvuQAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -143,7 +136,7 @@
     "title": "Bad Parenting",
     "description": "",
     "category": "Horror",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/166.html",
+    "url": "",
     "image": "https://img.tapimg.net/market/images/5d968568b46ddc878df8521d2389c02f.jpg"
   },
   {
@@ -273,27 +266,6 @@
     "image": "https://assets1.ignimgs.com/2017/05/05/bloons-td-5-1494021512734.jpg"
   },
   {
-    "title": "Bloons TD 6",
-    "description": "",
-    "category": "Strategy",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/bloons-td6?add",
-    "image": "https://m.media-amazon.com/images/I/71BaHwbnrpL.png"
-  },
-  {
-    "title": "Bloons TD Battles 2",
-    "description": "",
-    "category": "Strategy",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/bloons-td-battles-2",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFAOLJ_BDMnPmOUArTzrVyBQpMK3kPp3C3PJAuUlG-Pn0Tj3kkn6lkHawyAFVLztutDQ4&usqp=CAU"
-  },
-  {
-    "title": "bloxd",
-    "description": "",
-    "category": "Rpg",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/bloxd.io",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIQ_xMCcJ-xtUQBjHZcAC8thLIaTDU69SH0g&s"
-  },
-  {
     "title": "Bloxors",
     "description": "",
     "category": "Adventure",
@@ -359,7 +331,7 @@
   {
     "title": "Brutal Strike",
     "description": "",
-    "category": "Fps",
+    "category": "FPS",
     "url": "https://html-classic.itch.zone/html/2332072/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbGG892QmZgFU-sL7Nd3WFBh2J8gP2gi93Vg&s"
   },
@@ -434,13 +406,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH--GY3wEACsRlvhlBN1ILZrt9hqxa1JfKmA&s"
   },
   {
-    "title": "City Smash 2",
-    "description": "",
-    "category": "Simulation",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/city-smash-2",
-    "image": "https://play-lh.googleusercontent.com/3yLmiB1OspFF9WciSuqkJik8vUCLidI49xu3lGDHauaDGwrWrA_lkLNrt7DZaC87Q3oe"
-  },
-  {
     "title": "Clash Ball",
     "description": "",
     "category": "Action",
@@ -490,13 +455,6 @@
     "image": "https://www.hoodamath.com/large/coreball_300x225.jpg"
   },
   {
-    "title": "Counter Strike 1.6",
-    "description": "",
-    "category": "Shooting",
-    "url": "https://kstuff.neocities.org/data/proxies/scramjet.html#embed=https://play-cs.com/en/",
-    "image": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/a4efa9ec-7cdb-464d-8182-c354344eef2a/dbpjpqu-76f7e125-e8cb-47aa-b48c-92f0a335dd95.png/v1/fill/w_512,h_512,q_80,strp/counter_strike_1_6_hq_icon_by_fabritor100_dbpjpqu-fullview.jpg"
-  },
-  {
     "title": "Crazy Cattle 3D",
     "description": "",
     "category": "Action",
@@ -521,13 +479,6 @@
     "title": "Crossy Road",
     "description": "",
     "category": "Platformer",
-    "url": "https://19230981230981309813098123098123.104.36.84.31.nip.io/assets/allgames/crossy/",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.98qPlieALzytgJJ9IgHstgAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Crossy Road",
-    "description": "",
-    "category": "Platformer",
     "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/24.html",
     "image": "https://cdn.jim-nielsen.com/ios/512/crossy-road-endless-arcade-2014-12-02.png?rf=1024"
   },
@@ -535,7 +486,7 @@
     "title": "Crusher Clicker",
     "description": "",
     "category": "Idle",
-    "url": "https://crusher-clicker.game-files.crazygames.com/crusher-clicker/5/index.html",
+    "url": "${uv}https://crusher-clicker.game-files.crazygames.com/crusher-clicker/5/index.html",
     "image": "https://www.kizgame.com/thumbs/crusher-clicker_small.webp"
   },
   {
@@ -556,7 +507,7 @@
     "title": "Cut The Rope",
     "description": "",
     "category": "Puzzle",
-    "url": "https://swordslasher.com/games/ctr/",
+    "url": "${uv}https://swordslasher.com/games/ctr/",
     "image": "https://img.utdstc.com/icon/4da/1bd/4da1bd68bf9e86fd35c877e52ce6d4ffdd3e26dd16e17085be8d6d0b4eee23f5:200"
   },
   {
@@ -630,13 +581,6 @@
     "image": "https://i.ytimg.com/vi/sQn0TuhbZtg/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGGUgQShbMA8=&rs=AOn4CLBKFh47St76A6WUWEh11t0xMkfOzg"
   },
   {
-    "title": "Dmod",
-    "description": "",
-    "category": "Simulation",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/dmod",
-    "image": "https://play-lh.googleusercontent.com/54MFhZ7KGtKWZQaulMZrfL2xtTBObxr28veyHFX0onkhOQ6Xeb_iDXEAYl3zIYa6l18"
-  },
-  {
     "title": "Doge Miner",
     "description": "",
     "category": "Idle",
@@ -647,7 +591,7 @@
     "title": "Doki Doki Literature Club!",
     "description": "",
     "category": "Category",
-    "url": "https://html5.gamenora.com/Doki%20Doki%20Literature%20Club!/?v=20250717135234",
+    "url": "${uv}https://html5.gamenora.com/Doki%20Doki%20Literature%20Club!/?v=20250717135234",
     "image": "https://upload.wikimedia.org/wikipedia/en/7/7c/Doki_Doki_Literature_Club_Cover.jpg"
   },
   {
@@ -668,7 +612,7 @@
     "title": "Drift Hunters",
     "description": "",
     "category": "Driving",
-    "url": "https://drift-hunters.io/game/drift-hunters/",
+    "url": "${uv}https://drift-hunters.io/game/drift-hunters/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzXAsHGMgY86yJR_xgQkNIOaStkpNgY0jIRw&s"
   },
   {
@@ -759,7 +703,7 @@
     "title": "Fireboy and Watergirl 5",
     "description": "",
     "category": "Platformer",
-    "url": "https://html5.gamedistribution.com/a55c9cc9c21e4fc683c8c6857f3d0c75/?gd_sdk_referrer_url=https%3A%2F%2Fwww.fireboynwatergirl.com%2F%3Fp%3Dgame",
+    "url": "${uv}https://html5.gamedistribution.com/a55c9cc9c21e4fc683c8c6857f3d0c75/?gd_sdk_referrer_url=https%3A%2F%2Fwww.fireboynwatergirl.com%2F%3Fp%3Dgame",
     "image": "https://tse1.mm.bing.net/th/id/OIP.0qvVVhMNFfCeTaE291Y3-wAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
