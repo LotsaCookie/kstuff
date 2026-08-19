@@ -172,27 +172,35 @@
     ];
 
     // ==========================================
-    // 2. DYNAMIC AUTO-ROTATING CONNECTION CHECKER
+    // 2. TRUE-DETECTION CONNECTION CHECKER (BLOCK-PAGE PROOF)
     // ==========================================
     const activeTableIndexes = {};
 
     function testUrlConnection(testUrl) {
         return new Promise((resolve) => {
             let isDone = false;
+            const img = new Image();
             
-            fetch(testUrl + "?_=" + Date.now(), { method: 'HEAD', mode: 'no-cors', cache: 'no-store' })
-                .then(() => {
-                    if (!isDone) {
-                        isDone = true;
+            img.onload = () => {
+                if (!isDone) {
+                    isDone = true;
+                    // If a web filter intercepts and serves HTML, naturalWidth will be 0
+                    if (img.naturalWidth > 0) {
                         resolve(true);
-                    }
-                })
-                .catch(() => {
-                    if (!isDone) {
-                        isDone = true;
+                    } else {
                         resolve(false);
                     }
-                });
+                }
+            };
+            
+            img.onerror = () => {
+                if (!isDone) {
+                    isDone = true;
+                    resolve(false);
+                }
+            };
+            
+            img.src = testUrl + (testUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
             
             setTimeout(() => { 
                 if (!isDone) { 
@@ -203,7 +211,6 @@
         });
     }
 
-    // Automatically cycles through mirrors on demand if one drops or blocks
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
         
@@ -220,20 +227,17 @@
             
             const isAlive = await testUrlConnection(fullTestUrl);
             if (isAlive) {
-                activeTableIndexes[table] = startIndex; // Lock in the healthy mirror
+                activeTableIndexes[table] = startIndex; 
                 return entry;
             }
 
-            // Move to the next mirror index seamlessly
             startIndex = (startIndex + 1) % table.length;
             attempts++;
         }
 
-        // Failsafe fallback if all mirrors block
         return table[0];
     }
 
-    // Eagerly trigger background tests
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
