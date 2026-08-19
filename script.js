@@ -1,7 +1,4 @@
 (function initApp() {
-    // ==========================================
-    // 1. DEFINE TABLES AT THE VERY START
-    // ==========================================
     const scramTable = []; 
     
     const staticTable = [
@@ -171,9 +168,6 @@
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
 
-    // ==========================================
-    // 2. BACKGROUND CACHING LOGIC
-    // ==========================================
     const workingConfigCache = new Map();
 
     function testImageUrl(testUrl) {
@@ -204,14 +198,10 @@
         return workingConfigCache.get(table);
     }
 
-    // Eager load all tables instantly in the background
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
 
-    // ==========================================
-    // 3. MAIN APP LOGIC
-    // ==========================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runLogic);
     } else {
@@ -306,7 +296,7 @@
             return resolvedUrl;
         }
 
-        // --- Theme and Settings Management ---
+        // --- Theme and Settings ---
         const savedTheme = localStorage.getItem('kstuff_theme');
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
@@ -634,7 +624,7 @@
             }
         }
 
-        // --- Fixed Truffled & Game Data Loader ---
+        
         Promise.all([
             fetchAsset('Json/g.json'),
             fetchAsset('Json/truffled.json').catch(() => null),
