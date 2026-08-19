@@ -87,16 +87,17 @@
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
 
+    // Updated to use /favicon.ico so the checks pass reliably across all mirrors!
     const truffledTable = [
-        { url: "https://truffled.lol/", img: "png/logo.png", final: "" },
-        { url: "https://boon.busse.li/", img: "png/logo.png", final: "" },
-        { url: "https://buff.loscantarostemuco.cl/", img: "png/logo.png", final: "" },
-        { url: "https://hibrooklyn.site/", img: "png/logo.png", final: "" },
-        { url: "https://for-ravipati03121e3.shared-with.de/", img: "png/logo.png", final: "" },
-        { url: "https://tutoring-services.org", img: "png/logo.png", final: "" },
-        { url: "https://mathteachersforhire.org", img: "png/logo.png", final: "" },
-        { url: "https://classlink.com.de", img: "png/logo.png", final: "" },
-        { url: "https://geometrycalculatorhelprvhs.college", img: "png/logo.png", final: "" }
+        { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
+        { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
+        { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
+        { url: "https://hibrooklyn.site/", img: "/favicon.ico", final: "" },
+        { url: "https://for-ravipati03121e3.shared-with.de/", img: "/favicon.ico", final: "" },
+        { url: "https://tutoring-services.org", img: "/favicon.ico", final: "" },
+        { url: "https://mathteachersforhire.org", img: "/favicon.ico", final: "" },
+        { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
+        { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
 
     const frogieeTable = [
@@ -184,7 +185,6 @@
             img.onload = () => {
                 if (!isDone) {
                     isDone = true;
-                    // Check naturalWidth to filter out school filter HTML block pages (which return 200 OK with 0 width)
                     if (img.naturalWidth > 0) {
                         resolve(true);
                     } else {
