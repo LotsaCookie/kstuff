@@ -543,16 +543,18 @@ body.text-hide .nav-right .nav-divider {
 
 .item-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 1.5rem;
     justify-items: center;
+    width: 100%;
 }
 
 .round-btn {
     display: block;
     width: 100%;
-    max-width: 280px; 
-    height: 180px;
+    max-width: 100%; 
+    aspect-ratio: 1 / 1;
+    height: auto;
     border-radius: 16px;
     background-size: cover;
     background-position: center;
@@ -580,7 +582,7 @@ body.text-hide .nav-right .nav-divider {
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 1.5rem;
+    padding: 1rem;
     opacity: 0;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
@@ -595,14 +597,14 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .overlay h3 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 900 !important;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .overlay p {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     font-weight: bold;
     opacity: 0.95;
     margin: 0;
