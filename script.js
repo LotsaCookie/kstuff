@@ -1,4 +1,7 @@
 (function initApp() {
+    // ==========================================
+    // 1. DEFINE TABLES AT THE VERY START
+    // ==========================================
     const scramTable = []; 
     
     const staticTable = [
@@ -168,6 +171,9 @@
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
 
+    // ==========================================
+    // 2. PARALLEL RACING CACHING LOGIC
+    // ==========================================
     const workingConfigCache = new Map();
 
     function testImageUrl(testUrl) {
@@ -185,23 +191,35 @@
         if (!table || table.length === 0) return Promise.resolve(null);
         if (!workingConfigCache.has(table)) {
             const promise = (async () => {
-                for (const entry of table) {
+                // Map every single entry to a simultaneous promise check
+                const checkPromises = table.map(async (entry) => {
                     const testUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    if (await testImageUrl(testUrl)) {
-                        return entry;
-                    }
+                    const isWorking = await testImageUrl(testUrl);
+                    if (isWorking) return entry;
+                    throw new Error("Blocked or failed");
+                });
+
+                try {
+                    // Promise.any races them all concurrently and picks the FIRST successful one!
+                    return await Promise.any(checkPromises);
+                } catch (err) {
+                    // If all of them fail, fallback to the first entry
+                    return table[0];
                 }
-                return table[0]; // fallback
             })();
             workingConfigCache.set(table, promise);
         }
         return workingConfigCache.get(table);
     }
 
+    // Eagerly trigger background tests instantly
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
 
+    // ==========================================
+    // 3. MAIN APP LOGIC
+    // ==========================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runLogic);
     } else {
@@ -296,7 +314,7 @@
             return resolvedUrl;
         }
 
-        // --- Theme and Settings ---
+        // --- Theme and Settings Management ---
         const savedTheme = localStorage.getItem('kstuff_theme');
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
@@ -624,7 +642,7 @@
             }
         }
 
-        
+        // --- Truffled & Game Data Loader ---
         Promise.all([
             fetchAsset('Json/g.json'),
             fetchAsset('Json/truffled.json').catch(() => null),
