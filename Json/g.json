@@ -48,7 +48,7 @@
     "url": "${truffled}/games/20minutesbog/index.html",
     "image": ""
   },
-    {
+  {
     "title": "60 Seconds, Webport",
     "description": "",
     "category": "Action",
@@ -402,14 +402,14 @@
     "title": "Burrito Bison",
     "description": "",
     "category": "Action",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/78.html",
+    "url": "${truffled}/games/burrito/index.html",
     "image": "https://cdn6.aptoide.com/imgs/f/9/1/f912df6d248f0ab44ee96e2f3116b8a9_icon.png"
   },
   {
     "title": "Call of Duty Mobile",
     "description": "",
     "category": "Shooter",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/call-of-duty-mobile",
+    "url": "${truffled}https://nowgg.fun/apps/a/10008/b.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6bLdvmPT61m3iBTbHbSEBElVARRxtUECwBA&s"
   },
   {
@@ -549,28 +549,28 @@
     "title": "Cut The Rope",
     "description": "",
     "category": "Puzzle",
-    "url": "${uv}https://swordslasher.com/games/ctr/",
+    "url": "${truffled}/gamefile/cut.html",
     "image": "https://img.utdstc.com/icon/4da/1bd/4da1bd68bf9e86fd35c877e52ce6d4ffdd3e26dd16e17085be8d6d0b4eee23f5:200"
   },
   {
     "title": "Dadish",
     "description": "",
     "category": "Platformer",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/357.html",
+    "url": "${truffled}/gamefile/dadish.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.kbn-RmUAvVyt1ytXJtu2_AHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Dadish 2",
     "description": "",
     "category": "Platformer",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/355.html",
+    "url": "${truffled}/gamefile/dadish2.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.LLifMHF-MvvHmiDNJZa_ngHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Dadish 3",
     "description": "",
     "category": "Platformer",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/356.html",
+    "url": "${truffled}/gamefile/dadish3.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.zAGBvxFv4YRUtwWg2nvSLwHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -591,7 +591,7 @@
     "title": "Death Run 3D",
     "description": "",
     "category": "Platformer",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/211.html",
+    "url": "${truffled}/games/death-run-3d/index.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.LgHHwU8cHS6wJOADKi85jQHaGq?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -626,7 +626,7 @@
     "title": "Doge Miner",
     "description": "",
     "category": "Idle",
-    "url": "${truffled}/gamefile/Doge%20Miner.html",
+    "url": "${truffled}/gamefile/Doge Miner.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGntHHqFclT8bV5iA4tLmY8jjX19KZMxvhhw&s"
   },
   {
@@ -647,7 +647,7 @@
     "title": "Drift Boss",
     "description": "",
     "category": "Driving",
-    "url": "${uv}https://swordslasher.com/games/drift-boss2/",
+    "url": "${truffled}/games/drift-boss/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.3YI1VVsAQSv9M3YReZjvpgHaHa?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -661,7 +661,7 @@
     "title": "Drive Mad",
     "description": "",
     "category": "Driving",
-    "url": "https://datacrafted.org/gamefiles/drivemad/",
+    "url": "${truffled}/games/drive-mad/index.html",
     "image": "https://play-lh.googleusercontent.com/zGApa4C91zfSXuPMVHvBzzgVLhs_ABHv9fybDQ2m86QmArR3sejpOoRjBMq4ZNZrhg"
   },
   {
@@ -717,28 +717,28 @@
     "title": "Fireboy and Watergirl",
     "description": "",
     "category": "Platformer",
-    "url": "${truffled}/games/watergirl-1/play/",
+    "url": "${truffled}/games/watergirl-1/index.html",
     "image": "https://th.bing.com/th/id/R.06ba3c94b714554a8922254b078705a1?rik=8oWl66sOeNsNiQ&riu=http%3a%2f%2fwww.y9gamer.com%2ffiles%2fimages%2f00%2f007f7f81fda753de6f682a4f5c4046df.jpg&ehk=fAAlEfOO%2bFvlu%2fQ6ko3K8TInJh6BkKcRLT4Hak3CZ3w%3d&risl=&pid=ImgRaw&r=0"
   },
   {
     "title": "Fireboy and Watergirl 2",
     "description": "",
     "category": "Platformer",
-    "url": "${truffled}/games/watergirl-2/play/",
+    "url": "${truffled}/games/watergirl-2/index.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-fireboy-and-watergirl-2/poki-fireboy-and-watergirl-2-icon-filled-256.png?v=1674453358090"
   },
   {
     "title": "Fireboy and Watergirl 3",
     "description": "",
     "category": "Platformer",
-    "url": "${truffled}/games/watergirl-3/play/",
+    "url": "${truffled}/games/watergirl-3/index.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-fireboy-and-watergirl-3/poki-fireboy-and-watergirl-3-icon-filled-256.png?v=1714778367359"
   },
   {
     "title": "Fireboy and Watergirl 4",
     "description": "",
     "category": "Platformer",
-    "url": "${truffled}/games/watergirl-4/play/",
+    "url": "${truffled}/games/watergirl-4/index.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.TOE6-sKhVAI9xBDZPckKCwAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -857,7 +857,7 @@
     "title": "Fortnite",
     "description": "",
     "category": "Cloud",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Fortnite",
+    "url": "${truffled}https://nowgg.fun/apps/aptoide/5874/aptoide.html?deep_link=aptoidesearch://com.epicgames.fortnite",
     "image": "https://tse1.mm.bing.net/th/id/OIP.S2-lsDvutqW8AKTqBYbwOAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -885,7 +885,7 @@
     "title": "Fruit Ninja",
     "description": "",
     "category": "Action",
-    "url": "https://games.poki.com/458768/8b32c0f4-2dcb-4fdd-bf8b-16df63b01532?tag=pg-f890988ff709c814d06334e07a3bb94b12fc1618&site_id=3&iso_lang=en&country=FR&poki_url=https://poki.com/en/g/fruit-ninja&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n",
+    "url": "${truffled}/games/fruitninja/index.html",
     "image": "https://cdn.jim-nielsen.com/ios/1024/fruit-ninja-2020-08-31.png"
   },
   {
@@ -913,7 +913,7 @@
     "title": "Gacha Life",
     "description": "",
     "category": "Rpg",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/gacha-life",
+    "url": "${truffled}/gamefile/life.html",
     "image": "https://play-lh.googleusercontent.com/Yma8Znj3IENI76qh6VC2cFgzoUwFdt4c2xXMYfK2VUaRZArjqsicFj4zCpUIZRwbdJ_b"
   },
   {
@@ -1011,21 +1011,21 @@
     "title": "Granny",
     "description": "",
     "category": "Horror",
-    "url": "${truffled}/games/granny/index.html",
+    "url": "${truffled}/gamefile/granny.html",
     "image": "https://play-lh.googleusercontent.com/yT_LBq_tyKeIDohKDsqN_Qt18jGIPUYIxY2C-1-E2YA9Qd60uZW08pua17qBmIiDPA"
   },
   {
     "title": "Granny 2",
     "description": "",
     "category": "Horror",
-    "url": "${truffled}/gamefile/Granny%202.html",
+    "url": "${truffled}/gamefile/Granny 2.html",
     "image": "https://assets-prd.ignimgs.com/2025/07/23/untitled-1-1753293223681.png"
   },
   {
     "title": "Granny 3",
     "description": "",
     "category": "Horror",
-    "url": "${truffled}/gamefile/Granny%203.html",
+    "url": "${truffled}/games/granny3/index.html",
     "image": "https://play-lh.googleusercontent.com/QvKhAg9SyqVZ24DdjJCkuwPVpO4kz7cdbNO3bUxGALrlaeVTxJLLL9zHyaFq-NJ6eLg7"
   },
   {
@@ -1256,7 +1256,7 @@
     "title": "Learn to Fly",
     "description": "",
     "category": "Strategy",
-    "url": "${frogiee}stuff/selfhosted/flash/game/learn-to-fly.html",
+    "url": "${truffled}/games/learntofly/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_lUVoJ2I2ufCyp78V48Fqy7eK5HA5qCMqg&s"
   },
   {
@@ -1305,7 +1305,7 @@
     "title": "Little Big Planet",
     "description": "",
     "category": "Multiplayer",
-    "url": "${uv}https://www.92.38.177.16.nip.io/assets/storage/emulator/psp/lbp/",
+    "url": "${truffled}/games/lbp/index.html",
     "image": "https://www.92.38.177.16.nip.io/assets/img/lbp.webp"
   },
   {
@@ -1361,7 +1361,7 @@
     "title": "Minecraft",
     "description": "",
     "category": "Adventure",
-    "url": "${uv}https://avacaine.github.io/",
+    "url": "${truffled}/games/wispcraft/eag.html",
     "image": "https://images.dwncdn.net/images/t_app-icon-l/p/b276c62c-96bf-11e6-ad7b-00163ec9f5fa/2418235042/minecraft-logo"
   },
   {
@@ -1445,7 +1445,7 @@
     "title": "N-Gon",
     "description": "",
     "category": "Platformer",
-    "url": "https://n-gon-enhanced.vercel.app/",
+    "url": "${truffled}/games/n-gon/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.OZiB83fgWXpCjKpIl3W6gQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1536,7 +1536,7 @@
     "title": "Pacman",
     "description": "",
     "category": "Arcade",
-    "url": "${static}https://archive.org/embed/pacman_swf",
+    "url": "${truffled}/games/pacman/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqBsd5KR0IgKULgvVX5TruqpG_gZjT2SLPGg&s"
   },
   {
@@ -1683,7 +1683,7 @@
     "title": "Plants Vs Zombies",
     "description": "",
     "category": "Adventure",
-    "url": "${static}https://kstuff.nekoweb.org/pages/host/ngg/plants-vs-zombies",
+    "url": "${truffled}/gamefile/pvs.html",
     "image": "https://play-lh.googleusercontent.com/hO7716hh7NCcFauJedDclX-R3Zh9JmbSs8AUU6TP2edGVILlZM7gmyt_8WPCZELiPQA"
   },
   {
@@ -1760,7 +1760,7 @@
     "title": "Poppy Playtime",
     "description": "",
     "category": "Horror",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/poppy-playtime",
+    "url": "${truffled}https://nowgg.fun/apps/a/1293/b.html",
     "image": "https://play-lh.googleusercontent.com/LmZuGeTmqAA3BTvSHvS7HSFOUfpajbknRhELZmoCHllZ27QZlhyPjD9urOrZwZAFM-A"
   },
   {
@@ -1837,7 +1837,7 @@
     "title": "Retro Bowl",
     "description": "",
     "category": "Action",
-    "url": "${truffled}/games/retro-bowl/",
+    "url": "${truffled}/games/retro-bowl/index.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.73dFbFUHUVU9rpmvuoW9LAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1907,7 +1907,7 @@
     "title": "Roblox",
     "description": "",
     "category": "Cloud",
-    "url": "${uv}https://nowgg.fun/apps/a/19900/b.html",
+    "url": "${truffled}https://nowgg.fun/apps/a/19900/b.html",
     "image": "https://cdn2.lnk.bi/profilepics/-1490686_20230215851.png"
   },
   {
@@ -2040,7 +2040,7 @@
     "title": "Smash Karts",
     "description": "",
     "category": "Racing",
-    "url": "https://webgltest-17af1.firebaseapp.com/",
+    "url": "${truffled}/games/smashkarts/index.html",
     "image": "https://play-lh.googleusercontent.com/cM1CXOuBIy0kjGfoCTOKNa812iuVX6X2DDop8xNH4mNyjuM-oj3wVqZ7wiAOizq_TA"
   },
   {
@@ -2054,7 +2054,7 @@
     "title": "Soccer Random",
     "description": "",
     "category": "Multiplayer",
-    "url": "https://cool-mud-8966.voucanfalcon.workers.dev/BrunysIXLWork/storage/load/soccerrandom/index",
+    "url": "${truffled}/games/soccer-random/index.html",
     "image": "https://play-lh.googleusercontent.com/XZfa8mGq1h2tdcH6cygo74c64nsxBoswzz1OQq5kUFW3uUZUf1rlqTg9UQgoEZ4qjQ=w526-h296-rw"
   },
   {
@@ -2131,7 +2131,7 @@
     "title": "Speed Stars",
     "description": "",
     "category": "Racing",
-    "url": "${uv}https://speedstars2.io/game/speed-stars/",
+    "url": "${truffled}/games/speed-stars/index.html",
     "image": "https://play-lh.googleusercontent.com/AIdar8HSSXg0NQ6BUR1mVt-uOudupELbjPkU_cgwo_7fP0tKT0R49dfFltYj-43u6A"
   },
   {
@@ -2250,7 +2250,7 @@
     "title": "Tanuki Sunset",
     "description": "",
     "category": "Racing",
-    "url": "${frogiee}stuff/selfhosted/tanuki-sunset/",
+    "url": "${truffled}/games/tanukisunset/index.html",
     "image": "https://19230981230981309813098123098123.104.36.84.31.nip.io/images/games/tanukisunset-min.png"
   },
   {
@@ -2278,7 +2278,7 @@
     "title": "Tetris",
     "description": "",
     "category": "Puzzle",
-    "url": "https://www.mathster.com/games/tetris/",
+    "url": "${truffled}/games/tetris/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjeVktZO974LWS4OT8ol_qw354N4_v0r_iOg&s"
   },
   {
@@ -2313,7 +2313,7 @@
     "title": "There is no game",
     "description": "",
     "category": "Puzzle",
-    "url": "https://game258367.konggames.com/gamez/0025/8367/live/index.html?kongregate_game_version=1458928619\\u0026kongregate_host=www.kongregate.com",
+    "url": "${truffled}/games/there-is-no-game/index.html",
     "image": "https://m.media-amazon.com/images/M/MV5BYTMzZWE2MWYtYjA4ZS00NDgyLThjYzItMTdmODhjMTk5MWU4XkEyXkFqcGc@._V1_.jpg"
   },
   {
@@ -2327,21 +2327,21 @@
     "title": "Time Shooter 1",
     "description": "",
     "category": "Shooting",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/199.html",
+    "url": "${truffled}/gamefile/time1.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSd_ao9IYz_ZCkqsqS5ZkguefeNtXAwDciwQA&s"
   },
   {
     "title": "Time Shooter 2",
     "description": "",
     "category": "Shooting",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/200.html",
+    "url": "${truffled}/games/timeshooter2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz3Kn6LEyj4PU5ZICXnAjoxmtxl3-iJE8ZrQ&s"
   },
   {
     "title": "Time Shooter 3",
     "description": "",
     "category": "Shooting",
-    "url": "https://timeshooter3.netlify.app/",
+    "url": "${truffled}/games/timeshoot3/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHd_igTSoTD7UfrkSYRiERYZU6dtBwVpP7rQ&s"
   },
   {
@@ -2474,7 +2474,7 @@
     "title": "Volley Random",
     "description": "",
     "category": "Multiplayer",
-    "url": "${truffled}/games/volley-random/",
+    "url": "${truffled}/games/volley-random/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-pgLkder9WBLY5dW82cGOaBFXi4jt3t27AA&s"
   },
   {
@@ -2523,7 +2523,7 @@
     "title": "Zombs Royale",
     "description": "",
     "category": "Shooting",
-    "url": "${uv}https://zombsroyale.io/",
+    "url": "${truffled}https://zombsroyale.io/",
     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQnRj24uLRA4ApOvfefBOiJHf9riMTsdMdVQ1iX5DwYTFYLHNV8ChrpbGkrqrv0He3O6nOs"
   }
-]
+    ]
