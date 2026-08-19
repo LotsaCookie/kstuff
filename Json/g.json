@@ -371,25 +371,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxDd9JNo6lF_D7C5O8ayNlhPGcUjtI6tx0aA&s"
   },
   {
-    "title": "Brutal Strike",
-    "description": "",
-    "category": "FPS",
-    "url": "https://html-classic.itch.zone/html/2332072/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbGG892QmZgFU-sL7Nd3WFBh2J8gP2gi93Vg&s"
-  },
-  {
     "title": "Buckshot Roulette",
     "description": "",
     "category": "Horror",
     "url": "${truffled}/games/buckshot/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCH1_KX9ZsQU6F9mmaF8hP2lVd-oE6BjFujw&s"
-  },
-  {
-    "title": "BuildNow.GG",
-    "description": "",
-    "category": "Shooting",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/581.html",
-    "image": "https://play-lh.googleusercontent.com/MdtXwEOt43tY6GV3-IHAwhdmoW-jY4B1rqvA0m1Yj89Bj4et8FfWGL3cCt_lkDvWbWk"
   },
   {
     "title": "Burger and Frights",
@@ -409,7 +395,7 @@
     "title": "Call of Duty Mobile",
     "description": "",
     "category": "Shooter",
-    "url": "${truffled}https://nowgg.fun/apps/a/10008/b.html",
+    "url": "${static}https://nowgg.fun/apps/a/10008/b.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6bLdvmPT61m3iBTbHbSEBElVARRxtUECwBA&s"
   },
   {
@@ -423,7 +409,7 @@
     "title": "Capybara Clicker",
     "description": "",
     "category": "Idle",
-    "url": "https://games.crazygames.com/en_US/capybara-clicker/index.html",
+    "url": "${uv}https://games.crazygames.com/en_US/capybara-clicker/index.html",
     "image": "https://play-lh.googleusercontent.com/qPhicF9zFY_Ya0xQm9RsTcCIKnjTb2gW5lAvzow6WgiodIOBMKyeAHaS4bh2WZN9BCU"
   },
   {
@@ -432,13 +418,6 @@
     "category": "Platformer",
     "url": "${truffled}/games/celeste/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlC55oke5bjGPN9_zlHxN-Rarl8nL5ygOEDQ&amp;s"
-  },
-  {
-    "title": "Cheese Chompers 3D",
-    "description": "",
-    "category": "Action",
-    "url": "https://stunning-horse-53afa7.netlify.app/",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnxSCpxbn9B6cd2nDNvYJBQaT2ZDeD8ndWmQ&s"
   },
   {
     "title": "Chicken CS",
@@ -472,7 +451,7 @@
     "title": "Clicker Heroes",
     "description": "",
     "category": "Idle",
-    "url": "${uv}https://monkeygg2.netlify.app/games/clicker-heroes-updated/",
+    "url": "",
     "image": "https://cf.geekdo-images.com/HSUPOhNu-1EOYpyfV8cVyg__opengraph/img/IH2_qV-a_h8ihPJvVi8eGFMbPZk=/fit-in/1200x630/filters:strip_icc()/pic6978375.jpg"
   },
   {
@@ -493,7 +472,7 @@
     "title": "Core Ball",
     "description": "",
     "category": "Puzzle",
-    "url": "https://monkeygg2.netlify.app/games/core-ball/",
+    "url": "",
     "image": "https://www.hoodamath.com/large/coreball_300x225.jpg"
   },
   {
@@ -577,7 +556,7 @@
     "title": "Deadshot.io",
     "description": "",
     "category": "Strategy",
-    "url": "${uv}deadshot.io",
+    "url": "${uv}https://deadshot.io",
     "image": "data:image/jpeg;base64,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"
   },
   {
@@ -633,15 +612,8 @@
     "title": "Doki Doki Literature Club!",
     "description": "",
     "category": "Category",
-    "url": "${uv}https://html5.gamenora.com/Doki%20Doki%20Literature%20Club!/?v=20250717135234",
+    "url": "",
     "image": "https://upload.wikimedia.org/wikipedia/en/7/7c/Doki_Doki_Literature_Club_Cover.jpg"
-  },
-  {
-    "title": "Dragon Vs Bricks",
-    "description": "",
-    "category": "Arcade",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/210.html",
-    "image": "https://tse4.mm.bing.net/th/id/OIP.1lzAX-cXQkUjXE-0ITA25QAAAA?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Drift Boss",
@@ -665,13 +637,6 @@
     "image": "https://play-lh.googleusercontent.com/zGApa4C91zfSXuPMVHvBzzgVLhs_ABHv9fybDQ2m86QmArR3sejpOoRjBMq4ZNZrhg"
   },
   {
-    "title": "Ducklings.io",
-    "description": "",
-    "category": "Adventure",
-    "url": "https://19230981230981309813098123098123.104.36.84.31.nip.io/assets/allgames/ducklingsio/",
-    "image": "https://19230981230981309813098123098123.104.36.84.31.nip.io/images/games/ducklingsio-min.jpg"
-  },
-  {
     "title": "DUO",
     "description": "",
     "category": "Multiplayer",
@@ -682,7 +647,7 @@
     "title": "Elastic Face",
     "description": "",
     "category": "All",
-    "url": "https://d21u3ic0kp9e91.cloudfront.net/elasticman/0/index.html",
+    "url": "${uv}https://d21u3ic0kp9e91.cloudfront.net/elasticman/0/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.jogDjOKN3oURnYscp5kLiQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -826,13 +791,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ4aXQb7ab14NFxtfCOjHT2SutBR5R1Hd8lA&s"
   },
   {
-    "title": "Flash Guitar Hero 2",
-    "description": "",
-    "category": "Rhythm",
-    "url": "${uv}https://flashguitarhero.com/play-flash-guitar-hero",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQA8Nz4RLOsP-d4kO1YFizrlBA1ut3_tXjkw&s"
-  },
-  {
     "title": "FNF Mods",
     "description": "",
     "category": "Rhythm",
@@ -857,14 +815,14 @@
     "title": "Fortnite",
     "description": "",
     "category": "Cloud",
-    "url": "${truffled}https://nowgg.fun/apps/aptoide/5874/aptoide.html?deep_link=aptoidesearch://com.epicgames.fortnite",
+    "url": "${static}https://nowgg.fun/apps/aptoide/5874/aptoide.html?deep_link=aptoidesearch://com.epicgames.fortnite",
     "image": "https://tse1.mm.bing.net/th/id/OIP.S2-lsDvutqW8AKTqBYbwOAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Four Colors",
     "description": "",
     "category": "Cards",
-    "url": "https://uno-online.gitlab.io/file/",
+    "url": "${uv}https://uno-online.gitlab.io/file/",
     "image": "https://tse2.mm.bing.net/th/id/OIP.bigGCF-pMHJqkZ1cBuAZ7wHaFj?cb=12&w=512&h=384&rs=1&pid=ImgDetMain&o=7&rm=3s"
   },
   {
@@ -878,7 +836,7 @@
     "title": "Friday Night Funkin'",
     "description": "",
     "category": "Rhythm",
-    "url": "https://monkeygg2.netlify.app/games/friday-night-funkin",
+    "url": "",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4T7d-1Lrp6mCOTtl4ibFR_fDpGbNkKTUY2g&s"
   },
   {
@@ -903,25 +861,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcM_O4YgtUOOQY833BI1o-Zu5NuNy3Mytuiw&s"
   },
   {
-    "title": "Gacha Club",
-    "description": "",
-    "category": "Rpg",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/gacha-club",
-    "image": "https://play-lh.googleusercontent.com/6s7vKMtSIakLnaegLtD-ppJszzl_hkt1swFIU8C6a_uag_DA7FBx-OBpbBqCKNBlweg=w240-h480-rw"
-  },
-  {
     "title": "Gacha Life",
     "description": "",
-    "category": "Rpg",
+    "category": "RPG",
     "url": "${truffled}/gamefile/life.html",
     "image": "https://play-lh.googleusercontent.com/Yma8Znj3IENI76qh6VC2cFgzoUwFdt4c2xXMYfK2VUaRZArjqsicFj4zCpUIZRwbdJ_b"
-  },
-  {
-    "title": "Gacha Life 2",
-    "description": "",
-    "category": "Rpg",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/gacha-life-2",
-    "image": "https://play-lh.googleusercontent.com/wW_bGOO7sq6b5wBYeU2CJt9wjtFdjgr5HgjfvtDrNgdBn1pDIGXra67VBeuQCbjcgjU=w240-h480-rw"
   },
   {
     "title": "Geometry Dash Lite",
@@ -941,7 +885,7 @@
     "title": "Getting Over It",
     "description": "",
     "category": "Strategy",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/557.html",
+    "url": "",
     "image": "https://assets-prd.ignimgs.com/2022/06/27/gettingoverit-1656372834681.jpg?crop=1%3A1%2Csmart&format=jpg&auto=webp&quality=80"
   },
   {
@@ -966,20 +910,6 @@
     "image": "https://img.itch.zone/aW1nLzEzNTMyNDk4LnBuZw==/original/yRSrjd.png"
   },
   {
-    "title": "God of War: Chains of Olympus",
-    "description": "",
-    "category": "Arcade",
-    "url": "https://20coolstuff.51.222.141.36.nip.io/pages/other/interpreter/index.html?url=https://api.codetabs.com/v1/proxy/?quest=https://raw.githubusercontent.com/GLITCHED-OVERRIDE/Hypper-Drive-2/refs/heads/main/Games/Files/Source/PSP/God%20of%20War%3A%20Chains%20of%20Olympas/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe0MNHcNy5icaCpqN8a16Bmf2OuKWz0eal3g&s"
-  },
-  {
-    "title": "God of War: Ghost of Sparta",
-    "description": "",
-    "category": "Arcade",
-    "url": "https://20coolstuff.51.222.141.36.nip.io/pages/other/interpreter/index.html?url=https://api.codetabs.com/v1/proxy/?quest=https://raw.githubusercontent.com/GLITCHED-OVERRIDE/Hypper-Drive-2/refs/heads/main/Games/Files/Source/PSP/God%20of%20War%3A%20Ghost%20of%20Sparta/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQDlQ0F0tey1OZTqsipYK5LKosl_ucwm_mNUg&s"
-  },
-  {
     "title": "Godzilla Daikaiju Battle Royale",
     "description": "",
     "category": "Action",
@@ -992,13 +922,6 @@
     "category": "Sports",
     "url": "${static}https://sportsgames.gitlab.io/golf-orbit/",
     "image": "https://tse3.mm.bing.net/th/id/OIP.di-rsG3R5bpllcknKd7MPgAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Google Snake",
-    "description": "",
-    "category": "Strategy",
-    "url": "https://kstuff.neocities.org/data/proxies/scramjet#embed=https://23azostore.github.io/s8/google-snake",
-    "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgdbt2FcBN4X5y47vD14GSfdM7ScLfitclGZEJecdIV-UnaQTlQiFCp5fC5Sll46Y5gvp8rxmY0U06njTAij3XcpmGOso10CAUVD0Q_2BLYS6_NFqeMPzJYSOd2ncIR9mYAVPf1F0bjfNNC7jyiErZD8l61zNB98yE_JEIcgXEjcIshgEC2SDR_RnBVkJZj/s218/Google%20Snake%20Icon.png"
   },
   {
     "title": "Gorilla Tag",
@@ -1032,7 +955,7 @@
     "title": "Growden.io",
     "description": "",
     "category": "Simulation",
-    "url": "http://growden.io/",
+    "url": "${uv}http://growden.io/",
     "image": "https://rocketgames.imgix.net/uploads/games/g/grow-a-garden-growden-io/grow-a-garden-growden-io.d77f8b.jpg?auto=format,compress&w=1200&h=630&fit=fill&fill=blur&q=85&mark=/logo.png&mark-scale=16&mark-align=middle&mark-x=65&txt-size=42&txt-color=ff333333&txt-line=0.25&txt-line-color=FFFFFF&txt-font=Futura%20Condensed%20Medium&txt-pad=15&txt=GROW%20A%20GARDEN%20-%20GROWDEN%20IO"
   },
   {
@@ -1064,25 +987,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnxSCpxbn9B6cd2nDNvYJBQaT2ZDeD8ndWmQ&s"
   },
   {
-    "title": "Half-life 2",
-    "description": "",
-    "category": "Action",
-    "url": "bog port",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1BRl81SoXpcVfWDKVXT6IquvDq340KPqwCQ&s"
-  },
-  {
     "title": "Happy Wheels",
     "description": "",
     "category": "Flash",
     "url": "${truffled}/games/happywheels/index.html",
     "image": "https://play-lh.googleusercontent.com/SV8RsV5udSeeONjatT5SwleP6lzV6PjtNPs2VvyohJXWSG9fFLNOfslDEHbpDN337wQ"
-  },
-  {
-    "title": "Hawk of Evil : Zombie Invasion",
-    "description": "",
-    "category": "Fps",
-    "url": "https://html-classic.itch.zone/html/13428348/index.html",
-    "image": "https://i.ytimg.com/vi/5PVBqNtVmlo/hq720.jpg"
   },
   {
     "title": "Henry Stickmin Breaking the Bank",
@@ -1137,7 +1046,7 @@
     "title": "Hotline Miami",
     "description": "",
     "category": "Shooting",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/217-c.html",
+    "url": "",
     "image": "https://f4.bcbits.com/img/a0807578587_10.jpg"
   },
   {
@@ -1151,15 +1060,8 @@
     "title": "Idle Dice",
     "description": "",
     "category": "Idle",
-    "url": "https://short.pump.middle.school.wiki.gd/assets/allgames/idle-dices/",
+    "url": "",
     "image": "https://play-lh.googleusercontent.com/ishnQb-SwlFk1Hf0O_48Esy6t9GmdL1jpmal5UIcAmTQ0sSXPEX_iFRplCHH1LLjxuDD"
-  },
-  {
-    "title": "Idle Mining Empire",
-    "description": "",
-    "category": "Idle",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/364.html",
-    "image": "https://play-lh.googleusercontent.com/6ovgWjpZmLyY6ULsUANI65eQakUrsM3S5bmRA70w1oW_qg80xrDbB859yris1YM0B7w=w240-h480-rw"
   },
   {
     "title": "Infinite Craft",
@@ -1174,13 +1076,6 @@
     "category": "Puzzle",
     "url": "${uv}https://gregcameron.com/infinite-wordle/",
     "image": "https://wordle-nyt.org/upload/cache/upload/imgs/infinite-wordle-game-m270x290.webp"
-  },
-  {
-    "title": "Iron Snout",
-    "description": "",
-    "category": "Action",
-    "url": "https://19230981230981309813098123098123.104.36.84.31.nip.io/assets/allgames/ironsnout/",
-    "image": "https://play-lh.googleusercontent.com/5SQXTiLzHFq50m23PGrvc1JGE3ATk9OIoexRlo3UPQjsd6Z70qqG5Le1qEq07py4BDU"
   },
   {
     "title": "Jacksmith",
@@ -1204,13 +1099,6 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.Cvdkjc_tszeupxYDzlkt6wHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Johnny Trigger Sniper Game",
-    "description": "",
-    "category": "Shooting",
-    "url": "https://games.poki.com/458768/994568e9-1512-4e00-a24d-e431e3eae6b1?tag=pg-f890988ff709c814d06334e07a3bb94b12fc1618&site_id=3&iso_lang=en&country=FR&poki_url=https://poki.com/en/g/johnny-trigger-sniper-game&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=3,9,77,93,242,385,929,1140,1141,1190&special_condition=landing",
-    "image": "https://tse4.mm.bing.net/th/id/OIP.kqTF4uoL0EX_NszqEF2gLgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
     "title": "Karate Bros",
     "description": "",
     "category": "Multiplayer",
@@ -1225,32 +1113,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxlDVudWvLc6cESKiznW4oiTDCjIVE-UqB9xlZ-1GxlD5FuJgiwVjb6Hj8tuB4pJc9WKI&usqp=CAU"
   },
   {
-    "title": "Kick the Buddy 2011",
-    "description": "",
-    "category": "Simulation",
-    "url": "https://html-classic.itch.zone/html/14928295/index.html",
-    "image": "https://img.favpng.com/21/0/13/app-store-game-download-png-favpng-BabBm5WSaLj0k5AXPgqUBrrvf_t.jpg"
-  },
-  {
     "title": "Kindergarten",
     "description": "",
     "category": "Puzzle",
     "url": "${truffled}/games/kindergarten/1/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAHarnNZTQfKXH5VFMhTyJjg1b5aMMso2o3w&s"
-  },
-  {
-    "title": "Kindergarten 2",
-    "description": "",
-    "category": "Puzzle",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/446.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkqwPVDfovbbpMC0ATvuHc4i7lQeSXLv96PQ&s"
-  },
-  {
-    "title": "Kindergarten 3",
-    "description": "",
-    "category": "Puzzle",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fgn-math%2Fhtml%40main%2F501.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfnDhFN8txE_669V42VIXFNuBU6aL7SOUXBw&s"
   },
   {
     "title": "Learn to Fly",
@@ -1281,25 +1148,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfmnECNgakvXxc6OHREZA0fZSFf80aTgRVsg&s"
   },
   {
-    "title": "Legend of Zelda The - Majoras Mask",
-    "description": "",
-    "category": "Adventure",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/612.html",
-    "image": "https://storage.googleapis.com/multi-static-content/previews/artage-io-thumb-eeaefcbcfab8b6d87432b0a33439d24d.png"
-  },
-  {
     "title": "Limbus Company",
     "description": "",
     "category": "Cloud",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Limbus%20Company",
     "image": "https://digistatement.com/wp-content/uploads/2023/03/limbus-company-how-to-change-language-1.jpg"
-  },
-  {
-    "title": "Lines of Battle",
-    "description": "",
-    "category": "Strategy",
-    "url": "https://kstuff.neocities.org/data/proxies/scramjet#embed=https://linesofbattle.net/login",
-    "image": "https://i.ytimg.com/vi/E4PORTl4mYo/maxresdefault.jpg"
   },
   {
     "title": "Little Big Planet",
@@ -1333,22 +1186,15 @@
     "title": "Magic Tiles 3",
     "description": "",
     "category": "Rhythm",
-    "url": "https://brainplay.com/static/games-open/magic-tiles3/",
+    "url": "${uv}https://brainplay.com/static/games-open/magic-tiles3/",
     "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple128/v4/b8/44/56/b84456ab-3d8b-dee2-4e14-3be3d6527a6d/AppIcon-1x_U007emarketing-85-220-6.png/1024x1024bb.png"
   },
   {
     "title": "Mahjong",
     "description": "",
     "category": "Strategy",
-    "url": "https://www.free-play-mahjong.com/",
+    "url": "${uv}https://www.free-play-mahjong.com/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStvNP3ouRTY7qokyBkK4dDkVlxQnFlChw21w&s"
-  },
-  {
-    "title": "Mario Kart!",
-    "description": "",
-    "category": "Racing",
-    "url": "${uv}https://abc123.endis.org.cdn.cloudflare.net/books/supermariokartzx/index.html",
-    "image": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fencrypted-tbn3.gstatic.com%2Fimages%3Fq%3Dtbn%3AANd9GcRvY8HpWcnhk1PrRFZzeRSmjhxANUGD6tke_-CPW6ShCtIEL5hf&psig=AOvVaw0Uajr9oG7AWLF71YbQeJjQ&ust=1762297815483000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCNj2o4yN15ADFQAAAAAdAAAAABAE"
   },
   {
     "title": "Melon Sandbox",
@@ -1365,13 +1211,6 @@
     "image": "https://images.dwncdn.net/images/t_app-icon-l/p/b276c62c-96bf-11e6-ad7b-00163ec9f5fa/2418235042/minecraft-logo"
   },
   {
-    "title": "Minecraft Bedrock Edition Trial",
-    "description": "",
-    "category": "Adventure",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/minecraft-trial?asdadadsadfdfghhgf",
-    "image": "https://play-lh.googleusercontent.com/DJexP6PO8dL06XvNrjG7plb7SW_SaxuNamO80ab512JA71lBEBUnaJCaZzlqWVrrlEiG=w240-h480-rw"
-  },
-  {
     "title": "Minecraft Dungeons",
     "description": "",
     "category": "Cloud",
@@ -1384,13 +1223,6 @@
     "category": "Cloud",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Minecraft%20Education",
     "image": "https://tse4.mm.bing.net/th/id/OIP.VUEN2oO1Fh4JF916IkTNXAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "MojoLauncher (Minecraft Java Edition)",
-    "description": "",
-    "category": "Strategy",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/mojolauncher?adzc",
-    "image": "https://play-lh.googleusercontent.com/LIBjL6LtGv8J_BuLsV9oGLx-CjVKOihPm-pXl-odgvEPUDTGppsyCsqhYJy6o4zxTCUj=w240-h480-rw"
   },
   {
     "title": "Monkey Mart",
@@ -1456,32 +1288,11 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf51-6uDI2iCm8olmfHvvxYPSqDWXgHv72Zg&s"
   },
   {
-    "title": "Neal.fun",
-    "description": "",
-    "category": "Arcade",
-    "url": "https://20coolstuff.51.222.141.36.nip.io/static/scram-embed.html#https://neal.fun",
-    "image": "https://img.utdstc.com/icon/481/deb/481debbf466dfb5a780726cfa7a4283b07ce37ee4841e87d9df04be953efba35:200"
-  },
-  {
     "title": "Netquel",
     "description": "",
     "category": "Shooting",
     "url": "${uv}https://netquel.com/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDSuTsXMEEGLJ9NL2zidAz2zaBc3CgmerzbQ&s"
-  },
-  {
-    "title": "No Limits Drag Racing 2",
-    "description": "",
-    "category": "Driving",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/no-limits-drag-racing-2.html",
-    "image": "https://play-lh.googleusercontent.com/0bv99KtwLmmz49vbXmwlSRuvStLLrDQniLFgZZCAhguPaH_xtGwAbvlygKEv2JoxhQg=w240-h480-rw"
-  },
-  {
-    "title": "Offroad Outlaws",
-    "description": "",
-    "category": "Driving",
-    "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/offroad-outlaws?asdfasadadzc23sajdsfd",
-    "image": "https://play-lh.googleusercontent.com/7_hdU4A23Eq1797dVLa1nhLUQJuBS6bOQzopf-q2WZtFdZ2Y30GekW-wY2lppMYMvQ"
   },
   {
     "title": "OMORI",
@@ -1494,7 +1305,7 @@
     "title": "OpenFront",
     "description": "",
     "category": "Shooter",
-    "url": "https://openfront.io/",
+    "url": "${uv}https://openfront.io/",
     "image": "data:image/jpeg;base64,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"
   },
   {
@@ -1538,13 +1349,6 @@
     "category": "Arcade",
     "url": "${truffled}/games/pacman/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqBsd5KR0IgKULgvVX5TruqpG_gZjT2SLPGg&s"
-  },
-  {
-    "title": "Papa Louie: When Burgers Attack",
-    "description": "",
-    "category": "Action",
-    "url": "https://65.109.112.222.nip.io/resources/semag/papalouie2/index.html",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8DdowyFqZooPigCM12m-gfMNsyV1YaihvdE2BjGjd8LfGjdgwq0YtiYg4RWiFCDYDjPVxtg&s=10"
   },
   {
     "title": "Papa's Bakeria",
@@ -1641,21 +1445,21 @@
     "title": "Parking Fury",
     "description": "",
     "category": "Driving",
-    "url": "https://www.coolmathgames.com/0-parking-fury/play",
+    "url": "${uv}https://www.coolmathgames.com/0-parking-fury/play",
     "image": "https://tse4.mm.bing.net/th/id/OIP.n6HG_nGno-4qkuTgxyGMjQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Parking Fury 2",
     "description": "",
     "category": "Driving",
-    "url": "https://www.coolmathgames.com/0-parking-fury-2/play",
+    "url": "${uv}https://www.coolmathgames.com/0-parking-fury-2/play",
     "image": "https://th.bing.com/th/id/R.c173f18609681f501e5676f29e75bd7e?rik=wqx42%2bxFPe%2b5mg&riu=http%3a%2f%2fyep10.com%2fwp-content%2fuploads%2fthumbs%2fcustom%2fP%2fParking-Fury-2-512x512.jpeg&ehk=pKeD9tGHsT2Lg%2blML8zkAHHUEMjFf6x2YKEW7ZdRq40%3d&risl=&pid=ImgRaw&r=0"
   },
   {
     "title": "Parking Fury 3",
     "description": "",
     "category": "Driving",
-    "url": "https://www.coolmathgames.com/0-parking-fury-3/play",
+    "url": "${uv}https://www.coolmathgames.com/0-parking-fury-3/play",
     "image": "https://tse1.mm.bing.net/th/id/OIP.B6czPoja4rnRWxKVgzKaQwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1711,7 +1515,7 @@
     "title": "Plinko",
     "description": "",
     "category": "All",
-    "url": "${uv}https://plinko-web-game.netlify.app/",
+    "url": "${static}https://plinko-web-game.netlify.app/",
     "image": "https://thvnext.bing.com/th/id/OIP.b1v3SZP7-J3RPy0tsiBtWQHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -1925,13 +1729,6 @@
     "image": "https://play-lh.googleusercontent.com/BD9UD54eBjq1snNYoug7sioLfyBkp_Sq3p5oX8jOoa_lxI8UoGDyxmN4xaMKkgD5ErI"
   },
   {
-    "title": "Shell Shockers",
-    "description": "",
-    "category": "Fps",
-    "url": "https://shellshock.io",
-    "image": "https://www.kizgame.com/thumbs/shell-shockers_small.webp"
-  },
-  {
     "title": "Ships 3D",
     "description": "",
     "category": "Adventure",
@@ -1977,7 +1774,7 @@
     "title": "Slope 2",
     "description": "",
     "category": "Arcade",
-    "url": "https://games.thel1ama.com/projects/slope-2/index.html",
+    "url": "",
     "image": "https://tse4.mm.bing.net/th/id/OIP.yJ31evfzJSioHzllLrb-JQAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
@@ -2058,25 +1855,11 @@
     "image": "https://upload.wikimedia.org/wikipedia/en/6/6d/Srb2_22_title.png"
   },
   {
-    "title": "Sonic.EXE",
-    "description": "",
-    "category": "Horror",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/genizy/web-port@main/sonic.exe/",
-    "image": "https://e.snmc.io/lk/fv/x/89d9c87e449ee162d43b0d50ebaecb98/11813028"
-  },
-  {
     "title": "Sort The Court",
     "description": "",
-    "category": "Unknown",
+    "category": "Puzzle",
     "url": "${uv}https://vocalnutria9174.github.io/sort-the-court/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScw_aOzrTL5nvkw15Rax6nPjHYUzsg3pEugA&s"
-  },
-  {
-    "title": "SpaceBar Clicker",
-    "description": "",
-    "category": "Idle",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/473.html",
-    "image": "https://img.itch.zone/aW1nLzcwMDQ3NzEucG5n/original/e%2BxRdp.png"
   },
   {
     "title": "Speed Stars",
@@ -2105,13 +1888,6 @@
     "category": "Strategy",
     "url": "${uv}https://www.stickwarlegacy.io/games/stick-war-legacy-3/index.html",
     "image": "https://play-lh.googleusercontent.com/sITxnGaUxYVzTDkVAjRSKM8JKehWTuseE4hF8937xWattKHEAirl7uZw93gqad_fQg6"
-  },
-  {
-    "title": "Stickman and Guns",
-    "description": "",
-    "category": "Action",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/578.html",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.w_-TOk07p86zNJ-Jb5VGtQAAAA?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Stickman Golf",
@@ -2156,13 +1932,6 @@
     "image": "https://upload.wikimedia.org/wikipedia/en/a/aa/SuperMeatBoy_cover.png"
   },
   {
-    "title": "SuperHot",
-    "description": "",
-    "category": "Action",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/233.html",
-    "image": "https://assets2.ignimgs.com/2014/05/23/superhot-buttonjpg-dcfc34.jpg"
-  },
-  {
     "title": "Swan's Song",
     "description": "",
     "category": "Horror",
@@ -2182,13 +1951,6 @@
     "category": "Shooting",
     "url": "${uv}https://games.thel1ama.com/projects/tactical-weapon-pack-2/index.html",
     "image": "https://i1.sndcdn.com/artworks-gPwKoygveZBgNPYL-alnJUQ-t500x500.jpg"
-  },
-  {
-    "title": "Tag 2 3 4 Players",
-    "description": "",
-    "category": "Multiplayer",
-    "url": "https://19230981230981309813098123098123.104.36.84.31.nip.io/assets/allgames/tag/",
-    "image": "https://19230981230981309813098123098123.104.36.84.31.nip.io/images/games/tag-min.jpg"
   },
   {
     "title": "Tanks 3D",
@@ -2238,13 +2000,6 @@
     "category": "Horror",
     "url": "${truffled}/gamefile/thatsnot.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZLxR8t0uPrV4PSNecVLZWiLr7h5zmkpPczw&s"
-  },
-  {
-    "title": "The Legend of Zelda: Ocarina of Time",
-    "description": "",
-    "category": "Adventure",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/611.html",
-    "image": "https://assets-prd.ignimgs.com/2021/12/07/zeldaoot-ignart-1638901927766.jpg?crop=1%3A1%2Csmart&format=jpg&auto=webp&quality=80"
   },
   {
     "title": "The Man from The Window",
@@ -2408,20 +2163,6 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.4XqpeZFWXeioDa5bWaav0gHaHa?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
-    "title": "Vex X3M",
-    "description": "",
-    "category": "Driving",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/55.html",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.36zclqHsxeCX3JzPDujWLwHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Vex X3M 2",
-    "description": "",
-    "category": "Driving",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/data/interpreter?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/56.html",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.agL8Kp6Z2ySzFtcTB8IddAHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
     "title": "Volley Random",
     "description": "",
     "category": "Multiplayer",
@@ -2441,13 +2182,6 @@
     "category": "Adventure",
     "url": "${truffled}/gamefile/web.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSD49UXw1W7AjkHzrkCGxFGqJcMrs6GoiMCxDGGbphDk4Td1L9D8_woqxTvy3fxbXNjsu8&usqp=CAU"
-  },
-  {
-    "title": "Wizards Of Odds",
-    "description": "",
-    "category": "Shooter",
-    "url": "https://kstuff.neocities.org/data/proxies/scramjet#embed=https://wizardofodds.com/play/",
-    "image": "https://s3-eu-west-1.amazonaws.com/tpd/logos/66f00e415618fe67523bca82/0x0.png"
   },
   {
     "title": "Yandere Simulator",
@@ -2474,7 +2208,7 @@
     "title": "Zombs Royale",
     "description": "",
     "category": "Shooting",
-    "url": "${truffled}https://zombsroyale.io/",
+    "url": "${static}https://zombsroyale.io/",
     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQnRj24uLRA4ApOvfefBOiJHf9riMTsdMdVQ1iX5DwYTFYLHNV8ChrpbGkrqrv0He3O6nOs"
   }
     ]
