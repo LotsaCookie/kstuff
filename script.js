@@ -204,16 +204,13 @@
         return workingConfigCache.get(table);
     }
 
-    // ==========================================
-    // 3. EAGER LOAD: RUN ONCE IMMEDIATELY
-    // ==========================================
-    // This loop instantly triggers the fetch promise for each table without blocking the UI.
+    // Eager load all tables instantly in the background
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
 
     // ==========================================
-    // 4. MAIN APP LOGIC
+    // 3. MAIN APP LOGIC
     // ==========================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runLogic);
@@ -637,28 +634,36 @@
             }
         }
 
-        fetchAsset('Json/g.json').then(async data => {
+        // --- Fixed Truffled & Game Data Loader ---
+        Promise.all([
+            fetchAsset('Json/g.json'),
+            fetchAsset('Json/truffled.json').catch(() => null),
+            getWorkingConfig(truffledTable)
+        ]).then(([gData, truffledData, w]) => {
+            const base = w ? (w.url).replace(/\/+$/, '') : '';
+            const truffledMap = new Map();
+            
+            if (truffledData && truffledData.games) {
+                truffledData.games.forEach(g => {
+                    truffledMap.set(g.name.toLowerCase().trim(), g);
+                });
+            }
+
             let finalGames = [];
-            for (const item of data) {
+            for (const item of gData) {
                 if (item.url && item.url.includes('${truffled}')) {
-                    try {
-                        const truffledData = await fetchAsset('Json/truffled.json');
-                        if (truffledData && truffledData.games) {
-                            const w = await getWorkingConfig(truffledTable);
-                            if (w) {
-                                const base = (w.url).replace(/\/+$/, '');
-                                for (const g of truffledData.games) {
-                                    finalGames.push({
-                                        title: g.name,
-                                        url: '${truffled}' + g.url,
-                                        image: base + '/' + g.thumbnail.replace(/^\/+/, ''),
-                                        description: item.description || '',
-                                        category: item.category || 'Truffled'
-                                    });
-                                }
-                            }
-                        }
-                    } catch (err) {
+                    const searchTitle = (item.title || "").toLowerCase().trim();
+                    const matchedGame = truffledMap.get(searchTitle);
+
+                    if (matchedGame) {
+                        finalGames.push({
+                            title: matchedGame.name,
+                            url: '${truffled}' + matchedGame.url,
+                            image: base + '/' + matchedGame.thumbnail.replace(/^\/+/, ''),
+                            description: item.description || '',
+                            category: item.category || 'Truffled'
+                        });
+                    } else {
                         finalGames.push(item);
                     }
                 } else {
