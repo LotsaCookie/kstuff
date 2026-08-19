@@ -1,5 +1,12 @@
 [
   {
+    "title": "1",
+    "description": "",
+    "category": "Puzzle",
+    "url": "${truffled}/games/1/index.html",
+    "image": ""
+  },
+  {
     "title": "1 on 1 Soccer",
     "description": "",
     "category": "Multiplayer",
@@ -10,14 +17,14 @@
     "title": "10 Minutes Till Dawn",
     "description": "",
     "category": "Action",
-    "url": "",
+    "url": "${truffled}/games/10minutestilldawn/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqM9W7wg_x9UhungjXwrpdufMgdQ3FBIYSLg7YYW3Oh-Czol-S_iEPe87dr_WeAzDY9ZE&usqp=CAU"
   },
   {
     "title": "1v1.LOL",
     "description": "",
     "category": "Action",
-    "url": "",
+    "url": "${truffled}/gamefile/1v1.html",
     "image": "https://img.utdstc.com/icon/983/22a/98322a3b2be892eed31589906ffd949b68bcccc9a21ba562987965b5ec6bc6de:200"
   },
   {
@@ -45,7 +52,7 @@
     "title": "AdVenture Capatalist",
     "description": "",
     "category": "Idle",
-    "url": "https://d1tm91r4ytbt54.cloudfront.net/83d8bca0-ad0b-4379-890c-9edf409cc73f/1681766175791/adcapitalist/index.html",
+    "url": "",
     "image": "https://tse3.mm.bing.net/th/id/OIP.LR4KzCF5uJVoHZd2qHMJ6QAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
@@ -59,7 +66,7 @@
     "title": "Age Of Conflict",
     "description": "",
     "category": "Simulation",
-    "url": "${uv}https://monkeygg2.netlify.app/games/ages-of-conflict/",
+    "url": "",
     "image": "https://img.itch.zone/aW1nLzk4MzM5ODkucG5n/original/cwAxxR.png"
   },
   {
