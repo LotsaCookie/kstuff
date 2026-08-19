@@ -70,7 +70,35 @@
 
         const staticTable = [
             { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
-            { url: "https://example-static-backup.com", img: "/favicon.ico", final: "/embed.html#" }
+            { url: "https://larp.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://nickolas.industries", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://shrimpy.website", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://gloverschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://miku.hair", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://yourfrogiesarcadelink.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://tetosarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://bogbot.shop", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://nsd160.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://austinisd.net", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://brooklyn.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://frog.bar", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://edgy.blog", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://cliffschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://columbiapublicschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://northfayetteschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://smdpschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://burrvillees.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://pleasantonmiddleschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://hcstemm.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "/embed.html#" }
         ];
 
         const uvTable = [
@@ -97,8 +125,36 @@
         ];
 
         const frogieeTable = [
-            { url: "https://frogiesarcade.win/", img: "stuff/logo.png", final: "" },
-            { url: "https://example-frogiee-backup.com", img: "/favicon.ico", final: "" }
+            { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "" },
+            { url: "https://larp.foundation", img: "/stuff/logo.png", final: "" },
+            { url: "https://nickolas.industries", img: "/stuff/logo.png", final: "" },
+            { url: "https://shrimpy.website", img: "/stuff/logo.png", final: "" },
+            { url: "https://gloverschool.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://miku.hair", img: "/stuff/logo.png", final: "" },
+            { url: "https://yourfrogiesarcadelink.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://tetosarcade.win", img: "/stuff/logo.png", final: "" },
+            { url: "https://bogbot.shop", img: "/stuff/logo.png", final: "" },
+            { url: "https://nsd160.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "" },
+            { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "" },
+            { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://austinisd.net", img: "/stuff/logo.png", final: "" },
+            { url: "https://brooklyn.foundation", img: "/stuff/logo.png", final: "" },
+            { url: "https://frog.bar", img: "/stuff/logo.png", final: "" },
+            { url: "https://edgy.blog", img: "/stuff/logo.png", final: "" },
+            { url: "https://cliffschools.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://columbiapublicschools.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://northfayetteschools.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://smdpschool.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://burrvillees.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://pleasantonmiddleschool.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://hcstemm.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "" },
+            { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "" }
         ];
 
         function testImageUrl(testUrl) {
