@@ -100,44 +100,44 @@
             { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
             { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "/embed.html#" },
             { url: "https://000evvoxvgza.69.164.251.210.nip.io", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" },
         ];
 
         const uvTable = [
@@ -195,44 +195,44 @@
             { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "" },
             { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "" },
             { url: "https://000evvoxvgza.69.164.251.210.nip.io", img: "/stuff/logo.png", final: "" },
-{ url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-{ url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
-{ url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "" },
-{ url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "" },
-{ url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "" },
-{ url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
-{ url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "" },
-{ url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "" },
-{ url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-{ url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-{ url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
+            { url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
+            { url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
+            { url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "" },
+            { url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "" },
+            { url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "" },
+            { url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
+            { url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "" },
+            { url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "" },
+            { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
+            { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
+            { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
         ];
 
         function testImageUrl(testUrl) {
@@ -275,6 +275,8 @@
                 const w = await getWorkingConfig(frogieeTable);
                 resolvedUrl = resolvedUrl.replace('${frogiee}', w.url + w.final);
             }
+            // Clean up any double slashes introduced by concatenation (except after protocol)
+            resolvedUrl = resolvedUrl.replace(/([^:]\/)\/+/g, '$1');
             return resolvedUrl;
         }
 
@@ -603,7 +605,37 @@
             }
         }
 
-        fetchAsset('Json/g.json').then(data => { gamesData = data; renderGames(); }).catch(err => {});
+        // Fetch and process games data, handling ${truffled} placeholder by fetching Json/truffled.json
+        fetchAsset('Json/g.json').then(async data => {
+            let finalGames = [];
+            for (const item of data) {
+                if (item.url && item.url.includes('${truffled}')) {
+                    try {
+                        const truffledData = await fetchAsset('Json/truffled.json');
+                        if (truffledData && truffledData.games) {
+                            const w = await getWorkingConfig(truffledTable);
+                            const base = (w.url + w.final).replace(/\/+$/, '');
+                            for (const g of truffledData.games) {
+                                finalGames.push({
+                                    title: g.name,
+                                    url: '${truffled}' + g.url,
+                                    image: base + '/' + g.thumbnail.replace(/^\/+/, ''),
+                                    description: item.description || '',
+                                    category: item.category || 'Truffled'
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        finalGames.push(item);
+                    }
+                } else {
+                    finalGames.push(item);
+                }
+            }
+            gamesData = finalGames;
+            renderGames();
+        }).catch(err => {});
+
         fetchAsset('Json/a.json').then(data => { appsData = data; renderApps(); }).catch(err => {});
     }
 })();
