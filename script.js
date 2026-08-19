@@ -172,7 +172,7 @@
     ];
 
     // ==========================================
-    // 2. PARALLEL RACING CACHING LOGIC
+    // 2. COUNTER-BASED PARALLEL RACING CACHE
     // ==========================================
     const workingConfigCache = new Map();
 
@@ -183,30 +183,32 @@
             img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
             img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
             img.src = testUrl + "?_=" + Date.now();
-            setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3500);
+            setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
         });
     }
 
     function getWorkingConfig(table) {
         if (!table || table.length === 0) return Promise.resolve(null);
         if (!workingConfigCache.has(table)) {
-            const promise = (async () => {
-                // Map every single entry to a simultaneous promise check
-                const checkPromises = table.map(async (entry) => {
-                    const testUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    const isWorking = await testImageUrl(testUrl);
-                    if (isWorking) return entry;
-                    throw new Error("Blocked or failed");
-                });
+            const promise = new Promise((resolve) => {
+                let resolved = false;
+                let remaining = table.length;
 
-                try {
-                    // Promise.any races them all concurrently and picks the FIRST successful one!
-                    return await Promise.any(checkPromises);
-                } catch (err) {
-                    // If all of them fail, fallback to the first entry
-                    return table[0];
-                }
-            })();
+                table.forEach(entry => {
+                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                    testImageUrl(fullTestUrl).then(success => {
+                        if (success && !resolved) {
+                            resolved = true;
+                            resolve(entry);
+                        } else {
+                            remaining--;
+                            if (remaining === 0 && !resolved) {
+                                resolve(table[0]); // Fallback to the first one if all fail
+                            }
+                        }
+                    });
+                });
+            });
             workingConfigCache.set(table, promise);
         }
         return workingConfigCache.get(table);
