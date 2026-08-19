@@ -235,7 +235,9 @@
             attempts++;
         }
 
-        return table[0];
+        // If ALL checks fail (e.g. strict CORS/network restrictions), 
+        // fall back safely to the last active index instead of hard-resetting to index 0.
+        return table[activeTableIndexes[table]] || table[0];
     }
 
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
