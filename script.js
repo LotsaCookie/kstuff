@@ -1,4 +1,5 @@
 (function initApp() {
+    // yaya edu
     const scramTable = []; 
     
     const staticTable = [
@@ -369,106 +370,112 @@
         });
 
         function renderReadingResources() {
-            const readingPagination = document.getElementById('readingcorner-pagination');
-            if (!readingGrid) return;
+            // Throttled via requestAnimationFrame to protect GPU thread and eliminate SIGILL crashes
+            window.requestAnimationFrame(() => {
+                const readingPagination = document.getElementById('readingcorner-pagination');
+                if (!readingGrid) return;
 
-            const filteredData = readingItemsData.filter(item => {
-                const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
-                const matchesSearch = item.title.toLowerCase().includes(currentReadingSearch);
-                return matchesCategory && matchesSearch;
-            });
+                const filteredData = readingItemsData.filter(item => {
+                    const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
+                    const matchesSearch = item.title.toLowerCase().includes(currentReadingSearch);
+                    return matchesCategory && matchesSearch;
+                });
 
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-            if (currentReadingPage > totalPages) currentReadingPage = 1;
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+                if (currentReadingPage > totalPages) currentReadingPage = 1;
 
-            const start = (currentReadingPage - 1) * itemsPerPage;
-            const paginatedData = filteredData.slice(start, start + itemsPerPage);
+                const start = (currentReadingPage - 1) * itemsPerPage;
+                const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            readingCardPool.forEach((poolItem, index) => {
-                const item = paginatedData[index];
-                if (item) {
-                    poolItem.element.style.display = 'block';
-                    poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
-                    poolItem.titleEl.textContent = item.title;
-                    poolItem.descEl.textContent = item.description || '';
-                    poolItem.element.onclick = () => {
-                        if (modalTitle) modalTitle.textContent = item.title;
-                        if (modalOverlay) modalOverlay.classList.add('active');
-                        if (modalIframe) modalIframe.src = item.url;
-                    };
-                } else {
-                    poolItem.element.style.display = 'none';
-                    poolItem.element.style.backgroundImage = 'none';
-                    poolItem.element.onclick = null;
-                }
-            });
+                readingCardPool.forEach((poolItem, index) => {
+                    const item = paginatedData[index];
+                    if (item) {
+                        poolItem.element.style.display = 'block';
+                        poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+                        poolItem.titleEl.textContent = item.title;
+                        poolItem.descEl.textContent = item.description || '';
+                        poolItem.element.onclick = () => {
+                            if (modalTitle) modalTitle.textContent = item.title;
+                            if (modalOverlay) modalOverlay.classList.add('active');
+                            if (modalIframe) modalIframe.src = item.url;
+                        };
+                    } else {
+                        poolItem.element.style.display = 'none';
+                        poolItem.element.style.backgroundImage = 'none';
+                        poolItem.element.onclick = null;
+                    }
+                });
 
-            if (readingPagination) {
-                readingPagination.innerHTML = '';
-                if (totalPages > 1) {
-                    for (let i = 1; i <= totalPages; i++) {
-                        const pageBtn = document.createElement('button');
-                        pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
-                        pageBtn.textContent = i;
-                        pageBtn.addEventListener('click', () => {
-                            currentReadingPage = i;
-                            renderReadingResources();
-                        });
-                        readingPagination.appendChild(pageBtn);
+                if (readingPagination) {
+                    readingPagination.innerHTML = '';
+                    if (totalPages > 1) {
+                        for (let i = 1; i <= totalPages; i++) {
+                            const pageBtn = document.createElement('button');
+                            pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
+                            pageBtn.textContent = i;
+                            pageBtn.addEventListener('click', () => {
+                                currentReadingPage = i;
+                                renderReadingResources();
+                            });
+                            readingPagination.appendChild(pageBtn);
+                        }
                     }
                 }
-            }
+            });
         }
 
         function renderScienceModules() {
-            const sciencePagination = document.getElementById('sciencequiz-pagination');
-            if (!scienceGrid) return;
+            // Throttled via requestAnimationFrame to protect GPU thread and eliminate SIGILL crashes
+            window.requestAnimationFrame(() => {
+                const sciencePagination = document.getElementById('sciencequiz-pagination');
+                if (!scienceGrid) return;
 
-            const filteredData = scienceItemsData.filter(item => {
-                const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
-                const matchesSearch = item.title.toLowerCase().includes(currentScienceSearch);
-                return matchesCategory && matchesSearch;
-            });
+                const filteredData = scienceItemsData.filter(item => {
+                    const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
+                    const matchesSearch = item.title.toLowerCase().includes(currentScienceSearch);
+                    return matchesCategory && matchesSearch;
+                });
 
-            const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-            if (currentSciencePage > totalPages) currentSciencePage = 1;
-            const start = (currentSciencePage - 1) * itemsPerPage;
-            const paginatedData = filteredData.slice(start, start + itemsPerPage);
+                const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
+                if (currentSciencePage > totalPages) currentSciencePage = 1;
+                const start = (currentSciencePage - 1) * itemsPerPage;
+                const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            scienceCardPool.forEach((poolItem, index) => {
-                const item = paginatedData[index];
-                if (item) {
-                    poolItem.element.style.display = 'block';
-                    poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
-                    poolItem.titleEl.textContent = item.title;
-                    poolItem.descEl.textContent = item.description || '';
-                    poolItem.element.onclick = () => {
-                        if (modalTitle) modalTitle.textContent = item.title;
-                        if (modalOverlay) modalOverlay.classList.add('active');
-                        if (modalIframe) modalIframe.src = item.url;
-                    };
-                } else {
-                    poolItem.element.style.display = 'none';
-                    poolItem.element.style.backgroundImage = 'none';
-                    poolItem.element.onclick = null;
-                }
-            });
+                scienceCardPool.forEach((poolItem, index) => {
+                    const item = paginatedData[index];
+                    if (item) {
+                        poolItem.element.style.display = 'block';
+                        poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+                        poolItem.titleEl.textContent = item.title;
+                        poolItem.descEl.textContent = item.description || '';
+                        poolItem.element.onclick = () => {
+                            if (modalTitle) modalTitle.textContent = item.title;
+                            if (modalOverlay) modalOverlay.classList.add('active');
+                            if (modalIframe) modalIframe.src = item.url;
+                        };
+                    } else {
+                        poolItem.element.style.display = 'none';
+                        poolItem.element.style.backgroundImage = 'none';
+                        poolItem.element.onclick = null;
+                    }
+                });
 
-            if (sciencePagination) {
-                sciencePagination.innerHTML = '';
-                if (totalPages > 1) {
-                    for (let i = 1; i <= totalPages; i++) {
-                        const pageBtn = document.createElement('button');
-                        pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
-                        pageBtn.textContent = i;
-                        pageBtn.addEventListener('click', () => {
-                            currentSciencePage = i;
-                            renderScienceModules();
-                        });
-                        sciencePagination.appendChild(pageBtn);
+                if (sciencePagination) {
+                    sciencePagination.innerHTML = '';
+                    if (totalPages > 1) {
+                        for (let i = 1; i <= totalPages; i++) {
+                            const pageBtn = document.createElement('button');
+                            pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
+                            pageBtn.textContent = i;
+                            pageBtn.addEventListener('click', () => {
+                                currentSciencePage = i;
+                                renderScienceModules();
+                            });
+                            sciencePagination.appendChild(pageBtn);
+                        }
                     }
                 }
-            }
+            });
         }
 
         navBtns.forEach(btn => {
