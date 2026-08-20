@@ -172,7 +172,7 @@
     ];
 
     // ==========================================
-    // 2. TRUE-DETECTION CONNECTION CHECKER (SAFE PARALLEL)
+    // 2. TRUE-DETECTION CONNECTION CHECKER (8s timeout)
     // ==========================================
     const activeTableIndexes = {};
 
@@ -201,6 +201,7 @@
             
             img.src = testUrl + (testUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
             
+            // 8-second timeout window to support slow loading thumbnails/mirrors
             setTimeout(() => { 
                 if (!isDone) { 
                     isDone = true; 
@@ -217,7 +218,6 @@
             activeTableIndexes[table] = 0;
         }
 
-        // Test all URLs in parallel simultaneously, returning null on failure (safe for all browsers)
         const checkPromises = table.map(async (entry) => {
             const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
             const isAlive = await testUrlConnection(fullTestUrl);
@@ -234,7 +234,6 @@
             }
         } catch (err) {}
 
-        // If ALL checks fail, fall back safely to the last active index instead of hard-resetting to index 0
         return table[activeTableIndexes[table]] || table[0];
     }
 
@@ -254,21 +253,21 @@
     function runLogic() {
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
-        const themeSelect = document.getElementById('theme-select');
-        const navSelect = document.getElementById('nav-select');
-        const textSelect = document.getElementById('text-select');
-        const sizeSelect = document.getElementById('size-select');
-        const navLogo = document.getElementById('nav-logo');
+        const themeSelect = document.getElementById('layout-theme-select');
+        const navSelect = document.getElementById('layout-nav-select');
+        const textSelect = document.getElementById('layout-text-select');
+        const sizeSelect = document.getElementById('layout-size-select');
+        const eduLogo = document.getElementById('edu-logo');
         const body = document.body;
 
-        const modalOverlay = document.getElementById('content-modal');
-        const modalIframe = document.getElementById('modal-iframe');
-        const modalTitle = document.getElementById('modal-title');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        const modalFullscreenBtn = document.getElementById('modal-fullscreen-btn');
+        const modalOverlay = document.getElementById('resource-modal');
+        const modalIframe = document.getElementById('resource-modal-iframe');
+        const modalTitle = document.getElementById('resource-modal-title');
+        const modalCloseBtn = document.getElementById('resource-close-btn');
+        const modalFullscreenBtn = document.getElementById('resource-fullscreen-btn');
 
-        const settingsModal = document.getElementById('settings-modal');
-        const settingsCloseBtn = document.getElementById('settings-modal-close-btn');
+        const settingsModal = document.getElementById('homeworkhelper-modal');
+        const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
 
         const p = [
             "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
@@ -308,9 +307,9 @@
             }
         }
 
-        loadProxyContentAsIframe('home-iframe', 'Pages/browser.html');
-        loadProxyContentAsIframe('music-iframe', 'Pages/music.html');
-        loadProxyContentAsIframe('ai-iframe', 'Pages/ai.html');
+        loadProxyContentAsIframe('mathworksheets-iframe', 'Pages/browser.html');
+        loadProxyContentAsIframe('gradebook-iframe', 'Pages/music.html');
+        loadProxyContentAsIframe('lessonplanner-iframe', 'Pages/ai.html');
 
         async function resolveAndGetUrl(originalUrl) {
             let resolvedUrl = originalUrl;
@@ -340,7 +339,7 @@
             return resolvedUrl;
         }
 
-        // --- Theme and Settings Management ---
+        // --- Preferences and Settings Management ---
         const savedTheme = localStorage.getItem('kstuff_theme');
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
         const savedTextVis = localStorage.getItem('kstuff_text_vis');
@@ -394,13 +393,13 @@
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
 
-                if (targetId === 'settings') {
+                if (targetId === 'homeworkhelper') {
                     if (settingsModal) settingsModal.classList.add('active');
                     return;
                 }
 
                 navBtns.forEach(b => {
-                    if (b.getAttribute('data-target') !== 'settings') {
+                    if (b.getAttribute('data-target') !== 'homeworkhelper') {
                         b.classList.remove('active');
                     }
                 });
@@ -410,11 +409,11 @@
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) targetPage.classList.add('active');
 
-                if (targetId === 'home') {
-                    if (navLogo) navLogo.classList.remove('show');
+                if (targetId === 'mathworksheets') {
+                    if (eduLogo) eduLogo.classList.remove('show');
                     body.classList.remove('show-logo');
                 } else {
-                    if (navLogo) navLogo.classList.add('show');
+                    if (eduLogo) eduLogo.classList.add('show');
                     body.classList.add('show-logo');
                 }
             });
@@ -486,96 +485,96 @@
             });
         }
 
-        // --- Data Management & Rendering ---
-        let gamesData = [];
-        let appsData = [];
-        let currentGameCategory = "All";
-        let currentAppCategory = "All";
-        let currentGameSearch = "";
-        let currentAppSearch = "";
-        let currentGamePage = 1;
-        let currentAppPage = 1;
+        // --- Resource Data Management & Rendering ---
+        let readingItemsData = [];
+        let scienceItemsData = [];
+        let currentReadingCategory = "All";
+        let currentScienceCategory = "All";
+        let currentReadingSearch = "";
+        let currentScienceSearch = "";
+        let currentReadingPage = 1;
+        let currentSciencePage = 1;
         const itemsPerPage = 50;
 
-        const gamesSearch = document.getElementById('games-search');
-        const appsSearch = document.getElementById('apps-search');
+        const readingSearchInput = document.getElementById('readingcorner-search');
+        const scienceSearchInput = document.getElementById('sciencequiz-search');
 
-        if (gamesSearch) {
-            gamesSearch.addEventListener('input', (e) => {
-                currentGameSearch = e.target.value.toLowerCase().trim();
-                currentGamePage = 1;
-                renderGames();
+        if (readingSearchInput) {
+            readingSearchInput.addEventListener('input', (e) => {
+                currentReadingSearch = e.target.value.toLowerCase().trim();
+                currentReadingPage = 1;
+                renderReadingResources();
             });
         }
 
-        if (appsSearch) {
-            appsSearch.addEventListener('input', (e) => {
-                currentAppSearch = e.target.value.toLowerCase().trim();
-                currentAppPage = 1;
-                renderApps();
+        if (scienceSearchInput) {
+            scienceSearchInput.addEventListener('input', (e) => {
+                currentScienceSearch = e.target.value.toLowerCase().trim();
+                currentSciencePage = 1;
+                renderScienceModules();
             });
         }
 
         fetchAsset('Json/categories.json')
             .then(categories => {
-                const gamesSelect = document.getElementById('games-category-select');
-                const appsSelect = document.getElementById('apps-category-select');
+                const readingSelect = document.getElementById('readingcorner-category-select');
+                const scienceSelect = document.getElementById('sciencequiz-category-select');
 
-                if (gamesSelect) {
-                    gamesSelect.innerHTML = '';
+                if (readingSelect) {
+                    readingSelect.innerHTML = '';
                     categories.Games.forEach(cat => {
                         const option = document.createElement('option');
                         option.value = cat;
                         option.textContent = cat;
-                        gamesSelect.appendChild(option);
+                        readingSelect.appendChild(option);
                     });
-                    gamesSelect.addEventListener('change', (e) => {
-                        currentGameCategory = e.target.value;
-                        currentGamePage = 1;
-                        renderGames();
+                    readingSelect.addEventListener('change', (e) => {
+                        currentReadingCategory = e.target.value;
+                        currentReadingPage = 1;
+                        renderReadingResources();
                     });
                 }
 
-                if (appsSelect) {
-                    appsSelect.innerHTML = '';
+                if (scienceSelect) {
+                    scienceSelect.innerHTML = '';
                     categories.Apps.forEach(cat => {
                         const option = document.createElement('option');
                         option.value = cat;
                         option.textContent = cat;
-                        appsSelect.appendChild(option);
+                        scienceSelect.appendChild(option);
                     });
-                    appsSelect.addEventListener('change', (e) => {
-                        currentAppCategory = e.target.value;
-                        currentAppPage = 1;
-                        renderApps();
+                    scienceSelect.addEventListener('change', (e) => {
+                        currentScienceCategory = e.target.value;
+                        currentSciencePage = 1;
+                        renderScienceModules();
                     });
                 }
             })
             .catch(err => {
-                const gs = document.getElementById('games-category-select');
-                const as = document.getElementById('apps-category-select');
-                if (gs) gs.innerHTML = '<option value="All">Error</option>';
-                if (as) as.innerHTML = '<option value="All">Error</option>';
+                const rs = document.getElementById('readingcorner-category-select');
+                const ss = document.getElementById('sciencequiz-category-select');
+                if (rs) rs.innerHTML = '<option value="All">Error</option>';
+                if (ss) ss.innerHTML = '<option value="All">Error</option>';
             });
 
-        function renderGames() {
-            const gamesGrid = document.getElementById('games-grid');
-            const gamesPagination = document.getElementById('games-pagination');
-            if (!gamesGrid) return;
+        function renderReadingResources() {
+            const readingGrid = document.getElementById('readingcorner-grid');
+            const readingPagination = document.getElementById('readingcorner-pagination');
+            if (!readingGrid) return;
             
-            const filteredData = gamesData.filter(item => {
-                const matchesCategory = currentGameCategory === "All" || item.category === currentGameCategory;
-                const matchesSearch = item.title.toLowerCase().includes(currentGameSearch);
+            const filteredData = readingItemsData.filter(item => {
+                const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
+                const matchesSearch = item.title.toLowerCase().includes(currentReadingSearch);
                 return matchesCategory && matchesSearch;
             });
 
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-            if (currentGamePage > totalPages) currentGamePage = 1;
+            if (currentReadingPage > totalPages) currentReadingPage = 1;
 
-            const start = (currentGamePage - 1) * itemsPerPage;
+            const start = (currentReadingPage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            gamesGrid.innerHTML = '';
+            readingGrid.innerHTML = '';
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -593,44 +592,44 @@
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalIframe) modalIframe.src = finalUrl;
                 });
-                gamesGrid.appendChild(card);
+                readingGrid.appendChild(card);
             });
 
-            if (gamesPagination) {
-                gamesPagination.innerHTML = '';
+            if (readingPagination) {
+                readingPagination.innerHTML = '';
                 if (totalPages > 1) {
                     for (let i = 1; i <= totalPages; i++) {
                         const pageBtn = document.createElement('button');
-                        pageBtn.className = `page-btn ${i === currentGamePage ? 'active' : ''}`;
+                        pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
                         pageBtn.textContent = i;
                         pageBtn.addEventListener('click', () => {
-                            currentGamePage = i;
-                            renderGames();
+                            currentReadingPage = i;
+                            renderReadingResources();
                         });
-                        gamesPagination.appendChild(pageBtn);
+                        readingPagination.appendChild(pageBtn);
                     }
                 }
             }
         }
 
-        function renderApps() {
-            const appsGrid = document.getElementById('apps-grid');
-            const appsPagination = document.getElementById('apps-pagination');
-            if (!appsGrid) return;
+        function renderScienceModules() {
+            const scienceGrid = document.getElementById('sciencequiz-grid');
+            const sciencePagination = document.getElementById('sciencequiz-pagination');
+            if (!scienceGrid) return;
             
-            const filteredData = appsData.filter(item => {
-                const matchesCategory = currentAppCategory === "All" || item.category === currentAppCategory;
-                const matchesSearch = item.title.toLowerCase().includes(currentAppSearch);
+            const filteredData = scienceItemsData.filter(item => {
+                const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
+                const matchesSearch = item.title.toLowerCase().includes(currentScienceSearch);
                 return matchesCategory && matchesSearch;
             });
 
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-            if (currentAppPage > totalPages) currentAppPage = 1;
+            if (currentSciencePage > totalPages) currentSciencePage = 1;
 
-            const start = (currentAppPage - 1) * itemsPerPage;
+            const start = (currentSciencePage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            appsGrid.innerHTML = '';
+            scienceGrid.innerHTML = '';
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -648,27 +647,27 @@
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalIframe) modalIframe.src = finalUrl;
                 });
-                appsGrid.appendChild(card);
+                scienceGrid.appendChild(card);
             });
 
-            if (appsPagination) {
-                appsPagination.innerHTML = '';
+            if (sciencePagination) {
+                sciencePagination.innerHTML = '';
                 if (totalPages > 1) {
                     for (let i = 1; i <= totalPages; i++) {
                         const pageBtn = document.createElement('button');
-                        pageBtn.className = `page-btn ${i === currentAppPage ? 'active' : ''}`;
+                        pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
                         pageBtn.textContent = i;
                         pageBtn.addEventListener('click', () => {
-                            currentAppPage = i;
-                            renderApps();
+                            currentSciencePage = i;
+                            renderScienceModules();
                         });
-                        appsPagination.appendChild(pageBtn);
+                        sciencePagination.appendChild(pageBtn);
                     }
                 }
             }
         }
 
-        // --- Truffled & Game Data Loader ---
+        // --- Truffled & Resource Data Loader ---
         Promise.all([
             fetchAsset('Json/g.json'),
             fetchAsset('Json/truffled.json').catch(() => null),
@@ -683,31 +682,31 @@
                 });
             }
 
-            let finalGames = [];
+            let finalResources = [];
             for (const item of gData) {
                 if (item.url && item.url.includes('${truffled}')) {
                     const searchTitle = (item.title || "").toLowerCase().trim();
-                    const matchedGame = truffledMap.get(searchTitle);
+                    const matchedItem = truffledMap.get(searchTitle);
 
-                    if (matchedGame) {
-                        finalGames.push({
-                            title: matchedGame.name,
-                            url: '${truffled}' + matchedGame.url,
-                            image: base + '/' + matchedGame.thumbnail.replace(/^\/+/, ''),
+                    if (matchedItem) {
+                        finalResources.push({
+                            title: matchedItem.name,
+                            url: '${truffled}' + matchedItem.url,
+                            image: base + '/' + matchedItem.thumbnail.replace(/^\/+/, ''),
                             description: item.description || '',
                             category: item.category || 'Truffled'
                         });
                     } else {
-                        finalGames.push(item);
+                        finalResources.push(item);
                     }
                 } else {
-                    finalGames.push(item);
+                    finalResources.push(item);
                 }
             }
-            gamesData = finalGames;
-            renderGames();
+            readingItemsData = finalResources;
+            renderReadingResources();
         }).catch(err => {});
 
-        fetchAsset('Json/a.json').then(data => { appsData = data; renderApps(); }).catch(err => {});
+        fetchAsset('Json/a.json').then(data => { scienceItemsData = data; renderScienceModules(); }).catch(err => {});
     }
 })();
