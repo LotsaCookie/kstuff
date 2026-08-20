@@ -168,7 +168,7 @@
         { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
         { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
         { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
+        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" }
     ];
 
     // ==========================================
@@ -184,11 +184,7 @@
             img.onload = () => {
                 if (!isDone) {
                     isDone = true;
-                    if (img.naturalWidth > 0) {
-                        resolve(true);
-                    } else {
-                        resolve(false);
-                    }
+                    resolve(img.naturalWidth > 0);
                 }
             };
             
@@ -201,7 +197,6 @@
             
             img.src = testUrl + (testUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
             
-            // 8-second timeout window to support slow loading thumbnails/mirrors
             setTimeout(() => { 
                 if (!isDone) { 
                     isDone = true; 
