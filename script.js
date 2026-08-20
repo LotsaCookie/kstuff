@@ -557,8 +557,10 @@
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_nav_pos', e.target.value);
-            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            updateIndicator(currentActive);
+            setTimeout(() => {
+                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+                updateIndicator(currentActive);
+            }, 400);
         });
         if (textSelect) textSelect.addEventListener('change', (e) => {
             if (e.target.value === 'text-hide') body.classList.add('text-hide');
