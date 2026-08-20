@@ -1,5 +1,5 @@
 (function initApp() {
-    // yaya edu
+ // 2023-2026
     const scramTable = []; 
     
     const staticTable = [
@@ -505,14 +505,6 @@
                     } else if (targetId === 'sciencequiz') {
                         setTimeout(() => renderScienceModules(), 15);
                     }
-                }
-
-                if (targetId === 'mathworksheets') {
-                    if (eduLogo) eduLogo.classList.remove('show');
-                    body.classList.remove('show-logo');
-                } else {
-                    if (eduLogo) eduLogo.classList.add('show');
-                    body.classList.add('show-logo');
                 }
             });
         });
