@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study.com</title>
-    <meta property="og:title" content="IXL | Math, Language Arts, Science, Social Studies, and Spanish" />
-    <meta property="og:site_name" content="IXL Learning" />
+    <title>Study.com - Math, Language Arts, Science</title>
+    <meta property="og:title" content="Study.com | K-12 Online Learning and Worksheet Portal" />
+    <meta property="og:site_name" content="Study.com Learning" />
     <meta name="msapplication-TileColor" content="#00ffa6" />
     <meta property="og:image" content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" />
-    <meta name="description" content="IXL is the world&#39;s most popular subscription-based learning site for K–12. Used by over 17 million students, IXL provides personalized learning in more than 17,000 topics, covering math, language arts, science, social studies, and Spanish. Interactive questions, awards, and certificates keep kids motivated as they master skills." />
-    <meta property="og:description" content="IXL is the world&#39;s most popular subscription-based learning site for K–12. Used by over 17 million students, IXL provides personalized learning in more than 17,000 topics, covering math, language arts, science, social studies, and Spanish. Interactive questions, awards, and certificates keep kids motivated as they master skills." />
+    <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
      window.addEventListener("beforeunload", (event) => {
@@ -69,104 +69,104 @@
     </script>
 </head>
 <body class="theme-sakura nav-left text-hide size-small">
-    <div id="app-container">
-        <nav id="navbar">
-            <div id="nav-logo">K</div>
-            <button class="nav-btn active" data-target="home">
-                <i class="ph ph-house"></i> <span>Home</span>
+    <div id="classroom-portal-container">
+        <nav id="teachertouchbar">
+            <div id="edu-logo">T</div>
+            <button class="nav-btn active" data-target="mathworksheets" title="Math Worksheets">
+                <i class="ph ph-house"></i>
             </button>
-            <button class="nav-btn" data-target="games">
-                <i class="ph ph-game-controller"></i> <span>Games</span>
+            <button class="nav-btn" data-target="readingcorner" title="Reading Corner">
+                <i class="ph ph-game-controller"></i>
             </button>
-            <button class="nav-btn" data-target="apps">
-                <i class="ph ph-app-window"></i> <span>Apps</span>
+            <button class="nav-btn" data-target="sciencequiz" title="Science Quiz">
+                <i class="ph ph-app-window"></i>
             </button>
-            <button class="nav-btn" data-target="music">
-                <i class="ph ph-music-notes"></i> <span>Music</span>
+            <button class="nav-btn" data-target="gradebook" title="Gradebook">
+                <i class="ph ph-music-notes"></i>
             </button>
-            <button class="nav-btn" data-target="ai">
-                <i class="ph ph-robot"></i> <span>AI</span>
+            <button class="nav-btn" data-target="lessonplanner" title="Lesson Planner">
+                <i class="ph ph-robot"></i>
             </button>
             
             <!-- Divider -->
             <div class="nav-divider"></div>
 
-            <button class="nav-btn" data-target="settings">
-                <i class="ph ph-gear"></i> <span>Settings</span>
+            <button class="nav-btn" data-target="homeworkhelper" title="Homework Helper">
+                <i class="ph ph-gear"></i>
             </button>
         </nav>
-        <main id="content-area">
-            <section id="home" class="page active">
-                <iframe id="home-iframe" class="full-page-iframe" allowfullscreen></iframe>
+        <main id="studymaterial-area">
+            <section id="mathworksheets" class="page active">
+                <iframe id="mathworksheets-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
-            <section id="games" class="page">
+            <section id="readingcorner" class="page">
                 <div class="filter-bar">
                     <div class="modern-select-wrapper search-wrapper">
                         <i class="ph ph-magnifying-glass"></i>
-                        <input type="text" id="games-search" class="modern-input" placeholder="Search games...">
+                        <input type="text" id="readingcorner-search" class="modern-input" placeholder="Search resources...">
                     </div>
                     <div class="modern-select-wrapper">
                         <i class="ph ph-funnel"></i>
-                        <select id="games-category-select" class="modern-select">
+                        <select id="readingcorner-category-select" class="modern-select">
                             <option value="All">Loading Categories...</option>
                         </select>
                     </div>
                 </div>
-                <div class="item-grid" id="games-grid"></div>
-                <div class="pagination-bar" id="games-pagination"></div>
+                <div class="item-grid" id="readingcorner-grid"></div>
+                <div class="pagination-bar" id="readingcorner-pagination"></div>
             </section>
-            <section id="apps" class="page">
+            <section id="sciencequiz" class="page">
                 <div class="filter-bar">
                     <div class="modern-select-wrapper search-wrapper">
                         <i class="ph ph-magnifying-glass"></i>
-                        <input type="text" id="apps-search" class="modern-input" placeholder="Search apps...">
+                        <input type="text" id="sciencequiz-search" class="modern-input" placeholder="Search modules...">
                     </div>
                     <div class="modern-select-wrapper">
                         <i class="ph ph-funnel"></i>
-                        <select id="apps-category-select" class="modern-select">
+                        <select id="sciencequiz-category-select" class="modern-select">
                             <option value="All">Loading Categories...</option>
                         </select>
                     </div>
                 </div>
-                <div class="item-grid" id="apps-grid"></div>
-                <div class="pagination-bar" id="apps-pagination"></div>
+                <div class="item-grid" id="sciencequiz-grid"></div>
+                <div class="pagination-bar" id="sciencequiz-pagination"></div>
             </section>
-            <section id="music" class="page">
-                <iframe id="music-iframe" class="full-page-iframe" allowfullscreen></iframe>
+            <section id="gradebook" class="page">
+                <iframe id="gradebook-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
-            <section id="ai" class="page">
-                <iframe id="ai-iframe" class="full-page-iframe" allowfullscreen></iframe>
+            <section id="lessonplanner" class="page">
+                <iframe id="lessonplanner-iframe" class="full-page-iframe" allowfullscreen></iframe>
             </section>
         </main>
     </div>
 
     <!-- Content Modal -->
-    <div id="content-modal" class="modal-overlay">
+    <div id="resource-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <span id="modal-title"></span>
+                <span id="resource-modal-title"></span>
                 <div class="modal-actions">
-                    <button id="modal-fullscreen-btn" title="Toggle Fullscreen"><i class="ph ph-corners-out"></i></button>
-                    <button id="modal-close-btn" title="Close"><i class="ph ph-x"></i></button>
+                    <button id="resource-fullscreen-btn" title="Toggle Fullscreen"><i class="ph ph-corners-out"></i></button>
+                    <button id="resource-close-btn" title="Close"><i class="ph ph-x"></i></button>
                 </div>
             </div>
-            <iframe id="modal-iframe" src=""></iframe>
+            <iframe id="resource-modal-iframe" src=""></iframe>
         </div>
     </div>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="modal-overlay">
+    <div id="homeworkhelper-modal" class="modal-overlay">
         <div class="modal-content settings-modal-content">
             <div class="modal-header">
-                <span id="settings-modal-title"><i class="ph ph-gear"></i> Settings</span>
+                <span id="homeworkhelper-title"><i class="ph ph-gear"></i> Preferences</span>
                 <div class="modal-actions">
-                    <button id="settings-modal-close-btn" title="Close"><i class="ph ph-x"></i></button>
+                    <button id="homeworkhelper-close-btn" title="Close"><i class="ph ph-x"></i></button>
                 </div>
             </div>
             <div class="settings-card modal-settings-body">
                 <div class="setting-group">
-                    <label for="theme-select"><i class="ph ph-palette"></i> App Theme</label>
-                    <select id="theme-select">
+                    <label for="layout-theme-select"><i class="ph ph-palette"></i> App Theme</label>
+                    <select id="layout-theme-select">
                         <option value="theme-sakura" selected>Sakura</option>
                         <option value="theme-dark">Dark</option>
                         <option value="theme-light">Light</option>
@@ -180,8 +180,8 @@
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label for="nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
-                    <select id="nav-select">
+                    <label for="layout-nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
+                    <select id="layout-nav-select">
                         <option value="nav-top">Top</option>
                         <option value="nav-left" selected>Left</option>
                         <option value="nav-right">Right</option>
@@ -189,15 +189,15 @@
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label for="text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
-                    <select id="text-select">
+                    <label for="layout-text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
+                    <select id="layout-text-select">
                         <option value="text-show">Show</option>
                         <option value="text-hide" selected>Hide</option>
                     </select>
                 </div>
                 <div class="setting-group">
-                    <label for="size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label>
-                    <select id="size-select">
+                    <label for="layout-size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label>
+                    <select id="layout-size-select">
                         <option value="size-small" selected>Small</option>
                         <option value="size-medium">Medium</option>
                         <option value="size-large">Large</option>
