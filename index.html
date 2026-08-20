@@ -129,20 +129,26 @@ body {
     </style>
 </head>
 <body class="theme-sakura nav-left text-hide size-small">
-
-
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
+            const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
+            const savedTextVis = localStorage.getItem('kstuff_text_vis') || 'text-hide';
+            const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-small';
+            
+            document.body.className = `${savedTheme} ${savedNavPos} ${savedTextVis} ${savedNavSize}`;
+        })();
+    </script>
     <div id="loading-screen">
         <div class="spinner"></div>
         <div class="loading-text">Loading</div>
     </div>
-    
     <script>
         window.addEventListener('load', () => {
             const loader = document.getElementById('loading-screen');
             if(loader) loader.classList.add('hidden');
         });
     </script>
-
     <div style="display:none;" aria-hidden="true">
           <h1>Educational Resources and Online Learning Platform</h1>
           <p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
