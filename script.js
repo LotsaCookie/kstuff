@@ -172,44 +172,60 @@
     ];
 
     // ==========================================
-    // 2. CHECKER (Race to Success)
+    // 2. CHECKER (BATCHED RACE TO SUCCESS)
     // ==========================================
-    function getWorkingConfig(table) {
-        if (!table || table.length === 0) return Promise.resolve(null);
+    async function getWorkingConfig(table) {
+        if (!table || table.length === 0) return null;
 
-        return new Promise((resolve) => {
-            let resolved = false;
-            let failedCount = 0;
+        // Test in batches of 5. This prevents the browser from 
+        // getting overwhelmed with 150+ simultaneous DNS lookups!
+        const chunkSize = 5;
+        
+        for (let i = 0; i < table.length; i += chunkSize) {
+            const chunk = table.slice(i, i + chunkSize);
+            
+            const winner = await new Promise((resolve) => {
+                let resolved = false;
+                let failedCount = 0;
 
-            table.forEach(entry => {
-                const img = new Image();
-                const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                
-                img.onload = () => {
+                chunk.forEach(entry => {
+                    const img = new Image();
+                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                    
+                    img.onload = () => {
+                        if (!resolved) {
+                            resolved = true;
+                            resolve(entry);
+                        }
+                    };
+                    
+                    img.onerror = () => {
+                        failedCount++;
+                        // If all 5 in this chunk fail, let it move to the next chunk
+                        if (!resolved && failedCount === chunk.length) {
+                            resolved = true;
+                            resolve(null); 
+                        }
+                    };
+                    
+                    img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+                });
+
+                // Give each small chunk up to 4 seconds to respond
+                setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
-                        resolve(entry);
+                        resolve(null);
                     }
-                };
-                
-                img.onerror = () => {
-                    failedCount++;
-                    if (!resolved && failedCount === table.length) {
-                        resolved = true;
-                        resolve(table[0]); 
-                    }
-                };
-                
-                img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+                }, 4000);
             });
-            
-            setTimeout(() => { 
-                if (!resolved) { 
-                    resolved = true; 
-                    resolve(table[0]); 
-                } 
-            }, 8000); // Wait up to 8s max before falling back
-        });
+
+            // If we found a working URL in this chunk, stop checking immediately and return it!
+            if (winner) return winner; 
+        }
+
+        // If literally every chunk failed, only then do we fall back to index [0]
+        return table[0]; 
     }
 
     // ==========================================
@@ -491,7 +507,6 @@
                     </div>
                 `;
                 
-                // Clicks are now INSTANT because item.url is fully processed before this is ever called!
                 card.addEventListener('click', () => {
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalOverlay) modalOverlay.classList.add('active');
@@ -591,7 +606,6 @@
             ...checkPromises 
         ]).then(([gData, aData, truffledData]) => {
 
-            // Helper to modify BOTH the image and url strings with the found networks
             function applyBases(str) {
                 if (!str || typeof str !== 'string') return str;
                 let newStr = str;
@@ -617,11 +631,9 @@
                     newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://truffled.lol');
                 }
                 
-                // Cleans up any leftover double slashes natively (ignores protocols like https://)
                 return newStr.replace(/([^:]\/)\/+/g, '$1');
             }
 
-            // Prep Truffled Map
             const truffledMap = new Map();
             if (truffledData && truffledData.games) {
                 truffledData.games.forEach(g => {
@@ -629,7 +641,6 @@
                 });
             }
 
-            // 3. APPLY TO READING RESOURCES
             let finalResources = [];
             for (const item of gData) {
                 let processedItem = { ...item };
@@ -639,21 +650,20 @@
                     const matchedItem = truffledMap.get(searchTitle);
                     if (matchedItem) {
                         processedItem.title = matchedItem.name;
-                        processedItem.url = '${truffled}' + matchedItem.url;
+                        // Added strict slash control here so links assemble perfectly
+                        processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
                         processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
                         processedItem.description = processedItem.description || '';
                         processedItem.category = processedItem.category || 'Truffled';
                     }
                 }
 
-                // THIS MODIFIES THE ITEM DATA DIRECTLY! 
                 processedItem.url = applyBases(processedItem.url);
                 processedItem.image = applyBases(processedItem.image);
                 
                 finalResources.push(processedItem);
             }
             
-            // 4. APPLY TO SCIENCE MODULES
             let finalScience = [];
             for (const item of aData) {
                 let processedItem = { ...item };
@@ -662,7 +672,7 @@
                 finalScience.push(processedItem);
             }
 
-            // 5. FINALLY, WE ARE READY TO RENDER
+            // 3. FINALLY RENDER
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
             renderReadingResources();
