@@ -1,5 +1,4 @@
 (function initApp() {
-    // Edu-Book
     const scramTable = []; 
     
     const staticTable = [
@@ -352,79 +351,6 @@
             if (sizeSelect) sizeSelect.value = 'size-small';
         }
 
-        navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetId = btn.getAttribute('data-target');
-
-                if (targetId === 'homeworkhelper') {
-                    if (settingsModal) settingsModal.classList.add('active');
-                    return;
-                }
-
-                navBtns.forEach(b => {
-                    if (b.getAttribute('data-target') !== 'homeworkhelper') {
-                        b.classList.remove('active');
-                    }
-                });
-                pages.forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-
-                const targetPage = document.getElementById(targetId);
-                if (targetPage) targetPage.classList.add('active');
-
-                if (targetId === 'mathworksheets') {
-                    if (eduLogo) eduLogo.classList.remove('show');
-                    body.classList.remove('show-logo');
-                } else {
-                    if (eduLogo) eduLogo.classList.add('show');
-                    body.classList.add('show-logo');
-                }
-            });
-        });
-
-        if (themeSelect) themeSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_theme', e.target.value);
-        });
-        if (navSelect) navSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_nav_pos', e.target.value);
-        });
-        if (textSelect) textSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'text-hide') body.classList.add('text-hide');
-            else body.classList.remove('text-hide');
-            localStorage.setItem('kstuff_text_vis', e.target.value);
-        });
-        if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_nav_size', e.target.value);
-        });
-
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
-            modalIframe.src = 'about:blank';
-        });
-        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                modalOverlay.classList.remove('active');
-                modalIframe.src = 'about:blank';
-            }
-        });
-        if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) modalIframe.requestFullscreen().catch(err => {});
-            else document.exitFullscreen();
-        });
-
-        if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => {
-            if (settingsModal) settingsModal.classList.remove('active');
-        });
-        if (settingsModal) settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) settingsModal.classList.remove('active');
-        });
-
         // --- Resource Data Management & Rendering ---
         let readingItemsData = [];
         let scienceItemsData = [];
@@ -434,7 +360,7 @@
         let currentScienceSearch = "";
         let currentReadingPage = 1;
         let currentSciencePage = 1;
-        const itemsPerPage = 24; // UPDATED TO 24 BUTTONS PER PAGE
+        const itemsPerPage = 24;
 
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
@@ -459,45 +385,12 @@
             }, 150);
         });
 
-        fetchAsset('Json/categories.json').then(categories => {
-            const readingSelect = document.getElementById('readingcorner-category-select');
-            const scienceSelect = document.getElementById('sciencequiz-category-select');
-            if (readingSelect) {
-                readingSelect.innerHTML = '';
-                categories.Games.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    readingSelect.appendChild(option);
-                });
-                readingSelect.addEventListener('change', (e) => {
-                    currentReadingCategory = e.target.value;
-                    currentReadingPage = 1;
-                    renderReadingResources();
-                });
-            }
-            if (scienceSelect) {
-                scienceSelect.innerHTML = '';
-                categories.Apps.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    scienceSelect.appendChild(option);
-                });
-                scienceSelect.addEventListener('change', (e) => {
-                    currentScienceCategory = e.target.value;
-                    currentSciencePage = 1;
-                    renderScienceModules();
-                });
-            }
-        }).catch(err => {});
-
         function renderReadingResources() {
             const readingGrid = document.getElementById('readingcorner-grid');
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingGrid) return;
             
-            // Explicitly force unload/release background images from previous DOM nodes before wiping
+            // Wipe grid and explicitly release background image textures from memory
             const oldCards = readingGrid.querySelectorAll('.round-btn');
             oldCards.forEach(c => c.style.backgroundImage = 'none');
             readingGrid.innerHTML = '';
@@ -557,6 +450,7 @@
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!scienceGrid) return;
             
+            // Wipe grid and explicitly release background image textures from memory
             const oldCards = scienceGrid.querySelectorAll('.round-btn');
             oldCards.forEach(c => c.style.backgroundImage = 'none');
             scienceGrid.innerHTML = '';
@@ -608,6 +502,133 @@
                 }
             }
         }
+
+        // --- Navigation Tab Switching with Full Memory Cleanup ---
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+
+                if (targetId === 'homeworkhelper') {
+                    if (settingsModal) settingsModal.classList.add('active');
+                    return;
+                }
+
+                navBtns.forEach(b => {
+                    if (b.getAttribute('data-target') !== 'homeworkhelper') {
+                        b.classList.remove('active');
+                    }
+                });
+
+                // Unload/clear grids on all pages we are leaving to free up image textures
+                pages.forEach(p => {
+                    p.classList.remove('active');
+                    const grid = p.querySelector('.round-grid') || p.querySelector('#readingcorner-grid') || p.querySelector('#sciencequiz-grid');
+                    if (grid) {
+                        const cards = grid.querySelectorAll('.round-btn');
+                        cards.forEach(c => c.style.backgroundImage = 'none');
+                        grid.innerHTML = '';
+                    }
+                });
+
+                btn.classList.add('active');
+
+                const targetPage = document.getElementById(targetId);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    
+                    // Only load/render content for the active tab to save memory
+                    if (targetId === 'readingcorner') {
+                        renderReadingResources();
+                    } else if (targetId === 'sciencequiz') {
+                        renderScienceModules();
+                    }
+                }
+
+                if (targetId === 'mathworksheets') {
+                    if (eduLogo) eduLogo.classList.remove('show');
+                    body.classList.remove('show-logo');
+                } else {
+                    if (eduLogo) eduLogo.classList.add('show');
+                    body.classList.add('show-logo');
+                }
+            });
+        });
+
+        if (themeSelect) themeSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_theme', e.target.value);
+        });
+        if (navSelect) navSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_nav_pos', e.target.value);
+        });
+        if (textSelect) textSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'text-hide') body.classList.add('text-hide');
+            else body.classList.remove('text-hide');
+            localStorage.setItem('kstuff_text_vis', e.target.value);
+        });
+        if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_nav_size', e.target.value);
+        });
+
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+            modalIframe.src = 'about:blank';
+        });
+        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('active');
+                modalIframe.src = 'about:blank';
+            }
+        });
+        if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) modalIframe.requestFullscreen().catch(err => {});
+            else document.exitFullscreen();
+        });
+
+        if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => {
+            if (settingsModal) settingsModal.classList.remove('active');
+        });
+        if (settingsModal) settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) settingsModal.classList.remove('active');
+        });
+
+        fetchAsset('Json/categories.json').then(categories => {
+            const readingSelect = document.getElementById('readingcorner-category-select');
+            const scienceSelect = document.getElementById('sciencequiz-category-select');
+            if (readingSelect) {
+                readingSelect.innerHTML = '';
+                categories.Games.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    readingSelect.appendChild(option);
+                });
+                readingSelect.addEventListener('change', (e) => {
+                    currentReadingCategory = e.target.value;
+                    currentReadingPage = 1;
+                    renderReadingResources();
+                });
+            }
+            if (scienceSelect) {
+                scienceSelect.innerHTML = '';
+                categories.Apps.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    scienceSelect.appendChild(option);
+                });
+                scienceSelect.addEventListener('change', (e) => {
+                    currentScienceCategory = e.target.value;
+                    currentSciencePage = 1;
+                    renderScienceModules();
+                });
+            }
+        }).catch(err => {});
 
         // ==========================================
         // 4. THE MASTER DATA LOADER
@@ -696,8 +717,14 @@
 
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
-            renderReadingResources();
-            renderScienceModules();
+
+            // Only render the initial active tab on startup to avoid memory overhead
+            const activePage = document.querySelector('.page.active');
+            if (activePage && activePage.id === 'sciencequiz') {
+                renderScienceModules();
+            } else {
+                renderReadingResources();
+            }
         });
     }
 })();
