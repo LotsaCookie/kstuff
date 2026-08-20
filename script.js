@@ -1,4 +1,5 @@
 (function initApp() {
+    //EDU ROCKS!
     const scramTable = []; 
     
     const staticTable = [
@@ -390,9 +391,12 @@
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingGrid) return;
             
-            // Wipe grid and explicitly release background image textures from memory
+            // Explicitly tear down existing card nodes and clear background image textures
             const oldCards = readingGrid.querySelectorAll('.round-btn');
-            oldCards.forEach(c => c.style.backgroundImage = 'none');
+            oldCards.forEach(c => {
+                c.style.backgroundImage = 'none';
+                c.remove();
+            });
             readingGrid.innerHTML = '';
 
             const filteredData = readingItemsData.filter(item => {
@@ -450,9 +454,12 @@
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!scienceGrid) return;
             
-            // Wipe grid and explicitly release background image textures from memory
+            // Explicitly tear down existing card nodes and clear background image textures
             const oldCards = scienceGrid.querySelectorAll('.round-btn');
-            oldCards.forEach(c => c.style.backgroundImage = 'none');
+            oldCards.forEach(c => {
+                c.style.backgroundImage = 'none';
+                c.remove();
+            });
             scienceGrid.innerHTML = '';
 
             const filteredData = scienceItemsData.filter(item => {
@@ -503,7 +510,7 @@
             }
         }
 
-        // --- Navigation Tab Switching with Full Memory Cleanup ---
+        // --- Aggressive Memory-Purging Navigation & On-Demand Loading ---
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -519,15 +526,18 @@
                     }
                 });
 
-                // Unload/clear grids on all pages we are leaving to free up image textures
+                // Completely wipe ALL pages and destroy card elements to enforce 0 memory usage off-screen
                 pages.forEach(p => {
                     p.classList.remove('active');
-                    const grid = p.querySelector('.round-grid') || p.querySelector('#readingcorner-grid') || p.querySelector('#sciencequiz-grid');
-                    if (grid) {
+                    const grids = p.querySelectorAll('.round-grid, #readingcorner-grid, #sciencequiz-grid');
+                    grids.forEach(grid => {
                         const cards = grid.querySelectorAll('.round-btn');
-                        cards.forEach(c => c.style.backgroundImage = 'none');
+                        cards.forEach(c => {
+                            c.style.backgroundImage = 'none';
+                            c.remove();
+                        });
                         grid.innerHTML = '';
-                    }
+                    });
                 });
 
                 btn.classList.add('active');
@@ -536,11 +546,11 @@
                 if (targetPage) {
                     targetPage.classList.add('active');
                     
-                    // Only load/render content for the active tab to save memory
+                    // Delay the render slightly using setTimeout to prevent UI thread lag spikes/freezes
                     if (targetId === 'readingcorner') {
-                        renderReadingResources();
+                        setTimeout(() => renderReadingResources(), 15);
                     } else if (targetId === 'sciencequiz') {
-                        renderScienceModules();
+                        setTimeout(() => renderScienceModules(), 15);
                     }
                 }
 
@@ -718,7 +728,7 @@
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
 
-            // Only render the initial active tab on startup to avoid memory overhead
+            // Initialize strictly the active tab on launch
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
                 renderScienceModules();
