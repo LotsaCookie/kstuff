@@ -219,6 +219,48 @@ body.show-logo.nav-right #teachertouchbar {
     padding-top: 3rem;
 }
 
+/* NAV INDICATOR - Absolute Position Overlay */
+.nav-indicator {
+    position: absolute;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 20;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Vertical Positions (Left/Right) */
+.nav-left .nav-indicator {
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: var(--btn-size);
+}
+
+.nav-right .nav-indicator {
+    right: 0;
+    top: 0;
+    width: 3px;
+    height: var(--btn-size);
+}
+
+/* Horizontal Positions (Top/Bottom) */
+.nav-top .nav-indicator {
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: var(--btn-size);
+}
+
+.nav-bottom .nav-indicator {
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: var(--btn-size);
+}
+
 /* 6. LOGO & BRANDING */
 #edu-logo {
     position: absolute;
