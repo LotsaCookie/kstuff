@@ -1,6 +1,6 @@
 (function initApp() {
     // ==========================================
-    // 1. DEFINE TABLES AT THE VERY START
+    // 1. DEFINE TABLES AT THE VERY START Ttm
     // ==========================================
     const scramTable = []; 
     
@@ -172,66 +172,59 @@
     ];
 
     // ==========================================
-    // 2. TRUE-DETECTION CONNECTION CHECKER (8s timeout)
+    // 2. TRUE-DETECTION CACHED CHECKER (Race to first success)
     // ==========================================
-    const activeTableIndexes = {};
+    const tablePromises = new Map();
 
-    function testUrlConnection(testUrl) {
-        return new Promise((resolve) => {
-            let isDone = false;
-            const img = new Image();
+    function getWorkingConfig(table) {
+        if (!table || table.length === 0) return Promise.resolve(null);
+        
+        // If we already started (or finished) testing this table, just return the cached Promise.
+        if (tablePromises.has(table)) {
+            return tablePromises.get(table);
+        }
+
+        const checkPromise = new Promise((resolve) => {
+            let resolved = false;
+            let failedCount = 0;
+
+            table.forEach(entry => {
+                const img = new Image();
+                const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                
+                img.onload = () => {
+                    if (!resolved) {
+                        resolved = true;
+                        resolve(entry); // Instantly resolve on the very first successful load!
+                    }
+                };
+                
+                img.onerror = () => {
+                    failedCount++;
+                    // If literally every single one fails, fallback to the first entry
+                    if (!resolved && failedCount === table.length) {
+                        resolved = true;
+                        resolve(table[0]); 
+                    }
+                };
+                
+                img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+            });
             
-            img.onload = () => {
-                if (!isDone) {
-                    isDone = true;
-                    resolve(img.naturalWidth > 0);
-                }
-            };
-            
-            img.onerror = () => {
-                if (!isDone) {
-                    isDone = true;
-                    resolve(false);
-                }
-            };
-            
-            img.src = testUrl + (testUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
-            
+            // 8-second absolute max timeout for safety
             setTimeout(() => { 
-                if (!isDone) { 
-                    isDone = true; 
-                    resolve(false); 
+                if (!resolved) { 
+                    resolved = true; 
+                    resolve(table[0]); 
                 } 
             }, 8000);
         });
+
+        tablePromises.set(table, checkPromise);
+        return checkPromise;
     }
 
-    async function getWorkingConfig(table) {
-        if (!table || table.length === 0) return null;
-        
-        if (activeTableIndexes[table] === undefined) {
-            activeTableIndexes[table] = 0;
-        }
-
-        const checkPromises = table.map(async (entry) => {
-            const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-            const isAlive = await testUrlConnection(fullTestUrl);
-            return isAlive ? entry : null;
-        });
-
-        try {
-            const results = await Promise.all(checkPromises);
-            const workingEntry = results.find(entry => entry !== null);
-            
-            if (workingEntry) {
-                activeTableIndexes[table] = table.indexOf(workingEntry);
-                return workingEntry;
-            }
-        } catch (err) {}
-
-        return table[activeTableIndexes[table]] || table[0];
-    }
-
+    // Start background checks immediately on page load
     [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
         getWorkingConfig(table);
     });
@@ -310,6 +303,7 @@
             let resolvedUrl = originalUrl;
             
             async function getFreshUrl(table) {
+                // This instantly grabs the cached winner instead of running checks again
                 const w = await getWorkingConfig(table);
                 return w ? w.url + w.final : '';
             }
@@ -574,7 +568,6 @@
                 const card = document.createElement('div');
                 card.className = 'round-btn';
                 
-                // Safe background image with fallback
                 const imgUrl = item.image || '';
                 card.style.backgroundImage = `url('${imgUrl}')`;
                 
@@ -666,11 +659,11 @@
             }
         }
 
-        // --- Truffled & Resource Data Loader (Waits for working config) ---
+        // --- Truffled & Resource Data Loader (Waits for the cached promise) ---
         Promise.all([
             fetchAsset('Json/g.json'),
             fetchAsset('Json/truffled.json').catch(() => null),
-            getWorkingConfig(truffledTable)
+            getWorkingConfig(truffledTable) 
         ]).then(([gData, truffledData, w]) => {
             const base = w ? (w.url).replace(/\/+$/, '') : 'https://truffled.lol';
             const truffledMap = new Map();
@@ -702,6 +695,7 @@
                     finalResources.push(item);
                 }
             }
+            // Truly wait to set data and render ONLY AFTER everything is confirmed
             readingItemsData = finalResources;
             renderReadingResources();
         }).catch(err => {});
