@@ -233,6 +233,7 @@
     }
 
     function runLogic() {
+        const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
         const themeSelect = document.getElementById('layout-theme-select');
@@ -250,6 +251,45 @@
 
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
+
+        // --- SLIDING NAVBAR INDICATOR SETUP ---
+        let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
+        if (navBar && !indicator) {
+            indicator = document.createElement('div');
+            indicator.className = 'nav-indicator';
+            navBar.prepend(indicator);
+        }
+
+        function updateIndicator(activeBtn) {
+            if (!activeBtn || !indicator || !navBar) return;
+
+            const isVertical = body.classList.contains('nav-left') || 
+                               body.classList.contains('nav-right');
+
+            const navRect = navBar.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+
+            if (isVertical) {
+                const topOffset = btnRect.top - navRect.top;
+                indicator.style.width = '3px';
+                indicator.style.height = `${btnRect.height}px`;
+                indicator.style.transform = `translateY(${topOffset}px)`;
+                indicator.style.left = body.classList.contains('nav-right') ? '0' : 'auto';
+                indicator.style.right = body.classList.contains('nav-left') ? '0' : 'auto';
+                indicator.style.top = '0';
+                indicator.style.bottom = 'auto';
+            } else {
+                const leftOffset = btnRect.left - navRect.left;
+                indicator.style.height = '3px';
+                indicator.style.width = `${btnRect.width}px`;
+                indicator.style.transform = `translateX(${leftOffset}px)`;
+                indicator.style.top = body.classList.contains('nav-bottom') ? '0' : 'auto';
+                indicator.style.bottom = body.classList.contains('nav-top') ? '0' : 'auto';
+                indicator.style.left = '0';
+                indicator.style.right = 'auto';
+            }
+        }
+        // --- END SLIDING INDICATOR SETUP ---
 
         const p = [
             "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
@@ -370,7 +410,6 @@
         });
 
         function renderReadingResources() {
-            // Throttled via requestAnimationFrame to protect GPU thread and eliminate SIGILL crashes
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -425,7 +464,6 @@
         }
 
         function renderScienceModules() {
-            // Throttled via requestAnimationFrame to protect GPU thread and eliminate SIGILL crashes
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -478,6 +516,7 @@
             });
         }
 
+        // --- NAVIGATION CLICK HANDLER WITH INDICATOR SUPPORT ---
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -496,6 +535,7 @@
                 pages.forEach(p => p.classList.remove('active'));
 
                 btn.classList.add('active');
+                updateIndicator(btn); // Slide indicator bar to new active button
 
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) {
@@ -509,25 +549,49 @@
             });
         });
 
+        // Initial active indicator position on load
+        const initialActive = navBar ? (navBar.querySelector('.nav-btn.active') || navBtns[0]) : null;
+        if (initialActive) {
+            setTimeout(() => updateIndicator(initialActive), 60);
+        }
+
+        window.addEventListener('resize', () => {
+            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+            updateIndicator(currentActive);
+        });
+        // --------------------------------------------------------
+
         if (themeSelect) themeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_theme', e.target.value);
+            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+            updateIndicator(currentActive);
         });
         if (navSelect) navSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_nav_pos', e.target.value);
+            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+            updateIndicator(currentActive);
         });
         if (textSelect) textSelect.addEventListener('change', (e) => {
             if (e.target.value === 'text-hide') body.classList.add('text-hide');
             else body.classList.remove('text-hide');
             localStorage.setItem('kstuff_text_vis', e.target.value);
+            setTimeout(() => {
+                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+                updateIndicator(currentActive);
+            }, 50);
         });
         if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\bsize-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_nav_size', e.target.value);
+            setTimeout(() => {
+                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+                updateIndicator(currentActive);
+            }, 50);
         });
 
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
