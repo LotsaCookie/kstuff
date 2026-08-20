@@ -1,5 +1,5 @@
 (function initApp() {
-    //EDU ROCKS!
+    // Memory EDU
     const scramTable = []; 
     
     const staticTable = [
@@ -169,17 +169,11 @@
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
 
-    // ==========================================
-    // 2. MEMORY-OPTIMIZED BATCHED CHECKER
-    // ==========================================
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
-
         const chunkSize = 5;
-        
         for (let i = 0; i < table.length; i += chunkSize) {
             const chunk = table.slice(i, i + chunkSize);
-            
             const winner = await new Promise((resolve) => {
                 let resolved = false;
                 let failedCount = 0;
@@ -229,13 +223,9 @@
 
             if (winner) return winner; 
         }
-
         return table[0]; 
     }
 
-    // ==========================================
-    // 3. MAIN APP LOGIC
-    // ==========================================
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', runLogic);
     } else {
@@ -274,9 +264,7 @@
             for (const proxy of p) {
                 try {
                     const response = await fetch(proxy + path + (proxy ? cacheBuster : ""));
-                    if (response.ok) {
-                        return await response.json();
-                    }
+                    if (response.ok) return await response.json();
                 } catch (err) {}
             }
             throw new Error("All proxies failed for " + path);
@@ -291,8 +279,7 @@
                     const url = proxy + path + (proxy ? cacheBuster : "");
                     const response = await fetch(url);
                     if (response.ok) {
-                        const htmlContent = await response.text();
-                        iframe.srcdoc = htmlContent;
+                        iframe.srcdoc = await response.text();
                         return;
                     }
                 } catch (err) {}
@@ -303,56 +290,18 @@
         loadProxyContentAsIframe('gradebook-iframe', 'Pages/music.html');
         loadProxyContentAsIframe('lessonplanner-iframe', 'Pages/ai.html');
 
-        // --- Preferences and Settings Management ---
-        const savedTheme = localStorage.getItem('kstuff_theme');
-        const savedNavPos = localStorage.getItem('kstuff_nav_pos');
-        const savedTextVis = localStorage.getItem('kstuff_text_vis');
-        const savedNavSize = localStorage.getItem('kstuff_nav_size');
+        const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
+        const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
+        const savedTextVis = localStorage.getItem('kstuff_text_vis') || 'text-hide';
+        const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-small';
 
-        if (savedTheme) {
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-            body.classList.add(savedTheme);
-            if (themeSelect) themeSelect.value = savedTheme;
-        } else {
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-            body.classList.add('theme-sakura');
-            if (themeSelect) themeSelect.value = 'theme-sakura';
-        }
+        body.classList.add(savedTheme, savedNavPos, savedNavSize);
+        if (savedTextVis === 'text-hide') body.classList.add('text-hide');
+        if (themeSelect) themeSelect.value = savedTheme;
+        if (navSelect) navSelect.value = savedNavPos;
+        if (textSelect) textSelect.value = savedTextVis;
+        if (sizeSelect) sizeSelect.value = savedNavSize;
 
-        if (savedNavPos) {
-            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-            body.classList.add(savedNavPos);
-            if (navSelect) navSelect.value = savedNavPos;
-        } else {
-            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-            body.classList.add('nav-left');
-            if (navSelect) navSelect.value = 'nav-left';
-        }
-
-        if (savedTextVis) {
-            if (savedTextVis === 'text-hide') {
-                body.classList.add('text-hide');
-                if (textSelect) textSelect.value = 'text-hide';
-            } else {
-                body.classList.remove('text-hide');
-                if (textSelect) textSelect.value = 'text-show';
-            }
-        } else {
-            body.classList.add('text-hide');
-            if (textSelect) textSelect.value = 'text-hide';
-        }
-
-        if (savedNavSize) {
-            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
-            body.classList.add(savedNavSize);
-            if (sizeSelect) sizeSelect.value = savedNavSize;
-        } else {
-            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
-            body.classList.add('size-small');
-            if (sizeSelect) sizeSelect.value = 'size-small';
-        }
-
-        // --- Resource Data Management & Rendering ---
         let readingItemsData = [];
         let scienceItemsData = [];
         let currentReadingCategory = "All";
@@ -386,18 +335,22 @@
             }, 150);
         });
 
+        function clearGrid(gridElement) {
+            if (!gridElement) return;
+            const cards = gridElement.querySelectorAll('.round-btn');
+            cards.forEach(c => {
+                c.style.backgroundImage = 'none';
+                c.remove();
+            });
+            gridElement.innerHTML = '';
+        }
+
         function renderReadingResources() {
             const readingGrid = document.getElementById('readingcorner-grid');
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingGrid) return;
             
-            // Explicitly tear down existing card nodes and clear background image textures
-            const oldCards = readingGrid.querySelectorAll('.round-btn');
-            oldCards.forEach(c => {
-                c.style.backgroundImage = 'none';
-                c.remove();
-            });
-            readingGrid.innerHTML = '';
+            clearGrid(readingGrid);
 
             const filteredData = readingItemsData.filter(item => {
                 const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
@@ -422,7 +375,6 @@
                         <p>${item.description}</p>
                     </div>
                 `;
-                
                 card.addEventListener('click', () => {
                     if (modalTitle) modalTitle.textContent = item.title;
                     if (modalOverlay) modalOverlay.classList.add('active');
@@ -454,13 +406,7 @@
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!scienceGrid) return;
             
-            // Explicitly tear down existing card nodes and clear background image textures
-            const oldCards = scienceGrid.querySelectorAll('.round-btn');
-            oldCards.forEach(c => {
-                c.style.backgroundImage = 'none';
-                c.remove();
-            });
-            scienceGrid.innerHTML = '';
+            clearGrid(scienceGrid);
 
             const filteredData = scienceItemsData.filter(item => {
                 const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
@@ -510,7 +456,6 @@
             }
         }
 
-        // --- Aggressive Memory-Purging Navigation & On-Demand Loading ---
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -526,18 +471,10 @@
                     }
                 });
 
-                // Completely wipe ALL pages and destroy card elements to enforce 0 memory usage off-screen
                 pages.forEach(p => {
                     p.classList.remove('active');
                     const grids = p.querySelectorAll('.round-grid, #readingcorner-grid, #sciencequiz-grid');
-                    grids.forEach(grid => {
-                        const cards = grid.querySelectorAll('.round-btn');
-                        cards.forEach(c => {
-                            c.style.backgroundImage = 'none';
-                            c.remove();
-                        });
-                        grid.innerHTML = '';
-                    });
+                    grids.forEach(grid => clearGrid(grid));
                 });
 
                 btn.classList.add('active');
@@ -545,8 +482,6 @@
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) {
                     targetPage.classList.add('active');
-                    
-                    // Delay the render slightly using setTimeout to prevent UI thread lag spikes/freezes
                     if (targetId === 'readingcorner') {
                         setTimeout(() => renderReadingResources(), 15);
                     } else if (targetId === 'sciencequiz') {
@@ -640,11 +575,7 @@
             }
         }).catch(err => {});
 
-        // ==========================================
-        // 4. THE MASTER DATA LOADER
-        // ==========================================
         const resolvedBases = {};
-
         const checkPromises = [
             getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
             getWorkingConfig(staticTable).then(w => resolvedBases.static = w),
@@ -698,7 +629,6 @@
             let finalResources = [];
             for (const item of gData) {
                 let processedItem = { ...item };
-                
                 if (processedItem.url && processedItem.url.includes('${truffled}')) {
                     const searchTitle = (processedItem.title || "").toLowerCase().trim();
                     const matchedItem = truffledMap.get(searchTitle);
@@ -710,10 +640,8 @@
                         processedItem.category = processedItem.category || 'Truffled';
                     }
                 }
-
                 processedItem.url = applyBases(processedItem.url);
                 processedItem.image = applyBases(processedItem.image);
-                
                 finalResources.push(processedItem);
             }
             
@@ -728,7 +656,6 @@
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
 
-            // Initialize strictly the active tab on launch
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
                 renderScienceModules();
