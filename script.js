@@ -1,6 +1,6 @@
 (function initApp() {
     // ==========================================
-    // 1. DEFINE TABLES AT THE VERY START Ttm
+    // 1. DEFINE TABLES
     // ==========================================
     const scramTable = []; 
     
@@ -172,19 +172,12 @@
     ];
 
     // ==========================================
-    // 2. TRUE-DETECTION CACHED CHECKER (Race to first success)
+    // 2. CHECKER (Race to Success)
     // ==========================================
-    const tablePromises = new Map();
-
     function getWorkingConfig(table) {
         if (!table || table.length === 0) return Promise.resolve(null);
-        
-        // If we already started (or finished) testing this table, just return the cached Promise.
-        if (tablePromises.has(table)) {
-            return tablePromises.get(table);
-        }
 
-        const checkPromise = new Promise((resolve) => {
+        return new Promise((resolve) => {
             let resolved = false;
             let failedCount = 0;
 
@@ -195,13 +188,12 @@
                 img.onload = () => {
                     if (!resolved) {
                         resolved = true;
-                        resolve(entry); // Instantly resolve on the very first successful load!
+                        resolve(entry);
                     }
                 };
                 
                 img.onerror = () => {
                     failedCount++;
-                    // If literally every single one fails, fallback to the first entry
                     if (!resolved && failedCount === table.length) {
                         resolved = true;
                         resolve(table[0]); 
@@ -211,23 +203,14 @@
                 img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
             });
             
-            // 8-second absolute max timeout for safety
             setTimeout(() => { 
                 if (!resolved) { 
                     resolved = true; 
                     resolve(table[0]); 
                 } 
-            }, 8000);
+            }, 8000); // Wait up to 8s max before falling back
         });
-
-        tablePromises.set(table, checkPromise);
-        return checkPromise;
     }
-
-    // Start background checks immediately on page load
-    [scramTable, staticTable, uvTable, truffledTable, frogieeTable].forEach(table => {
-        getWorkingConfig(table);
-    });
 
     // ==========================================
     // 3. MAIN APP LOGIC
@@ -299,35 +282,6 @@
         loadProxyContentAsIframe('gradebook-iframe', 'Pages/music.html');
         loadProxyContentAsIframe('lessonplanner-iframe', 'Pages/ai.html');
 
-        async function resolveAndGetUrl(originalUrl) {
-            let resolvedUrl = originalUrl;
-            
-            async function getFreshUrl(table) {
-                // This instantly grabs the cached winner instead of running checks again
-                const w = await getWorkingConfig(table);
-                return w ? w.url + w.final : '';
-            }
-
-            if (resolvedUrl.includes('${scram}')) {
-                resolvedUrl = resolvedUrl.replace('${scram}', await getFreshUrl(scramTable));
-            }
-            if (resolvedUrl.includes('${static}')) {
-                resolvedUrl = resolvedUrl.replace('${static}', await getFreshUrl(staticTable));
-            }
-            if (resolvedUrl.includes('${uv}')) {
-                resolvedUrl = resolvedUrl.replace('${uv}', await getFreshUrl(uvTable));
-            }
-            if (resolvedUrl.includes('${truffled}')) {
-                resolvedUrl = resolvedUrl.replace('${truffled}', await getFreshUrl(truffledTable));
-            }
-            if (resolvedUrl.includes('${frogiee}')) {
-                resolvedUrl = resolvedUrl.replace('${frogiee}', await getFreshUrl(frogieeTable));
-            }
-            
-            resolvedUrl = resolvedUrl.replace(/([^:]\/)\/+/g, '$1');
-            return resolvedUrl;
-        }
-
         // --- Preferences and Settings Management ---
         const savedTheme = localStorage.getItem('kstuff_theme');
         const savedNavPos = localStorage.getItem('kstuff_nav_pos');
@@ -377,7 +331,6 @@
             if (sizeSelect) sizeSelect.value = 'size-small';
         }
 
-        // --- Event Listeners ---
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -408,71 +361,48 @@
             });
         });
 
-        if (themeSelect) {
-            themeSelect.addEventListener('change', (e) => {
-                body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-                body.classList.add(e.target.value);
-                localStorage.setItem('kstuff_theme', e.target.value);
-            });
-        }
-        if (navSelect) {
-            navSelect.addEventListener('change', (e) => {
-                body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-                body.classList.add(e.target.value);
-                localStorage.setItem('kstuff_nav_pos', e.target.value);
-            });
-        }
-        if (textSelect) {
-            textSelect.addEventListener('change', (e) => {
-                if (e.target.value === 'text-hide') body.classList.add('text-hide');
-                else body.classList.remove('text-hide');
-                localStorage.setItem('kstuff_text_vis', e.target.value);
-            });
-        }
-        if (sizeSelect) {
-            sizeSelect.addEventListener('change', (e) => {
-                body.className = body.className.replace(/\bsize-\S+/g, '').trim();
-                body.classList.add(e.target.value);
-                localStorage.setItem('kstuff_nav_size', e.target.value);
-            });
-        }
+        if (themeSelect) themeSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_theme', e.target.value);
+        });
+        if (navSelect) navSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_nav_pos', e.target.value);
+        });
+        if (textSelect) textSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'text-hide') body.classList.add('text-hide');
+            else body.classList.remove('text-hide');
+            localStorage.setItem('kstuff_text_vis', e.target.value);
+        });
+        if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
+            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
+            body.classList.add(e.target.value);
+            localStorage.setItem('kstuff_nav_size', e.target.value);
+        });
 
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', () => {
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
+            modalOverlay.classList.remove('active');
+            modalIframe.src = '';
+        });
+        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
                 modalOverlay.classList.remove('active');
                 modalIframe.src = '';
-            });
-        }
-        if (modalOverlay) {
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) {
-                    modalOverlay.classList.remove('active');
-                    modalIframe.src = '';
-                }
-            });
-        }
-        if (modalFullscreenBtn) {
-            modalFullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    modalIframe.requestFullscreen().catch(err => {});
-                } else {
-                    document.exitFullscreen();
-                }
-            });
-        }
+            }
+        });
+        if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) modalIframe.requestFullscreen().catch(err => {});
+            else document.exitFullscreen();
+        });
 
-        if (settingsCloseBtn) {
-            settingsCloseBtn.addEventListener('click', () => {
-                if (settingsModal) settingsModal.classList.remove('active');
-            });
-        }
-        if (settingsModal) {
-            settingsModal.addEventListener('click', (e) => {
-                if (e.target === settingsModal) {
-                    settingsModal.classList.remove('active');
-                }
-            });
-        }
+        if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => {
+            if (settingsModal) settingsModal.classList.remove('active');
+        });
+        if (settingsModal) settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) settingsModal.classList.remove('active');
+        });
 
         // --- Resource Data Management & Rendering ---
         let readingItemsData = [];
@@ -488,63 +418,49 @@
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
 
-        if (readingSearchInput) {
-            readingSearchInput.addEventListener('input', (e) => {
-                currentReadingSearch = e.target.value.toLowerCase().trim();
-                currentReadingPage = 1;
-                renderReadingResources();
-            });
-        }
+        if (readingSearchInput) readingSearchInput.addEventListener('input', (e) => {
+            currentReadingSearch = e.target.value.toLowerCase().trim();
+            currentReadingPage = 1;
+            renderReadingResources();
+        });
+        if (scienceSearchInput) scienceSearchInput.addEventListener('input', (e) => {
+            currentScienceSearch = e.target.value.toLowerCase().trim();
+            currentSciencePage = 1;
+            renderScienceModules();
+        });
 
-        if (scienceSearchInput) {
-            scienceSearchInput.addEventListener('input', (e) => {
-                currentScienceSearch = e.target.value.toLowerCase().trim();
-                currentSciencePage = 1;
-                renderScienceModules();
-            });
-        }
-
-        fetchAsset('Json/categories.json')
-            .then(categories => {
-                const readingSelect = document.getElementById('readingcorner-category-select');
-                const scienceSelect = document.getElementById('sciencequiz-category-select');
-
-                if (readingSelect) {
-                    readingSelect.innerHTML = '';
-                    categories.Games.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat;
-                        option.textContent = cat;
-                        readingSelect.appendChild(option);
-                    });
-                    readingSelect.addEventListener('change', (e) => {
-                        currentReadingCategory = e.target.value;
-                        currentReadingPage = 1;
-                        renderReadingResources();
-                    });
-                }
-
-                if (scienceSelect) {
-                    scienceSelect.innerHTML = '';
-                    categories.Apps.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat;
-                        option.textContent = cat;
-                        scienceSelect.appendChild(option);
-                    });
-                    scienceSelect.addEventListener('change', (e) => {
-                        currentScienceCategory = e.target.value;
-                        currentSciencePage = 1;
-                        renderScienceModules();
-                    });
-                }
-            })
-            .catch(err => {
-                const rs = document.getElementById('readingcorner-category-select');
-                const ss = document.getElementById('sciencequiz-category-select');
-                if (rs) rs.innerHTML = '<option value="All">Error</option>';
-                if (ss) ss.innerHTML = '<option value="All">Error</option>';
-            });
+        fetchAsset('Json/categories.json').then(categories => {
+            const readingSelect = document.getElementById('readingcorner-category-select');
+            const scienceSelect = document.getElementById('sciencequiz-category-select');
+            if (readingSelect) {
+                readingSelect.innerHTML = '';
+                categories.Games.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    readingSelect.appendChild(option);
+                });
+                readingSelect.addEventListener('change', (e) => {
+                    currentReadingCategory = e.target.value;
+                    currentReadingPage = 1;
+                    renderReadingResources();
+                });
+            }
+            if (scienceSelect) {
+                scienceSelect.innerHTML = '';
+                categories.Apps.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    scienceSelect.appendChild(option);
+                });
+                scienceSelect.addEventListener('change', (e) => {
+                    currentScienceCategory = e.target.value;
+                    currentSciencePage = 1;
+                    renderScienceModules();
+                });
+            }
+        }).catch(err => {});
 
         function renderReadingResources() {
             const readingGrid = document.getElementById('readingcorner-grid');
@@ -567,22 +483,19 @@
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                
-                const imgUrl = item.image || '';
-                card.style.backgroundImage = `url('${imgUrl}')`;
-                
+                card.style.backgroundImage = `url('${item.image || ''}')`;
                 card.innerHTML = `
                     <div class="overlay">
                         <h3>${item.title}</h3>
                         <p>${item.description}</p>
                     </div>
                 `;
-                card.addEventListener('click', async () => {
-                    if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
-                    if (modalOverlay) modalOverlay.classList.add('active');
-                    const finalUrl = await resolveAndGetUrl(item.url);
+                
+                // Clicks are now INSTANT because item.url is fully processed before this is ever called!
+                card.addEventListener('click', () => {
                     if (modalTitle) modalTitle.textContent = item.title;
-                    if (modalIframe) modalIframe.src = finalUrl;
+                    if (modalOverlay) modalOverlay.classList.add('active');
+                    if (modalIframe) modalIframe.src = item.url;
                 });
                 readingGrid.appendChild(card);
             });
@@ -617,7 +530,6 @@
 
             const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
             if (currentSciencePage > totalPages) currentSciencePage = 1;
-
             const start = (currentSciencePage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
@@ -625,19 +537,17 @@
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.style.backgroundImage = `url('${item.image}')`;
+                card.style.backgroundImage = `url('${item.image || ''}')`;
                 card.innerHTML = `
                     <div class="overlay">
                         <h3>${item.title}</h3>
                         <p>${item.description}</p>
                     </div>
                 `;
-                card.addEventListener('click', async () => {
-                    if (modalTitle) modalTitle.textContent = `Loading ${item.title}...`;
-                    if (modalOverlay) modalOverlay.classList.add('active');
-                    const finalUrl = await resolveAndGetUrl(item.url);
+                card.addEventListener('click', () => {
                     if (modalTitle) modalTitle.textContent = item.title;
-                    if (modalIframe) modalIframe.src = finalUrl;
+                    if (modalOverlay) modalOverlay.classList.add('active');
+                    if (modalIframe) modalIframe.src = item.url;
                 });
                 scienceGrid.appendChild(card);
             });
@@ -659,47 +569,104 @@
             }
         }
 
-        // --- Truffled & Resource Data Loader (Waits for the cached promise) ---
+        // ==========================================
+        // 4. THE MASTER DATA LOADER
+        // ==========================================
+        const resolvedBases = {};
+
+        // 1. Kick off ALL checks and JSON downloads simultaneously
+        const checkPromises = [
+            getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
+            getWorkingConfig(staticTable).then(w => resolvedBases.static = w),
+            getWorkingConfig(uvTable).then(w => resolvedBases.uv = w),
+            getWorkingConfig(truffledTable).then(w => resolvedBases.truffled = w),
+            getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
+        ];
+
+        // 2. WAIT FOR EVERYTHING TO ABSOLUTELY FINISH
         Promise.all([
-            fetchAsset('Json/g.json'),
+            fetchAsset('Json/g.json').catch(() => []),
+            fetchAsset('Json/a.json').catch(() => []),
             fetchAsset('Json/truffled.json').catch(() => null),
-            getWorkingConfig(truffledTable) 
-        ]).then(([gData, truffledData, w]) => {
-            const base = w ? (w.url).replace(/\/+$/, '') : 'https://truffled.lol';
+            ...checkPromises 
+        ]).then(([gData, aData, truffledData]) => {
+
+            // Helper to modify BOTH the image and url strings with the found networks
+            function applyBases(str) {
+                if (!str || typeof str !== 'string') return str;
+                let newStr = str;
+                
+                if (newStr.includes('${scram}')) {
+                    const w = resolvedBases.scram;
+                    newStr = newStr.split('${scram}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
+                }
+                if (newStr.includes('${static}')) {
+                    const w = resolvedBases.static;
+                    newStr = newStr.split('${static}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
+                }
+                if (newStr.includes('${uv}')) {
+                    const w = resolvedBases.uv;
+                    newStr = newStr.split('${uv}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
+                }
+                if (newStr.includes('${frogiee}')) {
+                    const w = resolvedBases.frogiee;
+                    newStr = newStr.split('${frogiee}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
+                }
+                if (newStr.includes('${truffled}')) {
+                    const w = resolvedBases.truffled;
+                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://truffled.lol');
+                }
+                
+                // Cleans up any leftover double slashes natively (ignores protocols like https://)
+                return newStr.replace(/([^:]\/)\/+/g, '$1');
+            }
+
+            // Prep Truffled Map
             const truffledMap = new Map();
-            
             if (truffledData && truffledData.games) {
                 truffledData.games.forEach(g => {
                     truffledMap.set(g.name.toLowerCase().trim(), g);
                 });
             }
 
+            // 3. APPLY TO READING RESOURCES
             let finalResources = [];
             for (const item of gData) {
-                if (item.url && item.url.includes('${truffled}')) {
-                    const searchTitle = (item.title || "").toLowerCase().trim();
+                let processedItem = { ...item };
+                
+                if (processedItem.url && processedItem.url.includes('${truffled}')) {
+                    const searchTitle = (processedItem.title || "").toLowerCase().trim();
                     const matchedItem = truffledMap.get(searchTitle);
-
                     if (matchedItem) {
-                        finalResources.push({
-                            title: matchedItem.name,
-                            url: '${truffled}' + matchedItem.url,
-                            image: base + '/' + matchedItem.thumbnail.replace(/^\/+/, ''),
-                            description: item.description || '',
-                            category: item.category || 'Truffled'
-                        });
-                    } else {
-                        finalResources.push(item);
+                        processedItem.title = matchedItem.name;
+                        processedItem.url = '${truffled}' + matchedItem.url;
+                        processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
+                        processedItem.description = processedItem.description || '';
+                        processedItem.category = processedItem.category || 'Truffled';
                     }
-                } else {
-                    finalResources.push(item);
                 }
-            }
-            // Truly wait to set data and render ONLY AFTER everything is confirmed
-            readingItemsData = finalResources;
-            renderReadingResources();
-        }).catch(err => {});
 
-        fetchAsset('Json/a.json').then(data => { scienceItemsData = data; renderScienceModules(); }).catch(err => {});
+                // THIS MODIFIES THE ITEM DATA DIRECTLY! 
+                processedItem.url = applyBases(processedItem.url);
+                processedItem.image = applyBases(processedItem.image);
+                
+                finalResources.push(processedItem);
+            }
+            
+            // 4. APPLY TO SCIENCE MODULES
+            let finalScience = [];
+            for (const item of aData) {
+                let processedItem = { ...item };
+                processedItem.url = applyBases(processedItem.url);
+                processedItem.image = applyBases(processedItem.image);
+                finalScience.push(processedItem);
+            }
+
+            // 5. FINALLY, WE ARE READY TO RENDER
+            readingItemsData = finalResources;
+            scienceItemsData = finalScience;
+            renderReadingResources();
+            renderScienceModules();
+        });
     }
 })();
