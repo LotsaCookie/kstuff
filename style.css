@@ -126,18 +126,18 @@ body {
     --card-bg: #3d3430;
 }
 
-#app-container {
+#classroom-portal-container {
     display: flex;
     height: 100vh;
     width: 100vw;
 }
 
-.nav-top #app-container { flex-direction: column; }
-.nav-bottom #app-container { flex-direction: column-reverse; }
-.nav-left #app-container { flex-direction: row; }
-.nav-right #app-container { flex-direction: row-reverse; }
+.nav-top #classroom-portal-container { flex-direction: column; }
+.nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
+.nav-left #classroom-portal-container { flex-direction: row; }
+.nav-right #classroom-portal-container { flex-direction: row-reverse; }
 
-#navbar {
+#teachertouchbar {
     position: relative;
     background: var(--nav-bg);
     display: flex;
@@ -153,20 +153,20 @@ body {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-top #navbar, .nav-bottom #navbar {
+.nav-top #teachertouchbar, .nav-bottom #teachertouchbar {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
 }
 
-.nav-top #navbar::before,
-.nav-bottom #navbar::before {
+.nav-top #teachertouchbar::before,
+.nav-bottom #teachertouchbar::before {
     content: "";
     width: 35px;
     flex-shrink: 0;
 }
 
-.nav-left #navbar, .nav-right #navbar {
+.nav-left #teachertouchbar, .nav-right #teachertouchbar {
     width: var(--nav-width);
     height: 100%;
     flex-direction: column;
@@ -176,24 +176,24 @@ body {
     padding-top: 1.1rem;
 }
 
-.nav-left #navbar::before,
-.nav-right #navbar::before {
+.nav-left #teachertouchbar::before,
+.nav-right #teachertouchbar::before {
     display: none;
 }
 
-body.text-hide .nav-left #navbar, 
-body.text-hide .nav-right #navbar {
+body.text-hide .nav-left #teachertouchbar, 
+body.text-hide .nav-right #teachertouchbar {
     gap: 0.22rem;
     padding-left: 0.28rem;
     padding-right: 0.28rem;
 }
 
-body.show-logo.nav-left #navbar, 
-body.show-logo.nav-right #navbar {
+body.show-logo.nav-left #teachertouchbar, 
+body.show-logo.nav-right #teachertouchbar {
     padding-top: 3rem;
 }
 
-#nav-logo {
+#edu-logo {
     position: absolute;
     font-size: 0.9rem;
     font-weight: 900 !important;
@@ -212,24 +212,24 @@ body.show-logo.nav-right #navbar {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-top #nav-logo, .nav-bottom #nav-logo {
+.nav-top #edu-logo, .nav-bottom #edu-logo {
     left: 0.8rem;
     top: 50%;
     transform: translateY(-50%) scale(0.5);
 }
 
-.nav-left #nav-logo, .nav-right #nav-logo {
+.nav-left #edu-logo, .nav-right #edu-logo {
     top: 0.8rem;
     left: 50%;
     transform: translateX(-50%) scale(0.5);
 }
 
-.nav-top #nav-logo.show, .nav-bottom #nav-logo.show {
+.nav-top #edu-logo.show, .nav-bottom #edu-logo.show {
     transform: translateY(-50%) scale(1);
     opacity: 1;
 }
 
-.nav-left #nav-logo.show, .nav-right #nav-logo.show {
+.nav-left #edu-logo.show, .nav-right #edu-logo.show {
     transform: translateX(-50%) scale(1);
     opacity: 1;
 }
@@ -342,17 +342,17 @@ body.text-hide .nav-right .nav-divider {
 
 /* --- Top/Bottom Navbar Button Centering (Before Divider) --- */
 
-.nav-top #navbar > .nav-btn:first-of-type,
-.nav-bottom #navbar > .nav-btn:first-of-type {
+.nav-top #teachertouchbar > .nav-btn:first-of-type,
+.nav-bottom #teachertouchbar > .nav-btn:first-of-type {
     margin-left: auto;
 }
 
-.nav-left #navbar > .nav-btn:first-of-type,
-.nav-right #navbar > .nav-btn:first-of-type {
+.nav-left #teachertouchbar > .nav-btn:first-of-type,
+.nav-right #teachertouchbar > .nav-btn:first-of-type {
     margin-left: 0;
 }
 
-#content-area {
+#studymaterial-area {
     flex-grow: 1;
     padding: 3rem;
     overflow-y: auto;
@@ -372,9 +372,9 @@ body.text-hide .nav-right .nav-divider {
     display: block;
 }
 
-#home.page.active, 
-#music.page.active,
-#ai.page.active {
+#mathworksheets.page.active, 
+#gradebook.page.active,
+#lessonplanner.page.active {
     display: flex;
     flex-direction: column;
     height: calc(100% + 6rem);
@@ -684,7 +684,7 @@ body.text-hide .nav-right .nav-divider {
     border-bottom: 1px solid rgba(128, 128, 128, 0.2);
 }
 
-#modal-title {
+#resource-modal-title {
     font-size: 1.1rem;
     font-weight: 900 !important;
 }
@@ -715,7 +715,7 @@ body.text-hide .nav-right .nav-divider {
     background: rgba(128, 128, 128, 0.2);
 }
 
-#modal-iframe {
+#resource-modal-iframe {
     flex-grow: 1;
     width: 100%;
     height: 100%;
@@ -754,7 +754,7 @@ body.text-hide .nav-right .nav-divider {
         --nav-width-mobile: 56px;
     }
 
-    #navbar {
+    #teachertouchbar {
         padding: 0.28rem;
         gap: 0.14rem;
     }
@@ -783,8 +783,8 @@ body.text-hide .nav-right .nav-divider {
         white-space: normal;
     }
 
-    .nav-left #navbar, .nav-right #navbar {
+    .nav-left #teachertouchbar, .nav-right #teachertouchbar {
         width: var(--nav-width-mobile);
         padding-top: 0.55rem;
     }
-}
+    }
