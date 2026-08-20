@@ -11,304 +11,55 @@
     <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
     <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>window.addEventListener("beforeunload",e=>{e.preventDefault();e.returnValue=""});</script>
     <script>
-     window.addEventListener("beforeunload", (event) => {
-        event.preventDefault();
-        event.returnValue = "";
-    });
+        (async function(){let c='main';try{const r=await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');if(r.ok){const d=await r.json();c=d.sha}}catch(e){}const p=["https://raw.githubusercontent.com/lotsacookie/kstuff/main/","https://raw.githack.com/lotsacookie/kstuff/main/",`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${c}/`,"https://cdn.statically.io/gh/lotsacookie/kstuff/main/",""];function l(f,s){let i=0;const cb="?i_="+Date.now();function t(){let e=document.createElement(s?'script':'link');let cp=p[i];let u=cp?(cp+f+cb):(f+cb);if(s){e.src=u}else{e.rel='stylesheet';e.href=u}if(i>=p.length-1){document.head.appendChild(e);return}e.onerror=()=>{e.remove();i++;t()};document.head.appendChild(e)}t()}l('style.css',0);l('script.js',1)})();
     </script>
-    <script>
-        (async function(){
-            let commitHash = 'main'; // Safe fallback
-            try {
-                const res = await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');
-                if (res.ok) {
-                    const data = await res.json();
-                    commitHash = data.sha; // Gets the unique commit hash (e.g., 'a1b2c3d...')
-                }
-            } catch (e) {
-                console.warn("API check failed, using 'main' branch fallback.");
-            }
-
-            const p = [
-                "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
-                "https://raw.githack.com/lotsacookie/kstuff/main/",
-                `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitHash}/`,
-                "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
-                ""
-            ];
-
-            function l(f, s) {
-                let i = 0;
-                const cacheBuster = "?i_=" + Date.now();
-                function t() {
-                    let e = document.createElement(s ? 'script' : 'link');
-                    let currentProxy = p[i];
-                    let targetUrl = currentProxy ? (currentProxy + f + cacheBuster) : (f + cacheBuster);
-
-                    if (s) { e.src = targetUrl; } 
-                    else { e.rel = 'stylesheet'; e.href = targetUrl; }
-
-                    if (i >= p.length - 1) {
-                        document.head.appendChild(e);
-                        return;
-                    }
-
-                    e.onerror = () => {
-                        e.remove();
-                        i++;
-                        t();
-                    };
-                    document.head.appendChild(e);
-                }
-                t();
-            }
-            l('style.css', 0);
-            l('script.js', 1);
-        })();
-    </script>
-    <style>
-body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg-color);
-    color: var(--text-color);
-    height: 100vh;
-    overflow: hidden;
-    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
-    font-weight: bold;
-}
-        
-#loading-screen {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background: var(--bg-color, #1a1216);
-    color: var(--text-color, #ffb8d9);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 999999;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-#loading-screen.hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-}
-
-.spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid rgba(128, 128, 128, 0.25);
-    border-top-color: var(--text-color, #ffb8d9);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 1.5rem;
-}
-
-.loading-text {
-    font-size: 1.25rem;
-    font-weight: 900 !important;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-}
-    </style>
+    <style>body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-color);color:var(--text-color);height:100vh;overflow:hidden;transition:background var(--transition-speed) ease,color var(--transition-speed) ease;font-weight:bold}#loading-screen{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg-color,#1a1216);color:var(--text-color,#ffb8d9);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:999999;transition:opacity .5s ease,visibility .5s ease}#loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}.spinner{width:48px;height:48px;border:4px solid rgba(128,128,128,.25);border-top-color:var(--text-color,#ffb8d9);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:1.5rem}.loading-text{font-size:1.25rem;font-weight:900!important;letter-spacing:.25em;text-transform:uppercase;animation:pulse 1.5s ease-in-out infinite}@keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}</style>
 </head>
 <body class="theme-sakura nav-left text-hide size-small">
+
     <script>
-        (function() {
-            const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
-            const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
-            const savedTextVis = localStorage.getItem('kstuff_text_vis') || 'text-hide';
-            const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-small';
-            
-            document.body.className = `${savedTheme} ${savedNavPos} ${savedTextVis} ${savedNavSize}`;
-        })();
+        (()=>{const t=localStorage.getItem('kstuff_theme')||'theme-sakura',n=localStorage.getItem('kstuff_nav_pos')||'nav-left',v=localStorage.getItem('kstuff_text_vis')||'text-hide',s=localStorage.getItem('kstuff_nav_size')||'size-small';document.body.className=`${t} ${n} ${v} ${s}`;const c={'theme-sakura':{bg:'#1a1216',text:'#ffb8d9'},'theme-dark':{bg:'#121212',text:'#ffffff'},'theme-light':{bg:'#f4f5f7',text:'#1a1a1a'},'theme-ocean':{bg:'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',text:'#ffffff'},'theme-sunset':{bg:'linear-gradient(135deg, #41295a, #2f0743)',text:'#ffffff'},'theme-emerald':{bg:'#0b1712',text:'#d1fae5'},'theme-midnight':{bg:'#0b0c16',text:'#e2e8f0'},'theme-cyber':{bg:'#0d0c1d',text:'#00ffcc'},'theme-ruby':{bg:'#1c0d10',text:'#ffe4e6'},'theme-latte':{bg:'#1a1614',text:'#fef3c7'}}[t]||{'bg':'#1a1216','text':'#ffb8d9'};document.body.style.setProperty('--bg-color',c.bg);document.body.style.setProperty('--text-color',c.text)})();
     </script>
-    <div id="loading-screen">
-        <div class="spinner"></div>
-        <div class="loading-text">Loading</div>
-    </div>
+
+    <div id="loading-screen"><div class="spinner"></div><div class="loading-text">Loading</div></div>
+    
     <script>
-        window.addEventListener('load', () => {
-            const loader = document.getElementById('loading-screen');
-            if(loader) loader.classList.add('hidden');
-        });
+        window.addEventListener('load',()=>{const l=document.getElementById('loading-screen');if(l)l.classList.add('hidden');setTimeout(()=>{document.body.style.removeProperty('--bg-color');document.body.style.removeProperty('--text-color')},600)});
     </script>
+
     <div style="display:none;" aria-hidden="true">
-          <h1>Educational Resources and Online Learning Platform</h1>
-          <p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
-          <section>
-            <h2>Academic Subjects</h2>
-            <p>Mathematics, Science, English, History, Literature, Writing, Reading, Social Studies, Geography, Biology, Chemistry, Physics, Algebra, Geometry, Calculus, Statistics, Computer Science, Programming, Foreign Languages, Art, Music</p>
-          </section>
-          <section>
-            <h2>Educational Services</h2>
-            <p>Online courses, college credit, exam preparation, test prep, tutoring, homework help, study guides, practice tests, educational videos, interactive lessons, learning resources, curriculum development, academic support, student success, teacher resources, educational technology, e-learning, distance education, virtual classroom, online tutoring, academic coaching</p>
-          </section>
-          <section>
-            <h2>Student Levels</h2>
-            <p>K-12 education, elementary school, middle school, high school, college, university, graduate school, continuing education, adult learning, professional development, certification programs, degree programs, homeschool education</p>
-          </section>
-          <section>
-            <h2>Test Preparation</h2>
-            <p>SAT prep, ACT prep, GRE prep, GMAT prep, LSAT prep, MCAT prep, AP courses, Advanced Placement, standardized tests, college entrance exams, professional certification exams, state assessments, final exams, midterms</p>
-          </section>
-          <section>
-            <h3>Learning Methods</h3>
-            <p>Interactive learning, video lessons, practice quizzes, flashcards, study notes, educational games, adaptive learning, personalized education, self-paced learning, collaborative learning, project-based learning, STEM education, critical thinking, problem solving</p>
-          </section>
+        <h1>Educational Resources and Online Learning Platform</h1><p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
+        <section><h2>Academic Subjects</h2><p>Mathematics, Science, English, History, Literature, Writing, Reading, Social Studies, Geography, Biology, Chemistry, Physics, Algebra, Geometry, Calculus, Statistics, Computer Science, Programming, Foreign Languages, Art, Music</p></section>
+        <section><h2>Educational Services</h2><p>Online courses, college credit, exam preparation, test prep, tutoring, homework help, study guides, practice tests, educational videos, interactive lessons, learning resources, curriculum development, academic support, student success, teacher resources, educational technology, e-learning, distance education, virtual classroom, online tutoring, academic coaching</p></section>
+        <section><h2>Student Levels</h2><p>K-12 education, elementary school, middle school, high school, college, university, graduate school, continuing education, adult learning, professional development, certification programs, degree programs, homeschool education</p></section>
+        <section><h2>Test Preparation</h2><p>SAT prep, ACT prep, GRE prep, GMAT prep, LSAT prep, MCAT prep, AP courses, Advanced Placement, standardized tests, college entrance exams, professional certification exams, state assessments, final exams, midterms</p></section>
+        <section><h3>Learning Methods</h3><p>Interactive learning, video lessons, practice quizzes, flashcards, study notes, educational games, adaptive learning, personalized education, self-paced learning, collaborative learning, project-based learning, STEM education, critical thinking, problem solving</p></section>
     </div>
+
     <div id="classroom-portal-container">
         <nav id="teachertouchbar">
             <div style="display:none;" id="edu-logo">T</div>
-            <button class="nav-btn active" data-target="mathworksheets" title="Math Worksheets">
-                <i class="ph ph-house"></i>
-            </button>
-            <button class="nav-btn" data-target="readingcorner" title="Reading Corner">
-                <i class="ph ph-game-controller"></i>
-            </button>
-            <button class="nav-btn" data-target="sciencequiz" title="Science Quiz">
-                <i class="ph ph-app-window"></i>
-            </button>
-            <button class="nav-btn" data-target="gradebook" title="Gradebook">
-                <i class="ph ph-music-notes"></i>
-            </button>
-            <button class="nav-btn" data-target="lessonplanner" title="Lesson Planner">
-                <i class="ph ph-robot"></i>
-            </button>
-            
-            <!-- Divider -->
+            <button class="nav-btn active" data-target="mathworksheets" title="Math Worksheets"><i class="ph ph-house"></i></button>
+            <button class="nav-btn" data-target="readingcorner" title="Reading Corner"><i class="ph ph-game-controller"></i></button>
+            <button class="nav-btn" data-target="sciencequiz" title="Science Quiz"><i class="ph ph-app-window"></i></button>
+            <button class="nav-btn" data-target="gradebook" title="Gradebook"><i class="ph ph-music-notes"></i></button>
+            <button class="nav-btn" data-target="lessonplanner" title="Lesson Planner"><i class="ph ph-robot"></i></button>
             <div class="nav-divider"></div>
-
-            <button class="nav-btn" data-target="homeworkhelper" title="Homework Helper">
-                <i class="ph ph-gear"></i>
-            </button>
+            <button class="nav-btn" data-target="homeworkhelper" title="Homework Helper"><i class="ph ph-gear"></i></button>
         </nav>
         <main id="studymaterial-area">
-            <section id="mathworksheets" class="page active">
-                <iframe id="mathworksheets-iframe" class="full-page-iframe" allowfullscreen></iframe>
-            </section>
-            <section id="readingcorner" class="page">
-                <div class="filter-bar">
-                    <div class="modern-select-wrapper search-wrapper">
-                        <i class="ph ph-magnifying-glass"></i>
-                        <input type="text" id="readingcorner-search" class="modern-input" placeholder="Search resources...">
-                    </div>
-                    <div class="modern-select-wrapper">
-                        <i class="ph ph-funnel"></i>
-                        <select id="readingcorner-category-select" class="modern-select">
-                            <option value="All">Loading Categories...</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="item-grid" id="readingcorner-grid"></div>
-                <div class="pagination-bar" id="readingcorner-pagination"></div>
-            </section>
-            <section id="sciencequiz" class="page">
-                <div class="filter-bar">
-                    <div class="modern-select-wrapper search-wrapper">
-                        <i class="ph ph-magnifying-glass"></i>
-                        <input type="text" id="sciencequiz-search" class="modern-input" placeholder="Search modules...">
-                    </div>
-                    <div class="modern-select-wrapper">
-                        <i class="ph ph-funnel"></i>
-                        <select id="sciencequiz-category-select" class="modern-select">
-                            <option value="All">Loading Categories...</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="item-grid" id="sciencequiz-grid"></div>
-                <div class="pagination-bar" id="sciencequiz-pagination"></div>
-            </section>
-            <section id="gradebook" class="page">
-                <iframe id="gradebook-iframe" class="full-page-iframe" allowfullscreen></iframe>
-            </section>
-            <section id="lessonplanner" class="page">
-                <iframe id="lessonplanner-iframe" class="full-page-iframe" allowfullscreen></iframe>
-            </section>
+            <section id="mathworksheets" class="page active"><iframe id="mathworksheets-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
+            <section id="readingcorner" class="page"><div class="filter-bar"><div class="modern-select-wrapper search-wrapper"><i class="ph ph-magnifying-glass"></i><input type="text" id="readingcorner-search" class="modern-input" placeholder="Search resources..."></div><div class="modern-select-wrapper"><i class="ph ph-funnel"></i><select id="readingcorner-category-select" class="modern-select"><option value="All">Loading Categories...</option></select></div></div><div class="item-grid" id="readingcorner-grid"></div><div class="pagination-bar" id="readingcorner-pagination"></div></section>
+            <section id="sciencequiz" class="page"><div class="filter-bar"><div class="modern-select-wrapper search-wrapper"><i class="ph ph-magnifying-glass"></i><input type="text" id="sciencequiz-search" class="modern-input" placeholder="Search modules..."></div><div class="modern-select-wrapper"><i class="ph ph-funnel"></i><select id="sciencequiz-category-select" class="modern-select"><option value="All">Loading Categories...</option></select></div></div><div class="item-grid" id="sciencequiz-grid"></div><div class="pagination-bar" id="sciencequiz-pagination"></div></section>
+            <section id="gradebook" class="page"><iframe id="gradebook-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
+            <section id="lessonplanner" class="page"><iframe id="lessonplanner-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
         </main>
     </div>
 
-    <!-- Content Modal -->
-    <div id="resource-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="resource-modal-title"></span>
-                <div class="modal-actions">
-                    <button id="resource-fullscreen-btn" title="Toggle Fullscreen"><i class="ph ph-corners-out"></i></button>
-                    <button id="resource-close-btn" title="Close"><i class="ph ph-x"></i></button>
-                </div>
-            </div>
-            <iframe id="resource-modal-iframe" src=""></iframe>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="homeworkhelper-modal" class="modal-overlay">
-        <div class="modal-content settings-modal-content">
-            <div class="modal-header">
-                <span id="homeworkhelper-title"><i class="ph ph-gear"></i> Preferences</span>
-                <div class="modal-actions">
-                    <button id="homeworkhelper-close-btn" title="Close"><i class="ph ph-x"></i></button>
-                </div>
-            </div>
-            <div class="settings-card modal-settings-body">
-                <div class="setting-group">
-                    <label for="layout-theme-select"><i class="ph ph-palette"></i> App Theme</label>
-                    <select id="layout-theme-select">
-                        <option value="theme-sakura" selected>Sakura</option>
-                        <option value="theme-dark">Dark</option>
-                        <option value="theme-light">Light</option>
-                        <option value="theme-ocean">Ocean</option>
-                        <option value="theme-sunset">Sunset</option>
-                        <option value="theme-emerald">Emerald</option>
-                        <option value="theme-midnight">Midnight</option>
-                        <option value="theme-cyber">Cyber</option>
-                        <option value="theme-ruby">Ruby</option>
-                        <option value="theme-latte">Latte</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <label for="layout-nav-select"><i class="ph ph-layout"></i> Navbar Position</label>
-                    <select id="layout-nav-select">
-                        <option value="nav-top">Top</option>
-                        <option value="nav-left" selected>Left</option>
-                        <option value="nav-right">Right</option>
-                        <option value="nav-bottom">Bottom</option>
-                    </select>
-                </div>
-                <div class="setting-group" style="display: none;">
-                    <label for="layout-text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label>
-                    <select id="layout-text-select">
-                        <option value="text-show">Show</option>
-                        <option value="text-hide" selected>Hide</option>
-                    </select>
-                </div>
-                <div class="setting-group">
-                    <label for="layout-size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label>
-                    <select id="layout-size-select">
-                        <option value="size-small" selected>Small</option>
-                        <option value="size-medium">Medium</option>
-                        <option value="size-large">Large</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="resource-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><span id="resource-modal-title"></span><div class="modal-actions"><button id="resource-fullscreen-btn" title="Toggle Fullscreen"><i class="ph ph-corners-out"></i></button><button id="resource-close-btn" title="Close"><i class="ph ph-x"></i></button></div></div><iframe id="resource-modal-iframe" src=""></iframe></div></div>
+    
+    <div id="homeworkhelper-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="homeworkhelper-title"><i class="ph ph-gear"></i> Preferences</span><div class="modal-actions"><button id="homeworkhelper-close-btn" title="Close"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body"><div class="setting-group"><label for="layout-theme-select"><i class="ph ph-palette"></i> App Theme</label><select id="layout-theme-select"><option value="theme-sakura" selected>Sakura</option><option value="theme-dark">Dark</option><option value="theme-light">Light</option><option value="theme-ocean">Ocean</option><option value="theme-sunset">Sunset</option><option value="theme-emerald">Emerald</option><option value="theme-midnight">Midnight</option><option value="theme-cyber">Cyber</option><option value="theme-ruby">Ruby</option><option value="theme-latte">Latte</option></select></div><div class="setting-group"><label for="layout-nav-select"><i class="ph ph-layout"></i> Navbar Position</label><select id="layout-nav-select"><option value="nav-top">Top</option><option value="nav-left" selected>Left</option><option value="nav-right">Right</option><option value="nav-bottom">Bottom</option></select></div><div class="setting-group" style="display: none;"><label for="layout-text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label><select id="layout-text-select"><option value="text-show">Show</option><option value="text-hide" selected>Hide</option></select></div><div class="setting-group"><label for="layout-size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label><select id="layout-size-select"><option value="size-small" selected>Small</option><option value="size-medium">Medium</option><option value="size-large">Large</option></select></div></div></div></div>
 </body>
 </html>
