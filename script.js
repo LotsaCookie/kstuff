@@ -1,7 +1,4 @@
 (function initApp() {
-    // ==========================================
-    // 1. DEFINE TABLES
-    // ==========================================
     const scramTable = []; 
     
     const staticTable = [
@@ -172,13 +169,11 @@
     ];
 
     // ==========================================
-    // 2. CHECKER (BATCHED RACE TO SUCCESS)
+    // 2. MEMORY-OPTIMIZED BATCHED CHECKER
     // ==========================================
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
 
-        // Test in batches of 5. This prevents the browser from 
-        // getting overwhelmed with 150+ simultaneous DNS lookups!
         const chunkSize = 5;
         
         for (let i = 0; i < table.length; i += chunkSize) {
@@ -187,44 +182,53 @@
             const winner = await new Promise((resolve) => {
                 let resolved = false;
                 let failedCount = 0;
+                let activeImages = [];
 
                 chunk.forEach(entry => {
                     const img = new Image();
+                    activeImages.push(img);
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
                     
                     img.onload = () => {
                         if (!resolved) {
                             resolved = true;
+                            cleanup();
                             resolve(entry);
                         }
                     };
                     
                     img.onerror = () => {
                         failedCount++;
-                        // If all 5 in this chunk fail, let it move to the next chunk
                         if (!resolved && failedCount === chunk.length) {
                             resolved = true;
+                            cleanup();
                             resolve(null); 
                         }
                     };
                     
+                    function cleanup() {
+                        activeImages.forEach(im => {
+                            im.onload = null;
+                            im.onerror = null;
+                            im.src = '';
+                        });
+                    }
+                    
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                // Give each small chunk up to 4 seconds to respond
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
+                        activeImages.forEach(im => { im.src = ''; });
                         resolve(null);
                     }
                 }, 4000);
             });
 
-            // If we found a working URL in this chunk, stop checking immediately and return it!
             if (winner) return winner; 
         }
 
-        // If literally every chunk failed, only then do we fall back to index [0]
         return table[0]; 
     }
 
@@ -366,6 +370,14 @@
 
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) targetPage.classList.add('active');
+
+                if (targetId === 'mathworksheets') {
+                    if (eduLogo) eduLogo.classList.remove('show');
+                    body.classList.remove('show-logo');
+                } else {
+                    if (eduLogo) eduLogo.classList.add('show');
+                    body.classList.add('show-logo');
+                }
             });
         });
 
@@ -390,14 +402,15 @@
             localStorage.setItem('kstuff_nav_size', e.target.value);
         });
 
+        // FIXED: Clear iframe source completely on close to stop memory leaks
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
             modalOverlay.classList.remove('active');
-            modalIframe.src = '';
+            modalIframe.src = 'about:blank';
         });
         if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
             if (e.target === modalOverlay) {
                 modalOverlay.classList.remove('active');
-                modalIframe.src = '';
+                modalIframe.src = 'about:blank';
             }
         });
         if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
@@ -421,20 +434,30 @@
         let currentScienceSearch = "";
         let currentReadingPage = 1;
         let currentSciencePage = 1;
-        const itemsPerPage = 24;
+        const itemsPerPage = 50;
 
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
 
+        // FIXED: Added search input debouncing to prevent lag spikes while typing
+        let readingSearchTimeout;
         if (readingSearchInput) readingSearchInput.addEventListener('input', (e) => {
-            currentReadingSearch = e.target.value.toLowerCase().trim();
-            currentReadingPage = 1;
-            renderReadingResources();
+            clearTimeout(readingSearchTimeout);
+            readingSearchTimeout = setTimeout(() => {
+                currentReadingSearch = e.target.value.toLowerCase().trim();
+                currentReadingPage = 1;
+                renderReadingResources();
+            }, 150);
         });
+
+        let scienceSearchTimeout;
         if (scienceSearchInput) scienceSearchInput.addEventListener('input', (e) => {
-            currentScienceSearch = e.target.value.toLowerCase().trim();
-            currentSciencePage = 1;
-            renderScienceModules();
+            clearTimeout(scienceSearchTimeout);
+            scienceSearchTimeout = setTimeout(() => {
+                currentScienceSearch = e.target.value.toLowerCase().trim();
+                currentSciencePage = 1;
+                renderScienceModules();
+            }, 150);
         });
 
         fetchAsset('Json/categories.json').then(categories => {
@@ -488,6 +511,9 @@
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
             readingGrid.innerHTML = '';
+            
+            // Use DocumentFragment to batch DOM updates and stop layout lag spikes
+            const fragment = document.createDocumentFragment();
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -504,8 +530,9 @@
                     if (modalOverlay) modalOverlay.classList.add('active');
                     if (modalIframe) modalIframe.src = item.url;
                 });
-                readingGrid.appendChild(card);
+                fragment.appendChild(card);
             });
+            readingGrid.appendChild(fragment);
 
             if (readingPagination) {
                 readingPagination.innerHTML = '';
@@ -541,6 +568,7 @@
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
             scienceGrid.innerHTML = '';
+            const fragment = document.createDocumentFragment();
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -556,8 +584,9 @@
                     if (modalOverlay) modalOverlay.classList.add('active');
                     if (modalIframe) modalIframe.src = item.url;
                 });
-                scienceGrid.appendChild(card);
+                fragment.appendChild(card);
             });
+            scienceGrid.appendChild(fragment);
 
             if (sciencePagination) {
                 sciencePagination.innerHTML = '';
@@ -581,7 +610,6 @@
         // ==========================================
         const resolvedBases = {};
 
-        // 1. Kick off ALL checks and JSON downloads simultaneously
         const checkPromises = [
             getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
             getWorkingConfig(staticTable).then(w => resolvedBases.static = w),
@@ -590,7 +618,6 @@
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
         ];
 
-        // 2. WAIT FOR EVERYTHING TO ABSOLUTELY FINISH
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
             fetchAsset('Json/a.json').catch(() => []),
@@ -642,7 +669,6 @@
                     const matchedItem = truffledMap.get(searchTitle);
                     if (matchedItem) {
                         processedItem.title = matchedItem.name;
-                        // Added strict slash control here so links assemble perfectly
                         processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
                         processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
                         processedItem.description = processedItem.description || '';
@@ -664,7 +690,6 @@
                 finalScience.push(processedItem);
             }
 
-            // 3. FINALLY RENDER
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
             renderReadingResources();
