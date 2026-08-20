@@ -421,7 +421,7 @@
         let currentScienceSearch = "";
         let currentReadingPage = 1;
         let currentSciencePage = 1;
-        const itemsPerPage = 32;
+        const itemsPerPage = 24;
 
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
