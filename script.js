@@ -1,5 +1,4 @@
 (function initApp() {
-    // Memory EDU
     const scramTable = []; 
     
     const staticTable = [
@@ -312,6 +311,40 @@
         let currentSciencePage = 1;
         const itemsPerPage = 24;
 
+        // --- SETUP CARD POOLS ONCE (PREVENTS MEMORY LEAKS & CRASHES) ---
+        const readingGrid = document.getElementById('readingcorner-grid');
+        const scienceGrid = document.getElementById('sciencequiz-grid');
+        const readingCardPool = [];
+        const scienceCardPool = [];
+
+        if (readingGrid) {
+            for (let i = 0; i < itemsPerPage; i++) {
+                const card = document.createElement('div');
+                card.className = 'round-btn';
+                card.innerHTML = `<div class="overlay"><h3></h3><p></p></div>`;
+                readingCardPool.push({
+                    element: card,
+                    titleEl: card.querySelector('h3'),
+                    descEl: card.querySelector('p')
+                });
+                readingGrid.appendChild(card);
+            }
+        }
+
+        if (scienceGrid) {
+            for (let i = 0; i < itemsPerPage; i++) {
+                const card = document.createElement('div');
+                card.className = 'round-btn';
+                card.innerHTML = `<div class="overlay"><h3></h3><p></p></div>`;
+                scienceCardPool.push({
+                    element: card,
+                    titleEl: card.querySelector('h3'),
+                    descEl: card.querySelector('p')
+                });
+                scienceGrid.appendChild(card);
+            }
+        }
+
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
 
@@ -335,22 +368,9 @@
             }, 150);
         });
 
-        function clearGrid(gridElement) {
-            if (!gridElement) return;
-            const cards = gridElement.querySelectorAll('.round-btn');
-            cards.forEach(c => {
-                c.style.backgroundImage = 'none';
-                c.remove();
-            });
-            gridElement.innerHTML = '';
-        }
-
         function renderReadingResources() {
-            const readingGrid = document.getElementById('readingcorner-grid');
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingGrid) return;
-            
-            clearGrid(readingGrid);
 
             const filteredData = readingItemsData.filter(item => {
                 const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
@@ -364,25 +384,24 @@
             const start = (currentReadingPage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            const fragment = document.createDocumentFragment();
-            paginatedData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'round-btn';
-                card.style.backgroundImage = `url('${item.image || ''}')`;
-                card.innerHTML = `
-                    <div class="overlay">
-                        <h3>${item.title}</h3>
-                        <p>${item.description}</p>
-                    </div>
-                `;
-                card.addEventListener('click', () => {
-                    if (modalTitle) modalTitle.textContent = item.title;
-                    if (modalOverlay) modalOverlay.classList.add('active');
-                    if (modalIframe) modalIframe.src = item.url;
-                });
-                fragment.appendChild(card);
+            readingCardPool.forEach((poolItem, index) => {
+                const item = paginatedData[index];
+                if (item) {
+                    poolItem.element.style.display = 'block';
+                    poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+                    poolItem.titleEl.textContent = item.title;
+                    poolItem.descEl.textContent = item.description || '';
+                    poolItem.element.onclick = () => {
+                        if (modalTitle) modalTitle.textContent = item.title;
+                        if (modalOverlay) modalOverlay.classList.add('active');
+                        if (modalIframe) modalIframe.src = item.url;
+                    };
+                } else {
+                    poolItem.element.style.display = 'none';
+                    poolItem.element.style.backgroundImage = 'none';
+                    poolItem.element.onclick = null;
+                }
             });
-            readingGrid.appendChild(fragment);
 
             if (readingPagination) {
                 readingPagination.innerHTML = '';
@@ -402,11 +421,8 @@
         }
 
         function renderScienceModules() {
-            const scienceGrid = document.getElementById('sciencequiz-grid');
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!scienceGrid) return;
-            
-            clearGrid(scienceGrid);
 
             const filteredData = scienceItemsData.filter(item => {
                 const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
@@ -419,25 +435,24 @@
             const start = (currentSciencePage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            const fragment = document.createDocumentFragment();
-            paginatedData.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'round-btn';
-                card.style.backgroundImage = `url('${item.image || ''}')`;
-                card.innerHTML = `
-                    <div class="overlay">
-                        <h3>${item.title}</h3>
-                        <p>${item.description}</p>
-                    </div>
-                `;
-                card.addEventListener('click', () => {
-                    if (modalTitle) modalTitle.textContent = item.title;
-                    if (modalOverlay) modalOverlay.classList.add('active');
-                    if (modalIframe) modalIframe.src = item.url;
-                });
-                fragment.appendChild(card);
+            scienceCardPool.forEach((poolItem, index) => {
+                const item = paginatedData[index];
+                if (item) {
+                    poolItem.element.style.display = 'block';
+                    poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+                    poolItem.titleEl.textContent = item.title;
+                    poolItem.descEl.textContent = item.description || '';
+                    poolItem.element.onclick = () => {
+                        if (modalTitle) modalTitle.textContent = item.title;
+                        if (modalOverlay) modalOverlay.classList.add('active');
+                        if (modalIframe) modalIframe.src = item.url;
+                    };
+                } else {
+                    poolItem.element.style.display = 'none';
+                    poolItem.element.style.backgroundImage = 'none';
+                    poolItem.element.onclick = null;
+                }
             });
-            scienceGrid.appendChild(fragment);
 
             if (sciencePagination) {
                 sciencePagination.innerHTML = '';
@@ -471,11 +486,7 @@
                     }
                 });
 
-                pages.forEach(p => {
-                    p.classList.remove('active');
-                    const grids = p.querySelectorAll('.round-grid, #readingcorner-grid, #sciencequiz-grid');
-                    grids.forEach(grid => clearGrid(grid));
-                });
+                pages.forEach(p => p.classList.remove('active'));
 
                 btn.classList.add('active');
 
