@@ -1,7 +1,5 @@
 (function initApp() {
- // 2023-2026
     const scramTable = []; 
-    
     const staticTable = [
         { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://larp.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
@@ -73,7 +71,6 @@
         { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" }
     ];
-
     const uvTable = [
         { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
         { url: "https://extrememath.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
@@ -84,7 +81,6 @@
         { url: "https://datacrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
-
     const truffledTable = [
         { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
         { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
@@ -96,7 +92,6 @@
         { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
         { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
-
     const frogieeTable = [
         { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "" },
         { url: "https://larp.foundation", img: "/stuff/logo.png", final: "" },
@@ -168,7 +163,6 @@
         { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
-
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
         const chunkSize = 5;
@@ -252,7 +246,6 @@
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
 
-        // --- SLIDING NAVBAR INDICATOR SETUP ---
         let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
         if (navBar && !indicator) {
             indicator = document.createElement('div');
@@ -269,7 +262,6 @@
     const navRect = navBar.getBoundingClientRect();
     const btnRect = activeBtn.getBoundingClientRect();
 
-    // Reset inline position overrides to let CSS classes anchor the edges
     indicator.style.left = '';
     indicator.style.right = '';
     indicator.style.top = '';
@@ -287,7 +279,6 @@
         indicator.style.transform = `translateX(${leftOffset}px)`;
     }
       }
-        // --- END SLIDING INDICATOR SETUP ---
 
         const p = [
             "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
@@ -350,7 +341,6 @@
         let currentSciencePage = 1;
         const itemsPerPage = 24;
 
-        // --- SETUP CARD POOLS ONCE (PREVENTS MEMORY LEAKS & CRASHES) ---
         const readingGrid = document.getElementById('readingcorner-grid');
         const scienceGrid = document.getElementById('sciencequiz-grid');
         const readingCardPool = [];
@@ -514,7 +504,6 @@
             });
         }
 
-        // --- NAVIGATION CLICK HANDLER WITH INDICATOR SUPPORT ---
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -533,7 +522,7 @@
                 pages.forEach(p => p.classList.remove('active'));
 
                 btn.classList.add('active');
-                updateIndicator(btn); // Slide indicator bar to new active button
+                updateIndicator(btn);
 
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) {
@@ -547,7 +536,6 @@
             });
         });
 
-        // Initial active indicator position on load
         const initialActive = navBar ? (navBar.querySelector('.nav-btn.active') || navBtns[0]) : null;
         if (initialActive) {
             setTimeout(() => updateIndicator(initialActive), 60);
@@ -557,7 +545,6 @@
             const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
             updateIndicator(currentActive);
         });
-        // --------------------------------------------------------
 
         if (themeSelect) themeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
