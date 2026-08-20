@@ -168,7 +168,7 @@
         { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
         { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
         { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" }
+        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
 
     // ==========================================
@@ -573,7 +573,11 @@
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.style.backgroundImage = `url('${item.image}')`;
+                
+                // Safe background image with fallback
+                const imgUrl = item.image || '';
+                card.style.backgroundImage = `url('${imgUrl}')`;
+                
                 card.innerHTML = `
                     <div class="overlay">
                         <h3>${item.title}</h3>
@@ -662,13 +666,13 @@
             }
         }
 
-        // --- Truffled & Resource Data Loader ---
+        // --- Truffled & Resource Data Loader (Waits for working config) ---
         Promise.all([
             fetchAsset('Json/g.json'),
             fetchAsset('Json/truffled.json').catch(() => null),
             getWorkingConfig(truffledTable)
         ]).then(([gData, truffledData, w]) => {
-            const base = w ? (w.url).replace(/\/+$/, '') : '';
+            const base = w ? (w.url).replace(/\/+$/, '') : 'https://truffled.lol';
             const truffledMap = new Map();
             
             if (truffledData && truffledData.games) {
