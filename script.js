@@ -261,34 +261,32 @@
         }
 
         function updateIndicator(activeBtn) {
-            if (!activeBtn || !indicator || !navBar) return;
+    if (!activeBtn || !indicator || !navBar) return;
 
-            const isVertical = body.classList.contains('nav-left') || 
-                               body.classList.contains('nav-right');
+    const isVertical = body.classList.contains('nav-left') || 
+                       body.classList.contains('nav-right');
 
-            const navRect = navBar.getBoundingClientRect();
-            const btnRect = activeBtn.getBoundingClientRect();
+    const navRect = navBar.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
 
-            if (isVertical) {
-                const topOffset = btnRect.top - navRect.top;
-                indicator.style.width = '3px';
-                indicator.style.height = `${btnRect.height}px`;
-                indicator.style.transform = `translateY(${topOffset}px)`;
-                indicator.style.left = body.classList.contains('nav-right') ? '0' : 'auto';
-                indicator.style.right = body.classList.contains('nav-left') ? '0' : 'auto';
-                indicator.style.top = '0';
-                indicator.style.bottom = 'auto';
-            } else {
-                const leftOffset = btnRect.left - navRect.left;
-                indicator.style.height = '3px';
-                indicator.style.width = `${btnRect.width}px`;
-                indicator.style.transform = `translateX(${leftOffset}px)`;
-                indicator.style.top = body.classList.contains('nav-bottom') ? '0' : 'auto';
-                indicator.style.bottom = body.classList.contains('nav-top') ? '0' : 'auto';
-                indicator.style.left = '0';
-                indicator.style.right = 'auto';
-            }
-        }
+    // Reset inline position overrides to let CSS classes anchor the edges
+    indicator.style.left = '';
+    indicator.style.right = '';
+    indicator.style.top = '';
+    indicator.style.bottom = '';
+
+    if (isVertical) {
+        const topOffset = btnRect.top - navRect.top;
+        indicator.style.width = '3px';
+        indicator.style.height = `${btnRect.height}px`;
+        indicator.style.transform = `translateY(${topOffset}px)`;
+    } else {
+        const leftOffset = btnRect.left - navRect.left;
+        indicator.style.width = `${btnRect.width}px`;
+        indicator.style.height = '3px';
+        indicator.style.transform = `translateX(${leftOffset}px)`;
+    }
+      }
         // --- END SLIDING INDICATOR SETUP ---
 
         const p = [
