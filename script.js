@@ -1,4 +1,5 @@
 (function initApp() {
+    // Edu-Book
     const scramTable = []; 
     
     const staticTable = [
@@ -402,7 +403,6 @@
             localStorage.setItem('kstuff_nav_size', e.target.value);
         });
 
-        // FIXED: Clear iframe source completely on close to stop memory leaks
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
             modalOverlay.classList.remove('active');
             modalIframe.src = 'about:blank';
@@ -434,12 +434,11 @@
         let currentScienceSearch = "";
         let currentReadingPage = 1;
         let currentSciencePage = 1;
-        const itemsPerPage = 50;
+        const itemsPerPage = 24; // UPDATED TO 24 BUTTONS PER PAGE
 
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
 
-        // FIXED: Added search input debouncing to prevent lag spikes while typing
         let readingSearchTimeout;
         if (readingSearchInput) readingSearchInput.addEventListener('input', (e) => {
             clearTimeout(readingSearchTimeout);
@@ -498,6 +497,11 @@
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingGrid) return;
             
+            // Explicitly force unload/release background images from previous DOM nodes before wiping
+            const oldCards = readingGrid.querySelectorAll('.round-btn');
+            oldCards.forEach(c => c.style.backgroundImage = 'none');
+            readingGrid.innerHTML = '';
+
             const filteredData = readingItemsData.filter(item => {
                 const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
                 const matchesSearch = item.title.toLowerCase().includes(currentReadingSearch);
@@ -510,9 +514,6 @@
             const start = (currentReadingPage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            readingGrid.innerHTML = '';
-            
-            // Use DocumentFragment to batch DOM updates and stop layout lag spikes
             const fragment = document.createDocumentFragment();
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
@@ -556,6 +557,10 @@
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!scienceGrid) return;
             
+            const oldCards = scienceGrid.querySelectorAll('.round-btn');
+            oldCards.forEach(c => c.style.backgroundImage = 'none');
+            scienceGrid.innerHTML = '';
+
             const filteredData = scienceItemsData.filter(item => {
                 const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
                 const matchesSearch = item.title.toLowerCase().includes(currentScienceSearch);
@@ -567,7 +572,6 @@
             const start = (currentSciencePage - 1) * itemsPerPage;
             const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-            scienceGrid.innerHTML = '';
             const fragment = document.createDocumentFragment();
             paginatedData.forEach(item => {
                 const card = document.createElement('div');
