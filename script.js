@@ -206,7 +206,7 @@
                     isDone = true; 
                     resolve(false); 
                 } 
-            }, 3000);
+            }, 8000);
         });
     }
 
