@@ -366,14 +366,6 @@
 
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) targetPage.classList.add('active');
-
-                if (targetId === 'mathworksheets') {
-                    if (eduLogo) eduLogo.classList.remove('show');
-                    body.classList.remove('show-logo');
-                } else {
-                    if (eduLogo) eduLogo.classList.add('show');
-                    body.classList.add('show-logo');
-                }
             });
         });
 
@@ -429,7 +421,7 @@
         let currentScienceSearch = "";
         let currentReadingPage = 1;
         let currentSciencePage = 1;
-        const itemsPerPage = 50;
+        const itemsPerPage = 32;
 
         const readingSearchInput = document.getElementById('readingcorner-search');
         const scienceSearchInput = document.getElementById('sciencequiz-search');
