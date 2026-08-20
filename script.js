@@ -1,5 +1,8 @@
 (function initApp() {
-    const scramTable = []; 
+    const scramTable = [
+      { url: "https://raw.githack.com/lotsacookie/cg-svg/main/", img: "assets/img/fav.png", final: "scramjet.svg?target_url=" },
+         { url: "https://cdn.jsdelivr.net/gh/lotsacookie/cg-svg@main/", img: "assets/img/fav.png", final: "scramjet.svg?target_url=" },
+]; 
     const staticTable = [
         { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://larp.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
