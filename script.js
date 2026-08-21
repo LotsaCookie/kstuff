@@ -170,6 +170,7 @@
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
         const chunkSize = 5;
+        
         for (let i = 0; i < table.length; i += chunkSize) {
             const chunk = table.slice(i, i + chunkSize);
             const winner = await new Promise((resolve) => {
@@ -177,18 +178,20 @@
                 let failedCount = 0;
                 let activeImages = [];
 
+                // Simple cleanup, no aborting the image to prevent false negatives
                 function cleanup() {
                     activeImages.forEach(im => {
                         im.onload = null;
                         im.onerror = null;
-                        // Restored to old behavior for compatibility (some URLs fail if removed entirely)
-                        im.src = ''; 
                     });
+                    activeImages = [];
                 }
 
                 chunk.forEach(entry => {
                     const img = new Image();
                     activeImages.push(img);
+                    
+                    // No cache-buster at the end. Strict servers block random query parameters on static assets.
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
                     
                     img.onload = () => {
@@ -208,21 +211,25 @@
                         }
                     };
                     
-                    img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+                    img.src = fullTestUrl;
                 });
 
+                // Increased timeout to 5000ms to allow slow networks to properly connect
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
                         cleanup();
                         resolve(null);
                     }
-                }, 4000);
+                }, 5000);
             });
 
             if (winner) return winner; 
         }
-        return table[0]; 
+        
+        // If ALL checks fail (e.g., incredibly slow network), pick a random one!
+        // This prevents the system from permanently locking onto a blocked [0] index.
+        return table[Math.floor(Math.random() * table.length)]; 
     }
 
     if (document.readyState === 'loading') {
@@ -232,7 +239,6 @@
     }
 
     function runLogic() {
-        // State flag to ensure we don't render until all APIs/JSONs respond
         let isDataReady = false; 
 
         const navBar = document.getElementById('teachertouchbar');
@@ -406,7 +412,7 @@
         });
 
         function renderReadingResources() {
-            if (!isDataReady) return; // Wait to prevent blank rendering
+            if (!isDataReady) return; 
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -461,7 +467,7 @@
         }
 
         function renderScienceModules() {
-            if (!isDataReady) return; // Wait to prevent blank rendering
+            if (!isDataReady) return; 
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -747,7 +753,6 @@
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
 
-            // Signal to the renderers that data is loaded and safe to apply
             isDataReady = true;
 
             const activePage = document.querySelector('.page.active');
