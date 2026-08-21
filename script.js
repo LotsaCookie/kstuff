@@ -16,7 +16,6 @@
         { url: "https://nsd160.org", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://austinisd.net", img: "/stuff/logo.png", final: "/embed.html#" },
@@ -33,46 +32,7 @@
         { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://000evvoxvgza.69.164.251.210.nip.io", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "/embed.html#" }
+        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "/embed.html#" }
     ];
     const uvTable = [
         { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
@@ -108,7 +68,6 @@
         { url: "https://nsd160.org", img: "/stuff/logo.png", final: "" },
         { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "" },
         { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "" },
         { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "" },
         { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "" },
         { url: "https://austinisd.net", img: "/stuff/logo.png", final: "" },
@@ -125,46 +84,7 @@
         { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "" },
         { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "" },
         { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "" },
-        { url: "https://000evvoxvgza.69.164.251.210.nip.io", img: "/stuff/logo.png", final: "" },
-        { url: "https://03gaygayguysarebyceandchatchawin.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://03wccheck-b660f6d1-ext.stenspluggsida.duckdns.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://04239940332.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://06p37dwobhe8udte.www.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://0cqjao047kgq4i0e.fastwow.giize.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://0ojsbhwwwaplolgayfagsskib.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://0yd4jtmw99.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://1.classlink.com.de", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://1.dev.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
-        { url: "https://1.pkdk-almuhammadi.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://10.casadotricolor.com.br", img: "/stuff/logo.png", final: "" },
-        { url: "https://101.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://1027yr4df.eastcartermiddleschool.mikata.ru", img: "/stuff/logo.png", final: "" },
-        { url: "https://1176.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://123.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123.learnhub.dedyn.io", img: "/stuff/logo.png", final: "" },
-        { url: "https://123.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123123.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://12345.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123456789.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://12345678910.myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://1234567891011121314151617181920.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123myapps.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123www.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://123www.classlink.com.de.cdn.cloudflare.net", img: "/stuff/logo.png", final: "" },
-        { url: "https://124u38ty8t3.east.carter.aber.ir", img: "/stuff/logo.png", final: "" },
-        { url: "https://15.historyhomework.mypop3.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://1npdmmadmin.marialovesmenndechino.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://1sandbox.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://1staging.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://1test.oluwajuwonlosamuelokanlawon.classlink.com.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://1uds5.mesh.mongodb-dev.neten.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://1uds5.mesh.mongodb-dev.netwww.en.www.admin.yes.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://1vib36z.ddnss.de", img: "/stuff/logo.png", final: "" },
-        { url: "https://1www.api.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://1www.uat.letsbehappy.6536.8236.frog.pxi-fusion.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
+        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "" }
     ];
     
     async function getWorkingConfig(table) {
@@ -172,78 +92,82 @@
         
         const chunkSize = 10;
         
-        for (let i = 0; i < table.length; i += chunkSize) {
-            const chunk = table.slice(i, i + chunkSize);
-            
-            try {
-                const winner = await Promise.any(chunk.map(entry => {
-                    return new Promise((resolve, reject) => {
-                        const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                        let resolved = false;
-                        let failCount = 0;
-                        const controller = new AbortController();
-                        
-                        const timeoutId = setTimeout(() => {
-                            if (!resolved) {
-                                resolved = true;
-                                controller.abort();
-                                if (img) {
-                                    img.onload = null;
-                                    img.onerror = null;
-                                }
-                                reject(new Error());
-                            }
-                        }, 3000);
-
-                        const handleSuccess = () => {
-                            if (!resolved) {
-                                resolved = true;
-                                clearTimeout(timeoutId);
-                                controller.abort();
-                                if (img) {
-                                    img.onload = null;
-                                    img.onerror = null;
-                                }
-                                resolve(entry);
-                            }
-                        };
-
-                        const handleFailure = () => {
-                            failCount++;
-                            if (failCount === 2 && !resolved) {
-                                resolved = true;
-                                clearTimeout(timeoutId);
-                                if (img) {
-                                    img.onload = null;
-                                    img.onerror = null;
-                                }
-                                reject(new Error());
-                            }
-                        };
-
-                        const img = new Image();
-                        img.onload = handleSuccess;
-                        img.onerror = handleFailure;
-                        img.src = fullTestUrl;
-
-                        fetch(fullTestUrl, { 
-                            mode: 'no-cors', 
-                            cache: 'no-store',
-                            signal: controller.signal
-                        })
-                        .then(handleSuccess)
-                        .catch(handleFailure);
-                    });
-                }));
+        // Keep looping/retrying until a verified working connection is found
+        while (true) {
+            for (let i = 0; i < table.length; i += chunkSize) {
+                const chunk = table.slice(i, i + chunkSize);
                 
-                if (winner) return winner;
-                
-            } catch (aggregateError) {
-                continue;
+                try {
+                    const winner = await Promise.any(chunk.map(entry => {
+                        return new Promise((resolve, reject) => {
+                            const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                            let resolved = false;
+                            let failCount = 0;
+                            const controller = new AbortController();
+                            
+                            const timeoutId = setTimeout(() => {
+                                if (!resolved) {
+                                    resolved = true;
+                                    controller.abort();
+                                    if (img) {
+                                        img.onload = null;
+                                        img.onerror = null;
+                                    }
+                                    reject(new Error());
+                                }
+                            }, 3000);
+
+                            const handleSuccess = () => {
+                                if (!resolved) {
+                                    resolved = true;
+                                    clearTimeout(timeoutId);
+                                    controller.abort();
+                                    if (img) {
+                                        img.onload = null;
+                                        img.onerror = null;
+                                    }
+                                    resolve(entry);
+                                }
+                            };
+
+                            const handleFailure = () => {
+                                failCount++;
+                                if (failCount === 2 && !resolved) {
+                                    resolved = true;
+                                    clearTimeout(timeoutId);
+                                    if (img) {
+                                        img.onload = null;
+                                        img.onerror = null;
+                                    }
+                                    reject(new Error());
+                                }
+                            };
+
+                            const img = new Image();
+                            img.onload = handleSuccess;
+                            img.onerror = handleFailure;
+                            img.src = fullTestUrl;
+
+                            fetch(fullTestUrl, { 
+                                mode: 'no-cors', 
+                                cache: 'no-store',
+                                signal: controller.signal
+                            })
+                            .then(handleSuccess)
+                            .catch(handleFailure);
+                        });
+                    }));
+                    
+                    if (winner) return winner;
+                    
+                } catch (aggregateError) {
+                    continue;
+                }
             }
+            
+            // Wait 2 seconds before looping through the list again to retry
+            await new Promise(r => setTimeout(r, 2000));
         }
-        
-        return table[Math.floor(Math.random() * table.length)]; 
     }
 
     if (document.readyState === 'loading') {
@@ -724,7 +648,7 @@
                 }
                 if (newStr.includes('${truffled}')) {
                     const w = resolvedBases.truffled;
-                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://truffled.lol');
+                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : '');
                 }
                 
                 return newStr.replace(/([^:]\/)\/+/g, '$1');
