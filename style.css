@@ -604,7 +604,7 @@ body.text-hide .nav-right .nav-divider {
     max-width: 100%; 
     aspect-ratio: 1 / 1;
     height: auto;
-    border-radius: 16px;
+    border-radius: 6px;
     background-size: cover;
     background-position: center;
     background-color: var(--card-bg);
@@ -641,7 +641,7 @@ body.text-hide .nav-right .nav-divider {
 
 .round-btn:hover .overlay {
     opacity: 1;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(8px);
 }
 
