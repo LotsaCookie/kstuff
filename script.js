@@ -548,40 +548,50 @@
             const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
             updateIndicator(currentActive);
         });
+ //plzzzzz work
+        function animateIndicatorUpdate(duration = 500) {
+    const start = performance.now();
 
+    function step(timestamp) {
+        const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+        if (currentActive) {
+            updateIndicator(currentActive);
+        }
+        
+        // Keep looping until the duration has passed
+        if (timestamp - start < duration) {
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
+        }
+// endddd
         if (themeSelect) themeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_theme', e.target.value);
-            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            updateIndicator(currentActive);
+            animateIndicatorUpdate(); 
         });
+
         if (navSelect) navSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\bnav-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_nav_pos', e.target.value);
-            setTimeout(() => {
-                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-                updateIndicator(currentActive);
-            }, 400);
+            animateIndicatorUpdate(); 
         });
+
         if (textSelect) textSelect.addEventListener('change', (e) => {
             if (e.target.value === 'text-hide') body.classList.add('text-hide');
             else body.classList.remove('text-hide');
             localStorage.setItem('kstuff_text_vis', e.target.value);
-            setTimeout(() => {
-                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-                updateIndicator(currentActive);
-            }, 50);
+            animateIndicatorUpdate();
         });
+
         if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\bsize-\S+/g, '').trim();
             body.classList.add(e.target.value);
             localStorage.setItem('kstuff_nav_size', e.target.value);
-            setTimeout(() => {
-                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-                updateIndicator(currentActive);
-            }, 50);
+            animateIndicatorUpdate();
         });
 
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
