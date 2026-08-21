@@ -45,7 +45,6 @@
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
     const truffledTable = [
-        { url: "https://truffled.lol", img: "/png/logo.png", final: "" },
         { url: "https://boon.busse.li", img: "/png/logo.png", final: "" },
         { url: "https://buff.loscantarostemuco.cl", img: "/png/logo.png", final: "" },
         { url: "https://hibrooklyn.site", img: "/png/logo.png", final: "" },
@@ -89,14 +88,11 @@
     
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
-        
         const chunkSize = 10;
         
-        // Keep looping/retrying until a verified working connection is found
         while (true) {
             for (let i = 0; i < table.length; i += chunkSize) {
                 const chunk = table.slice(i, i + chunkSize);
-                
                 try {
                     const winner = await Promise.any(chunk.map(entry => {
                         return new Promise((resolve, reject) => {
@@ -109,10 +105,7 @@
                                 if (!resolved) {
                                     resolved = true;
                                     controller.abort();
-                                    if (img) {
-                                        img.onload = null;
-                                        img.onerror = null;
-                                    }
+                                    if (img) { img.onload = null; img.onerror = null; }
                                     reject(new Error());
                                 }
                             }, 3000);
@@ -122,10 +115,7 @@
                                     resolved = true;
                                     clearTimeout(timeoutId);
                                     controller.abort();
-                                    if (img) {
-                                        img.onload = null;
-                                        img.onerror = null;
-                                    }
+                                    if (img) { img.onload = null; img.onerror = null; }
                                     resolve(entry);
                                 }
                             };
@@ -135,10 +125,7 @@
                                 if (failCount === 2 && !resolved) {
                                     resolved = true;
                                     clearTimeout(timeoutId);
-                                    if (img) {
-                                        img.onload = null;
-                                        img.onerror = null;
-                                    }
+                                    if (img) { img.onload = null; img.onerror = null; }
                                     reject(new Error());
                                 }
                             };
@@ -157,15 +144,11 @@
                             .catch(handleFailure);
                         });
                     }));
-                    
                     if (winner) return winner;
-                    
                 } catch (aggregateError) {
                     continue;
                 }
             }
-            
-            // Wait 2 seconds before looping through the list again to retry
             await new Promise(r => setTimeout(r, 2000));
         }
     }
@@ -186,7 +169,6 @@
         const navSelect = document.getElementById('layout-nav-select');
         const textSelect = document.getElementById('layout-text-select');
         const sizeSelect = document.getElementById('layout-size-select');
-        const eduLogo = document.getElementById('edu-logo');
         const body = document.body;
 
         const modalOverlay = document.getElementById('resource-modal');
@@ -198,6 +180,13 @@
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
 
+        const readingGrid = document.getElementById('readingcorner-grid');
+        const scienceGrid = document.getElementById('sciencequiz-grid');
+
+        // Hide grids initially until configs and data are fully verified and loaded
+        if (readingGrid) readingGrid.style.opacity = '0';
+        if (scienceGrid) scienceGrid.style.opacity = '0';
+
         let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
         if (navBar && !indicator) {
             indicator = document.createElement('div');
@@ -207,17 +196,11 @@
 
         function updateIndicator(activeBtn) {
             if (!activeBtn || !indicator || !navBar) return;
-
-            const isVertical = body.classList.contains('nav-left') || 
-                               body.classList.contains('nav-right');
-
+            const isVertical = body.classList.contains('nav-left') || body.classList.contains('nav-right');
             const navRect = navBar.getBoundingClientRect();
             const btnRect = activeBtn.getBoundingClientRect();
 
-            indicator.style.left = '';
-            indicator.style.right = '';
-            indicator.style.top = '';
-            indicator.style.bottom = '';
+            indicator.style.left = ''; indicator.style.right = ''; indicator.style.top = ''; indicator.style.bottom = '';
 
             if (isVertical) {
                 const topOffset = btnRect.top - navRect.top;
@@ -293,8 +276,6 @@
         let currentSciencePage = 1;
         const itemsPerPage = 24;
 
-        const readingGrid = document.getElementById('readingcorner-grid');
-        const scienceGrid = document.getElementById('sciencequiz-grid');
         const readingCardPool = [];
         const scienceCardPool = [];
 
@@ -509,15 +490,12 @@
             if (indicatorAnimId) {
                 window.cancelAnimationFrame(indicatorAnimId);
             }
-            
             const start = performance.now();
             const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            
             if (!currentActive) return;
 
             function step(timestamp) {
                 updateIndicator(currentActive);
-                
                 if (timestamp - start < duration) {
                     indicatorAnimId = window.requestAnimationFrame(step);
                 } else {
@@ -692,6 +670,10 @@
             scienceItemsData = finalScience;
 
             isDataReady = true;
+
+            // Reveal grids smoothly once configuration and data are ready
+            if (readingGrid) readingGrid.style.opacity = '1';
+            if (scienceGrid) scienceGrid.style.opacity = '1';
 
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
