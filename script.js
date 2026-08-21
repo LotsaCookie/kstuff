@@ -73,18 +73,23 @@
                     activeImages.push(img);
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
                     
+                    console.log(`[Config Check] Attempting to load: ${fullTestUrl}`);
+
                     img.onload = () => {
                         if (!resolved) {
                             resolved = true;
+                            console.log(`[Config Check] SUCCESS: ${fullTestUrl}`);
                             cleanup();
                             resolve(entry);
                         }
                     };
                     
-                    img.onerror = () => {
+                    img.onerror = (err) => {
                         failedCount++;
+                        console.error(`[Config Check] FAILED image load for: ${fullTestUrl}`, err);
                         if (!resolved && failedCount === chunk.length) {
                             resolved = true;
+                            console.warn(`[Config Check] All ${chunk.length} items in current chunk failed.`);
                             cleanup();
                             resolve(null); 
                         }
@@ -101,10 +106,10 @@
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                // Timeout increased to 8000ms for heavy parallel requests
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
+                        console.warn(`[Config Check] Chunk timed out after 8000ms.`);
                         activeImages.forEach(im => { im.src = ''; });
                         resolve(null);
                     }
@@ -113,6 +118,7 @@
 
             if (winner) return winner; 
         }
+        console.warn(`[Config Check] All chunks failed. Falling back to table[0]:`, table[0]);
         return table[0]; 
     }
 
