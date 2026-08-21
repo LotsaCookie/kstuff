@@ -181,11 +181,9 @@
                     activeImages.forEach(im => {
                         im.onload = null;
                         im.onerror = null;
-                        // Using removeAttribute prevents the browser from trying to fetch the current base URL
-                        im.removeAttribute('src'); 
+                        // Restored to old behavior for compatibility (some URLs fail if removed entirely)
+                        im.src = ''; 
                     });
-                    // Clear the array reference entirely so garbage collection can clean up the memory
-                    activeImages.length = 0; 
                 }
 
                 chunk.forEach(entry => {
@@ -234,6 +232,9 @@
     }
 
     function runLogic() {
+        // State flag to ensure we don't render until all APIs/JSONs respond
+        let isDataReady = false; 
+
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
@@ -405,6 +406,7 @@
         });
 
         function renderReadingResources() {
+            if (!isDataReady) return; // Wait to prevent blank rendering
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -459,6 +461,7 @@
         }
 
         function renderScienceModules() {
+            if (!isDataReady) return; // Wait to prevent blank rendering
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -551,7 +554,6 @@
         let resizeTimer;
         window.addEventListener('resize', () => {
             if (resizeTimer) window.cancelAnimationFrame(resizeTimer);
-            // Debounce the resize event layout thrashing
             resizeTimer = window.requestAnimationFrame(() => {
                 const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
                 updateIndicator(currentActive);
@@ -560,13 +562,11 @@
 
         let indicatorAnimId = null;
         function animateIndicatorUpdate(duration = 500) {
-            // Cancel any previous animation loops to prevent them from stacking and freezing the UI
             if (indicatorAnimId) {
                 window.cancelAnimationFrame(indicatorAnimId);
             }
             
             const start = performance.now();
-            // Cache the selector instead of querying the DOM 60 times a second
             const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
             
             if (!currentActive) return;
@@ -725,8 +725,8 @@
                     const matchedItem = truffledMap.get(searchTitle);
                     if (matchedItem) {
                         processedItem.title = matchedItem.name;
-                        processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
-                        processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
+                        processedItem.url = '${truffled}/' + (matchedItem.url || "").replace(/^\/+/, '');
+                        processedItem.image = '${truffled}/' + (matchedItem.thumbnail || "").replace(/^\/+/, '');
                         processedItem.description = processedItem.description || '';
                         processedItem.category = processedItem.category || 'Truffled';
                     }
@@ -746,6 +746,9 @@
 
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
+
+            // Signal to the renderers that data is loaded and safe to apply
+            isDataReady = true;
 
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
