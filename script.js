@@ -16,6 +16,7 @@
         { url: "https://nsd160.org", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "/embed.html#" },
+        { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "/embed.html#" },
         { url: "https://austinisd.net", img: "/stuff/logo.png", final: "/embed.html#" },
@@ -54,101 +55,66 @@
         { url: "https://classlink.com.de", img: "/png/logo.png", final: "" },
         { url: "https://geometrycalculatorhelprvhs.college", img: "/png/logo.png", final: "" }
     ];
-    const frogieeTable = [
-        { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "" },
-        { url: "https://larp.foundation", img: "/stuff/logo.png", final: "" },
-        { url: "https://nickolas.industries", img: "/stuff/logo.png", final: "" },
-        { url: "https://shrimpy.website", img: "/stuff/logo.png", final: "" },
-        { url: "https://gloverschool.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://miku.hair", img: "/stuff/logo.png", final: "" },
-        { url: "https://yourfrogiesarcadelink.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://tetosarcade.win", img: "/stuff/logo.png", final: "" },
-        { url: "https://bogbot.shop", img: "/stuff/logo.png", final: "" },
-        { url: "https://nsd160.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "" },
-        { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://austinisd.net", img: "/stuff/logo.png", final: "" },
-        { url: "https://brooklyn.foundation", img: "/stuff/logo.png", final: "" },
-        { url: "https://frog.bar", img: "/stuff/logo.png", final: "" },
-        { url: "https://edgy.blog", img: "/stuff/logo.png", final: "" },
-        { url: "https://cliffschools.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://columbiapublicschools.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://northfayetteschools.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://smdpschool.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://burrvillees.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://pleasantonmiddleschool.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://hcstemm.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "" },
-        { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "" },
-        { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "" },
-        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "" }
-    ];
-    
+    const frogieeTable = [...staticTable];
+
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
-        const chunkSize = 10;
-        
+        const chunkSize = 5;
+
+        // Keep looping continuously until a working config is found
         while (true) {
             for (let i = 0; i < table.length; i += chunkSize) {
                 const chunk = table.slice(i, i + chunkSize);
-                try {
-                    const winner = await Promise.any(chunk.map(entry => {
-                        return new Promise((resolve, reject) => {
-                            const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                            let resolved = false;
-                            let failCount = 0;
-                            const controller = new AbortController();
-                            
-                            const timeoutId = setTimeout(() => {
-                                if (!resolved) {
-                                    resolved = true;
-                                    controller.abort();
-                                    if (img) { img.onload = null; img.onerror = null; }
-                                    reject(new Error());
-                                }
-                            }, 3000);
+                const winner = await new Promise((resolve) => {
+                    let resolved = false;
+                    let failedCount = 0;
+                    let activeImages = [];
 
-                            const handleSuccess = () => {
-                                if (!resolved) {
-                                    resolved = true;
-                                    clearTimeout(timeoutId);
-                                    controller.abort();
-                                    if (img) { img.onload = null; img.onerror = null; }
-                                    resolve(entry);
-                                }
-                            };
+                    chunk.forEach(entry => {
+                        const img = new Image();
+                        activeImages.push(img);
+                        const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                        
+                        img.onload = () => {
+                            if (!resolved) {
+                                resolved = true;
+                                cleanup();
+                                resolve(entry);
+                            }
+                        };
+                        
+                        img.onerror = () => {
+                            failedCount++;
+                            if (!resolved && failedCount === chunk.length) {
+                                resolved = true;
+                                cleanup();
+                                resolve(null); 
+                            }
+                        };
+                        
+                        function cleanup() {
+                            activeImages.forEach(im => {
+                                im.onload = null;
+                                im.onerror = null;
+                                im.src = '';
+                            });
+                        }
+                        
+                        img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
+                    });
 
-                            const handleFailure = () => {
-                                failCount++;
-                                if (failCount === 2 && !resolved) {
-                                    resolved = true;
-                                    clearTimeout(timeoutId);
-                                    if (img) { img.onload = null; img.onerror = null; }
-                                    reject(new Error());
-                                }
-                            };
+                    setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            activeImages.forEach(im => { im.src = ''; });
+                            resolve(null);
+                        }
+                    }, 4000);
+                });
 
-                            const img = new Image();
-                            img.onload = handleSuccess;
-                            img.onerror = handleFailure;
-                            img.src = fullTestUrl;
-
-                            fetch(fullTestUrl, { 
-                                mode: 'no-cors', 
-                                cache: 'no-store',
-                                signal: controller.signal
-                            })
-                            .then(handleSuccess)
-                            .catch(handleFailure);
-                        });
-                    }));
-                    if (winner) return winner;
-                } catch (aggregateError) {
-                    continue;
-                }
+                if (winner) return winner; 
             }
+            // Wait 2 seconds before retrying the entire table again if everything in this pass failed
             await new Promise(r => setTimeout(r, 2000));
         }
     }
@@ -160,7 +126,7 @@
     }
 
     function runLogic() {
-        let isDataReady = false; 
+        let isDataReady = false;
 
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
@@ -183,7 +149,7 @@
         const readingGrid = document.getElementById('readingcorner-grid');
         const scienceGrid = document.getElementById('sciencequiz-grid');
 
-        // Hide grids initially until configs and data are fully verified and loaded
+        // Hide grids initially until configs and data are fully verified
         if (readingGrid) readingGrid.style.opacity = '0';
         if (scienceGrid) scienceGrid.style.opacity = '0';
 
@@ -231,7 +197,7 @@
                     if (response.ok) return await response.json();
                 } catch (err) {}
             }
-            throw new Error();
+            throw new Error("All proxies failed for " + path);
         }
 
         async function loadProxyContentAsIframe(id, path) {
@@ -331,7 +297,7 @@
         });
 
         function renderReadingResources() {
-            if (!isDataReady) return; 
+            if (!isDataReady) return;
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -386,7 +352,7 @@
         }
 
         function renderScienceModules() {
-            if (!isDataReady) return; 
+            if (!isDataReady) return;
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -671,7 +637,7 @@
 
             isDataReady = true;
 
-            // Reveal grids smoothly once configuration and data are ready
+            // Reveal grids smoothly once configuration and data are fully verified
             if (readingGrid) readingGrid.style.opacity = '1';
             if (scienceGrid) scienceGrid.style.opacity = '1';
 
