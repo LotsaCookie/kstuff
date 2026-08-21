@@ -166,6 +166,7 @@
         { url: "https://1wwwwwwapp.ermwhatthesigma.frogiee1stoolbox.eu.org", img: "/stuff/logo.png", final: "" },
         { url: "https://2.frogiesarcade.tk", img: "/stuff/logo.png", final: "" },
     ];
+    
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
         const chunkSize = 5;
@@ -175,6 +176,17 @@
                 let resolved = false;
                 let failedCount = 0;
                 let activeImages = [];
+
+                function cleanup() {
+                    activeImages.forEach(im => {
+                        im.onload = null;
+                        im.onerror = null;
+                        // Using removeAttribute prevents the browser from trying to fetch the current base URL
+                        im.removeAttribute('src'); 
+                    });
+                    // Clear the array reference entirely so garbage collection can clean up the memory
+                    activeImages.length = 0; 
+                }
 
                 chunk.forEach(entry => {
                     const img = new Image();
@@ -198,21 +210,13 @@
                         }
                     };
                     
-                    function cleanup() {
-                        activeImages.forEach(im => {
-                            im.onload = null;
-                            im.onerror = null;
-                            im.src = '';
-                        });
-                    }
-                    
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
-                        activeImages.forEach(im => { im.src = ''; });
+                        cleanup();
                         resolve(null);
                     }
                 }, 4000);
@@ -257,31 +261,31 @@
         }
 
         function updateIndicator(activeBtn) {
-    if (!activeBtn || !indicator || !navBar) return;
+            if (!activeBtn || !indicator || !navBar) return;
 
-    const isVertical = body.classList.contains('nav-left') || 
-                       body.classList.contains('nav-right');
+            const isVertical = body.classList.contains('nav-left') || 
+                               body.classList.contains('nav-right');
 
-    const navRect = navBar.getBoundingClientRect();
-    const btnRect = activeBtn.getBoundingClientRect();
+            const navRect = navBar.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
 
-    indicator.style.left = '';
-    indicator.style.right = '';
-    indicator.style.top = '';
-    indicator.style.bottom = '';
+            indicator.style.left = '';
+            indicator.style.right = '';
+            indicator.style.top = '';
+            indicator.style.bottom = '';
 
-    if (isVertical) {
-        const topOffset = btnRect.top - navRect.top;
-        indicator.style.width = '3px';
-        indicator.style.height = `${btnRect.height}px`;
-        indicator.style.transform = `translateY(${topOffset}px)`;
-    } else {
-        const leftOffset = btnRect.left - navRect.left;
-        indicator.style.width = `${btnRect.width}px`;
-        indicator.style.height = '3px';
-        indicator.style.transform = `translateX(${leftOffset}px)`;
-    }
-      }
+            if (isVertical) {
+                const topOffset = btnRect.top - navRect.top;
+                indicator.style.width = '3px';
+                indicator.style.height = `${btnRect.height}px`;
+                indicator.style.transform = `translateY(${topOffset}px)`;
+            } else {
+                const leftOffset = btnRect.left - navRect.left;
+                indicator.style.width = `${btnRect.width}px`;
+                indicator.style.height = '3px';
+                indicator.style.transform = `translateX(${leftOffset}px)`;
+            }
+        }
 
         const p = [
             "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
@@ -543,29 +547,42 @@
         if (initialActive) {
             setTimeout(() => updateIndicator(initialActive), 60);
         }
-
-        window.addEventListener('resize', () => {
-            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            updateIndicator(currentActive);
-        });
- //plzzzzz work
-        function animateIndicatorUpdate(duration = 500) {
-    const start = performance.now();
-
-    function step(timestamp) {
-        const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-        if (currentActive) {
-            updateIndicator(currentActive);
-        }
         
-        // Keep looping until the duration has passed
-        if (timestamp - start < duration) {
-            window.requestAnimationFrame(step);
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            if (resizeTimer) window.cancelAnimationFrame(resizeTimer);
+            // Debounce the resize event layout thrashing
+            resizeTimer = window.requestAnimationFrame(() => {
+                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+                updateIndicator(currentActive);
+            });
+        });
+
+        let indicatorAnimId = null;
+        function animateIndicatorUpdate(duration = 500) {
+            // Cancel any previous animation loops to prevent them from stacking and freezing the UI
+            if (indicatorAnimId) {
+                window.cancelAnimationFrame(indicatorAnimId);
+            }
+            
+            const start = performance.now();
+            // Cache the selector instead of querying the DOM 60 times a second
+            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+            
+            if (!currentActive) return;
+
+            function step(timestamp) {
+                updateIndicator(currentActive);
+                
+                if (timestamp - start < duration) {
+                    indicatorAnimId = window.requestAnimationFrame(step);
+                } else {
+                    indicatorAnimId = null;
+                }
+            }
+            indicatorAnimId = window.requestAnimationFrame(step);
         }
-    }
-    window.requestAnimationFrame(step);
-        }
-// endddd
+
         if (themeSelect) themeSelect.addEventListener('change', (e) => {
             body.className = body.className.replace(/\btheme-\S+/g, '').trim();
             body.classList.add(e.target.value);
