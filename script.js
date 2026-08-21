@@ -77,10 +77,20 @@
 
                     img.onload = () => {
                         if (!resolved) {
-                            resolved = true;
-                            console.log(`[Config Check] SUCCESS: ${fullTestUrl}`);
-                            cleanup();
-                            resolve(entry);
+                            if (img.naturalWidth > 0) {
+                                resolved = true;
+                                console.log(`[Config Check] SUCCESS: ${fullTestUrl} (naturalWidth: ${img.naturalWidth})`);
+                                cleanup();
+                                resolve(entry);
+                            } else {
+                                console.warn(`[Config Check] Ignored zero-width/placeholder image response for: ${fullTestUrl}`);
+                                failedCount++;
+                                if (!resolved && failedCount === chunk.length) {
+                                    resolved = true;
+                                    cleanup();
+                                    resolve(null);
+                                }
+                            }
                         }
                     };
                     
