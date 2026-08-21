@@ -1,4 +1,5 @@
 (function initApp() {
+    // FIXED
     const scramTable = [
         { url: "https://raw.githack.com/lotsacookie/cg-svg/main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
         { url: "https://cdn.jsdelivr.net/gh/lotsacookie/cg-svg@main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
