@@ -46,6 +46,11 @@
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
     const truffledTable = [
+        { url: "https://boat.strongson.com/", img: "/favicon.ico", final: "" },
+        { url: "https://lib.stcath.net/", img: "/favicon.ico", final: "" },
+        { url: "https://thislinkworks.b-cdn.net/", img: "/favicon.ico", final: "" },
+        { url: "https://truffledlinklol.b-cdn.net/", img: "/favicon.ico", final: "" },
+        { url: "https://snoopy.patelmortgage.com/", img: "/favicon.ico", final: "" },
         { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
         { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
         { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
@@ -586,7 +591,7 @@
                 }
                 if (newStr.includes('${truffled}')) {
                     const w = resolvedBases.truffled;
-                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://truffled.lol');
+                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://boat.strongson.com');
                 }
                 
                 return newStr.replace(/([^:]\/)\/+/g, '$1');
