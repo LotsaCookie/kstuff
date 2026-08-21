@@ -60,63 +60,58 @@
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
         const chunkSize = 5;
+        for (let i = 0; i < table.length; i += chunkSize) {
+            const chunk = table.slice(i, i + chunkSize);
+            const winner = await new Promise((resolve) => {
+                let resolved = false;
+                let failedCount = 0;
+                let activeImages = [];
 
-        // Keep looping continuously until a working config is found
-        while (true) {
-            for (let i = 0; i < table.length; i += chunkSize) {
-                const chunk = table.slice(i, i + chunkSize);
-                const winner = await new Promise((resolve) => {
-                    let resolved = false;
-                    let failedCount = 0;
-                    let activeImages = [];
-
-                    chunk.forEach(entry => {
-                        const img = new Image();
-                        activeImages.push(img);
-                        const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                        
-                        img.onload = () => {
-                            if (!resolved) {
-                                resolved = true;
-                                cleanup();
-                                resolve(entry);
-                            }
-                        };
-                        
-                        img.onerror = () => {
-                            failedCount++;
-                            if (!resolved && failedCount === chunk.length) {
-                                resolved = true;
-                                cleanup();
-                                resolve(null); 
-                            }
-                        };
-                        
-                        function cleanup() {
-                            activeImages.forEach(im => {
-                                im.onload = null;
-                                im.onerror = null;
-                                im.src = '';
-                            });
-                        }
-                        
-                        img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
-                    });
-
-                    setTimeout(() => {
+                chunk.forEach(entry => {
+                    const img = new Image();
+                    activeImages.push(img);
+                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                    
+                    img.onload = () => {
                         if (!resolved) {
                             resolved = true;
-                            activeImages.forEach(im => { im.src = ''; });
-                            resolve(null);
+                            cleanup();
+                            resolve(entry);
                         }
-                    }, 4000);
+                    };
+                    
+                    img.onerror = () => {
+                        failedCount++;
+                        if (!resolved && failedCount === chunk.length) {
+                            resolved = true;
+                            cleanup();
+                            resolve(null); 
+                        }
+                    };
+                    
+                    function cleanup() {
+                        activeImages.forEach(im => {
+                            im.onload = null;
+                            im.onerror = null;
+                            im.src = '';
+                        });
+                    }
+                    
+                    img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                if (winner) return winner; 
-            }
-            // Wait 2 seconds before retrying the entire table again if everything in this pass failed
-            await new Promise(r => setTimeout(r, 2000));
+                setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        activeImages.forEach(im => { im.src = ''; });
+                        resolve(null);
+                    }
+                }, 4000);
+            });
+
+            if (winner) return winner; 
         }
+        return table[0]; 
     }
 
     if (document.readyState === 'loading') {
@@ -126,8 +121,6 @@
     }
 
     function runLogic() {
-        let isDataReady = false;
-
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
@@ -145,13 +138,6 @@
 
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
-
-        const readingGrid = document.getElementById('readingcorner-grid');
-        const scienceGrid = document.getElementById('sciencequiz-grid');
-
-        // Hide grids initially until configs and data are fully verified
-        if (readingGrid) readingGrid.style.opacity = '0';
-        if (scienceGrid) scienceGrid.style.opacity = '0';
 
         let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
         if (navBar && !indicator) {
@@ -242,6 +228,8 @@
         let currentSciencePage = 1;
         const itemsPerPage = 24;
 
+        const readingGrid = document.getElementById('readingcorner-grid');
+        const scienceGrid = document.getElementById('sciencequiz-grid');
         const readingCardPool = [];
         const scienceCardPool = [];
 
@@ -297,7 +285,6 @@
         });
 
         function renderReadingResources() {
-            if (!isDataReady) return;
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -352,7 +339,6 @@
         }
 
         function renderScienceModules() {
-            if (!isDataReady) return;
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -441,34 +427,24 @@
         if (initialActive) {
             setTimeout(() => updateIndicator(initialActive), 60);
         }
-        
-        let resizeTimer;
+
         window.addEventListener('resize', () => {
-            if (resizeTimer) window.cancelAnimationFrame(resizeTimer);
-            resizeTimer = window.requestAnimationFrame(() => {
-                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-                updateIndicator(currentActive);
-            });
+            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+            updateIndicator(currentActive);
         });
 
-        let indicatorAnimId = null;
         function animateIndicatorUpdate(duration = 500) {
-            if (indicatorAnimId) {
-                window.cancelAnimationFrame(indicatorAnimId);
-            }
             const start = performance.now();
-            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            if (!currentActive) return;
-
             function step(timestamp) {
-                updateIndicator(currentActive);
+                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
+                if (currentActive) {
+                    updateIndicator(currentActive);
+                }
                 if (timestamp - start < duration) {
-                    indicatorAnimId = window.requestAnimationFrame(step);
-                } else {
-                    indicatorAnimId = null;
+                    window.requestAnimationFrame(step);
                 }
             }
-            indicatorAnimId = window.requestAnimationFrame(step);
+            window.requestAnimationFrame(step);
         }
 
         if (themeSelect) themeSelect.addEventListener('change', (e) => {
@@ -592,7 +568,7 @@
                 }
                 if (newStr.includes('${truffled}')) {
                     const w = resolvedBases.truffled;
-                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : '');
+                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://truffled.lol');
                 }
                 
                 return newStr.replace(/([^:]\/)\/+/g, '$1');
@@ -613,8 +589,8 @@
                     const matchedItem = truffledMap.get(searchTitle);
                     if (matchedItem) {
                         processedItem.title = matchedItem.name;
-                        processedItem.url = '${truffled}/' + (matchedItem.url || "").replace(/^\/+/, '');
-                        processedItem.image = '${truffled}/' + (matchedItem.thumbnail || "").replace(/^\/+/, '');
+                        processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
+                        processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
                         processedItem.description = processedItem.description || '';
                         processedItem.category = processedItem.category || 'Truffled';
                     }
@@ -634,12 +610,6 @@
 
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
-
-            isDataReady = true;
-
-            // Reveal grids smoothly once configuration and data are fully verified
-            if (readingGrid) readingGrid.style.opacity = '1';
-            if (scienceGrid) scienceGrid.style.opacity = '1';
 
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
