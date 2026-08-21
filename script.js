@@ -46,14 +46,15 @@
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
     const truffledTable = [
-        { url: "https://boon.busse.li", img: "/png/logo.png", final: "" },
-        { url: "https://buff.loscantarostemuco.cl", img: "/png/logo.png", final: "" },
-        { url: "https://hibrooklyn.site", img: "/png/logo.png", final: "" },
-        { url: "https://for-ravipati03121e3.shared-with.de", img: "/png/logo.png", final: "" },
-        { url: "https://tutoring-services.org", img: "/png/logo.png", final: "" },
-        { url: "https://mathteachersforhire.org", img: "/png/logo.png", final: "" },
-        { url: "https://classlink.com.de", img: "/png/logo.png", final: "" },
-        { url: "https://geometrycalculatorhelprvhs.college", img: "/png/logo.png", final: "" }
+        { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
+        { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
+        { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
+        { url: "https://hibrooklyn.site/", img: "/favicon.ico", final: "" },
+        { url: "https://for-ravipati03121e3.shared-with.de/", img: "/favicon.ico", final: "" },
+        { url: "https://tutoring-services.org", img: "/favicon.ico", final: "" },
+        { url: "https://mathteachersforhire.org", img: "/favicon.ico", final: "" },
+        { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
+        { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
     const frogieeTable = [...staticTable];
 
@@ -100,13 +101,14 @@
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
+                // Timeout increased to 8000ms for heavy parallel requests
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
                         activeImages.forEach(im => { im.src = ''; });
                         resolve(null);
                     }
-                }, 4000);
+                }, 8000);
             });
 
             if (winner) return winner; 
