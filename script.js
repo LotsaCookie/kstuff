@@ -1,5 +1,4 @@
 (function initApp() {
-    // FIXED
     const scramTable = [
         { url: "https://raw.githack.com/lotsacookie/cg-svg/main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
         { url: "https://cdn.jsdelivr.net/gh/lotsacookie/cg-svg@main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
@@ -170,66 +169,80 @@
     
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
-        const chunkSize = 5;
+        
+        const chunkSize = 10;
         
         for (let i = 0; i < table.length; i += chunkSize) {
             const chunk = table.slice(i, i + chunkSize);
-            const winner = await new Promise((resolve) => {
-                let resolved = false;
-                let failedCount = 0;
-                let activeImages = [];
+            
+            try {
+                const winner = await Promise.any(chunk.map(entry => {
+                    return new Promise((resolve, reject) => {
+                        const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                        let resolved = false;
+                        let failCount = 0;
+                        const controller = new AbortController();
+                        
+                        const timeoutId = setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                controller.abort();
+                                if (img) {
+                                    img.onload = null;
+                                    img.onerror = null;
+                                }
+                                reject(new Error());
+                            }
+                        }, 3000);
 
-                // Simple cleanup, no aborting the image to prevent false negatives
-                function cleanup() {
-                    activeImages.forEach(im => {
-                        im.onload = null;
-                        im.onerror = null;
+                        const handleSuccess = () => {
+                            if (!resolved) {
+                                resolved = true;
+                                clearTimeout(timeoutId);
+                                controller.abort();
+                                if (img) {
+                                    img.onload = null;
+                                    img.onerror = null;
+                                }
+                                resolve(entry);
+                            }
+                        };
+
+                        const handleFailure = () => {
+                            failCount++;
+                            if (failCount === 2 && !resolved) {
+                                resolved = true;
+                                clearTimeout(timeoutId);
+                                if (img) {
+                                    img.onload = null;
+                                    img.onerror = null;
+                                }
+                                reject(new Error());
+                            }
+                        };
+
+                        const img = new Image();
+                        img.onload = handleSuccess;
+                        img.onerror = handleFailure;
+                        img.src = fullTestUrl;
+
+                        fetch(fullTestUrl, { 
+                            mode: 'no-cors', 
+                            cache: 'no-store',
+                            signal: controller.signal
+                        })
+                        .then(handleSuccess)
+                        .catch(handleFailure);
                     });
-                    activeImages = [];
-                }
-
-                chunk.forEach(entry => {
-                    const img = new Image();
-                    activeImages.push(img);
-                    
-                    // No cache-buster at the end. Strict servers block random query parameters on static assets.
-                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    
-                    img.onload = () => {
-                        if (!resolved) {
-                            resolved = true;
-                            cleanup();
-                            resolve(entry);
-                        }
-                    };
-                    
-                    img.onerror = () => {
-                        failedCount++;
-                        if (!resolved && failedCount === chunk.length) {
-                            resolved = true;
-                            cleanup();
-                            resolve(null); 
-                        }
-                    };
-                    
-                    img.src = fullTestUrl;
-                });
-
-                // Increased timeout to 5000ms to allow slow networks to properly connect
-                setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        cleanup();
-                        resolve(null);
-                    }
-                }, 5000);
-            });
-
-            if (winner) return winner; 
+                }));
+                
+                if (winner) return winner;
+                
+            } catch (aggregateError) {
+                continue;
+            }
         }
         
-        // If ALL checks fail (e.g., incredibly slow network), pick a random one!
-        // This prevents the system from permanently locking onto a blocked [0] index.
         return table[Math.floor(Math.random() * table.length)]; 
     }
 
@@ -311,7 +324,7 @@
                     if (response.ok) return await response.json();
                 } catch (err) {}
             }
-            throw new Error("All proxies failed for " + path);
+            throw new Error();
         }
 
         async function loadProxyContentAsIframe(id, path) {
