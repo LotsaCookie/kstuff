@@ -293,7 +293,7 @@
             readingSearchTimeout = setTimeout(() => {
                 currentReadingSearch = e.target.value.toLowerCase().trim();
                 currentReadingPage = 1;
-                renderReadingResources();
+                renderReadingResources(true);
             }, 150);
         });
 
@@ -303,11 +303,82 @@
             scienceSearchTimeout = setTimeout(() => {
                 currentScienceSearch = e.target.value.toLowerCase().trim();
                 currentSciencePage = 1;
-                renderScienceModules();
+                renderScienceModules(true);
             }, 150);
         });
 
-        function renderReadingResources() {
+        function populateCardPool(cardPool, paginatedData) {
+            cardPool.forEach((poolItem, index) => {
+                const item = paginatedData[index];
+                if (item) {
+                    poolItem.element.style.display = 'block';
+                    
+                    const targetImage = item.image || '';
+                    if (poolItem.imgEl.dataset.src !== targetImage) {
+                        poolItem.imgEl.dataset.src = targetImage;
+                        if (targetImage) {
+                            poolItem.imgEl.src = targetImage;
+                            poolItem.imgEl.style.display = 'block';
+                        } else {
+                            poolItem.imgEl.removeAttribute('src');
+                            poolItem.imgEl.style.display = 'none';
+                        }
+                    }
+
+                    if (poolItem.titleEl.textContent !== item.title) {
+                        poolItem.titleEl.textContent = item.title;
+                    }
+                    const descText = item.description || '';
+                    if (poolItem.descEl.textContent !== descText) {
+                        poolItem.descEl.textContent = descText;
+                    }
+
+                    poolItem.element.onclick = () => {
+                        if (modalTitle) modalTitle.textContent = item.title;
+                        if (modalOverlay) modalOverlay.classList.add('active');
+                        if (modalIframe) modalIframe.src = item.url;
+                    };
+                } else {
+                    poolItem.element.style.display = 'none';
+                    if (poolItem.imgEl.dataset.src !== '') {
+                        poolItem.imgEl.dataset.src = '';
+                        poolItem.imgEl.removeAttribute('src');
+                        poolItem.imgEl.style.display = 'none';
+                    }
+                    poolItem.element.onclick = null;
+                }
+            });
+        }
+
+        function waitForImagesAndFadeIn(cardPool, paginatedData, gridEl) {
+            const imagePromises = [];
+            cardPool.forEach((poolItem, index) => {
+                const item = paginatedData[index];
+                if (item && item.image && poolItem.imgEl) {
+                    imagePromises.push(new Promise((resolve) => {
+                        const img = poolItem.imgEl;
+                        if (img.complete && img.naturalWidth > 0) {
+                            resolve();
+                        } else {
+                            const done = () => {
+                                img.onload = null;
+                                img.onerror = null;
+                                resolve();
+                            };
+                            img.onload = done;
+                            img.onerror = done;
+                            setTimeout(done, 3000); // Safety fallback timeout
+                        }
+                    }));
+                }
+            });
+
+            Promise.all(imagePromises).then(() => {
+                if (gridEl) gridEl.style.opacity = '1';
+            });
+        }
+
+        function renderReadingResources(withPreload = false) {
             window.requestAnimationFrame(() => {
                 const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
@@ -324,71 +395,41 @@
                 const start = (currentReadingPage - 1) * itemsPerPage;
                 const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-                readingCardPool.forEach((poolItem, index) => {
-                    const item = paginatedData[index];
-                    if (item) {
-                        poolItem.element.style.display = 'block';
-                        
-                        const targetImage = item.image || '';
-                        if (poolItem.imgEl.dataset.src !== targetImage) {
-                            poolItem.imgEl.dataset.src = targetImage;
-                            if (targetImage) {
-                                poolItem.imgEl.src = targetImage;
-                                poolItem.imgEl.style.display = 'block';
-                            } else {
-                                poolItem.imgEl.removeAttribute('src');
-                                poolItem.imgEl.style.display = 'none';
-                            }
-                        }
-
-                        if (poolItem.titleEl.textContent !== item.title) {
-                            poolItem.titleEl.textContent = item.title;
-                        }
-                        const descText = item.description || '';
-                        if (poolItem.descEl.textContent !== descText) {
-                            poolItem.descEl.textContent = descText;
-                        }
-
-                        poolItem.element.onclick = () => {
-                            if (modalTitle) modalTitle.textContent = item.title;
-                            if (modalOverlay) modalOverlay.classList.add('active');
-                            if (modalIframe) modalIframe.src = item.url;
-                        };
-                    } else {
-                        poolItem.element.style.display = 'none';
-                        if (poolItem.imgEl.dataset.src !== '') {
-                            poolItem.imgEl.dataset.src = '';
-                            poolItem.imgEl.removeAttribute('src');
-                            poolItem.imgEl.style.display = 'none';
-                        }
-                        poolItem.element.onclick = null;
-                    }
-                });
-
-                if (readingPagination) {
-                    readingPagination.innerHTML = '';
-                    if (totalPages > 1) {
-                        for (let i = 1; i <= totalPages; i++) {
-                            const pageBtn = document.createElement('button');
-                            pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
-                            pageBtn.textContent = i;
-                            pageBtn.addEventListener('click', () => {
-                                if (currentReadingPage === i) return;
-                                readingGrid.style.opacity = '0';
-                                setTimeout(() => {
-                                    currentReadingPage = i;
-                                    renderReadingResources();
-                                    readingGrid.style.opacity = '1';
-                                }, 100);
-                            });
-                            readingPagination.appendChild(pageBtn);
-                        }
-                    }
+                if (withPreload) {
+                    readingGrid.style.opacity = '0';
+                    setTimeout(() => {
+                        populateCardPool(readingCardPool, paginatedData);
+                        renderReadingPagination(totalPages);
+                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
+                    }, 250); // Slower fade-out delay
+                } else {
+                    populateCardPool(readingCardPool, paginatedData);
+                    renderReadingPagination(totalPages);
+                    readingGrid.style.opacity = '1';
                 }
             });
         }
 
-        function renderScienceModules() {
+        function renderReadingPagination(totalPages) {
+            const readingPagination = document.getElementById('readingcorner-pagination');
+            if (!readingPagination) return;
+            readingPagination.innerHTML = '';
+            if (totalPages > 1) {
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', () => {
+                        if (currentReadingPage === i) return;
+                        currentReadingPage = i;
+                        renderReadingResources(true);
+                    });
+                    readingPagination.appendChild(pageBtn);
+                }
+            }
+        }
+
+        function renderScienceModules(withPreload = false) {
             window.requestAnimationFrame(() => {
                 const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
@@ -404,68 +445,38 @@
                 const start = (currentSciencePage - 1) * itemsPerPage;
                 const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
-                scienceCardPool.forEach((poolItem, index) => {
-                    const item = paginatedData[index];
-                    if (item) {
-                        poolItem.element.style.display = 'block';
-
-                        const targetImage = item.image || '';
-                        if (poolItem.imgEl.dataset.src !== targetImage) {
-                            poolItem.imgEl.dataset.src = targetImage;
-                            if (targetImage) {
-                                poolItem.imgEl.src = targetImage;
-                                poolItem.imgEl.style.display = 'block';
-                            } else {
-                                poolItem.imgEl.removeAttribute('src');
-                                poolItem.imgEl.style.display = 'none';
-                            }
-                        }
-
-                        if (poolItem.titleEl.textContent !== item.title) {
-                            poolItem.titleEl.textContent = item.title;
-                        }
-                        const descText = item.description || '';
-                        if (poolItem.descEl.textContent !== descText) {
-                            poolItem.descEl.textContent = descText;
-                        }
-
-                        poolItem.element.onclick = () => {
-                            if (modalTitle) modalTitle.textContent = item.title;
-                            if (modalOverlay) modalOverlay.classList.add('active');
-                            if (modalIframe) modalIframe.src = item.url;
-                        };
-                    } else {
-                        poolItem.element.style.display = 'none';
-                        if (poolItem.imgEl.dataset.src !== '') {
-                            poolItem.imgEl.dataset.src = '';
-                            poolItem.imgEl.removeAttribute('src');
-                            poolItem.imgEl.style.display = 'none';
-                        }
-                        poolItem.element.onclick = null;
-                    }
-                });
-
-                if (sciencePagination) {
-                    sciencePagination.innerHTML = '';
-                    if (totalPages > 1) {
-                        for (let i = 1; i <= totalPages; i++) {
-                            const pageBtn = document.createElement('button');
-                            pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
-                            pageBtn.textContent = i;
-                            pageBtn.addEventListener('click', () => {
-                                if (currentSciencePage === i) return;
-                                scienceGrid.style.opacity = '0';
-                                setTimeout(() => {
-                                    currentSciencePage = i;
-                                    renderScienceModules();
-                                    scienceGrid.style.opacity = '1';
-                                }, 100);
-                            });
-                            sciencePagination.appendChild(pageBtn);
-                        }
-                    }
+                if (withPreload) {
+                    scienceGrid.style.opacity = '0';
+                    setTimeout(() => {
+                        populateCardPool(scienceCardPool, paginatedData);
+                        renderSciencePagination(totalPages);
+                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
+                    }, 250); // Slower fade-out delay
+                } else {
+                    populateCardPool(scienceCardPool, paginatedData);
+                    renderSciencePagination(totalPages);
+                    scienceGrid.style.opacity = '1';
                 }
             });
+        }
+
+        function renderSciencePagination(totalPages) {
+            const sciencePagination = document.getElementById('sciencequiz-pagination');
+            if (!sciencePagination) return;
+            sciencePagination.innerHTML = '';
+            if (totalPages > 1) {
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
+                    pageBtn.textContent = i;
+                    pageBtn.addEventListener('click', () => {
+                        if (currentSciencePage === i) return;
+                        currentSciencePage = i;
+                        renderScienceModules(true);
+                    });
+                    sciencePagination.appendChild(pageBtn);
+                }
+            }
         }
 
         navBtns.forEach(btn => {
@@ -492,9 +503,9 @@
                 if (targetPage) {
                     targetPage.classList.add('active');
                     if (targetId === 'readingcorner') {
-                        setTimeout(() => renderReadingResources(), 15);
+                        setTimeout(() => renderReadingResources(false), 15);
                     } else if (targetId === 'sciencequiz') {
-                        setTimeout(() => renderScienceModules(), 15);
+                        setTimeout(() => renderScienceModules(false), 15);
                     }
                 }
             });
@@ -588,7 +599,7 @@
                 readingSelect.addEventListener('change', (e) => {
                     currentReadingCategory = e.target.value;
                     currentReadingPage = 1;
-                    renderReadingResources();
+                    renderReadingResources(true);
                 });
             }
             if (scienceSelect) {
@@ -602,7 +613,7 @@
                 scienceSelect.addEventListener('change', (e) => {
                     currentScienceCategory = e.target.value;
                     currentSciencePage = 1;
-                    renderScienceModules();
+                    renderScienceModules(true);
                 });
             }
         }).catch(err => {});
@@ -690,9 +701,9 @@
 
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
-                renderScienceModules();
+                renderScienceModules(false);
             } else {
-                renderReadingResources();
+                renderReadingResources(false);
             }
         });
     }
