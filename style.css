@@ -633,6 +633,13 @@ body.text-hide .nav-right .nav-divider {
     box-shadow: 0 12px 25px rgba(0,0,0,0.4);
 }
 
+.round-btn:active {
+    scale: 0.8;
+    z-index: 2;
+    border: 5px solid var(--text-color);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+}
+
 .round-btn img {
     position: absolute;
     inset: 0;
@@ -660,12 +667,19 @@ body.text-hide .nav-right .nav-divider {
     z-index: 2;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
-    transition: opacity 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+    transition: all 0.3s ease;
     font-weight: bold;
 }
 
 .round-btn:hover .overlay {
     opacity: 1;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+}
+
+.round-btn:active .overlay {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.8); 
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
 }
