@@ -620,12 +620,14 @@ body.text-hide .nav-right .nav-divider {
     position: relative;
     overflow: hidden;
     box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: ease 0.2s;
+    border: 5px solid transparent;
     cursor: pointer;
 }
 
 .round-btn:hover {
-    transform: translateY(-6px);
+    scale: 1.2;
+    border: 5px solid var(--text-color);
     box-shadow: 0 12px 25px rgba(0,0,0,0.4);
 }
 
@@ -662,8 +664,8 @@ body.text-hide .nav-right .nav-divider {
 
 .round-btn:hover .overlay {
     opacity: 1;
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
 }
 
 .overlay h3 {
