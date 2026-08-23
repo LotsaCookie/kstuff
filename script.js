@@ -367,7 +367,7 @@
                             };
                             img.onload = done;
                             img.onerror = done;
-                            setTimeout(done, 3000); // Safety fallback timeout
+                            setTimeout(done, 3000); 
                         }
                     }));
                 }
@@ -380,7 +380,6 @@
 
         function renderReadingResources(withPreload = false) {
             window.requestAnimationFrame(() => {
-                const readingPagination = document.getElementById('readingcorner-pagination');
                 if (!readingGrid) return;
 
                 const filteredData = readingItemsData.filter(item => {
@@ -401,7 +400,7 @@
                         populateCardPool(readingCardPool, paginatedData);
                         renderReadingPagination(totalPages);
                         waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
-                    }, 250); // Slower fade-out delay
+                    }, 250); 
                 } else {
                     populateCardPool(readingCardPool, paginatedData);
                     renderReadingPagination(totalPages);
@@ -410,28 +409,59 @@
             });
         }
 
+        // Updated Reading Pagination Logic (Arrows)
         function renderReadingPagination(totalPages) {
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingPagination) return;
             readingPagination.innerHTML = '';
+            
             if (totalPages > 1) {
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
-                    pageBtn.textContent = i;
-                    pageBtn.addEventListener('click', () => {
-                        if (currentReadingPage === i) return;
-                        currentReadingPage = i;
+                // Left Arrow
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn';
+                prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
+                
+                if (currentReadingPage > 1) {
+                    prevBtn.addEventListener('click', () => {
+                        currentReadingPage--;
                         renderReadingResources(true);
                     });
-                    readingPagination.appendChild(pageBtn);
+                } else {
+                    prevBtn.style.opacity = '0.4';
+                    prevBtn.style.cursor = 'not-allowed';
                 }
+                readingPagination.appendChild(prevBtn);
+
+                // Text indicator (e.g. "1 / 5")
+                const pageInfo = document.createElement('span');
+                pageInfo.style.fontWeight = '700';
+                pageInfo.style.fontSize = '1.1rem';
+                pageInfo.style.minWidth = '80px';
+                pageInfo.style.textAlign = 'center';
+                pageInfo.style.userSelect = 'none';
+                pageInfo.textContent = `${currentReadingPage} / ${totalPages}`;
+                readingPagination.appendChild(pageInfo);
+
+                // Right Arrow
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn';
+                nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
+                
+                if (currentReadingPage < totalPages) {
+                    nextBtn.addEventListener('click', () => {
+                        currentReadingPage++;
+                        renderReadingResources(true);
+                    });
+                } else {
+                    nextBtn.style.opacity = '0.4';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+                readingPagination.appendChild(nextBtn);
             }
         }
 
         function renderScienceModules(withPreload = false) {
             window.requestAnimationFrame(() => {
-                const sciencePagination = document.getElementById('sciencequiz-pagination');
                 if (!scienceGrid) return;
 
                 const filteredData = scienceItemsData.filter(item => {
@@ -442,6 +472,7 @@
 
                 const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
                 if (currentSciencePage > totalPages) currentSciencePage = 1;
+                
                 const start = (currentSciencePage - 1) * itemsPerPage;
                 const paginatedData = filteredData.slice(start, start + itemsPerPage);
 
@@ -451,7 +482,7 @@
                         populateCardPool(scienceCardPool, paginatedData);
                         renderSciencePagination(totalPages);
                         waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
-                    }, 250); // Slower fade-out delay
+                    }, 250); 
                 } else {
                     populateCardPool(scienceCardPool, paginatedData);
                     renderSciencePagination(totalPages);
@@ -460,22 +491,54 @@
             });
         }
 
+        // Updated Science Pagination Logic (Arrows)
         function renderSciencePagination(totalPages) {
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!sciencePagination) return;
             sciencePagination.innerHTML = '';
+            
             if (totalPages > 1) {
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
-                    pageBtn.textContent = i;
-                    pageBtn.addEventListener('click', () => {
-                        if (currentSciencePage === i) return;
-                        currentSciencePage = i;
+                // Left Arrow
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn';
+                prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
+                
+                if (currentSciencePage > 1) {
+                    prevBtn.addEventListener('click', () => {
+                        currentSciencePage--;
                         renderScienceModules(true);
                     });
-                    sciencePagination.appendChild(pageBtn);
+                } else {
+                    prevBtn.style.opacity = '0.4';
+                    prevBtn.style.cursor = 'not-allowed';
                 }
+                sciencePagination.appendChild(prevBtn);
+
+                // Text indicator (e.g. "1 / 5")
+                const pageInfo = document.createElement('span');
+                pageInfo.style.fontWeight = '700';
+                pageInfo.style.fontSize = '1.1rem';
+                pageInfo.style.minWidth = '80px';
+                pageInfo.style.textAlign = 'center';
+                pageInfo.style.userSelect = 'none';
+                pageInfo.textContent = `${currentSciencePage} / ${totalPages}`;
+                sciencePagination.appendChild(pageInfo);
+
+                // Right Arrow
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn';
+                nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
+                
+                if (currentSciencePage < totalPages) {
+                    nextBtn.addEventListener('click', () => {
+                        currentSciencePage++;
+                        renderScienceModules(true);
+                    });
+                } else {
+                    nextBtn.style.opacity = '0.4';
+                    nextBtn.style.cursor = 'not-allowed';
+                }
+                sciencePagination.appendChild(nextBtn);
             }
         }
 
