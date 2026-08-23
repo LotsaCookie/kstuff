@@ -638,7 +638,7 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .round-btn:active {
-    scale: 0.8;
+    scale: 0.95;
     z-index: 2;
     border: 5px solid var(--text-color);
     box-shadow: 0 12px 25px rgba(0,0,0,0.4);
