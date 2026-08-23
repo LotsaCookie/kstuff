@@ -601,7 +601,7 @@ body.text-hide .nav-right .nav-divider {
 .item-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));    
-    gap: 1rem;
+    gap: 0.4rem;
     justify-items: center;
     width: 100%;
 }
@@ -685,7 +685,7 @@ body.text-hide .nav-right .nav-divider {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 2rem;
+    margin-top: 1rem;
     flex-wrap: wrap;
 }
 
