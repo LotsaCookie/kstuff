@@ -621,12 +621,14 @@ body.text-hide .nav-right .nav-divider {
     overflow: hidden;
     box-shadow: 0 6px 15px rgba(0,0,0,0.2);
     transition: ease 0.2s;
-    border: 5px solid transparent;
+    z-index: 1;
+    border: 0px solid transparent;
     cursor: pointer;
 }
 
 .round-btn:hover {
     scale: 1.2;
+    z-index: 2;
     border: 5px solid var(--text-color);
     box-shadow: 0 12px 25px rgba(0,0,0,0.4);
 }
