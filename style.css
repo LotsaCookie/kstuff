@@ -617,7 +617,7 @@ body.text-hide .nav-right .nav-divider {
     max-width: 100%; 
     aspect-ratio: 1 / 1;
     height: auto;
-    border-radius: 6px;
+    border-radius: 9px;
     background-size: cover;
     background-position: center;
     background-color: var(--card-bg);
@@ -652,7 +652,7 @@ body.text-hide .nav-right .nav-divider {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    border-radius: 6px;
+    border-radius: 9px;
     z-index: 1;
     pointer-events: none;
 }
