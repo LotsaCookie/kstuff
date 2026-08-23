@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local Mobile AI Chat</title>
+    <meta property="og:title" content="Study.com | K-12 Online Learning and Worksheet Portal" />
+    <meta property="og:site_name" content="Study.com Learning" />
+    <meta name="msapplication-TileColor" content="#00ffa6" />
+    <meta property="og:image" content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" />
+    <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <title>Learning Assistant</title>
     <style>
         :root {
             --bg-color: rgba(0, 0, 0, 0.08);
@@ -653,8 +659,6 @@
         const ICON_EDIT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
         const ICON_DELETE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        // === UI & STATE MANAGEMENT ===
-
         function saveChats() {
             localStorage.setItem('ai_chats', JSON.stringify(chats));
             if (currentChatId) {
@@ -950,8 +954,6 @@
         modelModalOverlay.addEventListener('click', (e) => {
             if (e.target === modelModalOverlay) closeModelModal();
         });
-
-        // === CLEAR AI MODEL CACHE ONLY ===
         clearCacheBtn.addEventListener('click', () => {
             closeModelModal();
             showModal({
@@ -1147,9 +1149,6 @@
                 sendBtn.innerHTML = "<span>Failed</span>";
             }
         }
-
-        // === APP START ===
-
         window.addEventListener('DOMContentLoaded', async () => {
             renderChatList();
             if (chats.length > 0) {
