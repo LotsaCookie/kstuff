@@ -108,11 +108,9 @@
                         activeImages.forEach(im => {
                             im.onload = null;
                             im.onerror = null;
-                            // FIX 1: Never set src = ''. It causes a memory-bloating fetch loop in WebKit. 
-                            // Use a transparent 1x1 GIF to safely cancel the image load and clear memory.
                             im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
                         });
-                        activeImages.length = 0; // Empty array to let Garbage Collector do its job
+                        activeImages.length = 0;
                     }
                     
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
@@ -256,8 +254,6 @@
         const readingCardPool = [];
         const scienceCardPool = [];
 
-        // FIX 2: Create actual HTML <img> tags in the pool to utilize the CSS aspect-ratio fix. 
-        // Added loading="lazy" to let the browser drop offscreen images from memory.
         if (readingGrid) {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
@@ -333,18 +329,26 @@
                     if (item) {
                         poolItem.element.style.display = 'block';
                         
-                        // FIX 3: Apply the image source to the actual img tag, not background-image
-                        poolItem.element.style.backgroundImage = 'none'; 
-                        if (item.image) {
-                            poolItem.imgEl.src = item.image;
-                            poolItem.imgEl.style.display = 'block';
-                        } else {
-                            poolItem.imgEl.removeAttribute('src');
-                            poolItem.imgEl.style.display = 'none';
+                        const targetImage = item.image || '';
+                        if (poolItem.imgEl.dataset.src !== targetImage) {
+                            poolItem.imgEl.dataset.src = targetImage;
+                            if (targetImage) {
+                                poolItem.imgEl.src = targetImage;
+                                poolItem.imgEl.style.display = 'block';
+                            } else {
+                                poolItem.imgEl.removeAttribute('src');
+                                poolItem.imgEl.style.display = 'none';
+                            }
                         }
 
-                        poolItem.titleEl.textContent = item.title;
-                        poolItem.descEl.textContent = item.description || '';
+                        if (poolItem.titleEl.textContent !== item.title) {
+                            poolItem.titleEl.textContent = item.title;
+                        }
+                        const descText = item.description || '';
+                        if (poolItem.descEl.textContent !== descText) {
+                            poolItem.descEl.textContent = descText;
+                        }
+
                         poolItem.element.onclick = () => {
                             if (modalTitle) modalTitle.textContent = item.title;
                             if (modalOverlay) modalOverlay.classList.add('active');
@@ -352,9 +356,11 @@
                         };
                     } else {
                         poolItem.element.style.display = 'none';
-                        poolItem.element.style.backgroundImage = 'none';
-                        poolItem.imgEl.removeAttribute('src');
-                        poolItem.imgEl.style.display = 'none';
+                        if (poolItem.imgEl.dataset.src !== '') {
+                            poolItem.imgEl.dataset.src = '';
+                            poolItem.imgEl.removeAttribute('src');
+                            poolItem.imgEl.style.display = 'none';
+                        }
                         poolItem.element.onclick = null;
                     }
                 });
@@ -398,18 +404,26 @@
                     if (item) {
                         poolItem.element.style.display = 'block';
 
-                        // FIX 3 (continued): Apply the image source to the actual img tag
-                        poolItem.element.style.backgroundImage = 'none'; 
-                        if (item.image) {
-                            poolItem.imgEl.src = item.image;
-                            poolItem.imgEl.style.display = 'block';
-                        } else {
-                            poolItem.imgEl.removeAttribute('src');
-                            poolItem.imgEl.style.display = 'none';
+                        const targetImage = item.image || '';
+                        if (poolItem.imgEl.dataset.src !== targetImage) {
+                            poolItem.imgEl.dataset.src = targetImage;
+                            if (targetImage) {
+                                poolItem.imgEl.src = targetImage;
+                                poolItem.imgEl.style.display = 'block';
+                            } else {
+                                poolItem.imgEl.removeAttribute('src');
+                                poolItem.imgEl.style.display = 'none';
+                            }
                         }
 
-                        poolItem.titleEl.textContent = item.title;
-                        poolItem.descEl.textContent = item.description || '';
+                        if (poolItem.titleEl.textContent !== item.title) {
+                            poolItem.titleEl.textContent = item.title;
+                        }
+                        const descText = item.description || '';
+                        if (poolItem.descEl.textContent !== descText) {
+                            poolItem.descEl.textContent = descText;
+                        }
+
                         poolItem.element.onclick = () => {
                             if (modalTitle) modalTitle.textContent = item.title;
                             if (modalOverlay) modalOverlay.classList.add('active');
@@ -417,9 +431,11 @@
                         };
                     } else {
                         poolItem.element.style.display = 'none';
-                        poolItem.element.style.backgroundImage = 'none';
-                        poolItem.imgEl.removeAttribute('src');
-                        poolItem.imgEl.style.display = 'none';
+                        if (poolItem.imgEl.dataset.src !== '') {
+                            poolItem.imgEl.dataset.src = '';
+                            poolItem.imgEl.removeAttribute('src');
+                            poolItem.imgEl.style.display = 'none';
+                        }
                         poolItem.element.onclick = null;
                     }
                 });
