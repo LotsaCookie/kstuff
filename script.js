@@ -713,7 +713,6 @@ function initApp() {
                 }
                 if (newStr.includes('${frogiee}')) {
                     const w = resolvedBases.frogiee;
-                    // Frogiee does not use final path
                     newStr = newStr.split('${frogiee}').join(w ? w.url.replace(/\/+$/, '') : '');
                 }
                 if (newStr.includes('${truffled}')) {
@@ -770,3 +769,5 @@ function initApp() {
         });
     }
 }
+
+initApp();
