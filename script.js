@@ -1,4 +1,4 @@
-(function initApp() {
+function initApp() {
     const scramTable = [
         { url: "https://raw.githack.com/lotsacookie/cg-svg/main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
         { url: "https://cdn.jsdelivr.net/gh/lotsacookie/cg-svg@main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
@@ -61,7 +61,13 @@
         { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
         { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
-    const frogieeTable = [...staticTable];
+    
+    // frogieeTable updated to clear out the final path
+    const frogieeTable = staticTable.map(item => ({
+        url: item.url,
+        img: item.img,
+        final: ""
+    }));
 
     async function getWorkingConfig(table) {
         if (!table || table.length === 0) return null;
@@ -409,14 +415,12 @@
             });
         }
 
-        // Updated Reading Pagination Logic (Arrows)
         function renderReadingPagination(totalPages) {
             const readingPagination = document.getElementById('readingcorner-pagination');
             if (!readingPagination) return;
             readingPagination.innerHTML = '';
             
             if (totalPages > 1) {
-                // Left Arrow
                 const prevBtn = document.createElement('button');
                 prevBtn.className = 'page-btn';
                 prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
@@ -432,7 +436,6 @@
                 }
                 readingPagination.appendChild(prevBtn);
 
-                // Text indicator (e.g. "1 / 5")
                 const pageInfo = document.createElement('span');
                 pageInfo.style.fontWeight = '700';
                 pageInfo.style.fontSize = '1.1rem';
@@ -442,7 +445,6 @@
                 pageInfo.textContent = `${currentReadingPage} / ${totalPages}`;
                 readingPagination.appendChild(pageInfo);
 
-                // Right Arrow
                 const nextBtn = document.createElement('button');
                 nextBtn.className = 'page-btn';
                 nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
@@ -491,14 +493,12 @@
             });
         }
 
-        // Updated Science Pagination Logic (Arrows)
         function renderSciencePagination(totalPages) {
             const sciencePagination = document.getElementById('sciencequiz-pagination');
             if (!sciencePagination) return;
             sciencePagination.innerHTML = '';
             
             if (totalPages > 1) {
-                // Left Arrow
                 const prevBtn = document.createElement('button');
                 prevBtn.className = 'page-btn';
                 prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
@@ -514,7 +514,6 @@
                 }
                 sciencePagination.appendChild(prevBtn);
 
-                // Text indicator (e.g. "1 / 5")
                 const pageInfo = document.createElement('span');
                 pageInfo.style.fontWeight = '700';
                 pageInfo.style.fontSize = '1.1rem';
@@ -524,7 +523,6 @@
                 pageInfo.textContent = `${currentSciencePage} / ${totalPages}`;
                 sciencePagination.appendChild(pageInfo);
 
-                // Right Arrow
                 const nextBtn = document.createElement('button');
                 nextBtn.className = 'page-btn';
                 nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
@@ -715,7 +713,8 @@
                 }
                 if (newStr.includes('${frogiee}')) {
                     const w = resolvedBases.frogiee;
-                    newStr = newStr.split('${frogiee}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
+                    // Frogiee does not use final path
+                    newStr = newStr.split('${frogiee}').join(w ? w.url.replace(/\/+$/, '') : '');
                 }
                 if (newStr.includes('${truffled}')) {
                     const w = resolvedBases.truffled;
@@ -770,4 +769,4 @@
             }
         });
     }
-})();
+}
