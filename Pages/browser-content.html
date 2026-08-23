@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDU Nav</title>
+    <title>T</title>
+    <meta property="og:title" content="Study.com | K-12 Online Learning and Worksheet Portal" />
+    <meta property="og:site_name" content="Study.com Learning" />
+    <meta name="msapplication-TileColor" content="#00ffa6" />
+    <meta property="og:image" content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" />
+    <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
@@ -640,8 +646,6 @@
         const newTabPlusBtn = document.getElementById('new-tab-plus-btn');
         const backBtn = document.getElementById('back-btn');
         const forwardBtn = document.getElementById('forward-btn');
-
-        // Modal Elements
         const modalOverlay = document.getElementById('shortcut-modal');
         const modalNameInput = document.getElementById('modal-name-input');
         const modalUrlInput = document.getElementById('modal-url-input');
@@ -1055,8 +1059,6 @@
                 });
                 return;
             }
-            
-            // Extract domain for default name
             let defaultName = currentUrl;
             try {
                 const urlObj = new URL(currentUrl);
