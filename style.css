@@ -677,7 +677,7 @@ body.text-hide .nav-right .nav-divider {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 3rem;
+    margin-top: 2rem;
     flex-wrap: wrap;
 }
 
