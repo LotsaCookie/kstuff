@@ -373,8 +373,13 @@
                             pageBtn.className = `page-btn ${i === currentReadingPage ? 'active' : ''}`;
                             pageBtn.textContent = i;
                             pageBtn.addEventListener('click', () => {
-                                currentReadingPage = i;
-                                renderReadingResources();
+                                if (currentReadingPage === i) return;
+                                readingGrid.style.opacity = '0';
+                                setTimeout(() => {
+                                    currentReadingPage = i;
+                                    renderReadingResources();
+                                    readingGrid.style.opacity = '1';
+                                }, 100);
                             });
                             readingPagination.appendChild(pageBtn);
                         }
@@ -448,8 +453,13 @@
                             pageBtn.className = `page-btn ${i === currentSciencePage ? 'active' : ''}`;
                             pageBtn.textContent = i;
                             pageBtn.addEventListener('click', () => {
-                                currentSciencePage = i;
-                                renderScienceModules();
+                                if (currentSciencePage === i) return;
+                                scienceGrid.style.opacity = '0';
+                                setTimeout(() => {
+                                    currentSciencePage = i;
+                                    renderScienceModules();
+                                    scienceGrid.style.opacity = '1';
+                                }, 100);
                             });
                             sciencePagination.appendChild(pageBtn);
                         }
