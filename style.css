@@ -137,7 +137,8 @@ body.size-large.text-hide {
 
 #studymaterial-area {
     flex-grow: 1;
-    padding: 3rem;
+    /* Reduced top padding from 3rem to 1.5rem to move the content up */
+    padding: 1.5rem 3rem 3rem 3rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -426,9 +427,10 @@ body.text-hide .nav-right .nav-divider {
 #lessonplanner.page.active {
     display: flex;
     flex-direction: column;
-    height: calc(100% + 6rem);
+    /* Adjusted height and margin to match the new top padding of 1.5rem */
+    height: calc(100% + 4.5rem);
     width: calc(100% + 6rem);
-    margin: -3rem;
+    margin: -1.5rem -3rem -3rem -3rem;
 }
 
 #readingcorner-grid,
