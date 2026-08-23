@@ -78,17 +78,13 @@
                     activeImages.push(img);
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
                     
-                    console.log(`[Config Check] Attempting to load: ${fullTestUrl}`);
-
                     img.onload = () => {
                         if (!resolved) {
                             if (img.naturalWidth > 0) {
                                 resolved = true;
-                                console.log(`[Config Check] SUCCESS: ${fullTestUrl} (naturalWidth: ${img.naturalWidth})`);
                                 cleanup();
                                 resolve(entry);
                             } else {
-                                console.warn(`[Config Check] Ignored zero-width/placeholder image response for: ${fullTestUrl}`);
                                 failedCount++;
                                 if (!resolved && failedCount === chunk.length) {
                                     resolved = true;
@@ -99,12 +95,10 @@
                         }
                     };
                     
-                    img.onerror = (err) => {
+                    img.onerror = () => {
                         failedCount++;
-                        console.error(`[Config Check] FAILED image load for: ${fullTestUrl}`, err);
                         if (!resolved && failedCount === chunk.length) {
                             resolved = true;
-                            console.warn(`[Config Check] All ${chunk.length} items in current chunk failed.`);
                             cleanup();
                             resolve(null); 
                         }
@@ -114,8 +108,11 @@
                         activeImages.forEach(im => {
                             im.onload = null;
                             im.onerror = null;
-                            im.src = '';
+                            // FIX 1: Never set src = ''. It causes a memory-bloating fetch loop in WebKit. 
+                            // Use a transparent 1x1 GIF to safely cancel the image load and clear memory.
+                            im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
                         });
+                        activeImages.length = 0; // Empty array to let Garbage Collector do its job
                     }
                     
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
@@ -124,8 +121,12 @@
                 setTimeout(() => {
                     if (!resolved) {
                         resolved = true;
-                        console.warn(`[Config Check] Chunk timed out after 8000ms.`);
-                        activeImages.forEach(im => { im.src = ''; });
+                        activeImages.forEach(im => { 
+                            im.onload = null;
+                            im.onerror = null;
+                            im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
+                        });
+                        activeImages.length = 0;
                         resolve(null);
                     }
                 }, 8000);
@@ -133,7 +134,6 @@
 
             if (winner) return winner; 
         }
-        console.warn(`[Config Check] All chunks failed. Falling back to table[0]:`, table[0]);
         return table[0]; 
     }
 
@@ -256,13 +256,16 @@
         const readingCardPool = [];
         const scienceCardPool = [];
 
+        // FIX 2: Create actual HTML <img> tags in the pool to utilize the CSS aspect-ratio fix. 
+        // Added loading="lazy" to let the browser drop offscreen images from memory.
         if (readingGrid) {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.innerHTML = `<div class="overlay"><h3></h3><p></p></div>`;
+                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="overlay"><h3></h3><p></p></div>`;
                 readingCardPool.push({
                     element: card,
+                    imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
                     descEl: card.querySelector('p')
                 });
@@ -274,9 +277,10 @@
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.innerHTML = `<div class="overlay"><h3></h3><p></p></div>`;
+                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="overlay"><h3></h3><p></p></div>`;
                 scienceCardPool.push({
                     element: card,
+                    imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
                     descEl: card.querySelector('p')
                 });
@@ -328,7 +332,17 @@
                     const item = paginatedData[index];
                     if (item) {
                         poolItem.element.style.display = 'block';
-                        poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+                        
+                        // FIX 3: Apply the image source to the actual img tag, not background-image
+                        poolItem.element.style.backgroundImage = 'none'; 
+                        if (item.image) {
+                            poolItem.imgEl.src = item.image;
+                            poolItem.imgEl.style.display = 'block';
+                        } else {
+                            poolItem.imgEl.removeAttribute('src');
+                            poolItem.imgEl.style.display = 'none';
+                        }
+
                         poolItem.titleEl.textContent = item.title;
                         poolItem.descEl.textContent = item.description || '';
                         poolItem.element.onclick = () => {
@@ -339,6 +353,8 @@
                     } else {
                         poolItem.element.style.display = 'none';
                         poolItem.element.style.backgroundImage = 'none';
+                        poolItem.imgEl.removeAttribute('src');
+                        poolItem.imgEl.style.display = 'none';
                         poolItem.element.onclick = null;
                     }
                 });
@@ -381,7 +397,17 @@
                     const item = paginatedData[index];
                     if (item) {
                         poolItem.element.style.display = 'block';
-                        poolItem.element.style.backgroundImage = `url('${item.image || ''}')`;
+
+                        // FIX 3 (continued): Apply the image source to the actual img tag
+                        poolItem.element.style.backgroundImage = 'none'; 
+                        if (item.image) {
+                            poolItem.imgEl.src = item.image;
+                            poolItem.imgEl.style.display = 'block';
+                        } else {
+                            poolItem.imgEl.removeAttribute('src');
+                            poolItem.imgEl.style.display = 'none';
+                        }
+
                         poolItem.titleEl.textContent = item.title;
                         poolItem.descEl.textContent = item.description || '';
                         poolItem.element.onclick = () => {
@@ -392,6 +418,8 @@
                     } else {
                         poolItem.element.style.display = 'none';
                         poolItem.element.style.backgroundImage = 'none';
+                        poolItem.imgEl.removeAttribute('src');
+                        poolItem.imgEl.style.display = 'none';
                         poolItem.element.onclick = null;
                     }
                 });
