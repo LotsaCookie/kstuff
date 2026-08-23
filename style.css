@@ -652,7 +652,6 @@ body.text-hide .nav-right .nav-divider {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    border-radius: 9px;
     z-index: 1;
     pointer-events: none;
 }
