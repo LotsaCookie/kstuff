@@ -1,114 +1,120 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
   <foreignObject width="100%" height="100%">
-    <div xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0; height: 100%; overflow: hidden;">
-      <style>
-        html, body, div {
-          margin: 0;
-          padding: 0;
-          height: 100%;
-          overflow: hidden;
-        }
-        iframe {
-          width: 100%;
-          height: 123%;
-          transform: translateY(-14.5%);
-          border: none;
-        }
-      </style>
+    <div xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;">
+  <style>
+    html, body, div {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+  </style>
 
-      <iframe id="myIframe" allowfullscreen="true"></iframe>
+  <iframe id="myIframe" allowfullscreen="true"></iframe>
 
-      <script><![CDATA[
-        const truffledTable = [
-            { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
-            { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
-            { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
-            { url: "https://hibrooklyn.site/", img: "/favicon.ico", final: "" },
-            { url: "https://for-ravipati03121e3.shared-with.de/", img: "/favicon.ico", final: "" },
-            { url: "https://tutoring-services.org", img: "/favicon.ico", final: "" },
-            { url: "https://mathteachersforhire.org", img: "/favicon.ico", final: "" },
-            { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
-            { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
-        ];
+  <script><![CDATA[
+    const truffledTable = [
+        { url: "https://boat.strongson.com/", img: "/favicon.ico", final: "" },
+        { url: "https://lib.stcath.net/", img: "/favicon.ico", final: "" },
+        { url: "https://thislinkworks.b-cdn.net/", img: "/favicon.ico", final: "" },
+        { url: "https://truffledlinklol.b-cdn.net/", img: "/favicon.ico", final: "" },
+        { url: "https://snoopy.patelmortgage.com/", img: "/favicon.ico", final: "" },
+        { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
+        { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
+        { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
+        { url: "https://hibrooklyn.site/", img: "/favicon.ico", final: "" },
+        { url: "https://for-ravipati03121e3.shared-with.de/", img: "/favicon.ico", final: "" },
+        { url: "https://tutoring-services.org", img: "/favicon.ico", final: "" },
+        { url: "https://mathteachersforhire.org", img: "/favicon.ico", final: "" },
+        { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
+        { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
+    ];
 
-        async function getWorkingConfig(table) {
-            if (!table || table.length === 0) return null;
-            const chunkSize = 5;
-            for (let i = 0; i < table.length; i += chunkSize) {
-                const chunk = table.slice(i, i + chunkSize);
-                const winner = await new Promise((resolve) => {
-                    let resolved = false;
-                    let failedCount = 0;
-                    let activeImages = [];
+    async function getWorkingConfig(table) {
+        if (!table || table.length === 0) return null;
+        const chunkSize = 5;
+        for (let i = 0; i < table.length; i += chunkSize) {
+            const chunk = table.slice(i, i + chunkSize);
+            const winner = await new Promise((resolve) => {
+                let resolved = false;
+                let failedCount = 0;
+                let activeImages = [];
 
-                    chunk.forEach(entry => {
-                        const img = new Image();
-                        activeImages.push(img);
-                        const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                        
-                        img.onload = () => {
-                            if (!resolved) {
-                                resolved = true;
-                                cleanup();
-                                resolve(entry);
-                            }
-                        };
-                        
-                        img.onerror = () => {
-                            failedCount++;
-                            if (!resolved && failedCount === chunk.length) {
-                                resolved = true;
-                                cleanup();
-                                resolve(null); 
-                            }
-                        };
-                        
-                        function cleanup() {
-                            activeImages.forEach(im => {
-                                im.onload = null;
-                                im.onerror = null;
-                                im.src = '';
-                            });
-                        }
-                        
-                        img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
-                    });
-
-                    setTimeout(() => {
+                chunk.forEach(entry => {
+                    const img = new Image();
+                    activeImages.push(img);
+                    const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
+                    
+                    img.onload = () => {
                         if (!resolved) {
                             resolved = true;
-                            activeImages.forEach(im => { im.src = ''; });
-                            resolve(null);
+                            cleanup();
+                            resolve(entry);
                         }
-                    }, 4000);
+                    };
+                    
+                    img.onerror = () => {
+                        failedCount++;
+                        if (!resolved && failedCount === chunk.length) {
+                            resolved = true;
+                            cleanup();
+                            resolve(null); 
+                        }
+                    };
+                    
+                    function cleanup() {
+                        activeImages.forEach(im => {
+                            im.onload = null;
+                            im.onerror = null;
+                            im.src = '';
+                        });
+                    }
+                    
+                    img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                if (winner) return winner; 
-            }
-            return table[0]; 
+                setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        activeImages.forEach(im => { im.src = ''; });
+                        resolve(null);
+                    }
+                }, 4000);
+            });
+
+            if (winner) return winner; 
         }
+        return table[0]; 
+    }
 
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
 
-        async function initializeIframe() {
-            const urlParam = getQueryParam('url');
-            const iframe = document.getElementById('myIframe');
+    async function initializeIframe() {
+        const urlParam = getQueryParam('url');
+        const iframe = document.getElementById('myIframe');
 
-            const workingConfig = await getWorkingConfig(truffledTable);
-            const baseUrl = workingConfig ? workingConfig.url.replace(/\/+$/, '') : "https://truffled.lol/";
-            const finalPath = workingConfig && workingConfig.final ? workingConfig.final : "/search.html";
+        const workingConfig = await getWorkingConfig(truffledTable);
+        const baseUrl = workingConfig ? workingConfig.url.replace(/\/+$/, '') : "https://truffled.lol/";
+        const finalPath = workingConfig && workingConfig.final ? workingConfig.final : "/browser/frame/?mode=preview&url=";
 
-            const defaultTarget = "https://cherrion.top/l?g=cloud%3Ajy0402&name=Minecraft%3ADungeons&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20210402%252F20210402153935638.webp?$io=https://cherrion.top";
-            const targetUrl = urlParam ? urlParam : defaultTarget;
+        const defaultTarget = "https://cherrion.top/l?g=cloud%3Ajy0402&name=Minecraft%3ADungeons&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20210402%252F20210402153935638.webp?$io=https://cherrion.top";
+        const targetUrl = urlParam ? urlParam : defaultTarget;
 
-            iframe.src = `${baseUrl}${finalPath}?url=` + encodeURIComponent(targetUrl);
-        }
+        iframe.src = `${baseUrl}${finalPath}` + encodeURIComponent(targetUrl);
+    }
 
-        initializeIframe();
-      ]]></script>
-    </div>
+    initializeIframe();
+  ]]></script>
+</div>
   </foreignObject>
 </svg>
