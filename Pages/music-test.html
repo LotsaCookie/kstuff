@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVibe - Custom API & Vevioz 320kbps Player</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 p-4 sticky top-0 z-50">
+        <div class="max-w-3xl mx-auto flex items-center justify-between">
+            <h1 class="text-lg font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">StreamVibe 🎵</h1>
+            <span id="apiStatus" class="text-xs text-indigo-400">System Ready</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl mx-auto w-full p-4 flex-grow mb-36">
+        
+        <!-- Search Bar -->
+        <div class="flex gap-2 mb-6">
+            <input type="text" id="searchInput" placeholder="Search song, artist, or album..." 
+                class="flex-grow bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            <button onclick="performSearch()" 
+                class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-3 rounded-xl transition">
+                Search
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden text-center py-12 text-slate-400 animate-pulse">
+            Querying search API...
+        </div>
+
+        <!-- Search Results -->
+        <div id="resultsList" class="space-y-3">
+            <div class="text-center py-16 text-slate-600">
+                Search for any track to automatically build the Vevioz job and stream in 320kbps!
+            </div>
+        </div>
+    </main>
+
+    <!-- Sticky Bottom Player -->
+    <div id="playerContainer" class="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-4 shadow-2xl z-50 hidden">
+        <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- Metadata Info -->
+            <div class="flex items-center gap-3 w-full sm:w-auto overflow-hidden">
+                <img id="playerThumb" src="" alt="Thumbnail" class="w-12 h-12 rounded-lg object-cover bg-slate-800 flex-shrink-0">
+                <div class="overflow-hidden">
+                    <h4 id="playerTitle" class="text-sm font-medium text-slate-100 truncate w-full sm:w-60">Title</h4>
+                    <p id="playerAuthor" class="text-xs text-slate-400 truncate">Artist</p>
+                </div>
+            </div>
+            
+            <!-- Audio Tag & Status -->
+            <div class="w-full sm:w-auto flex-grow max-w-sm flex flex-col items-center">
+                <audio id="audioPlayer" controls autoplay hidden class="w-full h-10 accent-indigo-500"></audio>
+                <div id="statusText" class="text-xs text-indigo-400 mt-1">Ready</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        const SEARCH_API = "https://abhi-api.vercel.app/api/search/yts?text=";
+        const VEVIOZ_BASE = "https://api.vevioz.com";
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const loading = document.getElementById('loading');
+            const resultsList = document.getElementById('resultsList');
+            const apiStatus = document.getElementById('apiStatus');
+            
+            loading.classList.remove('hidden');
+            resultsList.innerHTML = '';
+            apiStatus.innerText = "Searching...";
+
+            try {
+                const response = await fetch(`${SEARCH_API}${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                loading.classList.add('hidden');
+
+                if (!data || !data.status || !data.result) {
+                    resultsList.innerHTML = '<p class="text-center text-red-400 py-10">No tracks found or invalid response from API.</p>';
+                    apiStatus.innerText = "No Results";
+                    return;
+                }
+
+                const results = Array.isArray(data.result) ? data.result : [data.result];
+
+                if (results.length === 0) {
+                    resultsList.innerHTML = '<p class="text-center text-slate-500 py-10">No tracks found.</p>';
+                    apiStatus.innerText = "Empty";
+                    return;
+                }
+
+                apiStatus.innerText = "Ready to Stream";
+
+                results.forEach(item => {
+                    const videoUrl = item.url;
+                    if (!videoUrl) return;
+
+                    const title = item.title || "Unknown Title";
+                    const author = item.channel || "Unknown Artist";
+                    const thumbnail = item.thumbnail || "";
+                    const duration = item.duration || "";
+
+                    const card = document.createElement('div');
+                    card.className = "flex items-center justify-between bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 p-3 rounded-xl transition group";
+                    
+                    card.innerHTML = `
+                        <div class="flex items-center gap-3 overflow-hidden pr-2">
+                            <img src="${thumbnail}" class="w-16 h-11 rounded-lg object-cover bg-slate-800 flex-shrink-0" alt="Thumb">
+                            <div class="overflow-hidden">
+                                <h3 class="text-sm font-medium text-slate-200 group-hover:text-indigo-400 transition truncate">${title}</h3>
+                                <p class="text-xs text-slate-400 truncate">${author} ${duration ? '• ' + duration : ''}</p>
+                            </div>
+                        </div>
+                        <button onclick="startVeviozPipeline('${videoUrl}', '${escapeHtml(title)}', '${escapeHtml(author)}', '${thumbnail}')" 
+                            class="bg-slate-800 group-hover:bg-indigo-600 text-slate-300 group-hover:text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex-shrink-0 flex items-center gap-1">
+                            ▶ Play 320k
+                        </button>
+                    `;
+                    resultsList.appendChild(card);
+                });
+
+            } catch (error) {
+                loading.classList.add('hidden');
+                resultsList.innerHTML = '<p class="text-center text-red-400 py-10">Failed to connect to search API.</p>';
+                apiStatus.innerText = "Search Error";
+                console.error(error);
+            }
+        }
+
+        async function apiJson(url, options = {}) {
+            const timeout = Math.max(5000, Number(options.timeout) || 30000);
+            const controller = new AbortController();
+            const timer = window.setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal,
+                    headers: {"Accept": "application/json", "Content-Type": "application/json", ...(options.headers || {})}
+                });
+                
+                let payload = {};
+                try { payload = await response.json(); } catch (_) {}
+                
+                if (!response.ok || !payload.ok) {
+                    const code = payload && payload.error ? payload.error.code : "metadata_failed";
+                    throw new Error(code);
+                }
+                return payload;
+            } finally {
+                window.clearTimeout(timer);
+            }
+        }
+
+        async function startVeviozPipeline(videoUrl, title, author, thumbnail) {
+            const playerContainer = document.getElementById('playerContainer');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const playerThumb = document.getElementById('playerThumb');
+            const playerTitle = document.getElementById('playerTitle');
+            const playerAuthor = document.getElementById('playerAuthor');
+            const statusText = document.getElementById('statusText');
+
+            playerThumb.src = thumbnail;
+            playerTitle.innerText = title;
+            playerAuthor.innerText = author;
+            
+            playerContainer.classList.remove('hidden');
+            audioPlayer.hidden = true;
+            statusText.innerText = "Analyzing video info...";
+
+            try {
+                // Step 1: Fetch info via Vevioz info endpoint
+                const infoPayload = await apiJson(`${VEVIOZ_BASE}/api/v1/info?url=${encodeURIComponent(videoUrl)}`, {timeout: 40000});
+                const metadata = infoPayload.data;
+                const webpageUrl = metadata.webpage_url || videoUrl;
+
+                statusText.innerText = "Creating 320kbps MP3 job...";
+
+                // Step 2: POST conversion job request
+                const jobPayload = await apiJson(`${VEVIOZ_BASE}/api/v1/jobs`, {
+                    method: "POST",
+                    body: JSON.stringify({ url: webpageUrl, kind: "mp3", quality: 320 })
+                });
+
+                const job = jobPayload.data;
+                const token = jobPayload.access_token;
+
+                if (job.status === "ready" && job.download_url) {
+                    playAudioStream(job.download_url, statusText, audioPlayer);
+                    return;
+                }
+
+                statusText.innerText = "Processing 320kbps stream...";
+
+                // Step 3: Poll job status until it resolves to ready
+                let downloadUrl = null;
+                for (let i = 0; i < 180; i++) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    
+                    const pollRes = await apiJson(`${VEVIOZ_BASE}/api/v1/jobs/${encodeURIComponent(job.id)}?token=${encodeURIComponent(token)}`);
+                    const currentJob = pollRes.data;
+
+                    if (currentJob.status === "ready" && currentJob.download_url) {
+                        downloadUrl = currentJob.download_url;
+                        break;
+                    }
+                    if (currentJob.status === "failed") {
+                        throw new Error(currentJob.error_code || "download_failed");
+                    }
+                    statusText.innerText = `Processing audio... (${currentJob.status})`;
+                }
+
+                if (!downloadUrl) {
+                    throw new Error("download_timeout");
+                }
+
+                playAudioStream(downloadUrl, statusText, audioPlayer);
+
+            } catch (err) {
+                console.error(err);
+                statusText.innerText = `Stream Error: ${err.message}`;
+            }
+        }
+
+        function playAudioStream(url, statusText, audioPlayer) {
+            statusText.innerText = "Playing 320kbps MP3";
+            audioPlayer.src = url;
+            audioPlayer.hidden = false;
+            audioPlayer.load();
+            audioPlayer.play().catch(e => {
+                console.warn("Autoplay block:", e);
+                statusText.innerText = "Click play on audio bar";
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+</html>
