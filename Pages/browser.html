@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>UV URL Loader</title>
+<title>Learning</title>
 <style>
   body, html {
     margin: 0;
@@ -106,13 +106,16 @@ async function resolveAndBuildUrl() {
 (async () => {
     const url = await resolveAndBuildUrl();
     const iframe = document.getElementById('viewerIframe');
-    iframe.src = url;
-    setTimeout(() => {
+    
+    iframe.onload = () => {
         document.getElementById('iframeContainer').style.opacity = 1;
-    }, 3000);
-    setTimeout(() => {
-        document.getElementById('overlay').remove();
-    }, 5000);
+        setTimeout(() => {
+            const overlay = document.getElementById('overlay');
+            if (overlay) overlay.remove();
+        }, 2000); 
+    };
+
+    iframe.src = url;
 })();
 </script>
 
