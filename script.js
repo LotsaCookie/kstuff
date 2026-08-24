@@ -1,7 +1,7 @@
 function initApp() {
     const scramTable = [
-        { url: "https://raw.githack.com/lotsacookie/cg-svg/main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
-        { url: "https://cdn.jsdelivr.net/gh/lotsacookie/cg-svg@main", img: "/assets/img/fav.png", final: "/scramjet.svg?target_url=" },
+        { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+        { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
     ]; 
     const staticTable = [
         { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
