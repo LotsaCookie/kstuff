@@ -23,7 +23,10 @@
 
 body {
     font-family: 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg-color);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 2px, transparent 2px), var(--bg-color);
+    background-size: 25px 25px; 
+    background-position: 0 0;
+    background-attachment: fixed;
     color: var(--text-color);
     height: 100vh;
     overflow: hidden;
@@ -883,4 +886,4 @@ body.text-hide .nav-right .nav-divider {
         width: var(--nav-width-mobile);
         padding-top: 0.55rem;
     }
-    }
+}
