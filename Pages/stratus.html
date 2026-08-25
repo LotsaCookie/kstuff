@@ -14,49 +14,50 @@
     <iframe id="mainIframe"></iframe>
 
     <script>
-        const iframe = document.getElementById('mainIframe');
+        // Explicitly grab the main iframe element
+        const mainIframe = document.getElementById('mainIframe');
         
         const firstUrl = "https://cherrion.top/g";
         const targetUrl = "https://cherrion.top/l?g=cloud%3Ajy0402&name=Minecraft%3ADungeons&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20210402%252F20210402153935638.webp?$io=https://cherrion.top";
         
         let hasInitialized = false;
 
-        // This triggers EVERY time the iframe finishes loading a page
-        iframe.onload = function() {
+        mainIframe.onload = function() {
             if (!hasInitialized) {
                 hasInitialized = true;
-                alert("Initial page loaded. Moving to target URL...");
-                iframe.src = targetUrl;
+                console.log("Initial page loaded. Moving to target URL...");
+                mainIframe.src = targetUrl;
             } else {
-                console.log("Iframe navigated to a new page. Continuing scan...");
+                console.log("Main iframe navigated. Continuing scan...");
             }
         };
 
-        // Start the initial load
-        iframe.src = firstUrl;
+        // Start the initial load on the main iframe
+        mainIframe.src = firstUrl;
 
-        // Continuous background polling that never stops, regardless of navigation
+        // Continuous background polling
         setInterval(() => {
             try {
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const iframeDoc = mainIframe.contentDocument || mainIframe.contentWindow.document;
                 if (!iframeDoc) return;
 
-                // Search all windows and frames recursively
-                let foundUrl = searchWindowForUrl(iframe.contentWindow);
+                // Search all windows and nested frames recursively
+                let foundUrl = searchWindowForUrl(mainIframe.contentWindow);
 
                 if (foundUrl) {
+                    // If it's a relative URL, attach it to the current proxy origin instead of hardcoding cherrion.top
                     if (foundUrl.startsWith('/')) {
-                        foundUrl = "https://cherrion.top" + foundUrl;
+                        foundUrl = window.location.origin + foundUrl;
                     }
 
-                    // Only update if it's a different URL to prevent looping
-                    if (iframe.src !== foundUrl) {
-                        alert("Found target URL: " + foundUrl + "\n\nUpdating iframe source!");
-                        iframe.src = foundUrl;
+                    // Only update if it's a different URL to prevent loops
+                    if (mainIframe.src !== foundUrl) {
+                        console.log('Found target URL, updating mainIframe:', foundUrl);
+                        mainIframe.src = foundUrl;
                     }
                 }
             } catch (error) {
-                // Suppress cross-origin security warnings during navigation transitions
+                // Suppress cross-origin warnings during transitions
             }
         }, 1000);
 
