@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deep Iframe Scanner</title>
+    <title>Continuous Iframe Scanner</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         iframe { width: 100%; height: 100%; border: none; }
@@ -19,32 +19,53 @@
         const firstUrl = "https://cherrion.top/g";
         const targetUrl = "https://cherrion.top/l?g=cloud%3Ajy0402&name=Minecraft%3ADungeons&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20210402%252F20210402153935638.webp?$io=https://cherrion.top";
         
-        let hasRedirected = false;
-        let targetFound = false;
-        let sopAlerted = false;
+        let hasInitialized = false;
 
-        // Wait for the very first URL to load
+        // This triggers EVERY time the iframe finishes loading a page
         iframe.onload = function() {
-            if (!hasRedirected) {
-                hasRedirected = true;
-                alert("Step 1 Complete: Initial URL loaded.\n\nRedirecting to the target page and starting the deep scan!");
+            if (!hasInitialized) {
+                hasInitialized = true;
+                alert("Initial page loaded. Moving to target URL...");
                 iframe.src = targetUrl;
-                
-                // Scan every 1 second
-                setInterval(scanDeepIframes, 1000);
+            } else {
+                console.log("Iframe navigated to a new page. Continuing scan...");
             }
         };
 
-        // Trigger the initial load
+        // Start the initial load
         iframe.src = firstUrl;
 
-        // Recursive function to drill down through ALL nested iframes
+        // Continuous background polling that never stops, regardless of navigation
+        setInterval(() => {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDoc) return;
+
+                // Search all windows and frames recursively
+                let foundUrl = searchWindowForUrl(iframe.contentWindow);
+
+                if (foundUrl) {
+                    if (foundUrl.startsWith('/')) {
+                        foundUrl = "https://cherrion.top" + foundUrl;
+                    }
+
+                    // Only update if it's a different URL to prevent looping
+                    if (iframe.src !== foundUrl) {
+                        alert("Found target URL: " + foundUrl + "\n\nUpdating iframe source!");
+                        iframe.src = foundUrl;
+                    }
+                }
+            } catch (error) {
+                // Suppress cross-origin security warnings during navigation transitions
+            }
+        }, 1000);
+
         function searchWindowForUrl(win) {
             try {
                 const doc = win.document;
                 if (!doc) return null;
 
-                // 1. Check direct iframe tags in this specific window
+                // Check iframe elements
                 const nestedIframes = doc.querySelectorAll('iframe');
                 for (let nested of nestedIframes) {
                     let src = nested.src || nested.getAttribute('src');
@@ -53,57 +74,26 @@
                     }
                 }
 
-                // 2. Check the raw HTML of this window (catches URLs hidden in scripts)
+                // Check raw HTML source
                 if (doc.documentElement) {
                     const rawHTML = doc.documentElement.innerHTML;
                     const regex = /(\/api\/cloud\/embed[^"'\s<>]+)/;
                     const match = rawHTML.match(regex);
                     
                     if (match && match[1]) {
-                        return match[1].replace(/\\\//g, '/'); // Clean up escaped slashes
+                        return match[1].replace(/\\\//g, '/');
                     }
                 }
 
-                // 3. Drill deeper: Check inside all child iframes of THIS window
+                // Check child frames recursively
                 for (let i = 0; i < win.frames.length; i++) {
-                    let childWin = win.frames[i];
-                    let foundDeep = searchWindowForUrl(childWin);
-                    if (foundDeep) return foundDeep; // If found in a child, bubble it up
-                }
-
-            } catch (error) {
-                // If the browser blocks us from looking at a specific nested frame, ignore and continue
-            }
-            return null;
-        }
-
-        function scanDeepIframes() {
-            if (targetFound) return; // Stop scanning if we already found it
-
-            try {
-                if (!iframe.contentWindow) return;
-
-                // Start the deep search from the top-level iframe window
-                let foundUrl = searchWindowForUrl(iframe.contentWindow);
-
-                if (foundUrl) {
-                    targetFound = true; // Prevent infinite alerts
-
-                    // Fix relative URLs
-                    if (foundUrl.startsWith('/')) {
-                        foundUrl = "https://cherrion.top" + foundUrl;
-                    }
-                    
-                    alert("Step 2 Complete: Found the cloud embed URL!\n\n" + foundUrl + "\n\nUpdating the main iframe now.");
-                    iframe.src = foundUrl;
+                    let foundDeep = searchWindowForUrl(win.frames[i]);
+                    if (foundDeep) return foundDeep;
                 }
             } catch (e) {
-                // If we get totally locked out at the top level, alert the user once
-                if (!sopAlerted) {
-                    sopAlerted = true;
-                    alert("Security Blocked: The browser's Same-Origin Policy is preventing the script from reading the iframe. The script cannot see the contents.");
-                }
+                // Ignore restricted frames
             }
+            return null;
         }
     </script>
 
