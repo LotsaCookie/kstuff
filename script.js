@@ -212,14 +212,12 @@ function initApp() {
             throw new Error("All proxies failed for " + path);
         }
 
-        // Configuration to track lazy-loaded iframe pages
         const iframePages = {
             'mathworksheets': { id: 'mathworksheets-iframe', path: 'Pages/browser.html' },
             'gradebook': { id: 'gradebook-iframe', path: 'Pages/music.html' },
             'lessonplanner': { id: 'lessonplanner-iframe', path: 'Pages/ai.html' }
         };
 
-        // Modified to require the pageId to double check if the user is still on the page when the fetch resolves
         async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
@@ -274,12 +272,14 @@ function initApp() {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="overlay"><h3></h3><p></p></div>`;
+                // Added category label div here
+                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
                 readingCardPool.push({
                     element: card,
                     imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
-                    descEl: card.querySelector('p')
+                    descEl: card.querySelector('p'),
+                    catEl: card.querySelector('.category-label') // Added reference
                 });
                 readingGrid.appendChild(card);
             }
@@ -298,12 +298,14 @@ function initApp() {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="overlay"><h3></h3><p></p></div>`;
+                // Added category label div here
+                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
                 scienceCardPool.push({
                     element: card,
                     imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
-                    descEl: card.querySelector('p')
+                    descEl: card.querySelector('p'),
+                    catEl: card.querySelector('.category-label') // Added reference
                 });
                 scienceGrid.appendChild(card);
             }
@@ -365,6 +367,12 @@ function initApp() {
                         poolItem.descEl.textContent = descText;
                     }
 
+                    // Dynamically setting category text
+                    const categoryText = item.category || 'All';
+                    if (poolItem.catEl && poolItem.catEl.textContent !== categoryText) {
+                        poolItem.catEl.textContent = categoryText;
+                    }
+
                     poolItem.element.onclick = () => {
                         if (modalTitle) modalTitle.textContent = item.title;
                         if (modalOverlay) modalOverlay.classList.add('active');
@@ -376,6 +384,9 @@ function initApp() {
                         poolItem.imgEl.dataset.src = '';
                         poolItem.imgEl.removeAttribute('src');
                         poolItem.imgEl.style.display = 'none';
+                    }
+                    if (poolItem.catEl) {
+                        poolItem.catEl.textContent = '';
                     }
                     poolItem.element.onclick = null;
                 }
@@ -575,7 +586,6 @@ function initApp() {
                     return;
                 }
 
-                // CHECK: Unload the current page before switching
                 const currentActiveBtn = document.querySelector('.nav-btn.active');
                 if (currentActiveBtn) {
                     const currentId = currentActiveBtn.getAttribute('data-target');
@@ -602,7 +612,6 @@ function initApp() {
                 if (targetPage) {
                     targetPage.classList.add('active');
 
-                    // Manage grid generation/destruction
                     if (targetId !== 'readingcorner') {
                         destroyReadingPool();
                     }
@@ -617,7 +626,6 @@ function initApp() {
                         buildSciencePool();
                         setTimeout(() => renderScienceModules(false), 15);
                     } else if (iframePages[targetId]) {
-                        // LOAD: Fetch HTML for the new active tab
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
                     }
                 }
@@ -812,7 +820,6 @@ function initApp() {
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
 
-            // INIT: Properly fetch iframe or build grid based on the active startup page
             const activePage = document.querySelector('.page.active');
             if (activePage) {
                 if (activePage.id === 'sciencequiz') {
