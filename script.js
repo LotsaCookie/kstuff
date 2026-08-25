@@ -42,7 +42,7 @@ function initApp() {
         { url: "https://extrememath.info", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
         { url: "https://extrememath.icu", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
         { url: "https://extrememath.education", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://datacrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
+        { url: "https://dataccrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
         { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
     ];
     const truffledTable = [
@@ -62,7 +62,6 @@ function initApp() {
         { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
     
-    // frogieeTable updated to clear out the final path
     const frogieeTable = staticTable.map(item => ({
         url: item.url,
         img: item.img,
@@ -260,7 +259,9 @@ function initApp() {
         const readingCardPool = [];
         const scienceCardPool = [];
 
-        if (readingGrid) {
+        function buildReadingPool() {
+            destroyReadingPool();
+            if (!readingGrid) return;
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -275,7 +276,16 @@ function initApp() {
             }
         }
 
-        if (scienceGrid) {
+        function destroyReadingPool() {
+            if (readingGrid) readingGrid.innerHTML = '';
+            readingCardPool.length = 0;
+            const readingPagination = document.getElementById('readingcorner-pagination');
+            if (readingPagination) readingPagination.innerHTML = '';
+        }
+
+        function buildSciencePool() {
+            destroySciencePool();
+            if (!scienceGrid) return;
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
@@ -288,6 +298,13 @@ function initApp() {
                 });
                 scienceGrid.appendChild(card);
             }
+        }
+
+        function destroySciencePool() {
+            if (scienceGrid) scienceGrid.innerHTML = '';
+            scienceCardPool.length = 0;
+            const sciencePagination = document.getElementById('sciencequiz-pagination');
+            if (sciencePagination) sciencePagination.innerHTML = '';
         }
 
         const readingSearchInput = document.getElementById('readingcorner-search');
@@ -563,9 +580,19 @@ function initApp() {
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) {
                     targetPage.classList.add('active');
+
+                    if (targetId !== 'readingcorner') {
+                        destroyReadingPool();
+                    }
+                    if (targetId !== 'sciencequiz') {
+                        destroySciencePool();
+                    }
+
                     if (targetId === 'readingcorner') {
+                        buildReadingPool();
                         setTimeout(() => renderReadingResources(false), 15);
                     } else if (targetId === 'sciencequiz') {
+                        buildSciencePool();
                         setTimeout(() => renderScienceModules(false), 15);
                     }
                 }
@@ -762,15 +789,21 @@ function initApp() {
 
             const activePage = document.querySelector('.page.active');
             if (activePage && activePage.id === 'sciencequiz') {
+                buildSciencePool();
                 renderScienceModules(false);
-            } else {
+            } else if (activePage && activePage.id === 'readingcorner') {
+                buildReadingPool();
                 renderReadingResources(false);
+            } else {
+                destroyReadingPool();
+                destroySciencePool();
             }
         });
     }
 }
+
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
 } else {
     initApp();
-}
+                }
