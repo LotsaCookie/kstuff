@@ -693,8 +693,8 @@ body.text-hide .nav-right .nav-divider {
 
 .category-label {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 5px;
+    left: 5px;
     background-color: var(--card-bg);
     color: var(--text-color);
     font-size: 0.75rem;
