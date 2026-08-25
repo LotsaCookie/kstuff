@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iframe Scanner</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        iframe { width: 100%; height: 100%; border: none; }
+    </style>
+</head>
+<body>
+
+    <iframe id="mainIframe" src="https://example.com"></iframe>
+
+    <script>
+        const iframe = document.getElementById('mainIframe');
+
+        function scanIframe() {
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                if (iframeDoc) {
+                    const nestedIframe = iframeDoc.querySelector('iframe');
+
+                    if (nestedIframe && nestedIframe.src) {
+                        const newUrl = nestedIframe.src;
+                        console.log('Found nested iframe URL:', newUrl);
+
+                        clearInterval(pollingTimer);
+                        iframe.src = newUrl;
+                    }
+                }
+            } catch (error) {
+                console.warn("Cannot scan iframe due to Same-Origin Policy security restrictions.");
+            }
+        }
+
+        const pollingTimer = setInterval(scanIframe, 1000);
+    </script>
+
+</body>
+</html>
