@@ -1631,6 +1631,13 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlYoXsLkUGZAfmYy_D0heUV7Njc0Z5-BfD8gyvLKqhzK0OC3hfnwxKmK5iwFJ_6f_hHvg&usqp=CAU"
   },
   {
+    "title": "Fire Fox",
+    "description": "",
+    "category": "Cloud",
+    "url": "${truffled}/tools/firefox/index.html",
+    "image": ""
+  },
+  {
     "title": "Friday Night Funkin Aethos",
     "description": "",
     "category": "",
