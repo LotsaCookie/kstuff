@@ -691,6 +691,29 @@ body.text-hide .nav-right .nav-divider {
     -webkit-backdrop-filter: blur(0px);
 }
 
+.category-label {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px; 
+    border: 1px solid color-mix(in srgb, var(--card-bg), black 20%);
+    z-index: 3; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    pointer-events: none; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.round-btn:hover .category-label {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
 .overlay h3 {
     font-size: 1.2rem;
     font-weight: 900 !important;
