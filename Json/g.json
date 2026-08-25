@@ -693,6 +693,13 @@
     "image": ""
   },
   {
+    "title": "Call of Duty: WW2",
+    "description": "",
+    "category": "Shooter",
+    "url": "https://raw.githack.com/lotsacookie/opium/main/?title=Call of Duty: WW2",
+    "image": "https://static.wikia.nocookie.net/callofduty/images/6/6c/COD_WWII_cover.JPG"
+  },
+  {
     "title": "Celeste",
     "description": "",
     "category": "Platformer",
