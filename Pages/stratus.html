@@ -16,9 +16,28 @@
     <script>
         const iframe = document.getElementById('mainIframe');
         
-        // The script sets the URL here
+        const firstUrl = "https://cherrion.top/g";
         const targetUrl = "https://cherrion.top/l?g=cloud%3Ajy0402&name=Minecraft%3ADungeons&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20210402%252F20210402153935638.webp?$io=https://cherrion.top";
-        iframe.src = targetUrl;
+        
+        let hasRedirected = false;
+
+        // Wait for the iframe to load
+        iframe.onload = function() {
+            // Only redirect the first time it loads
+            if (!hasRedirected) {
+                hasRedirected = true;
+                console.log("Initial URL loaded. Navigating to target URL...");
+                
+                // Change to the target URL
+                iframe.src = targetUrl;
+                
+                // Start the continuous non-stop scanning every 1 second
+                setInterval(scanIframe, 1000);
+            }
+        };
+
+        // Trigger the initial load
+        iframe.src = firstUrl;
 
         function scanIframe() {
             try {
@@ -29,18 +48,19 @@
 
                     if (nestedIframe && nestedIframe.src && nestedIframe.src.includes('/api/cloud/embed')) {
                         const newUrl = nestedIframe.src;
-                        console.log('Found nested iframe URL:', newUrl);
-
-                        clearInterval(pollingTimer);
-                        iframe.src = newUrl;
+                        
+                        // Check if we haven't already set this exact URL to prevent infinite reloading
+                        if (iframe.src !== newUrl) {
+                            console.log('Found nested iframe URL:', newUrl);
+                            iframe.src = newUrl;
+                        }
                     }
                 }
             } catch (error) {
+                // This will continuously log if Same-Origin Policy blocks access
                 console.warn("Cannot scan iframe due to Same-Origin Policy security restrictions.");
             }
         }
-
-        const pollingTimer = setInterval(scanIframe, 1000);
     </script>
 
 </body>
