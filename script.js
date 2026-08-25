@@ -228,7 +228,6 @@ function initApp() {
                     const response = await fetch(url);
                     if (response.ok) {
                         const content = await response.text();
-                        // Prevent race condition: only set content if the user hasn't clicked away
                         const activePage = document.querySelector('.page.active');
                         if (activePage && activePage.id === pageId) {
                             iframe.srcdoc = content;
@@ -272,14 +271,13 @@ function initApp() {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                // Added category label div here
                 card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
                 readingCardPool.push({
                     element: card,
                     imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
                     descEl: card.querySelector('p'),
-                    catEl: card.querySelector('.category-label') // Added reference
+                    catEl: card.querySelector('.category-label') 
                 });
                 readingGrid.appendChild(card);
             }
@@ -298,14 +296,13 @@ function initApp() {
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
-                // Added category label div here
                 card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
                 scienceCardPool.push({
                     element: card,
                     imgEl: card.querySelector('img'),
                     titleEl: card.querySelector('h3'),
                     descEl: card.querySelector('p'),
-                    catEl: card.querySelector('.category-label') // Added reference
+                    catEl: card.querySelector('.category-label')
                 });
                 scienceGrid.appendChild(card);
             }
@@ -367,7 +364,6 @@ function initApp() {
                         poolItem.descEl.textContent = descText;
                     }
 
-                    // Dynamically setting category text
                     const categoryText = item.category || 'All';
                     if (poolItem.catEl && poolItem.catEl.textContent !== categoryText) {
                         poolItem.catEl.textContent = categoryText;
@@ -377,6 +373,12 @@ function initApp() {
                         if (modalTitle) modalTitle.textContent = item.title;
                         if (modalOverlay) modalOverlay.classList.add('active');
                         if (modalIframe) modalIframe.src = item.url;
+                        
+                        // UNLOAD DOM: Destroys the grid items to eliminate background lag while in the modal
+                        setTimeout(() => {
+                            destroyReadingPool();
+                            destroySciencePool();
+                        }, 50);
                     };
                 } else {
                     poolItem.element.style.display = 'none';
@@ -592,7 +594,7 @@ function initApp() {
                     if (currentId !== targetId && iframePages[currentId]) {
                         const iframeToClear = document.getElementById(iframePages[currentId].id);
                         if (iframeToClear) {
-                            iframeToClear.srcdoc = ''; // Purge memory
+                            iframeToClear.srcdoc = ''; 
                         }
                     }
                 }
@@ -612,12 +614,8 @@ function initApp() {
                 if (targetPage) {
                     targetPage.classList.add('active');
 
-                    if (targetId !== 'readingcorner') {
-                        destroyReadingPool();
-                    }
-                    if (targetId !== 'sciencequiz') {
-                        destroySciencePool();
-                    }
+                    if (targetId !== 'readingcorner') destroyReadingPool();
+                    if (targetId !== 'sciencequiz') destroySciencePool();
 
                     if (targetId === 'readingcorner') {
                         buildReadingPool();
@@ -684,16 +682,28 @@ function initApp() {
             animateIndicatorUpdate();
         });
 
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
-            modalIframe.src = 'about:blank';
-        });
-        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                modalOverlay.classList.remove('active');
-                modalIframe.src = 'about:blank';
+        function closeResourceModal() {
+            if (modalOverlay) modalOverlay.classList.remove('active');
+            if (modalIframe) modalIframe.src = 'about:blank';
+            
+            const activePage = document.querySelector('.page.active');
+            if (activePage) {
+                if (activePage.id === 'readingcorner') {
+                    buildReadingPool();
+                    renderReadingResources(false);
+                } else if (activePage.id === 'sciencequiz') {
+                    buildSciencePool();
+                    renderScienceModules(false);
+                }
             }
+        }
+
+        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeResourceModal);
+        
+        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeResourceModal();
         });
+
         if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
             if (!document.fullscreenElement) modalIframe.requestFullscreen().catch(err => {});
             else document.exitFullscreen();
@@ -817,8 +827,8 @@ function initApp() {
                 finalScience.push(processedItem);
             }
 
-            readingItemsData = finalResources;
-            scienceItemsData = finalScience;
+            readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
+            scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
             const activePage = document.querySelector('.page.active');
             if (activePage) {
