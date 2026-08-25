@@ -165,6 +165,10 @@ function initApp() {
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
 
+        // Scroll Tracking Variables
+        let savedWindowScrollY = 0;
+        let savedPageScrollTop = 0;
+
         let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
         if (navBar && !indicator) {
             indicator = document.createElement('div');
@@ -370,11 +374,18 @@ function initApp() {
                     }
 
                     poolItem.element.onclick = () => {
+                        // SAVE SCROLL POSITION
+                        savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
+                        const activePage = document.querySelector('.page.active');
+                        if (activePage) {
+                            savedPageScrollTop = activePage.scrollTop;
+                        }
+
                         if (modalTitle) modalTitle.textContent = item.title;
                         if (modalOverlay) modalOverlay.classList.add('active');
                         if (modalIframe) modalIframe.src = item.url;
                         
-                        // UNLOAD DOM: Destroys the grid items to eliminate background lag while in the modal
+                        // UNLOAD DOM
                         setTimeout(() => {
                             destroyReadingPool();
                             destroySciencePool();
@@ -696,6 +707,13 @@ function initApp() {
                     renderScienceModules(false);
                 }
             }
+
+            setTimeout(() => {
+                window.scrollTo(0, savedWindowScrollY);
+                if (activePage) {
+                    activePage.scrollTop = savedPageScrollTop;
+                }
+            }, 50);
         }
 
         if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeResourceModal);
@@ -827,6 +845,7 @@ function initApp() {
                 finalScience.push(processedItem);
             }
 
+            // Sort alphabetically by title
             readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
             scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
