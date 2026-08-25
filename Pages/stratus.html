@@ -27,7 +27,7 @@
                 console.log("Initial URL loaded. Navigating to target URL...");
                 iframe.src = targetUrl;
                 
-                // Start scanning the live document every 500ms
+                // Scan very frequently
                 setInterval(scanIframe, 500);
             }
         };
@@ -36,28 +36,51 @@
 
         function scanIframe() {
             try {
-                // This targets the live, constantly updating DOM inside the iframe
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDoc) return;
 
-                if (iframeDoc) {
-                    // Grab EVERY iframe currently on the page
-                    const allIframes = iframeDoc.querySelectorAll('iframe');
+                let foundUrl = null;
 
-                    // Loop through them all to find the specific cloud embed
-                    for (let nestedIframe of allIframes) {
-                        if (nestedIframe.src && nestedIframe.src.includes('/api/cloud/embed')) {
-                            const newUrl = nestedIframe.src;
-                            
-                            // Prevent infinite reloading
-                            if (iframe.src !== newUrl) {
-                                console.log('Found dynamic nested iframe URL!', newUrl);
-                                iframe.src = newUrl;
-                            }
-                        }
+                // STRATEGY 1: Check all iframe elements directly
+                const nestedIframes = iframeDoc.querySelectorAll('iframe');
+                for (let nested of nestedIframes) {
+                    // Check both the resolved src and the raw attribute
+                    let src = nested.src || nested.getAttribute('src');
+                    if (src && src.includes('/api/cloud/embed')) {
+                        foundUrl = src;
+                        break;
                     }
                 }
+
+                // STRATEGY 2: If no iframe element found yet, search the raw text of the page
+                if (!foundUrl && iframeDoc.documentElement) {
+                    const rawHTML = iframeDoc.documentElement.innerHTML;
+                    
+                    // Regex looks for /api/cloud/embed followed by anything except quotes, spaces, or brackets
+                    const regex = /(\/api\/cloud\/embed[^"'\s<>]+)/;
+                    const match = rawHTML.match(regex);
+                    
+                    if (match && match[1]) {
+                        foundUrl = match[1].replace(/\\\//g, '/'); // Clean escaped slashes if in a script
+                    }
+                }
+
+                // If we found a URL through either strategy
+                if (foundUrl) {
+                    // If it's a relative URL (starts with /), attach the domain to it
+                    if (foundUrl.startsWith('/')) {
+                        foundUrl = "https://cherrion.top" + foundUrl;
+                    }
+
+                    // Navigate to it if we haven't already
+                    if (iframe.src !== foundUrl) {
+                        console.log('Found cloud embed URL:', foundUrl);
+                        iframe.src = foundUrl;
+                    }
+                }
+
             } catch (error) {
-                // If it fails silently here, it is because of the Same-Origin Policy
+                // Fails silently if navigating between origins
             }
         }
     </script>
