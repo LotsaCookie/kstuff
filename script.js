@@ -212,7 +212,15 @@ function initApp() {
             throw new Error("All proxies failed for " + path);
         }
 
-        async function loadProxyContentAsIframe(id, path) {
+        // Configuration to track lazy-loaded iframe pages
+        const iframePages = {
+            'mathworksheets': { id: 'mathworksheets-iframe', path: 'Pages/browser.html' },
+            'gradebook': { id: 'gradebook-iframe', path: 'Pages/music.html' },
+            'lessonplanner': { id: 'lessonplanner-iframe', path: 'Pages/ai.html' }
+        };
+
+        // Modified to require the pageId to double check if the user is still on the page when the fetch resolves
+        async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
             const cacheBuster = "?_=" + Date.now();
@@ -221,16 +229,17 @@ function initApp() {
                     const url = proxy + path + (proxy ? cacheBuster : "");
                     const response = await fetch(url);
                     if (response.ok) {
-                        iframe.srcdoc = await response.text();
+                        const content = await response.text();
+                        // Prevent race condition: only set content if the user hasn't clicked away
+                        const activePage = document.querySelector('.page.active');
+                        if (activePage && activePage.id === pageId) {
+                            iframe.srcdoc = content;
+                        }
                         return;
                     }
                 } catch (err) {}
             }
         }
-
-        loadProxyContentAsIframe('mathworksheets-iframe', 'Pages/browser.html');
-        loadProxyContentAsIframe('gradebook-iframe', 'Pages/music.html');
-        loadProxyContentAsIframe('lessonplanner-iframe', 'Pages/ai.html');
 
         const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
         const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
@@ -566,6 +575,18 @@ function initApp() {
                     return;
                 }
 
+                // CHECK: Unload the current page before switching
+                const currentActiveBtn = document.querySelector('.nav-btn.active');
+                if (currentActiveBtn) {
+                    const currentId = currentActiveBtn.getAttribute('data-target');
+                    if (currentId !== targetId && iframePages[currentId]) {
+                        const iframeToClear = document.getElementById(iframePages[currentId].id);
+                        if (iframeToClear) {
+                            iframeToClear.srcdoc = ''; // Purge memory
+                        }
+                    }
+                }
+
                 navBtns.forEach(b => {
                     if (b.getAttribute('data-target') !== 'homeworkhelper') {
                         b.classList.remove('active');
@@ -581,6 +602,7 @@ function initApp() {
                 if (targetPage) {
                     targetPage.classList.add('active');
 
+                    // Manage grid generation/destruction
                     if (targetId !== 'readingcorner') {
                         destroyReadingPool();
                     }
@@ -594,6 +616,9 @@ function initApp() {
                     } else if (targetId === 'sciencequiz') {
                         buildSciencePool();
                         setTimeout(() => renderScienceModules(false), 15);
+                    } else if (iframePages[targetId]) {
+                        // LOAD: Fetch HTML for the new active tab
+                        loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
                     }
                 }
             });
@@ -787,13 +812,21 @@ function initApp() {
             readingItemsData = finalResources;
             scienceItemsData = finalScience;
 
+            // INIT: Properly fetch iframe or build grid based on the active startup page
             const activePage = document.querySelector('.page.active');
-            if (activePage && activePage.id === 'sciencequiz') {
-                buildSciencePool();
-                renderScienceModules(false);
-            } else if (activePage && activePage.id === 'readingcorner') {
-                buildReadingPool();
-                renderReadingResources(false);
+            if (activePage) {
+                if (activePage.id === 'sciencequiz') {
+                    buildSciencePool();
+                    renderScienceModules(false);
+                } else if (activePage.id === 'readingcorner') {
+                    buildReadingPool();
+                    renderReadingResources(false);
+                } else if (iframePages[activePage.id]) {
+                    loadProxyContentAsIframe(iframePages[activePage.id].id, iframePages[activePage.id].path, activePage.id);
+                } else {
+                    destroyReadingPool();
+                    destroySciencePool();
+                }
             } else {
                 destroyReadingPool();
                 destroySciencePool();
@@ -806,4 +839,4 @@ if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initApp);
 } else {
     initApp();
-                }
+}
