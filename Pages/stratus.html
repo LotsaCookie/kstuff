@@ -21,44 +21,43 @@
         
         let hasRedirected = false;
 
-        // Wait for the iframe to load
         iframe.onload = function() {
-            // Only redirect the first time it loads
             if (!hasRedirected) {
                 hasRedirected = true;
                 console.log("Initial URL loaded. Navigating to target URL...");
-                
-                // Change to the target URL
                 iframe.src = targetUrl;
                 
-                // Start the continuous non-stop scanning every 1 second
-                setInterval(scanIframe, 1000);
+                // Start scanning the live document every 500ms
+                setInterval(scanIframe, 500);
             }
         };
 
-        // Trigger the initial load
         iframe.src = firstUrl;
 
         function scanIframe() {
             try {
+                // This targets the live, constantly updating DOM inside the iframe
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
                 if (iframeDoc) {
-                    const nestedIframe = iframeDoc.querySelector('iframe');
+                    // Grab EVERY iframe currently on the page
+                    const allIframes = iframeDoc.querySelectorAll('iframe');
 
-                    if (nestedIframe && nestedIframe.src && nestedIframe.src.includes('/api/cloud/embed')) {
-                        const newUrl = nestedIframe.src;
-                        
-                        // Check if we haven't already set this exact URL to prevent infinite reloading
-                        if (iframe.src !== newUrl) {
-                            console.log('Found nested iframe URL:', newUrl);
-                            iframe.src = newUrl;
+                    // Loop through them all to find the specific cloud embed
+                    for (let nestedIframe of allIframes) {
+                        if (nestedIframe.src && nestedIframe.src.includes('/api/cloud/embed')) {
+                            const newUrl = nestedIframe.src;
+                            
+                            // Prevent infinite reloading
+                            if (iframe.src !== newUrl) {
+                                console.log('Found dynamic nested iframe URL!', newUrl);
+                                iframe.src = newUrl;
+                            }
                         }
                     }
                 }
             } catch (error) {
-                // This will continuously log if Same-Origin Policy blocks access
-                console.warn("Cannot scan iframe due to Same-Origin Policy security restrictions.");
+                // If it fails silently here, it is because of the Same-Origin Policy
             }
         }
     </script>
