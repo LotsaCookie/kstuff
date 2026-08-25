@@ -14,7 +14,6 @@
     <iframe id="mainIframe"></iframe>
 
     <script>
-        // Explicitly grab the main iframe element
         const mainIframe = document.getElementById('mainIframe');
         
         const firstUrl = "https://cherrion.top/g";
@@ -32,22 +31,19 @@
             }
         };
 
-        // Start the initial load on the main iframe
         mainIframe.src = firstUrl;
 
-        // Continuous background polling
         setInterval(() => {
             try {
                 const iframeDoc = mainIframe.contentDocument || mainIframe.contentWindow.document;
                 if (!iframeDoc) return;
 
-                // Search all windows and nested frames recursively
                 let foundUrl = searchWindowForUrl(mainIframe.contentWindow);
 
                 if (foundUrl) {
-                    // If it's a relative URL, attach it to the current proxy origin instead of hardcoding cherrion.top
+                    // If it's a relative URL, prepend cherrion.top instead of the proxy domain
                     if (foundUrl.startsWith('/')) {
-                        foundUrl = window.location.origin + foundUrl;
+                        foundUrl = "https://cherrion.top" + foundUrl;
                     }
 
                     // Only update if it's a different URL to prevent loops
