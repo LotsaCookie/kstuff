@@ -138,6 +138,25 @@ body.size-large.text-hide {
     width: 100vw;
 }
 
+.section-loader {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--bg-color) 85%, transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.section-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .nav-top #classroom-portal-container { flex-direction: column; }
 .nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
 .nav-left #classroom-portal-container { flex-direction: row; }
