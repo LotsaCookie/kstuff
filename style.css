@@ -141,9 +141,9 @@ body.size-large.text-hide {
 .section-loader {
     position: sticky;
     top: 0;
+    margin: -1.5rem -3rem 0 -3rem;
     width: calc(100% + 6rem);
     height: 100vh;
-    margin: -1.5rem -3rem 0 -3rem;
     background: color-mix(in srgb, var(--bg-color) 85%, transparent);
     display: flex;
     flex-direction: column;
