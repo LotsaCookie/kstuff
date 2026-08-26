@@ -29,7 +29,7 @@
     <div id="loading-screen"><div class="spinner"></div><div class="loading-text">Loading</div></div>
     
     <script>
-        window.addEventListener('load',async ()=>{if(window.kAssets)await window.kAssets;setTimeout(()=>{const l=document.getElementById('loading-screen');if(l)l.classList.add('hidden');setTimeout(()=>{document.body.style.removeProperty('--bg-color');document.body.style.removeProperty('--text-color')},600)},4000)});
+        window.addEventListener('load',async ()=>{if(window.kAssets)await window.kAssets;setTimeout(()=>{const l=document.getElementById('loading-screen');if(l)l.classList.add('hidden');setTimeout(()=>{document.body.style.removeProperty('--bg-color');document.body.style.removeProperty('--text-color')},600)},100)});
     </script>
 
     <div style="display:none;" aria-hidden="true">
