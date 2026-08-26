@@ -150,7 +150,7 @@ body.size-large.text-hide {
     align-items: center;
     pointer-events: none;
     z-index: 100;
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
