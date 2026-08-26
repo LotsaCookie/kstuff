@@ -2,14 +2,14 @@
   {
     "title": "-3",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/minus3/index.html",
     "image": "https://i.ytimg.com/vi/bN1qRK4biCU/mqdefault.jpg"
   },
   {
     "title": "-b",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/minusbog/index.html",
     "image": "https://i.ytimg.com/vi/bg5grqMn1DQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDuJuUePhvZmkS2Rg4HvF1icxWYMg"
   },
@@ -23,7 +23,7 @@
   {
     "title": "1 on 1 Soccer",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Sports",
     "url": "${truffled}/games/1on1soccer/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZtp5bQH1i4_x-3u2hrpFV9DBSx2GHsbx4Mg&s"
   },
@@ -37,7 +37,7 @@
   {
     "title": "1v1.LOL",
     "description": "",
-    "category": "Action",
+    "category": "Multiplayer",
     "url": "${truffled}/gamefile/1v1.html",
     "image": "https://img.utdstc.com/icon/983/22a/98322a3b2be892eed31589906ffd949b68bcccc9a21ba562987965b5ec6bc6de:200"
   },
@@ -51,7 +51,7 @@
   {
     "title": "2048",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/2048/index.html",
     "image": ""
   },
@@ -65,14 +65,14 @@
   {
     "title": "3D Bowling",
     "description": "",
-    "category": "Puzzle",
+    "category": "Sports",
     "url": "${uv}https://3d-bowling.game-files.crazygames.com/3d-bowling/1/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPtt27aNc80dh2QxgSxqQnt2L8gs20AVVxrQ&s"
   },
   {
     "title": "60 Seconds, Webport",
     "description": "",
-    "category": "Action",
+    "category": "Strategy",
     "url": "${truffled}/games/60/index.html",
     "image": ""
   },
@@ -86,14 +86,14 @@
   {
     "title": "A Difficult Game About Climbing, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/adgac.html",
     "image": ""
   },
   {
     "title": "A Game About Feeding A Blackhole",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/blackhole.html",
     "image": ""
   },
@@ -107,28 +107,28 @@
   {
     "title": "Academytale, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/academytale/index.html",
     "image": ""
   },
   {
     "title": "Achievement Unlocked",
     "description": "",
-    "category": "Action",
+    "category": "Platformer",
     "url": "${truffled}/games/achieveunlocked/index.html",
     "image": ""
   },
   {
     "title": "Achievement Unlocked 2",
     "description": "",
-    "category": "Action",
+    "category": "Platformer",
     "url": "${truffled}/games/achivement2/index.html",
     "image": ""
   },
   {
     "title": "Achievement Unlocked 3",
     "description": "",
-    "category": "Action",
+    "category": "Platformer",
     "url": "${truffled}/games/achivement3/index.html",
     "image": ""
   },
@@ -142,21 +142,21 @@
   {
     "title": "Agar.io",
     "description": "",
-    "category": "Action",
+    "category": "Multiplayer",
     "url": "${uv}https://agar.io",
     "image": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Agar.io_App_Store.png"
   },
   {
     "title": "Age Of Conflict",
     "description": "",
-    "category": "Simulation",
+    "category": "Strategy",
     "url": "",
     "image": "https://img.itch.zone/aW1nLzk4MzM5ODkucG5n/original/cwAxxR.png"
   },
   {
     "title": "Alien Hominid",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/alien/index.html",
     "image": ""
   },
@@ -170,14 +170,14 @@
   {
     "title": "Amaze",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/amaze/index.html",
     "image": ""
   },
   {
     "title": "Among us",
     "description": "",
-    "category": "",
+    "category": "Multiplayer",
     "url": "${truffled}/games/amongus/index.html",
     "image": ""
   },
@@ -191,35 +191,35 @@
   {
     "title": "Angry Birds 2",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/angrybirds2/index.html",
     "image": ""
   },
   {
     "title": "Angry Birds Epic, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/Epic/index.html",
     "image": ""
   },
   {
     "title": "Angry Birds Online",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/angrybirdsonline.html",
     "image": ""
   },
   {
     "title": "Animal Crossing Population: Growing!, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/slider/index.html",
     "image": ""
   },
   {
     "title": "Animal Crossing Wild World",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/acww.html",
     "image": ""
   },
@@ -233,35 +233,35 @@
   {
     "title": "Antonblast",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/antonblast/runner.html",
     "image": ""
   },
   {
     "title": "Antonblast 64, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/antonblast64/index.html",
     "image": ""
   },
   {
     "title": "Apes VS Helium",
     "description": "",
-    "category": "Shooting",
+    "category": "Action",
     "url": "${truffled}/games/AVHPort/index.html",
     "image": "https://img.itch.zone/aW1nLzE0MDQ3Mzk4LnBuZw==/original/mC%2FX0t.png"
   },
   {
     "title": "ArmedForces.IO",
     "description": "",
-    "category": "Shooter",
+    "category": "FPS",
     "url": "${uv}https://unblocked-games.s3.amazonaws.com/games/2021/unity3/armedforces-io/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ931GCtIBiWcI53KOhLlmfIinkJbdkBOl3tg&s"
   },
   {
     "title": "Arthur's Nightmare, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/arthur.html",
     "image": ""
   },
@@ -289,21 +289,21 @@
   {
     "title": "Bad Icecream 1",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/badice1.html",
     "image": ""
   },
   {
     "title": "Bad Icecream 2",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/badice2.html",
     "image": ""
   },
   {
     "title": "Bad Icecream 3",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/badice3.html",
     "image": ""
   },
@@ -324,7 +324,7 @@
   {
     "title": "Bad time Simulator",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/bts/index.html",
     "image": ""
   },
@@ -338,7 +338,7 @@
   {
     "title": "Balatro Modded, Webport",
     "description": "",
-    "category": "",
+    "category": "Cards",
     "url": "${truffled}/games/balatromodded/",
     "image": ""
   },
@@ -352,35 +352,35 @@
   {
     "title": "Baldi's Basics Birthday Bash, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/bday/index.html",
     "image": ""
   },
   {
     "title": "Baldi's Basics Classic Remastered, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/BBCR/index.html",
     "image": ""
   },
   {
     "title": "Baldi's Basics Plus, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/bbp.html",
     "image": ""
   },
   {
     "title": "Baldi's Basics Ultra Decompile",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/baldidecomp.html",
     "image": ""
   },
   {
     "title": "Baldi's Fun New School Plus Ultimate Edition",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/bfs/",
     "image": ""
   },
@@ -394,63 +394,63 @@
   {
     "title": "Banjo Kazooie",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/banjokazooie.html",
     "image": ""
   },
   {
     "title": "Bart Bash",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/bartbash.html",
     "image": ""
   },
   {
     "title": "Bart Blast",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/bart.html",
     "image": ""
   },
   {
     "title": "Baseball Bros",
     "description": "",
-    "category": "Adventure",
+    "category": "Sports",
     "url": "${truffled}/games/baseballbros/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTGWZozIdCtkaeHj2Sumbv-_Q4EjnUQvr5DcSp-i5L9-qpxRb98txgz5dJUc8fRhjpIoE&usqp=CAU"
   },
   {
     "title": "Basket Bros",
     "description": "",
-    "category": "Adventure",
+    "category": "Sports",
     "url": "${truffled}/gamefile/basket.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJRfJ4hVTL4Gk_DP28TT2ybA5VX9xwxm0DSA&s"
   },
   {
     "title": "Basket Random",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Sports",
     "url": "${truffled}/games/basket-random/index.html",
     "image": "https://images.sftcdn.net/images/t_app-icon-m/p/7aae58f2-284c-4343-807a-c3820029e5d9/378063004/basket-random-game-logo"
   },
   {
     "title": "Basketball stars",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/basketballstars/index.html",
     "image": ""
   },
   {
     "title": "Beatblock, Webport",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/beatblock/index.html",
     "image": ""
   },
   {
     "title": "Bee Movie Game",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/beemovie/index.html",
     "image": ""
   },
@@ -464,42 +464,42 @@
   {
     "title": "Bergentruck, Webport",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/games/bergentruck/index.html",
     "image": ""
   },
   {
     "title": "Bfdia 5b",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/bfdia 5b/index.html",
     "image": ""
   },
   {
     "title": "Big Tower Tiny Square",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/btts/index.html",
     "image": ""
   },
   {
     "title": "Bit Planes",
     "description": "",
-    "category": "Action",
+    "category": "Arcade",
     "url": "${uv}https://medv.io/bit-planes/",
     "image": "https://rocketgames.imgix.net/uploads/games/b/bit-planes/bit-planes.16800f.jpg?auto=format,compress,enhance&w=314&dpr=1"
   },
   {
     "title": "Bitlife",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/bitlife/index.html",
     "image": ""
   },
   {
     "title": "Black Jack",
     "description": "",
-    "category": "",
+    "category": "Cards",
     "url": "${truffled}/gamefile/BlackJack.html",
     "image": ""
   },
@@ -513,7 +513,7 @@
   {
     "title": "BLOODMONEY!",
     "description": "",
-    "category": "Horror",
+    "category": "Action",
     "url": "${truffled}/games/bloodmoney/index.html",
     "image": "https://img.itch.zone/aW1nLzIyNDMzMTYyLnBuZw==/original/tX1Cbj.png"
   },
@@ -555,28 +555,28 @@
   {
     "title": "Bloons TD Battles 2",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${static}https://nowgg.fun/apps/ninja-kiwi/1403/bloons-td-battles-2.html",
     "image": ""
   },
   {
     "title": "Bloons TD6",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/games/btd6/index.html",
     "image": ""
   },
   {
     "title": "Bloxors",
     "description": "",
-    "category": "Adventure",
+    "category": "Puzzle",
     "url": "${truffled}/games/bloxors/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLH0EmQGEXMsxUZtYqJN0WTaht7mOxTmtXdQ&s"
   },
   {
     "title": "Blumgi Rocket",
     "description": "",
-    "category": "Platformer",
+    "category": "Driving",
     "url": "https://datacrafted.org/gamefiles/blumgirocket/",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/quality=78,width=314,height=314,fit=cover,f=auto/672fb98802b00740e3c885cb2b31fc51.png"
   },
@@ -590,28 +590,28 @@
   {
     "title": "Bombmerman",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/bomberman.html",
     "image": ""
   },
   {
     "title": "Bombmerman 2",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/bomberman2.html",
     "image": ""
   },
   {
     "title": "Bouncy Heroes",
     "description": "",
-    "category": "Action",
+    "category": "Arcade",
     "url": "https://html-classic.itch.zone/html/4176639/index.html",
     "image": "https://img.itch.zone/aW1nLzY1Mjk5MTkucG5n/original/z7U8%2FV.png"
   },
   {
     "title": "Boxing Random",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Sports",
     "url": "${truffled}/gamefile/boxing.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv93G25T2p0tri2NI_jYph4M4cUyEPunltvw&s"
   },
@@ -625,7 +625,7 @@
   {
     "title": "Brotato Paws And Claws, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/brotato2/index.html",
     "image": ""
   },
@@ -646,21 +646,21 @@
   {
     "title": "Burrito Bison",
     "description": "",
-    "category": "Action",
+    "category": "Arcade",
     "url": "${truffled}/games/burrito/index.html",
     "image": "https://cdn6.aptoide.com/imgs/f/9/1/f912df6d248f0ab44ee96e2f3116b8a9_icon.png"
   },
   {
     "title": "Burrito Bison Revenge",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/bbe.html",
     "image": ""
   },
   {
     "title": "Call of Duty Mobile",
     "description": "",
-    "category": "Shooter",
+    "category": "FPS",
     "url": "${static}https://nowgg.fun/apps/a/10008/b.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6bLdvmPT61m3iBTbHbSEBElVARRxtUECwBA&s"
   },
@@ -674,28 +674,28 @@
   {
     "title": "Capuchin, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/CapuchinBog/index.html",
     "image": ""
   },
   {
     "title": "Capybara Clicker",
     "description": "",
-    "category": "Idle",
+    "category": "Clicker",
     "url": "${uv}https://games.crazygames.com/en_US/capybara-clicker/index.html",
     "image": "https://play-lh.googleusercontent.com/qPhicF9zFY_Ya0xQm9RsTcCIKnjTb2gW5lAvzow6WgiodIOBMKyeAHaS4bh2WZN9BCU"
   },
   {
     "title": "CaseOhs Basics in Eating and Fast Food, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/caseoh.html",
     "image": ""
   },
   {
     "title": "Call of Duty: WWII",
     "description": "",
-    "category": "Shooter",
+    "category": "FPS",
     "url": "https://raw.githack.com/lotsacookie/opium/main/?title=WWII",
     "image": "https://static.wikia.nocookie.net/callofduty/images/6/6c/COD_WWII_cover.JPG"
   },
@@ -709,28 +709,28 @@
   {
     "title": "Celeste 64, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/celeste64/index.html",
     "image": ""
   },
   {
     "title": "Cheese Rolling, Webport",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/cheese.html",
     "image": ""
   },
   {
     "title": "Chicken CS",
     "description": "",
-    "category": "Shooting",
+    "category": "FPS",
     "url": "${scram}https://games.crazygames.com/en_US/chicken-cs/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH--GY3wEACsRlvhlBN1ILZrt9hqxa1JfKmA&s"
   },
   {
     "title": "Christmas Massacre, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/christmas.html",
     "image": ""
   },
@@ -744,140 +744,140 @@
   {
     "title": "Clash Royale",
     "description": "",
-    "category": "Cloud",
+    "category": "Strategy",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Clash%20Royale",
     "image": "https://tse4.mm.bing.net/th/id/OIP.VlXIZDyrqwsJOeAYfnyPPgHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Class of 09",
     "description": "",
-    "category": "RPG",
+    "category": "Adventure",
     "url": "${truffled}/extra/co09loader/index.html",
     "image": "https://e.snmc.io/lk/o/x/f32f7845aadd79ec99c22ece60bb2b88/11265542"
   },
   {
     "title": "Class Of 09 Flipside, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/C09FS/index.html",
     "image": ""
   },
   {
     "title": "Class Of 09 Re-Up, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/C09RU/index.html",
     "image": ""
   },
   {
     "title": "Class Of 09, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/C09/index.html",
     "image": ""
   },
   {
     "title": "Clicker Heroes",
     "description": "",
-    "category": "Idle",
+    "category": "Clicker",
     "url": "",
     "image": "https://cf.geekdo-images.com/HSUPOhNu-1EOYpyfV8cVyg__opengraph/img/IH2_qV-a_h8ihPJvVi8eGFMbPZk=/fit-in/1200x630/filters:strip_icc()/pic6978375.jpg"
   },
   {
     "title": "Clover Pit",
     "description": "",
-    "category": "",
+    "category": "Cards",
     "url": "${truffled}/gamefile/cloverpit.html",
     "image": ""
   },
   {
     "title": "Cluster Rush",
     "description": "",
-    "category": "Racing",
+    "category": "Platformer",
     "url": "${truffled}/games/cluster/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.vRUwrzYqTxcuD1nx3soIJgAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Coffee Talk",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/coffee/index.html",
     "image": ""
   },
   {
     "title": "Cookie Clicker",
     "description": "",
-    "category": "Idle",
+    "category": "Clicker",
     "url": "${truffled}/games/cookie-clicker/index.html",
     "image": "https://play-lh.googleusercontent.com/Z1MOuuiD05ZN5LkVmMEvKF0mqAc-FknaQ2j8s4dZiO-LSPQX4EEA3RVJdlQEtxe96ok"
   },
   {
     "title": "Cookie Run Kingdom",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${static}https://nowgg.fun/apps/a/10019/b.html",
     "image": ""
   },
   {
     "title": "Cooking Mama",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/gamefile/cookingmama.html",
     "image": ""
   },
   {
     "title": "Cooking Mama 2",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/gamefile/cookingmama2.html",
     "image": ""
   },
   {
     "title": "Cooking Mama 3",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/gamefile/cookingmama3.html",
     "image": ""
   },
   {
     "title": "Core Ball",
     "description": "",
-    "category": "Puzzle",
+    "category": "Arcade",
     "url": "",
     "image": "https://www.hoodamath.com/large/coreball_300x225.jpg"
   },
   {
     "title": "Counter Stike 0.8",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/psp/cs/index.html",
     "image": ""
   },
   {
     "title": "Crash Bandicoot 1",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/crash1.html",
     "image": ""
   },
   {
     "title": "Crash Bandicoot 2",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/crash2.html",
     "image": ""
   },
   {
     "title": "Crash Bandicoot 3",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/crash3.html",
     "image": ""
   },
   {
     "title": "Crazy Balls",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/balls.html",
     "image": ""
   },
@@ -898,42 +898,42 @@
   {
     "title": "CrazyCattle3D, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/cattle3d/index.html",
     "image": ""
   },
   {
     "title": "Crossy Road",
     "description": "",
-    "category": "Platformer",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/crossy.html",
     "image": "https://cdn.jim-nielsen.com/ios/512/crossy-road-endless-arcade-2014-12-02.png?rf=1024"
   },
   {
     "title": "Cruelty Squad, Webport",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/cruelty/index.html",
     "image": ""
   },
   {
     "title": "Crusher Clicker",
     "description": "",
-    "category": "Idle",
+    "category": "Clicker",
     "url": "${uv}https://crusher-clicker.game-files.crazygames.com/crusher-clicker/5/index.html",
     "image": "https://www.kizgame.com/thumbs/crusher-clicker_small.webp"
   },
   {
     "title": "Csgo Clicker",
     "description": "",
-    "category": "",
+    "category": "Clicker",
     "url": "${truffled}/games/csgo-clicker/index.html",
     "image": ""
   },
   {
     "title": "Cuphead, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/Cuphead/index.html",
     "image": ""
   },
@@ -954,14 +954,14 @@
   {
     "title": "Cut The Rope : Time Travel",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/time.html",
     "image": ""
   },
   {
     "title": "Cut The Rope Holiday",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/hol.html",
     "image": ""
   },
@@ -989,77 +989,77 @@
   {
     "title": "Dadish 3d",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/dadish3d.html",
     "image": ""
   },
   {
     "title": "Dadish Daily",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/daily.html",
     "image": ""
   },
   {
     "title": "Danganronpa",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/danganronpa/index.html",
     "image": ""
   },
   {
     "title": "DEAD PLATE, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/dead.html",
     "image": ""
   },
   {
     "title": "Dead Tapes",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/deadtapesfinal/index.html",
     "image": ""
   },
   {
     "title": "Deadseat, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/deadseat/index.html",
     "image": ""
   },
   {
     "title": "Deadshot.io",
     "description": "",
-    "category": "Strategy",
+    "category": "FPS",
     "url": "${uv}https://deadshot.io",
     "image": "data:image/jpeg;base64,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"
   },
   {
     "title": "DeadSwitch 3'",
     "description": "",
-    "category": "Action",
+    "category": "Shooter",
     "url": "${uv}https://deadswitch3.com/play",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSswsmXZOohkxoeIpq-S_XQTx_cdIOZnsfFLA&s"
   },
   {
     "title": "Death Run 3D",
     "description": "",
-    "category": "Platformer",
+    "category": "Arcade",
     "url": "${truffled}/games/death-run-3d/index.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.LgHHwU8cHS6wJOADKi85jQHaGq?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Deer Adventure Simulator",
     "description": "",
-    "category": "Adventure",
+    "category": "Simulation",
     "url": "${uv}https://deer-adventure.1games.io/",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=1200,height=1200,fit=cover,f=png/c13ff474-1686-43f3-a537-ac6e559f4e1c/deer-simulator.png"
   },
   {
     "title": "Defly.io",
     "description": "",
-    "category": "Shooting",
+    "category": "Multiplayer",
     "url": "${uv}https://defly.io/",
     "image": "https://lh3.googleusercontent.com/proxy/iADiTsiJThE-ko0LgbkAJmfXWHDLwYbz0_eKbWPVKuo9xYz3Fpj2bBh5tC6HHW0Ak6_kSZFBKOay"
   },
@@ -1073,119 +1073,119 @@
   {
     "title": "Deltatraveler, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/deltatr.html",
     "image": ""
   },
   {
     "title": "Diablo",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/diablo/index.html",
     "image": ""
   },
   {
     "title": "Dice A Million, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/diceamillion.html",
     "image": ""
   },
   {
     "title": "Die In The Dungeon",
     "description": "",
-    "category": "Action",
+    "category": "Cards",
     "url": "${uv}https://games.crazygames.com/en_US/die-in-the-dungeon/index.html",
     "image": "https://i.ytimg.com/vi/sQn0TuhbZtg/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGGUgQShbMA8=&rs=AOn4CLBKFh47St76A6WUWEh11t0xMkfOzg"
   },
   {
     "title": "Dinosaur",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/dinosaur/index.html",
     "image": ""
   },
   {
     "title": "Do Not Take This Cat Home, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/donottakethiscathome/index.html",
     "image": ""
   },
   {
     "title": "Doge Miner",
     "description": "",
-    "category": "Idle",
+    "category": "Clicker",
     "url": "${truffled}/gamefile/Doge Miner.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGntHHqFclT8bV5iA4tLmY8jjX19KZMxvhhw&s"
   },
   {
     "title": "Doge Miner 2",
     "description": "",
-    "category": "",
+    "category": "Clicker",
     "url": "${truffled}/gamefile/dm2.html",
     "image": ""
   },
   {
     "title": "Doki Doki Literature Club!",
     "description": "",
-    "category": "Category",
+    "category": "Horror",
     "url": "",
     "image": "https://upload.wikimedia.org/wikipedia/en/7/7c/Doki_Doki_Literature_Club_Cover.jpg"
   },
   {
     "title": "Dome Keeper, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/domekeeper/index.html",
     "image": ""
   },
   {
     "title": "Doodle Jump",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/Doodle Jump.html",
     "image": ""
   },
   {
     "title": "Doom",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/doom/index.html",
     "image": ""
   },
   {
     "title": "Doom 2",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/gamefile/doom2.html",
     "image": ""
   },
   {
     "title": "Doom 3",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/doom3/index.html",
     "image": ""
   },
   {
     "title": "Doom 64",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/gamefile/doom64.html",
     "image": ""
   },
   {
     "title": "Dr. Mario",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/drmario.html",
     "image": ""
   },
   {
     "title": "Dreadhead Parkour",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/dread.html",
     "image": ""
   },
@@ -1199,7 +1199,7 @@
   {
     "title": "Drift Hunters",
     "description": "",
-    "category": "Driving",
+    "category": "Racing",
     "url": "${truffled}/gamefile/drift.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzXAsHGMgY86yJR_xgQkNIOaStkpNgY0jIRw&s"
   },
@@ -1213,140 +1213,140 @@
   {
     "title": "Duck Life 1",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife1/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 2",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife2/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 3",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife3/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 4",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife4/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 5",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife5/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 6",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife6/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 7",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklife7/index.html",
     "image": ""
   },
   {
     "title": "Duck Life 8, Webport",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ducklifeadv/",
     "image": ""
   },
   {
     "title": "Dumb Ways To Die",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/dumb/index.html",
     "image": ""
   },
   {
     "title": "DUO",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Cards",
     "url": "${static}https://duowfriends.eu/",
     "image": "https://play-lh.googleusercontent.com/Sl2REZ14enu88DFQ8SiBK-RTflO1Eww5jxIAvQcwgxtG1eJ1XT3aS4tRsOGflLS8IL0"
   },
   {
     "title": "EA SPORTS FC MOBILE 24 SOCCER",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${static}https://nowgg.fun/apps/electronic-arts/1353/ea-sports-fc-mobile-24-soccer.html",
     "image": ""
   },
   {
     "title": "Eggy Car",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/gamefile/eggycar.html",
     "image": ""
   },
   {
     "title": "Elastic Face",
     "description": "",
-    "category": "All",
+    "category": "Arcade",
     "url": "${uv}https://d21u3ic0kp9e91.cloudfront.net/elasticman/0/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.jogDjOKN3oURnYscp5kLiQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Emily Is Away",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/emily/index.html",
     "image": ""
   },
   {
     "title": "Escape Road",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/gamefile/escape.html",
     "image": ""
   },
   {
     "title": "Escape Road 2",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/gamefile/road2.html",
     "image": ""
   },
   {
     "title": "Escape Road 3",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/gamefile/escape3.html",
     "image": ""
   },
   {
     "title": "Escape Road City 2",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/gamefile/roadcity2.html",
     "image": ""
   },
   {
     "title": "Fall Guys",
     "description": "",
-    "category": "Cloud",
+    "category": "Multiplayer",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Fall%20Guys",
     "image": "https://tse4.mm.bing.net/th/id/OIP.BHD2-re6E-OGJaWj2StZ9wAAAA?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Falling Fred",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/falling/index.html",
     "image": ""
   },
@@ -1360,28 +1360,28 @@
   {
     "title": "Fallout 2, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/fo2/index.html",
     "image": ""
   },
   {
     "title": "Fancy Pants Adventures",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/fancypantsadventures/index.html",
     "image": ""
   },
   {
     "title": "Fancy Pants Adventures 2",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/fancypantsadventures2/index.html",
     "image": ""
   },
   {
     "title": "Fancy Pants Adventures 3",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/fpa3.html",
     "image": ""
   },
@@ -1395,70 +1395,70 @@
   {
     "title": "FEZ, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/FEZ/index.html",
     "image": ""
   },
   {
     "title": "Final Fantasy VII",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/ffvii.html",
     "image": ""
   },
   {
     "title": "Fireboy and Watergirl",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${truffled}/games/watergirl-1/index.html",
     "image": "https://th.bing.com/th/id/R.06ba3c94b714554a8922254b078705a1?rik=8oWl66sOeNsNiQ&riu=http%3a%2f%2fwww.y9gamer.com%2ffiles%2fimages%2f00%2f007f7f81fda753de6f682a4f5c4046df.jpg&ehk=fAAlEfOO%2bFvlu%2fQ6ko3K8TInJh6BkKcRLT4Hak3CZ3w%3d&risl=&pid=ImgRaw&r=0"
   },
   {
     "title": "Fireboy and Watergirl 2",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${truffled}/games/watergirl-2/index.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-fireboy-and-watergirl-2/poki-fireboy-and-watergirl-2-icon-filled-256.png?v=1674453358090"
   },
   {
     "title": "Fireboy and Watergirl 3",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${truffled}/games/watergirl-3/index.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-fireboy-and-watergirl-3/poki-fireboy-and-watergirl-3-icon-filled-256.png?v=1714778367359"
   },
   {
     "title": "Fireboy and Watergirl 4",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${truffled}/games/watergirl-4/index.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.TOE6-sKhVAI9xBDZPckKCwAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Fireboy and Watergirl 5",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${uv}https://html5.gamedistribution.com/a55c9cc9c21e4fc683c8c6857f3d0c75/?gd_sdk_referrer_url=https%3A%2F%2Fwww.fireboynwatergirl.com%2F%3Fp%3Dgame",
     "image": "https://tse1.mm.bing.net/th/id/OIP.0qvVVhMNFfCeTaE291Y3-wAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Fireboy and Watergirl 6",
     "description": "",
-    "category": "Platformer",
+    "category": "Puzzle",
     "url": "${uv}https://html5.gamedistribution.com/rvvASMiM/be3cff113c4e4f069b7614851825ffe9/index.html?gd_sdk_referrer_url=https%3A%2F%2Fwww.coolmathgames.com%2F0-fireboy-watergirl-6-fairy-tales&gd_zone_config=eyJwYXJlbnRVUkwiOiJodHRwczovL3d3dy5jb29sbWF0aGdhbWVzLmNvbS8wLWZpcmVib3ktd2F0ZXJnaXJsLTYtZmFpcnktdGFsZXMiLCJwYXJlbnREb21haW4iOiJjb29sbWF0aGdhbWVzLmNvbSIsInRvcERvbWFpbiI6ImNvb2xtYXRoZ2FtZXMuY29tIiwiaGFzSW1wcmVzc2lvbiI6ZmFsc2UsImxvYWRlckVuYWJsZWQiOnRydWUsImhvc3QiOiJodG1sNS5nYW1lZGlzdHJpYnV0aW9uLmNvbSIsInZlcnNpb24iOiIxLjUuMTgifQ%253D%253D",
     "image": "https://tse1.mm.bing.net/th/id/OIP.cyh-xipu9yF7dQptldkfmgHaHa?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "FISH, Webport",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/fish.html",
     "image": ""
   },
   {
     "title": "Fister",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}https://fister.fun",
     "image": ""
   },
@@ -1472,14 +1472,14 @@
   {
     "title": "Five Nights At Candys",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/fnac.html",
     "image": ""
   },
   {
     "title": "Five Nights At Candys 2",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/fnac2.html",
     "image": ""
   },
@@ -1542,49 +1542,49 @@
   {
     "title": "Five Nights at Freddy's: World",
     "description": "",
-    "category": "Rpg",
+    "category": "RPG",
     "url": "${truffled}/gamefile/fnafw.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ4aXQb7ab14NFxtfCOjHT2SutBR5R1Hd8lA&s"
   },
   {
     "title": "Five Nights At Frickbears 3, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/fb3/index.html",
     "image": ""
   },
   {
     "title": "Five Nights At Last Breath, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/breath.html",
     "image": ""
   },
   {
     "title": "Flappy bird",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/flappybird/index.html",
     "image": ""
   },
   {
     "title": "Flying Gorilla, Webport",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/gorilla.html",
     "image": ""
   },
   {
     "title": "FNAF World Refreshed",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/fnw/index.html",
     "image": ""
   },
   {
     "title": "FNAW",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/fnaw.html",
     "image": ""
   },
@@ -1598,28 +1598,28 @@
   {
     "title": "FNF, Friday Night Funkin",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/fnfog.html",
     "image": ""
   },
   {
     "title": "FoodStars.io",
     "description": "",
-    "category": "Action",
+    "category": "Multiplayer",
     "url": "https://51.222.141.36.nip.io/storage/ag/g/brawlstars/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTm-gifNAtvNKbF2belI3LYXQ2kgdlpiSbf9w&s"
   },
   {
     "title": "Football Bros",
     "description": "",
-    "category": "Adventure",
+    "category": "Sports",
     "url": "${truffled}/games/footballbros/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjZAXMQNxlgehXAPfDI_ozbklUn2tWt3Hgaw&s"
   },
   {
     "title": "Fortnite",
     "description": "",
-    "category": "Cloud",
+    "category": "Shooter",
     "url": "${static}https://nowgg.fun/apps/aptoide/5874/aptoide.html?deep_link=aptoidesearch://com.epicgames.fortnite",
     "image": "https://tse1.mm.bing.net/th/id/OIP.S2-lsDvutqW8AKTqBYbwOAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
@@ -1633,196 +1633,196 @@
   {
     "title": "Four Colors Multiplayer",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Cards",
     "url": "${uv}https://html5.gamedistribution.com/f2520bae00624e93a4f4614732fa259e",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQlYoXsLkUGZAfmYy_D0heUV7Njc0Z5-BfD8gyvLKqhzK0OC3hfnwxKmK5iwFJ_6f_hHvg&usqp=CAU"
   },
   {
     "title": "Fire Fox",
     "description": "",
-    "category": "Cloud",
+    "category": "Arcade",
     "url": "${truffled}/tools/firefox/index.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Aethos",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/aethos.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Atrocity",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/atrocity.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin BFDI 26",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/bfdi26.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Bop City",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/bopcity.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin For A BFDI",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/ffabfdi.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Garcello",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/garcello.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Get Digging",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/getdigging.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Golden Apple",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/goldenapple.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Hatsune Miku",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/miku.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Hex",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/hex.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Horkglorpgloop",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/horkglorpgloop.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Infinite Irida",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/infiniteiridra.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Kapi",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/kapi.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Mario Madness",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/mariomadness.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Nonsense",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/nonsense.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Rewrite",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/rewrite.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Rewrite 2",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/rewrite2.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Ron",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/ron.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Shaggy",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/shaggy.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Shaggy X Matt",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/shaggyxmatt.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Shucks V2",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/shucksv2.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Tricky",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/tricky.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin TWIDDLEFINGER",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/TWIDDLEFINGER.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Vs. Tord",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/tord.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Whitty",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/whitty.html",
     "image": ""
   },
   {
     "title": "Friday Night Funkin Zardy",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/fnf/zardy.html",
     "image": ""
   },
@@ -1836,84 +1836,84 @@
   {
     "title": "Fruit Ninja",
     "description": "",
-    "category": "Action",
+    "category": "Arcade",
     "url": "${truffled}/games/fruitninja/index.html",
     "image": "https://cdn.jim-nielsen.com/ios/1024/fruit-ninja-2020-08-31.png"
   },
   {
     "title": "Funny Battle Simulator",
     "description": "",
-    "category": "Simulation",
+    "category": "Strategy",
     "url": "${uv}https://html5.gamedistribution.com/c04f62ffd1c7499ebe61b387c87dcba2/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQcM346-mQnc5KmxO_LGtThij_fOvOZXDN-1A&s"
   },
   {
     "title": "Funny Battle Simulator 2",
     "description": "",
-    "category": "Simulation",
+    "category": "Strategy",
     "url": "${uv}https://html5.gamedistribution.com/19eb0d541f36449094b15fb7a2a26640/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcM_O4YgtUOOQY833BI1o-Zu5NuNy3Mytuiw&s"
   },
   {
     "title": "Fused240",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/fused240/index.html",
     "image": ""
   },
   {
     "title": "Gabriel's Awesome Schoolhouse, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/gash.html",
     "image": ""
   },
   {
     "title": "Gacha Life",
     "description": "",
-    "category": "RPG",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/life.html",
     "image": "https://play-lh.googleusercontent.com/Yma8Znj3IENI76qh6VC2cFgzoUwFdt4c2xXMYfK2VUaRZArjqsicFj4zCpUIZRwbdJ_b"
   },
   {
     "title": "Gacha Verse",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/verse.html",
     "image": ""
   },
   {
     "title": "Genshin Impact",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${static}https://nowgg.fun/apps/cognosphere-pte-ltd-/1773/genshin-impact.html",
     "image": ""
   },
   {
     "title": "Geometry Dash Lite",
     "description": "",
-    "category": "Platformer",
+    "category": "Rhythm",
     "url": "${frogiee}stuff/selfhosted/gdlite/",
     "image": "https://static.wikia.nocookie.net/logopedia/images/4/41/Geometry_Dash_Icon.svg"
   },
   {
     "title": "Geometry Dash, Webport",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/gamefile/gd.html",
     "image": ""
   },
   {
     "title": "Getaway Shootout!",
     "description": "",
-    "category": "Shooting",
+    "category": "Action",
     "url": "${truffled}/games/getaway-shootout/index.html",
     "image": "https://img.tapimg.net/market/images/832bbcf504d743688514bf880199a3a7.png?imageView2/0/w/1080/h/608/format/jpg/interlace/1/ignore-error/1&t=1"
   },
   {
     "title": "Getting Over It, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/goi.html",
     "image": ""
   },
@@ -1955,7 +1955,7 @@
   {
     "title": "Google Baseball",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/gamefile/gbase.html",
     "image": ""
   },
@@ -1990,91 +1990,91 @@
   {
     "title": "Gravity run",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/gravity-run/index.html",
     "image": ""
   },
   {
     "title": "Greybox",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/graybox/index.html",
     "image": ""
   },
   {
     "title": "Growden.io",
     "description": "",
-    "category": "Simulation",
+    "category": "Multiplayer",
     "url": "${uv}http://growden.io/",
     "image": "https://rocketgames.imgix.net/uploads/games/g/grow-a-garden-growden-io/grow-a-garden-growden-io.d77f8b.jpg?auto=format,compress&w=1200&h=630&fit=fill&fill=blur&q=85&mark=/logo.png&mark-scale=16&mark-align=middle&mark-x=65&txt-size=42&txt-color=ff333333&txt-line=0.25&txt-line-color=FFFFFF&txt-font=Futura%20Condensed%20Medium&txt-pad=15&txt=GROW%20A%20GARDEN%20-%20GROWDEN%20IO"
   },
   {
     "title": "GTA I",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/gta/index.html",
     "image": ""
   },
   {
     "title": "GTA II",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/gta2/index.html",
     "image": ""
   },
   {
     "title": "GTA III",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/gta3.html",
     "image": ""
   },
   {
     "title": "GTA San Andreas",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/gtasan/index.html",
     "image": ""
   },
   {
     "title": "GTA: 3",
     "description": "",
-    "category": "Shooter",
+    "category": "Action",
     "url": "${truffled}/games/gta3/index.html",
     "image": "https://tse4.mm.bing.net/th/id/OIP.ojYlo0gz2XHCKxS9YCONZgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "GTA: Vice City",
     "description": "",
-    "category": "Shooter",
+    "category": "Action",
     "url": "${truffled}/games/vicecity/index.html",
     "image": "https://upload.wikimedia.org/wikipedia/en/c/ce/Vice-city-cover.jpg"
   },
   {
     "title": "GTA: 5",
     "description": "",
-    "category": "Shooter",
+    "category": "Action",
     "url": "https://raw.githack.com/lotsacookie/opium/main/?title=Grand%20Theft%20Auto%20V",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0e2E65a29YdqNqSgL6Y3DcyQWNhfMLcMtfqtbjXKSM5HF5BjwUloQ0K3B&s=10"
   },
   {
     "title": "Gun Mayhem",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/games/funmayhem/index.html",
     "image": ""
   },
   {
     "title": "Gun Mayhem 2",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/games/funmayhem2/index.html",
     "image": ""
   },
   {
     "title": "Gun Mayhem Redux",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/games/funmayhemredux/index.html",
     "image": ""
   },
@@ -2088,168 +2088,168 @@
   {
     "title": "Half Life",
     "description": "",
-    "category": "Fps",
+    "category": "FPS",
     "url": "${truffled}/games/hl-main/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnxSCpxbn9B6cd2nDNvYJBQaT2ZDeD8ndWmQ&s"
   },
   {
     "title": "Half life: Opposing Force",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/gamefile/hlof.html",
     "image": ""
   },
   {
     "title": "Happy Wheels",
     "description": "",
-    "category": "Flash",
+    "category": "Action",
     "url": "${truffled}/games/happywheels/index.html",
     "image": "https://play-lh.googleusercontent.com/SV8RsV5udSeeONjatT5SwleP6lzV6PjtNPs2VvyohJXWSG9fFLNOfslDEHbpDN337wQ"
   },
   {
     "title": "Helltaker, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/helltaker.html",
     "image": ""
   },
   {
     "title": "Henry Stickmin Breaking the Bank",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/breakingbank",
     "image": "https://tse4.mm.bing.net/th/id/OIP.vVpkzEEcmIKy0xnlxQx45gAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Henry Stickmin Complex",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/complex",
     "image": "https://tse2.mm.bing.net/th/id/OIP.rQg-HmWtz1iXGEz-60qU8wHaEJ?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Henry Stickmin Crossing the Pit",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/crossingthepit",
     "image": "https://static.wikia.nocookie.net/78eb076d-198c-477c-932f-1d225be55972/scale-to-width/755"
   },
   {
     "title": "Henry Stickmin Escaping the Airship",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/airship",
     "image": "https://tse4.mm.bing.net/th/id/OIP.Qj_1jePGwlv5e2PXNhXNrQHaHa?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Henry Stickmin Escaping the Prison",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/prison",
     "image": "https://play.gilect.com/images/icons/escapingtheprison.webp"
   },
   {
     "title": "Henry Stickmin Stealing the Diamond",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "https://cool-mud-8966.voucanfalcon.workers.dev/henrystickmin/stealingthediamondgame",
     "image": "https://tse3.mm.bing.net/th/id/OIP.G7tDtJPtpDHNPVFyt-7D9AHaJ4?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Hobo 1",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo1.html",
     "image": ""
   },
   {
     "title": "Hobo 2",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo2.html",
     "image": ""
   },
   {
     "title": "Hobo 3",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo3.html",
     "image": ""
   },
   {
     "title": "Hobo 4",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo4.html",
     "image": ""
   },
   {
     "title": "Hobo 5",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo5.html",
     "image": ""
   },
   {
     "title": "Hobo 6",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo6.html",
     "image": ""
   },
   {
     "title": "Hobo 7",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/hobo7.html",
     "image": ""
   },
   {
     "title": "Hollow Knight, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/hollowknight/index.html",
     "image": ""
   },
   {
     "title": "Honkai: Star Rail",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}https://nowgg.fun/apps/cognosphere-pte-ltd/1591/honkai-star-rail.html",
     "image": ""
   },
   {
     "title": "Hotline Miami",
     "description": "",
-    "category": "Shooting",
+    "category": "Action",
     "url": "",
     "image": "https://f4.bcbits.com/img/a0807578587_10.jpg"
   },
   {
     "title": "Hotline Miami, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/whores/index.html",
     "image": ""
   },
   {
     "title": "House Of Hazards",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/houseofhazards/index.html",
     "image": ""
   },
   {
     "title": "HUMAN EXPENDITURE PROGRAM, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/human.html",
     "image": ""
   },
   {
     "title": "Ice Baby Quest 2",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/icebaby2/index.html",
     "image": ""
   },
@@ -2284,14 +2284,14 @@
   {
     "title": "Iron Lung, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/ironlung/index.html",
     "image": ""
   },
   {
     "title": "Jacksmith",
     "description": "",
-    "category": "Idle",
+    "category": "Strategy",
     "url": "https://d1tmbzjih4bfq6.cloudfront.net/games/2024/flash/jacksmith/index.html",
     "image": "https://tse1.mm.bing.net/th/id/OIP.r5wJEuL4lkq263yWTykeewHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
@@ -2305,147 +2305,147 @@
   {
     "title": "Jeffys Basics, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/JeffysBasicsBog/index.html",
     "image": ""
   },
   {
     "title": "Jelly Car Worlds",
     "description": "",
-    "category": "Arcade",
+    "category": "Driving",
     "url": "${uv}https://www.coolmathgames.com/0-jellycar-worlds/play",
     "image": "https://tse1.mm.bing.net/th/id/OIP.Cvdkjc_tszeupxYDzlkt6wHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Jelly Drift",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/gamefile/jelly.html",
     "image": ""
   },
   {
     "title": "Jetpack Joyride",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/jetpackjoyride/index.html",
     "image": ""
   },
   {
     "title": "Jumbo Mario",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/JumboMario/index.html",
     "image": ""
   },
   {
     "title": "Karate Bros",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Action",
     "url": "${uv}https://karatebros.io/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoZIWSvfN6kZa5GEl5WuDsan1nk2ya-eAybg&s"
   },
   {
     "title": "Karlson, Webport",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/gamefile/Karlson.html",
     "image": ""
   },
   {
     "title": "Karlson2D, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/karlson2d/truffledkarlson2d/index.html",
     "image": ""
   },
   {
     "title": "Kart Bros",
     "description": "",
-    "category": "Driving",
+    "category": "Racing",
     "url": "${uv}https://kartbros.io/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxlDVudWvLc6cESKiznW4oiTDCjIVE-UqB9xlZ-1GxlD5FuJgiwVjb6Hj8tuB4pJc9WKI&usqp=CAU"
   },
   {
     "title": "Kick The Buddy, Webport",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/kickthebuddy/index.html",
     "image": ""
   },
   {
     "title": "Kindergarten",
     "description": "",
-    "category": "Puzzle",
+    "category": "Adventure",
     "url": "${truffled}/games/kindergarten/1/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAHarnNZTQfKXH5VFMhTyJjg1b5aMMso2o3w&s"
   },
   {
     "title": "Kindergarten 2, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/kindergarten/2/index.html",
     "image": ""
   },
   {
     "title": "Kindergarten 3, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/Kindergarten3/index.html",
     "image": ""
   },
   {
     "title": "Kinito Pet, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/kinitopet/index.html",
     "image": ""
   },
   {
     "title": "Kirby Soft And Wet, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/kirbysoftandwet.html",
     "image": ""
   },
   {
     "title": "Klifur",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/kilfur/index.html",
     "image": ""
   },
   {
     "title": "Krunker",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/krunker/index.html",
     "image": ""
   },
   {
     "title": "Lacey's Flash Games, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/lacy.html",
     "image": ""
   },
   {
     "title": "Learn to Fly",
     "description": "",
-    "category": "Strategy",
+    "category": "Arcade",
     "url": "${truffled}/games/learntofly/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs_lUVoJ2I2ufCyp78V48Fqy7eK5HA5qCMqg&s"
   },
   {
     "title": "Learn to Fly 2",
     "description": "",
-    "category": "Strategy",
+    "category": "Arcade",
     "url": "${truffled}/games/learntofly2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMyxZYx2b0DTNbtUr-ee-Ue9oaQ8ne_PLsBA&s"
   },
   {
     "title": "Learn to Fly 3",
     "description": "",
-    "category": "Strategy",
+    "category": "Arcade",
     "url": "${truffled}/games/ltf3/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKW8c1gOXNWJzyGR25Z6sHMBWvDwN-dJrIaejMF-hdTYc7diH-nSuAQVFWgPfmv-2GWCM&usqp=CAU"
   },
@@ -2459,49 +2459,49 @@
   {
     "title": "Lego Star Wars",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/legostarwars.html",
     "image": ""
   },
   {
     "title": "Level Devil",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/lvldevil/index.html",
     "image": ""
   },
   {
     "title": "Limbus Company",
     "description": "",
-    "category": "Cloud",
+    "category": "RPG",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Limbus%20Company",
     "image": "https://digistatement.com/wp-content/uploads/2023/03/limbus-company-how-to-change-language-1.jpg"
   },
   {
     "title": "Line Rider",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/linerider/index.html",
     "image": ""
   },
   {
     "title": "Little Alchemy",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/littlealchemy/index.html",
     "image": ""
   },
   {
     "title": "Little Alchemy 2",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/little2.html",
     "image": ""
   },
   {
     "title": "Little Big Planet",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Platformer",
     "url": "${truffled}/games/lbp/index.html",
     "image": "https://www.92.38.177.16.nip.io/assets/img/lbp.webp"
   },
@@ -2515,70 +2515,70 @@
   {
     "title": "Lobotomy Corporation, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/lobcorp/index.html",
     "image": ""
   },
   {
     "title": "LOL Beans",
     "description": "",
-    "category": "Platformer",
+    "category": "Multiplayer",
     "url": "${uv}https://lolbeans.io/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0JFPYUAHyciahICv-I8C8z4tG78j5mdEFUQ&s"
   },
   {
     "title": "Madden NFL 24 Mobile Football",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}https://nowgg.fun/apps/electronic-arts/1731/madden-nfl-24-mobile-football.html",
     "image": ""
   },
   {
     "title": "Madness Accelerant",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnessaccelerant.html",
     "image": ""
   },
   {
     "title": "Madness Ambulation",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/madnessambulation/madnessambulation.html",
     "image": ""
   },
   {
     "title": "Madness Combat Defense",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/madnesscombatdefense.html",
     "image": ""
   },
   {
     "title": "Madness Combat FPS Fueled by Hot Dogs",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/gamefile/madnesscfpsfbhd.html",
     "image": ""
   },
   {
     "title": "Madness Gemini",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnessgemini.html",
     "image": ""
   },
   {
     "title": "Madness Hydraulic",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnesshydraulic.html",
     "image": ""
   },
   {
     "title": "Madness Interactive",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnessinteractive.html",
     "image": ""
   },
@@ -2592,28 +2592,28 @@
   {
     "title": "Madness Off Color",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnessoffcolor.html",
     "image": ""
   },
   {
     "title": "Madness Premediation",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnesspremediation.html",
     "image": ""
   },
   {
     "title": "Madness Project Nexus",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/madnesscombatnexus.html",
     "image": ""
   },
   {
     "title": "Madness Retaliation",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/madnessretaliation.html",
     "image": ""
   },
@@ -2627,77 +2627,77 @@
   {
     "title": "Mahjong",
     "description": "",
-    "category": "Strategy",
+    "category": "Puzzle",
     "url": "${uv}https://www.free-play-mahjong.com/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcStvNP3ouRTY7qokyBkK4dDkVlxQnFlChw21w&s"
   },
   {
     "title": "Mario Kart 64",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/mk64/index.html",
     "image": ""
   },
   {
     "title": "Mario Kart 7",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/mk7/index.html",
     "image": ""
   },
   {
     "title": "Mario Kart DS",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/mkds/index.html",
     "image": ""
   },
   {
     "title": "Mario Party 1",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/marioparty.html",
     "image": ""
   },
   {
     "title": "Mario Party 2",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/marioparty2.html",
     "image": ""
   },
   {
     "title": "Mario Party 3",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/marioparty3.html",
     "image": ""
   },
   {
     "title": "Megaman",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/megaman.html",
     "image": ""
   },
   {
     "title": "Melon Playground",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${static}/games/melon-playground/index.html",
     "image": ""
   },
   {
     "title": "Merge Rot",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/mergerot/index.html",
     "image": ""
   },
   {
     "title": "Milkman karlson, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/milk/index.html",
     "image": ""
   },
@@ -2711,84 +2711,84 @@
   {
     "title": "Minecraft 1.12.2",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/eglar/1dot12dot2/index.html",
     "image": ""
   },
   {
     "title": "Minecraft 1.8.8",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/eglar/EaglercraftX_1dot8_Web/index.html",
     "image": ""
   },
   {
     "title": "Minecraft Dungeons",
     "description": "",
-    "category": "Cloud",
+    "category": "Action",
     "url": "https://raw.githack.com/lotsacookie/opium/main/?title=Minecraft:Dungeons",
     "image": "https://tse3.mm.bing.net/th/id/OIP.pjKGTKLNRoCuf2EG6UjCHQHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Minecraft Education",
     "description": "",
-    "category": "Cloud",
+    "category": "Simulation",
     "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Minecraft%20Education",
     "image": "https://tse4.mm.bing.net/th/id/OIP.VUEN2oO1Fh4JF916IkTNXAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Minecraft Legacy Console Edition, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/lce/index.html",
     "image": ""
   },
   {
     "title": "Minecraft Pocket Edition, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/mcpe/index.html",
     "image": ""
   },
   {
     "title": "Minecraft Wurst",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/eglar/clwurst.html",
     "image": ""
   },
   {
     "title": "Minesweeper Mania",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/minesweepermania.html",
     "image": ""
   },
   {
     "title": "Minesweeper Plus, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/mineplus.html",
     "image": ""
   },
   {
     "title": "Miside, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/miside.html",
     "image": ""
   },
   {
     "title": "Monkey Mart",
     "description": "",
-    "category": "Idle",
+    "category": "Simulation",
     "url": "${frogiee}/stuff/selfhosted/monkey-mart",
     "image": "https://play-lh.googleusercontent.com/rWReIdyvDaYJPeOxn7hbC0b-96ixGpQKM_EndiQa3SUME8TtI_rNUcI4qsw5teK9mqk=w240-h480-rw"
   },
   {
     "title": "Monster Tracks",
     "description": "",
-    "category": "",
+    "category": "Driving",
     "url": "${truffled}/games/monster-tracks/index.html",
     "image": ""
   },
@@ -2802,105 +2802,105 @@
   {
     "title": "Mr Mine",
     "description": "",
-    "category": "Arcade",
+    "category": "Idle",
     "url": "${uv}https://www.coolmathgames.com/0-mr-mine/play",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR95u4clv7-oekaMnIaKvhtZqeyab4YShwRkg&s"
   },
   {
     "title": "My Singing Monsters",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${static}https://nowgg.fun/apps/big-blue/8811/singing-monsters.html",
     "image": ""
   },
   {
     "title": "My teardrop, daniel",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/gamefile/mytear.html",
     "image": ""
   },
   {
     "title": "N-Gon",
     "description": "",
-    "category": "Platformer",
+    "category": "Action",
     "url": "${truffled}/games/n-gon/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.OZiB83fgWXpCjKpIl3W6gQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Nazi Zombies Portable",
     "description": "",
-    "category": "Fps",
+    "category": "FPS",
     "url": "${truffled}/gamefile/nzp.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf51-6uDI2iCm8olmfHvvxYPSqDWXgHv72Zg&s"
   },
   {
     "title": "Needy Streamer Overload, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/nso/index.html",
     "image": ""
   },
   {
     "title": "Netquel",
     "description": "",
-    "category": "Shooting",
+    "category": "Puzzle",
     "url": "${uv}https://netquel.com/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDSuTsXMEEGLJ9NL2zidAz2zaBc3CgmerzbQ&s"
   },
   {
     "title": "New Super Mario Bros",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/nsmb/index.html",
     "image": ""
   },
   {
     "title": "Node Buster, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/nodebuster/index.html",
     "image": ""
   },
   {
     "title": "Nubbys Number Factory, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/nubby.html",
     "image": ""
   },
   {
     "title": "Om Nom Run",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/omnomrun.html",
     "image": ""
   },
   {
     "title": "OMORI",
     "description": "",
-    "category": "Horror",
+    "category": "RPG",
     "url": "${truffled}/gamefile/OMORI.html",
     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSoWYMETCPjUHGlMVjTYstDHDHRPvU8gYDJyerSl5-83dhsLW6gnCPWXnL92n9LVGp1bDp32H3hn2eV4OxHFvcxuoCN_DDWvkloJoz2OQ"
   },
   {
     "title": "Oneshot World Machine Edition, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/worldmachine/index.html",
     "image": ""
   },
   {
     "title": "Oneshot, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/oneshot.html",
     "image": ""
   },
   {
     "title": "OpenFront",
     "description": "",
-    "category": "Shooter",
+    "category": "Strategy",
     "url": "${uv}https://openfront.io/",
     "image": "data:image/jpeg;base64,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"
   },
@@ -2914,14 +2914,14 @@
   {
     "title": "Orange Roulette",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/orange.html",
     "image": ""
   },
   {
     "title": "Oshi Oshi Punch",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/onshi.html",
     "image": ""
   },
@@ -2935,7 +2935,7 @@
   {
     "title": "Overburden, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/overburden.html",
     "image": ""
   },
@@ -2970,21 +2970,21 @@
   {
     "title": "Pacman World",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/pacmanw.html",
     "image": ""
   },
   {
     "title": "Pacman World 2",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/pacmanw2.html",
     "image": ""
   },
   {
     "title": "Paint Gal Adventures",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/paintbog/Paint Gal Adventures.html",
     "image": ""
   },
@@ -3033,77 +3033,77 @@
   {
     "title": "Papas Bakeria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papasbakeria/index.html",
     "image": ""
   },
   {
     "title": "Papas Burgeria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papasburgeria/index.html",
     "image": ""
   },
   {
     "title": "Papas Cheeseria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papascheeseria/index.html",
     "image": ""
   },
   {
     "title": "Papas Donuteria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papasdonuteria/index.html",
     "image": ""
   },
   {
     "title": "Papas Freezeria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papasfreezeria/index.html",
     "image": ""
   },
   {
     "title": "Papas Pizzaeria",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/papaspizza/index.html",
     "image": ""
   },
   {
     "title": "Paper Mario",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/papermario.html",
     "image": ""
   },
   {
     "title": "Paper.io 2",
     "description": "",
-    "category": "Arcade",
+    "category": "Multiplayer",
     "url": "${truffled}/games/paperio2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbOYDL-XogArpPn5yhnKk4E0pRDmWTIRXnxA&s"
   },
   {
     "title": "Papers, Please",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/papers.html",
     "image": ""
   },
   {
     "title": "Parappa The Rapper",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/paps/index.html",
     "image": ""
   },
   {
     "title": "Parappa The Rapper 2",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/parappa2/index.html",
     "image": ""
   },
@@ -3131,168 +3131,168 @@
   {
     "title": "Peaks of Yore, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/peaksofyore.html",
     "image": ""
   },
   {
     "title": "Peggle",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/Peggle.html",
     "image": ""
   },
   {
     "title": "People Playground, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/ppg/index.html",
     "image": "https://thvnext.bing.com/th/id/OIP.dSrF6xgpKVDxfuHX3H4K2AAAAA?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Pikuniku, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/pikubog/index.html",
     "image": ""
   },
   {
     "title": "Pixel Gun 3D",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/pixl/index.html",
     "image": ""
   },
   {
     "title": "Pizza Tower, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/NoiseUpdate/index.html",
     "image": ""
   },
   {
     "title": "Pizza Tower: Scoutdigo",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/pts.html",
     "image": ""
   },
   {
     "title": "Pizzatron 3000",
     "description": "",
-    "category": "",
+    "category": "Cooking",
     "url": "${truffled}/games/pizza/index.html",
     "image": ""
   },
   {
     "title": "Plague Inc.",
     "description": "",
-    "category": "Simulation",
+    "category": "Strategy",
     "url": "${uv}https://kstuff.nekoweb.org/pages/host/ngg/plague-inc",
     "image": "https://play-lh.googleusercontent.com/AhhhI8JGijtKuO8xOP_qUzOvIk7R7xBIKALKW_P7DV7jzWtvo2LrfC0081XMc85NGeBK"
   },
   {
     "title": "Plants Vs Zombies",
     "description": "",
-    "category": "Adventure",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/pvs.html",
     "image": "https://play-lh.googleusercontent.com/hO7716hh7NCcFauJedDclX-R3Zh9JmbSs8AUU6TP2edGVILlZM7gmyt_8WPCZELiPQA"
   },
   {
     "title": "Plants VS Zombies Garden Endless",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/games/pvzge/index.html",
     "image": ""
   },
   {
     "title": "Plauge Inc, Webport",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/games/PlagueInc/index.html",
     "image": ""
   },
   {
     "title": "Plinko",
     "description": "",
-    "category": "All",
+    "category": "Arcade",
     "url": "${static}https://plinko-web-game.netlify.app/",
     "image": "https://thvnext.bing.com/th/id/OIP.b1v3SZP7-J3RPy0tsiBtWQHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Pokemon Academy Life Forever",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/pokemonacademy.html",
     "image": ""
   },
   {
     "title": "Pokemon Blue",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/blue.html",
     "image": ""
   },
   {
     "title": "Pokemon Crystal",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/blob.html",
     "image": ""
   },
   {
     "title": "Pokemon Emerald",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/em.html",
     "image": ""
   },
   {
     "title": "Pokemon Gold",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/red.html",
     "image": ""
   },
   {
     "title": "Pokemon Quest",
     "description": "",
-    "category": "Adventure",
+    "category": "RPG",
     "url": "${uv}https://pokemonquest.pokemon.com/en-us/",
     "image": "https://sm.ign.com/t/ign_me/cover/p/pokemon-qu/pokemon-quest_6t5e.600.jpg"
   },
   {
     "title": "Pokemon Showdown",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Strategy",
     "url": "${static}https://play.pokemonshowdown.com/",
     "image": "https://b.thumbs.redditmedia.com/WWeskNU1yet6j969eaKbqRBn_diClYEBJCWoxrgVf7A.png"
   },
   {
     "title": "Pokemon Stadium",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/pokestad.html",
     "image": ""
   },
   {
     "title": "Pokemon Stadium 2",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/pokestad2.html",
     "image": ""
   },
   {
     "title": "PokeRogue",
     "description": "",
-    "category": "Action",
+    "category": "RPG",
     "url": "${static}https://pokerogue.online/",
     "image": "https://tse3.mm.bing.net/th/id/OIP.380E_8KJ-AjupKi7LV1EkwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Polytrack",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/polytrack/index.html",
     "image": ""
   },
@@ -3313,63 +3313,63 @@
   {
     "title": "Portal",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/portal/index.html",
     "image": ""
   },
   {
     "title": "Postal, Webport",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/postal.html",
     "image": ""
   },
   {
     "title": "Potion Craft Alchemy Simulator, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/pcraft/index.html",
     "image": ""
   },
   {
     "title": "Pretend its not there, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/pretenditsnotthere/index.html",
     "image": ""
   },
   {
     "title": "Prodigy",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/prodigy/select/index.html",
     "image": ""
   },
   {
     "title": "PUBG Mobile: Aftermath",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${static}https://nowgg.fun/apps/proxima-beta/2609/pubg-mobile-resistance.html",
     "image": ""
   },
   {
     "title": "Quake",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/quake/index.html",
     "image": ""
   },
   {
     "title": "Quake II",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/quakeii/index.html",
     "image": ""
   },
   {
     "title": "Quake III",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/quakeiii/Quake3.htm",
     "image": ""
   },
@@ -3383,14 +3383,14 @@
   {
     "title": "Rabbids Alive And Kicking",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/rabbidsa/index.html",
     "image": ""
   },
   {
     "title": "Rabbids Travel In Time",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/rabbidst/index.html",
     "image": ""
   },
@@ -3404,21 +3404,21 @@
   {
     "title": "Raft",
     "description": "",
-    "category": "Simulation",
+    "category": "Adventure",
     "url": "${truffled}/games/raft/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgSpomiXMuTwhZBnWacBEbyoRKyBKY7CDBS5YMIFF4zROQplJNFF7C5oKjz-Unxse0ueg&usqp=CAU"
   },
   {
     "title": "Raft Wars",
     "description": "",
-    "category": "Shooting",
+    "category": "Strategy",
     "url": "${truffled}/games/raft-wars/index.html",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=314,height=314,fit=cover,f=auto/d2a3bbd1bb8aea542835f4f8a353d388/raft-wars.png"
   },
   {
     "title": "Raft Wars 2",
     "description": "",
-    "category": "Shooting",
+    "category": "Strategy",
     "url": "${truffled}/games/raft-wars-2/index.html",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/quality=78,width=1200,height=1200,fit=cover,f=png/8ce3d09339bcb18c63bf9f1780795944.png"
   },
@@ -3439,56 +3439,56 @@
   {
     "title": "Raldi's Crack House",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/raldi/index.html",
     "image": ""
   },
   {
     "title": "Rayman",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/rayman.html",
     "image": ""
   },
   {
     "title": "RE:RUN, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/rerun/index.html",
     "image": ""
   },
   {
     "title": "Red Dead Redemption 2",
     "description": "",
-    "category": "Cloud",
+    "category": "Action",
     "url": "https://raw.githack.com/lotsacookie/opium/main/?title=Read%20Dead",
     "image": "https://avatarfiles.alphacoders.com/140/thumb-1920-140579.png"
   },
   {
     "title": "Resident Evil 1",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/res1.html",
     "image": ""
   },
   {
     "title": "Resident Evil 2",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/res2.html",
     "image": ""
   },
   {
     "title": "Retro Bowl",
     "description": "",
-    "category": "Action",
+    "category": "Sports",
     "url": "${truffled}/games/retro-bowl/index.html",
     "image": "https://tse2.mm.bing.net/th/id/OIP.73dFbFUHUVU9rpmvuoW9LAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Retro Bowl College",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/rbcollege/index.html",
     "image": ""
   },
@@ -3502,14 +3502,14 @@
   {
     "title": "Rhythm Heaven",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/gamefile/rhythm.html",
     "image": ""
   },
   {
     "title": "Rhythm Hell",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/rhythm-hell/index.html",
     "image": ""
   },
@@ -3565,28 +3565,28 @@
   {
     "title": "Roblox",
     "description": "",
-    "category": "Cloud",
+    "category": "Multiplayer",
     "url": "${static}https://nowgg.fun/apps/a/19900/b.html",
     "image": "https://cdn2.lnk.bi/profilepics/-1490686_20230215851.png"
   },
   {
     "title": "Rocket League Sideswipe",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${static}https://nowgg.fun/apps/psyonix-studios/4656/rocket-league.html",
     "image": ""
   },
   {
     "title": "Rooftop Snipers",
     "description": "",
-    "category": "Shooting",
+    "category": "Shooter",
     "url": "${truffled}/games/rooftop-snipers/index.html",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/q=78,scq=50,width=314,height=314,fit=cover,f=auto/c127771edb0e821e4109b7058ae3f094/rooftop-snipers.jpeg"
   },
   {
     "title": "Rooftop Snipers 2",
     "description": "",
-    "category": "Shooting",
+    "category": "Shooter",
     "url": "${truffled}/games/rooftop-snipers-2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpFZZ6wFgSxJnV1L6oyBDEzVEkFXsWt-MLqA&s"
   },
@@ -3614,91 +3614,91 @@
   {
     "title": "Running Fred, Webport",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/fred/index.html",
     "image": ""
   },
   {
     "title": "Saihate Station, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/saihatestation.html",
     "image": ""
   },
   {
     "title": "Sandboxels",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/Sandboxels.html",
     "image": ""
   },
   {
     "title": "Sanic Ball, Webport",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/ball/index.html",
     "image": ""
   },
   {
     "title": "Sausage Flip",
     "description": "",
-    "category": "Action",
+    "category": "Arcade",
     "url": "",
     "image": "https://play-lh.googleusercontent.com/BD9UD54eBjq1snNYoug7sioLfyBkp_Sq3p5oX8jOoa_lxI8UoGDyxmN4xaMKkgD5ErI"
   },
   {
     "title": "Scary Path",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/scary-path/index.html",
     "image": ""
   },
   {
     "title": "Scary Teacher 3D",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/scary.html",
     "image": ""
   },
   {
     "title": "Schoolboy Runaway, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/runaway.html",
     "image": ""
   },
   {
     "title": "Shift At Midnight, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/shift.html",
     "image": ""
   },
   {
     "title": "Ships 3D",
     "description": "",
-    "category": "Adventure",
+    "category": "Multiplayer",
     "url": "${uv}https://yp3d.com/ships3d/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE1TI7mR1br7DgCFlxpztG43SIZ_MnPn6-vQ&s"
   },
   {
     "title": "Silksong, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/silk/index.html",
     "image": ""
   },
   {
     "title": "Skibidi Shooter",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/games/skibidi-shooter/index.html",
     "image": ""
   },
   {
     "title": "Skiing Fred",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/skiing/index.html",
     "image": ""
   },
@@ -3712,42 +3712,42 @@
   {
     "title": "Slendytubbies I, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/slendy1.html",
     "image": ""
   },
   {
     "title": "Slendytubbies II 2D, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/slendy2d/index.html",
     "image": ""
   },
   {
     "title": "Slendytubbies II, Webport",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/games/slendy/index.html",
     "image": ""
   },
   {
     "title": "Slient Hill",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/slienthill.html",
     "image": ""
   },
   {
     "title": "Slime Ranchers, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/gamefile/slimeranchers.html",
     "image": ""
   },
   {
     "title": "Slither.io, Webport",
     "description": "",
-    "category": "",
+    "category": "Multiplayer",
     "url": "${truffled}/gamefile/sfge.html",
     "image": ""
   },
@@ -3768,7 +3768,7 @@
   {
     "title": "Slope 3",
     "description": "",
-    "category": "False",
+    "category": "Arcade",
     "url": "${uv}https://slopethree.com/",
     "image": "https://tse1.mm.bing.net/th/id/OIP._RQtj6IWQS-G6wR_Xe4vzAAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
@@ -3782,7 +3782,7 @@
   {
     "title": "SM64, Super Mario 64",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/sm64/index.html",
     "image": ""
   },
@@ -3796,42 +3796,42 @@
   {
     "title": "Snow Battle",
     "description": "",
-    "category": "",
+    "category": "Multiplayer",
     "url": "${truffled}/gamefile/snow.html",
     "image": ""
   },
   {
     "title": "Snow Rider 3D",
     "description": "",
-    "category": "Simulation",
+    "category": "Driving",
     "url": "${truffled}/games/snowrider3D-main/index.html",
     "image": "https://pixiapi.com/wp-content/uploads/2024/08/snow-rider-3d-game-icon.jpg"
   },
   {
     "title": "Soccer Bros",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/soccerbros/index.html",
     "image": ""
   },
   {
     "title": "Soccer Random",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Sports",
     "url": "${truffled}/games/soccer-random/index.html",
     "image": "https://play-lh.googleusercontent.com/XZfa8mGq1h2tdcH6cygo74c64nsxBoswzz1OQq5kUFW3uUZUf1rlqTg9UQgoEZ4qjQ=w526-h296-rw"
   },
   {
     "title": "Solar Smash",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/solar.html",
     "image": ""
   },
   {
     "title": "Solitaire",
     "description": "",
-    "category": "",
+    "category": "Cards",
     "url": "${truffled}/games/solitaire/index.html",
     "image": ""
   },
@@ -3859,14 +3859,14 @@
   {
     "title": "Sonic 3D Blast",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/sonic3dblast.html",
     "image": ""
   },
   {
     "title": "Sonic 4",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/sonic4/index.html",
     "image": ""
   },
@@ -3880,21 +3880,21 @@
   {
     "title": "Sonic EXE",
     "description": "",
-    "category": "",
+    "category": "Horror",
     "url": "${truffled}/gamefile/sonicexe.html",
     "image": ""
   },
   {
     "title": "Sonic Jam",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/sonicjam.html",
     "image": ""
   },
   {
     "title": "Sonic Mania, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/sonic.html",
     "image": ""
   },
@@ -3908,7 +3908,7 @@
   {
     "title": "Sonic R",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/gamefile/sonicr.html",
     "image": ""
   },
@@ -3922,133 +3922,133 @@
   {
     "title": "Sonic Robo Blast 2 KART",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/kart/index.html",
     "image": ""
   },
   {
     "title": "Sonic World Next",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/swn/index.html",
     "image": ""
   },
   {
     "title": "Sort The Court",
     "description": "",
-    "category": "Puzzle",
+    "category": "Simulation",
     "url": "${uv}https://vocalnutria9174.github.io/sort-the-court/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScw_aOzrTL5nvkw15Rax6nPjHYUzsg3pEugA&s"
   },
   {
     "title": "Space Waves",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/spacewaves.html",
     "image": ""
   },
   {
     "title": "Spaceflight Simulator, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/spaceflight.html",
     "image": ""
   },
   {
     "title": "Spank the monkey",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/monkey.html",
     "image": ""
   },
   {
     "title": "Speed Stars",
     "description": "",
-    "category": "Racing",
+    "category": "Sports",
     "url": "${truffled}/games/speed-stars/index.html",
     "image": "https://play-lh.googleusercontent.com/AIdar8HSSXg0NQ6BUR1mVt-uOudupELbjPkU_cgwo_7fP0tKT0R49dfFltYj-43u6A"
   },
   {
     "title": "Spelunky Classic HD",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/spelunky.html",
     "image": ""
   },
   {
     "title": "DRAGON BALL Sparking! Zero",
     "description": "",
-    "category": "Cloud",
+    "category": "Action",
     "url": "${scram}https://cherrion.top/l?g=cloud%3Abs0078&name=DRAGON%20BALL%3A%20Sparking!%20ZERO&img=%2Fapi%2Fcloud%2Ficon%3Fu%3Dhttps%253A%252F%252Fdownload-oss.raccoongame.com%252Fuploads%252Fimage%252F20260729%252F20260729175807346.jpg",
     "image": "https://static.wikia.nocookie.net/dragonball/images/6/64/Sparking%21_Zero_Cover_Art.jpeg"
   },
   {
     "title": "Starbound, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/Starbound/index.html",
     "image": ""
   },
   {
     "title": "Stardew Valley, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/stardew/index.html",
     "image": ""
   },
   {
     "title": "Steal a Brainrot",
     "description": "",
-    "category": "RPG",
+    "category": "Action",
     "url": "https://script.google.com/macros/s/AKfycbxJalyip_ETy_kolDAlSVxdcnLtn16P6gIoJ5kDwt1abHFX32SUJEOLCWU31veTffv2/exec",
     "image": "https://tse4.mm.bing.net/th/id/OIP.xqZ2W5395if-XbmwxC12uAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "steve's lava chicken",
     "description": "",
-    "category": "All",
+    "category": "Arcade",
     "url": "https://html-classic.itch.zone/html/13548376/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT7IA-DObhnFt1T5LQPkPU2CvhRK2CjHFu-Pg&s"
   },
   {
     "title": "Stick War: Legacy",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/gamefile/stickwar.html",
     "image": ""
   },
   {
     "title": "Stick With It, Webport",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/stick/index.html",
     "image": ""
   },
   {
     "title": "Stickman Golf",
     "description": "",
-    "category": "Puzzle",
+    "category": "Sports",
     "url": "${uv}https://games.thel1ama.com/projects/stickman-golf/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKctbsTZRhjh16iuFjKrn7rMoS-Dzcg7qoOr8nnGz9Iijbxb_aRTf5z8rg42hhj4YvuRY&usqp=CAU"
   },
   {
     "title": "Stickman Hook",
     "description": "",
-    "category": "Racing",
+    "category": "Arcade",
     "url": "${truffled}/games/stickman-hook/index.html",
     "image": "https://img.poki-cdn.com/cdn-cgi/image/quality=78,width=314,height=314,fit=cover,f=auto/99e090d154caf30f3625df7e456d5984.png"
   },
   {
     "title": "Stumble Guys",
     "description": "",
-    "category": "",
+    "category": "Multiplayer",
     "url": "${static}https://nowgg.fun/apps/a/10011/b.html",
     "image": ""
   },
   {
     "title": "Subway Surfers",
     "description": "",
-    "category": "Platformer",
+    "category": "Arcade",
     "url": "${truffled}/games/subway-surfers/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ40VveVPpSAfd4wh6lDZX82E8RPHo0u6i-dA&s"
   },
@@ -4062,35 +4062,35 @@
   {
     "title": "Super Hot",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${truffled}/games/superhot/index.html",
     "image": ""
   },
   {
     "title": "Super Mario 64",
     "description": "",
-    "category": "Adventure",
+    "category": "Platformer",
     "url": "https://augustberchelmann.com/mario/",
     "image": "https://static.wikia.nocookie.net/big-chungus-hole/images/c/ca/Mario_64_box_art.jpg"
   },
   {
     "title": "Super Mario 64 Coop DX",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/sm64coop/sm64coopdx.html",
     "image": ""
   },
   {
     "title": "Super Mario Bros",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/smb.html",
     "image": ""
   },
   {
     "title": "Super Mario Galaxy DS",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/smgds.html",
     "image": ""
   },
@@ -4104,98 +4104,98 @@
   {
     "title": "Super Monkey Ball 1 & 2",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/monk.html",
     "image": ""
   },
   {
     "title": "Super Monkey Ball JR",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/supermonkey.html",
     "image": ""
   },
   {
     "title": "Super Oliver World",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/superoliverworld.html",
     "image": ""
   },
   {
     "title": "Super Smash Bros",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/ssm.html",
     "image": ""
   },
   {
     "title": "Super Smash Flash",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/ssf.html",
     "image": ""
   },
   {
     "title": "Super Smash Flash 2",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/ssf2.html",
     "image": ""
   },
   {
     "title": "Super Tux Kart",
     "description": "",
-    "category": "",
+    "category": "Racing",
     "url": "${truffled}/games/supertuxkart/SuperTuxKart.html",
     "image": ""
   },
   {
     "title": "Survivor.io, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/survivor.html",
     "image": ""
   },
   {
     "title": "Swan's Song",
     "description": "",
-    "category": "Horror",
+    "category": "Adventure",
     "url": "https://html-classic.itch.zone/html/13582747/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCvhTBk0TBaKxETRnz-9Xw3dqIZDQsOoWY4g&s"
   },
   {
     "title": "TABS",
     "description": "",
-    "category": "Adventure",
+    "category": "Strategy",
     "url": "https://file.garden/acQjJWD7IC-_L9-w/TABS/index.html",
     "image": "https://i.ytimg.com/vi/Bhlx_g_g9eU/maxresdefault.jpg"
   },
   {
     "title": "Tactical Weapon Pack",
     "description": "",
-    "category": "Shooting",
+    "category": "Shooter",
     "url": "${uv}https://games.thel1ama.com/projects/tactical-weapon-pack-2/index.html",
     "image": "https://i1.sndcdn.com/artworks-gPwKoygveZBgNPYL-alnJUQ-t500x500.jpg"
   },
   {
     "title": "Taiko No Tatsujini",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/psp/tja/index.html",
     "image": ""
   },
   {
     "title": "Tanks 3D",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Action",
     "url": "${uv}https://yp3d.com/tanks3d/",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSu9KxtXvYNNTuMh12dPtNeor1RBe0mYXda1w&s"
   },
   {
     "title": "Tanuki Sunset",
     "description": "",
-    "category": "Racing",
+    "category": "Sports",
     "url": "${truffled}/games/tanukisunset/index.html",
     "image": "https://19230981230981309813098123098123.104.36.84.31.nip.io/images/games/tanukisunset-min.png"
   },
@@ -4209,7 +4209,7 @@
   {
     "title": "Tax Heaven 3000, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/th3000/index.html",
     "image": ""
   },
@@ -4223,21 +4223,21 @@
   {
     "title": "Ten Basket",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/games/ten-basket/index.html",
     "image": ""
   },
   {
     "title": "Terraria",
     "description": "",
-    "category": "Action",
+    "category": "Adventure",
     "url": "${truffled}/gamefile/terraria48.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrVNzn3aErkS59Ym_qhqbZYFd8laElFfxviQ&s"
   },
   {
     "title": "Terraria, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/games/terraria/terraria-wrapper.html",
     "image": ""
   },
@@ -4251,7 +4251,7 @@
   {
     "title": "Tetrisweeper",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/tetrisweeper/",
     "image": ""
   },
@@ -4265,49 +4265,49 @@
   {
     "title": "The Binding Of Isaac Wrath Of The Lamb",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/tboiw.html",
     "image": ""
   },
   {
     "title": "The Binding Of Isaac Wrath Of The Lamb: Eternal",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/boilambeternal.html",
     "image": ""
   },
   {
     "title": "The Binding Of Issac",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/binding-of-isaac/index.html",
     "image": ""
   },
   {
     "title": "The Binding Of Issac: Rebirth, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/psp/tboir/index.html",
     "image": ""
   },
   {
     "title": "The Impossible Quiz",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/theimpossiblequiz/index.html",
     "image": ""
   },
   {
     "title": "The Impossible Quiz 2",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/iq2/index.html",
     "image": ""
   },
   {
     "title": "The Legend of Zelda Ocarina of Time",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/gamefile/tloz.html",
     "image": ""
   },
@@ -4328,7 +4328,7 @@
   {
     "title": "The Sims Mobile",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${static}https://nowgg.fun/apps/electronic-arts/2155/the-sims-mobile.html",
     "image": ""
   },
@@ -4349,112 +4349,112 @@
   {
     "title": "Time Shooter 1",
     "description": "",
-    "category": "Shooting",
+    "category": "FPS",
     "url": "${truffled}/gamefile/time1.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSd_ao9IYz_ZCkqsqS5ZkguefeNtXAwDciwQA&s"
   },
   {
     "title": "Time Shooter 2",
     "description": "",
-    "category": "Shooting",
+    "category": "FPS",
     "url": "${truffled}/games/timeshooter2/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz3Kn6LEyj4PU5ZICXnAjoxmtxl3-iJE8ZrQ&s"
   },
   {
     "title": "Time Shooter 3",
     "description": "",
-    "category": "Shooting",
+    "category": "FPS",
     "url": "${truffled}/games/timeshoot3/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHd_igTSoTD7UfrkSYRiERYZU6dtBwVpP7rQ&s"
   },
   {
     "title": "Tiny Fishing",
     "description": "",
-    "category": "Idle",
+    "category": "Sports",
     "url": "${truffled}/games/tiny-fishing/index.html",
     "image": "https://tse3.mm.bing.net/th/id/OIP.MVj3QlDvvEk7IOIAeGRvKQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "To The Core, Webport",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/games/tothecore/index.html",
     "image": ""
   },
   {
     "title": "Tomb of The Mask",
     "description": "",
-    "category": "Puzzle",
+    "category": "Arcade",
     "url": "${truffled}/games/tombofthemask/index.html",
     "image": "https://play-lh.googleusercontent.com/ATGr-U4JBK2VjFzKGK9eMMkrDxJaazadOUoz_7Yl0U5NrWSFcFUzEtNurWXYzVWc8uOO=w240-h480-rw"
   },
   {
     "title": "Tomodachi Collection",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/tomo.html",
     "image": ""
   },
   {
     "title": "Toss The Turtle",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/games/tosstheturtle/index.html",
     "image": ""
   },
   {
     "title": "Touhou 1 Touhou-Reiiden",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/touhou.html",
     "image": ""
   },
   {
     "title": "Touhou 2 Touhou-Fuumaroku",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/touhou2.html",
     "image": ""
   },
   {
     "title": "Touhou 3 Touhou-Yumejikuu",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/touhou3.html",
     "image": ""
   },
   {
     "title": "Touhou 4 Touhou-Gensokyou",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/touhou4.html",
     "image": ""
   },
   {
     "title": "Touhou 5 Touhou-Kaikidan",
     "description": "",
-    "category": "",
+    "category": "Shooter",
     "url": "${truffled}/gamefile/touhou5.html",
     "image": ""
   },
   {
     "title": "Touhou Mother, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/touhoumother/index.html",
     "image": ""
   },
   {
     "title": "Trombone Champ, Webport",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/games/tchamp/index.html",
     "image": ""
   },
   {
     "title": "Tube Jumpers",
     "description": "",
-    "category": "",
+    "category": "Action",
     "url": "${truffled}/gamefile/tube.html",
     "image": ""
   },
@@ -4489,14 +4489,14 @@
   {
     "title": "Ultrapool, Webport",
     "description": "",
-    "category": "",
+    "category": "Sports",
     "url": "${truffled}/gamefile/ultrapool.html",
     "image": ""
   },
   {
     "title": "Um Jammer Lammy",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/gamefile/jemmer.html",
     "image": ""
   },
@@ -4510,28 +4510,28 @@
   {
     "title": "Undertale 10th Anniversary, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/10th/index.html",
     "image": ""
   },
   {
     "title": "Undertale Last Breath",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/udlb.html",
     "image": ""
   },
   {
     "title": "Undertale Yellow, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/games/uty/play.html",
     "image": ""
   },
   {
     "title": "Undertale, Webport",
     "description": "",
-    "category": "",
+    "category": "RPG",
     "url": "${truffled}/gamefile/undertale.html",
     "image": ""
   },
@@ -4545,7 +4545,7 @@
   {
     "title": "Untitled Goose Game, Webport",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/UntitledGooseGameBog/index.html",
     "image": ""
   },
@@ -4559,7 +4559,7 @@
   {
     "title": "Venge.io",
     "description": "",
-    "category": "",
+    "category": "FPS",
     "url": "${static}https://iogamesio.org/vengeio.embed",
     "image": ""
   },
@@ -4622,84 +4622,84 @@
   {
     "title": "Vib-Ribbon, Webport",
     "description": "",
-    "category": "",
+    "category": "Rhythm",
     "url": "${truffled}/gamefile/vib.html",
     "image": ""
   },
   {
     "title": "Volley Random",
     "description": "",
-    "category": "Multiplayer",
+    "category": "Sports",
     "url": "${truffled}/games/volley-random/index.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-pgLkder9WBLY5dW82cGOaBFXi4jt3t27AA&s"
   },
   {
     "title": "Warioware D.I.Y",
     "description": "",
-    "category": "",
+    "category": "Arcade",
     "url": "${truffled}/gamefile/wariowarediy.html",
     "image": ""
   },
   {
     "title": "We Become What We Behold",
     "description": "",
-    "category": "Puzzle",
+    "category": "Simulation",
     "url": "${truffled}/gamefile/wbwwb.html",
     "image": "https://cdn-1.webcatalog.io/catalog/poki-we-become-what-we-behold/poki-we-become-what-we-behold-icon-filled-256.png"
   },
   {
     "title": "Webfishing, Webport",
     "description": "",
-    "category": "",
+    "category": "Simulation",
     "url": "${truffled}/games/webfishing/",
     "image": ""
   },
   {
     "title": "Who's Your Daddy, Webport",
     "description": "",
-    "category": "",
+    "category": "Multiplayer",
     "url": "${truffled}/games/whoseyourdaddy/index.html",
     "image": ""
   },
   {
     "title": "Witch's Heart, Webport",
     "description": "",
-    "category": "",
+    "category": "Adventure",
     "url": "${truffled}/gamefile/witches.html",
     "image": ""
   },
   {
     "title": "Woody's Incredible Journey To The Escape From Eternal Terror",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/games/WIJ/index.html",
     "image": ""
   },
   {
     "title": "Wordle",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/wordle-unlimited/index.html",
     "image": ""
   },
   {
     "title": "Worlds Hardest Game",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/gamefile/twhg.html",
     "image": ""
   },
   {
     "title": "Worlds Hardest Game 2",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/worlds-hardest-game-2/index.html",
     "image": ""
   },
   {
     "title": "Worlds Hardest Game 3",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/worlds-hardest-game-3/index.html",
     "image": ""
   },
@@ -4713,42 +4713,42 @@
   {
     "title": "Yohoho!.io",
     "description": "",
-    "category": "Action",
+    "category": "Multiplayer",
     "url": "${static}https://yohoho.io/",
     "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTz3RG0AFX_eX-3Qj1J-nT-elqecDhn69QnrJHG7GF4n6VgOq486KJDfJaZ5gPuDejt9Ds7"
   },
   {
     "title": "Yoked",
     "description": "",
-    "category": "",
+    "category": "Platformer",
     "url": "${truffled}/gamefile/yoked.html",
     "image": ""
   },
   {
     "title": "Your Only Move Is HUSTLE, YOMI Hustle, Webport",
     "description": "",
-    "category": "",
+    "category": "Strategy",
     "url": "${truffled}/games/YOMIHustle/index.html",
     "image": ""
   },
   {
     "title": "Yume Nikki",
     "description": "",
-    "category": "Adventure",
+    "category": "Horror",
     "url": "${truffled}/gamefile/yume.html",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjRBQf6W4UyXzvn02jbTOcG6aptEr0iZE3MQ&s"
   },
   {
     "title": "Zombs Royale",
     "description": "",
-    "category": "Shooting",
+    "category": "Multiplayer",
     "url": "${static}https://zombsroyale.io/",
     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQnRj24uLRA4ApOvfefBOiJHf9riMTsdMdVQ1iX5DwYTFYLHNV8ChrpbGkrqrv0He3O6nOs"
   },
   {
     "title": "Zuma",
     "description": "",
-    "category": "",
+    "category": "Puzzle",
     "url": "${truffled}/games/zuma/index.html",
     "image": ""
   }
