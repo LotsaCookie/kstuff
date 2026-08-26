@@ -169,8 +169,6 @@ function initApp() {
             if (loader) loader.style.opacity = '0'; loader.classList.add('hidden');
         }
 
-        showLoader();
-
         const modalOverlay = document.getElementById('resource-modal');
         const modalIframe = document.getElementById('resource-modal-iframe');
         const modalTitle = document.getElementById('resource-modal-title');
