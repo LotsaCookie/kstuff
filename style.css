@@ -148,6 +148,7 @@ body.size-large.text-hide {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    pointer-events: none;
     z-index: 100;
     opacity: 1;
     transition: opacity 0.3s ease, visibility 0.3s ease;
@@ -458,6 +459,7 @@ body.text-hide .nav-right .nav-divider {
     height: 100%;
     width: 100%;
     margin: 0;
+    overflow: hidden;
     position: relative;
 }
 
