@@ -147,6 +147,51 @@ function initApp() {
     }
 
     function runLogic() {
+        const style = document.createElement('style');
+        style.textContent = `
+            .global-loader {
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0, 0, 0, 0.6);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 999999;
+                opacity: 1;
+                transition: opacity 0.3s ease;
+            }
+            .global-loader.hidden {
+                opacity: 0;
+                pointer-events: none;
+            }
+            .loader-spinner {
+                width: 60px;
+                height: 60px;
+                border: 5px solid rgba(255, 255, 255, 0.2);
+                border-top: 5px solid #ffffff;
+                border-radius: 50%;
+                animation: spinLoader 1s linear infinite;
+            }
+            @keyframes spinLoader {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        const globalLoader = document.createElement('div');
+        globalLoader.className = 'global-loader hidden';
+        globalLoader.innerHTML = '<div class="loader-spinner"></div>';
+        document.body.appendChild(globalLoader);
+
+        function showLoader() {
+            globalLoader.classList.remove('hidden');
+        }
+
+        function hideLoader() {
+            globalLoader.classList.add('hidden');
+        }
+
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
@@ -225,6 +270,8 @@ function initApp() {
         async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
+            showLoader(); // Show loader for HTML pages
+            
             const cacheBuster = "?_=" + Date.now();
             for (const proxy of p) {
                 try {
@@ -234,12 +281,18 @@ function initApp() {
                         const content = await response.text();
                         const activePage = document.querySelector('.page.active');
                         if (activePage && activePage.id === pageId) {
+                            iframe.onload = () => {
+                                hideLoader();
+                            };
                             iframe.srcdoc = content;
+                        } else {
+                            hideLoader();
                         }
                         return;
                     }
                 } catch (err) {}
             }
+            hideLoader();
         }
 
         const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
@@ -374,7 +427,6 @@ function initApp() {
                     }
 
                     poolItem.element.onclick = () => {
-                        // SAVE SCROLL POSITION
                         savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
                         const activePage = document.querySelector('.page.active');
                         if (activePage) {
@@ -385,8 +437,7 @@ function initApp() {
                         if (modalOverlay) modalOverlay.classList.add('active');
                         if (modalIframe) modalIframe.src = item.url;
                         
-                        // UNLOAD DOM
-                        setTimeout(() => {
+l                        setTimeout(() => {
                             destroyReadingPool();
                             destroySciencePool();
                         }, 50);
@@ -429,7 +480,7 @@ function initApp() {
                 }
             });
 
-            Promise.all(imagePromises).then(() => {
+            return Promise.all(imagePromises).then(() => {
                 if (gridEl) gridEl.style.opacity = '1';
             });
         }
@@ -437,6 +488,7 @@ function initApp() {
         function renderReadingResources(withPreload = false) {
             window.requestAnimationFrame(() => {
                 if (!readingGrid) return;
+                showLoader(); 
 
                 const filteredData = readingItemsData.filter(item => {
                     const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
@@ -455,12 +507,12 @@ function initApp() {
                     setTimeout(() => {
                         populateCardPool(readingCardPool, paginatedData);
                         renderReadingPagination(totalPages);
-                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
+                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid).then(() => hideLoader());
                     }, 250); 
                 } else {
                     populateCardPool(readingCardPool, paginatedData);
                     renderReadingPagination(totalPages);
-                    readingGrid.style.opacity = '1';
+                    waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid).then(() => hideLoader());
                 }
             });
         }
@@ -515,6 +567,7 @@ function initApp() {
         function renderScienceModules(withPreload = false) {
             window.requestAnimationFrame(() => {
                 if (!scienceGrid) return;
+                showLoader(); 
 
                 const filteredData = scienceItemsData.filter(item => {
                     const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
@@ -533,12 +586,12 @@ function initApp() {
                     setTimeout(() => {
                         populateCardPool(scienceCardPool, paginatedData);
                         renderSciencePagination(totalPages);
-                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
+                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid).then(() => hideLoader());
                     }, 250); 
                 } else {
                     populateCardPool(scienceCardPool, paginatedData);
                     renderSciencePagination(totalPages);
-                    scienceGrid.style.opacity = '1';
+                    waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid).then(() => hideLoader());
                 }
             });
         }
@@ -598,6 +651,8 @@ function initApp() {
                     if (settingsModal) settingsModal.classList.add('active');
                     return;
                 }
+                
+                showLoader();
 
                 const currentActiveBtn = document.querySelector('.nav-btn.active');
                 if (currentActiveBtn) {
@@ -636,7 +691,11 @@ function initApp() {
                         setTimeout(() => renderScienceModules(false), 15);
                     } else if (iframePages[targetId]) {
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
+                    } else {
+                        hideLoader();
                     }
+                } else {
+                    hideLoader();
                 }
             });
         });
@@ -696,7 +755,6 @@ function initApp() {
         function closeResourceModal() {
             if (modalOverlay) modalOverlay.classList.remove('active');
             if (modalIframe) modalIframe.src = 'about:blank';
-            
             const activePage = document.querySelector('.page.active');
             if (activePage) {
                 if (activePage.id === 'readingcorner') {
@@ -708,10 +766,15 @@ function initApp() {
                 }
             }
 
-            setTimeout(() => {
+            let scrollAttempts = 0;
+            const scrollInterval = setInterval(() => {
                 window.scrollTo(0, savedWindowScrollY);
                 if (activePage) {
                     activePage.scrollTop = savedPageScrollTop;
+                }
+                scrollAttempts++;
+                if (scrollAttempts >= 20) { // 20 intervals * 50ms = 1000ms
+                    clearInterval(scrollInterval);
                 }
             }, 50);
         }
@@ -775,6 +838,8 @@ function initApp() {
             getWorkingConfig(truffledTable).then(w => resolvedBases.truffled = w),
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
         ];
+
+        showLoader();
 
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
@@ -845,7 +910,6 @@ function initApp() {
                 finalScience.push(processedItem);
             }
 
-            // Sort alphabetically by title
             readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
             scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
@@ -862,11 +926,16 @@ function initApp() {
                 } else {
                     destroyReadingPool();
                     destroySciencePool();
+                    hideLoader();
                 }
             } else {
                 destroyReadingPool();
                 destroySciencePool();
+                hideLoader();
             }
+        }).catch(err => {
+            console.error(err);
+            hideLoader();
         });
     }
 }
