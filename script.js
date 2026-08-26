@@ -149,27 +149,31 @@ function initApp() {
     function runLogic() {
         const style = document.createElement('style');
         style.textContent = `
-            .global-loader {
-                position: fixed;
+            section {
+                position: relative;
+            }
+            section .global-loader {
+                position: absolute;
                 top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0, 0, 0, 0.6);
+                background: rgba(0, 0, 0, 0.15);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 z-index: 999999;
                 opacity: 1;
                 transition: opacity 0.3s ease;
+                pointer-events: none; /* Allows clicking right through the loader */
             }
-            .global-loader.hidden {
+            section .global-loader.hidden {
                 opacity: 0;
-                pointer-events: none;
             }
-            .loader-spinner {
+            section .loader-spinner {
                 width: 60px;
                 height: 60px;
-                border: 5px solid rgba(255, 255, 255, 0.2);
-                border-top: 5px solid #ffffff;
+                border: 5px solid currentColor;
+                border-color: currentColor transparent currentColor transparent;
                 border-radius: 50%;
+                opacity: 0.85;
                 animation: spinLoader 1s linear infinite;
             }
             @keyframes spinLoader {
@@ -179,10 +183,11 @@ function initApp() {
         `;
         document.head.appendChild(style);
 
+        const targetSection = document.querySelector('section') || document.body;
         const globalLoader = document.createElement('div');
         globalLoader.className = 'global-loader hidden';
         globalLoader.innerHTML = '<div class="loader-spinner"></div>';
-        document.body.appendChild(globalLoader);
+        targetSection.appendChild(globalLoader);
 
         function showLoader() {
             globalLoader.classList.remove('hidden');
@@ -296,19 +301,16 @@ function initApp() {
             showLoader(); 
             
             const proxies = await getProxyList();
-            const cacheBuster = "?_=" + Date.now();
             
             for (const proxy of proxies) {
                 try {
-                    const url = proxy + path + (proxy ? "" : cacheBuster);
+                    const url = proxy + path + (proxy ? "" : "?_=" + Date.now());
                     const response = await fetch(url);
                     if (response.ok) {
                         const content = await response.text();
                         const activePage = document.querySelector('.page.active');
                         if (activePage && activePage.id === pageId) {
-                            iframe.onload = () => {
-                                hideLoader(); 
-                            };
+                            iframe.onload = () => { hideLoader(); };
                             iframe.srcdoc = content;
                         } else {
                             hideLoader();
@@ -799,7 +801,7 @@ function initApp() {
                     activePage.scrollTop = savedPageScrollTop;
                 }
                 scrollAttempts++;
-                if (scrollAttempts >= 20) { // 20 intervals * 50ms = 1000ms
+                if (scrollAttempts >= 20) {
                     clearInterval(scrollInterval);
                 }
             }, 50);
@@ -865,7 +867,7 @@ function initApp() {
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
         ];
 
-        showLoader(); // Show loader immediately while fetching initial configurations
+        showLoader(); 
 
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
@@ -936,7 +938,6 @@ function initApp() {
                 finalScience.push(processedItem);
             }
 
-            // Sort alphabetically by title
             readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
             scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
