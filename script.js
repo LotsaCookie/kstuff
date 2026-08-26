@@ -210,7 +210,6 @@ function initApp() {
         const settingsModal = document.getElementById('homeworkhelper-modal');
         const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
 
-        // Scroll Tracking Variables
         let savedWindowScrollY = 0;
         let savedPageScrollTop = 0;
 
@@ -242,19 +241,43 @@ function initApp() {
             }
         }
 
-        const p = [
-            "https://raw.githubusercontent.com/lotsacookie/kstuff/main/",
-            "https://raw.githack.com/lotsacookie/kstuff/main/",
-            "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/",
-            "https://cdn.statically.io/gh/lotsacookie/kstuff/main/",
-            ""
-        ];
+        let cachedCommitHash = null;
+
+        async function getCommitHash() {
+            if (cachedCommitHash) return cachedCommitHash;
+            try {
+                const res = await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main");
+                if (res.ok) {
+                    const data = await res.json();
+                    cachedCommitHash = data.sha; 
+                    return cachedCommitHash;
+                }
+            } catch (e) {
+                console.warn("GitHub API fetch failed, falling back to 'main'", e);
+            }
+            cachedCommitHash = "main";
+            return cachedCommitHash;
+        }
+
+        async function getProxyList() {
+            const hash = await getCommitHash();
+            return [
+                `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${hash}/`,
+                `https://raw.githubusercontent.com/lotsacookie/kstuff/${hash}/`,
+                `https://raw.githack.com/lotsacookie/kstuff/${hash}/`,
+                `https://cdn.statically.io/gh/lotsacookie/kstuff/${hash}/`,
+                ""
+            ];
+        }
 
         async function fetchAsset(path) {
+            const proxies = await getProxyList();
             const cacheBuster = "?_=" + Date.now();
-            for (const proxy of p) {
+            
+            for (const proxy of proxies) {
                 try {
-                    const response = await fetch(proxy + path + (proxy ? cacheBuster : ""));
+                    const url = proxy + path + (proxy ? "" : cacheBuster);
+                    const response = await fetch(url);
                     if (response.ok) return await response.json();
                 } catch (err) {}
             }
@@ -270,19 +293,21 @@ function initApp() {
         async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
-            showLoader(); // Show loader for HTML pages
+            showLoader(); 
             
+            const proxies = await getProxyList();
             const cacheBuster = "?_=" + Date.now();
-            for (const proxy of p) {
+            
+            for (const proxy of proxies) {
                 try {
-                    const url = proxy + path + (proxy ? cacheBuster : "");
+                    const url = proxy + path + (proxy ? "" : cacheBuster);
                     const response = await fetch(url);
                     if (response.ok) {
                         const content = await response.text();
                         const activePage = document.querySelector('.page.active');
                         if (activePage && activePage.id === pageId) {
                             iframe.onload = () => {
-                                hideLoader();
+                                hideLoader(); 
                             };
                             iframe.srcdoc = content;
                         } else {
@@ -292,7 +317,7 @@ function initApp() {
                     }
                 } catch (err) {}
             }
-            hideLoader();
+            hideLoader(); 
         }
 
         const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
@@ -437,7 +462,7 @@ function initApp() {
                         if (modalOverlay) modalOverlay.classList.add('active');
                         if (modalIframe) modalIframe.src = item.url;
                         
-l                        setTimeout(() => {
+                        setTimeout(() => {
                             destroyReadingPool();
                             destroySciencePool();
                         }, 50);
@@ -652,7 +677,7 @@ l                        setTimeout(() => {
                     return;
                 }
                 
-                showLoader();
+                showLoader(); 
 
                 const currentActiveBtn = document.querySelector('.nav-btn.active');
                 if (currentActiveBtn) {
@@ -755,6 +780,7 @@ l                        setTimeout(() => {
         function closeResourceModal() {
             if (modalOverlay) modalOverlay.classList.remove('active');
             if (modalIframe) modalIframe.src = 'about:blank';
+            
             const activePage = document.querySelector('.page.active');
             if (activePage) {
                 if (activePage.id === 'readingcorner') {
@@ -839,7 +865,7 @@ l                        setTimeout(() => {
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
         ];
 
-        showLoader();
+        showLoader(); // Show loader immediately while fetching initial configurations
 
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
@@ -910,6 +936,7 @@ l                        setTimeout(() => {
                 finalScience.push(processedItem);
             }
 
+            // Sort alphabetically by title
             readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
             scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
