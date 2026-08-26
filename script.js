@@ -147,56 +147,6 @@ function initApp() {
     }
 
     function runLogic() {
-        const style = document.createElement('style');
-        style.textContent = `
-            section {
-                position: relative;
-            }
-            section .global-loader {
-                position: absolute;
-                top: 0; left: 0; right: 0; bottom: 0;
-                background: rgba(0, 0, 0, 0.15);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 999999;
-                opacity: 1;
-                transition: opacity 0.3s ease;
-                pointer-events: none; /* Allows clicking right through the loader */
-            }
-            section .global-loader.hidden {
-                opacity: 0;
-            }
-            section .loader-spinner {
-                width: 60px;
-                height: 60px;
-                border: 5px solid currentColor;
-                border-color: currentColor transparent currentColor transparent;
-                border-radius: 50%;
-                opacity: 0.85;
-                animation: spinLoader 1s linear infinite;
-            }
-            @keyframes spinLoader {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        const targetSection = document.querySelector('section') || document.body;
-        const globalLoader = document.createElement('div');
-        globalLoader.className = 'global-loader hidden';
-        globalLoader.innerHTML = '<div class="loader-spinner"></div>';
-        targetSection.appendChild(globalLoader);
-
-        function showLoader() {
-            globalLoader.classList.remove('hidden');
-        }
-
-        function hideLoader() {
-            globalLoader.classList.add('hidden');
-        }
-
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
@@ -298,7 +248,6 @@ function initApp() {
         async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
-            showLoader(); 
             
             const proxies = await getProxyList();
             
@@ -310,16 +259,12 @@ function initApp() {
                         const content = await response.text();
                         const activePage = document.querySelector('.page.active');
                         if (activePage && activePage.id === pageId) {
-                            iframe.onload = () => { hideLoader(); };
                             iframe.srcdoc = content;
-                        } else {
-                            hideLoader();
                         }
                         return;
                     }
                 } catch (err) {}
             }
-            hideLoader(); 
         }
 
         const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
@@ -515,7 +460,6 @@ function initApp() {
         function renderReadingResources(withPreload = false) {
             window.requestAnimationFrame(() => {
                 if (!readingGrid) return;
-                showLoader(); 
 
                 const filteredData = readingItemsData.filter(item => {
                     const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
@@ -534,12 +478,12 @@ function initApp() {
                     setTimeout(() => {
                         populateCardPool(readingCardPool, paginatedData);
                         renderReadingPagination(totalPages);
-                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid).then(() => hideLoader());
+                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
                     }, 250); 
                 } else {
                     populateCardPool(readingCardPool, paginatedData);
                     renderReadingPagination(totalPages);
-                    waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid).then(() => hideLoader());
+                    waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
                 }
             });
         }
@@ -594,7 +538,6 @@ function initApp() {
         function renderScienceModules(withPreload = false) {
             window.requestAnimationFrame(() => {
                 if (!scienceGrid) return;
-                showLoader(); 
 
                 const filteredData = scienceItemsData.filter(item => {
                     const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
@@ -613,12 +556,12 @@ function initApp() {
                     setTimeout(() => {
                         populateCardPool(scienceCardPool, paginatedData);
                         renderSciencePagination(totalPages);
-                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid).then(() => hideLoader());
+                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
                     }, 250); 
                 } else {
                     populateCardPool(scienceCardPool, paginatedData);
                     renderSciencePagination(totalPages);
-                    waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid).then(() => hideLoader());
+                    waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
                 }
             });
         }
@@ -678,8 +621,6 @@ function initApp() {
                     if (settingsModal) settingsModal.classList.add('active');
                     return;
                 }
-                
-                showLoader(); 
 
                 const currentActiveBtn = document.querySelector('.nav-btn.active');
                 if (currentActiveBtn) {
@@ -718,11 +659,7 @@ function initApp() {
                         setTimeout(() => renderScienceModules(false), 15);
                     } else if (iframePages[targetId]) {
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
-                    } else {
-                        hideLoader();
                     }
-                } else {
-                    hideLoader();
                 }
             });
         });
@@ -867,8 +804,6 @@ function initApp() {
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
         ];
 
-        showLoader(); 
-
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
             fetchAsset('Json/a.json').catch(() => []),
@@ -954,16 +889,13 @@ function initApp() {
                 } else {
                     destroyReadingPool();
                     destroySciencePool();
-                    hideLoader();
                 }
             } else {
                 destroyReadingPool();
                 destroySciencePool();
-                hideLoader();
             }
         }).catch(err => {
             console.error(err);
-            hideLoader();
         });
     }
 }
