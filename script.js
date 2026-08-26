@@ -156,6 +156,18 @@ function initApp() {
         const sizeSelect = document.getElementById('layout-size-select');
         const body = document.body;
 
+        // Loader setup & state helpers
+        const loader = document.querySelector('.section-loader');
+        function showLoader() {
+            if (loader) loader.classList.remove('hidden');
+        }
+        function hideLoader() {
+            if (loader) loader.classList.add('hidden');
+        }
+
+        // Trigger initial fade-in loader
+        showLoader();
+
         const modalOverlay = document.getElementById('resource-modal');
         const modalIframe = document.getElementById('resource-modal-iframe');
         const modalTitle = document.getElementById('resource-modal-title');
@@ -622,6 +634,8 @@ function initApp() {
                     return;
                 }
 
+                showLoader();
+
                 const currentActiveBtn = document.querySelector('.nav-btn.active');
                 if (currentActiveBtn) {
                     const currentId = currentActiveBtn.getAttribute('data-target');
@@ -653,13 +667,26 @@ function initApp() {
 
                     if (targetId === 'readingcorner') {
                         buildReadingPool();
-                        setTimeout(() => renderReadingResources(false), 15);
+                        setTimeout(() => {
+                            renderReadingResources(false);
+                            hideLoader(); // Fade loader out when buttons/grid ready
+                        }, 50);
                     } else if (targetId === 'sciencequiz') {
                         buildSciencePool();
-                        setTimeout(() => renderScienceModules(false), 15);
+                        setTimeout(() => {
+                            renderScienceModules(false);
+                            hideLoader(); // Fade loader out when buttons/grid ready
+                        }, 50);
                     } else if (iframePages[targetId]) {
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
+                        setTimeout(() => {
+                            hideLoader(); // Fade loader out when iframe pages ready
+                        }, 300);
+                    } else {
+                        hideLoader();
                     }
+                } else {
+                    hideLoader();
                 }
             });
         });
@@ -894,8 +921,12 @@ function initApp() {
                 destroyReadingPool();
                 destroySciencePool();
             }
+
+            hideLoader();
+
         }).catch(err => {
             console.error(err);
+            hideLoader(); 
         });
     }
 }
