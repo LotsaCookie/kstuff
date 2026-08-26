@@ -156,16 +156,19 @@ function initApp() {
         const sizeSelect = document.getElementById('layout-size-select');
         const body = document.body;
 
-        // Loader setup & state helpers
         const loader = document.querySelector('.section-loader');
+
+        if (loader) {
+            loader.style.opacity = '0';
+        }
+        
         function showLoader() {
-            if (loader) loader.classList.remove('hidden');
+            if (loader) loader.style.opacity = '1'; loader.classList.remove('hidden');
         }
         function hideLoader() {
-            if (loader) loader.classList.add('hidden');
+            if (loader) loader.style.opacity = '0'; loader.classList.add('hidden');
         }
 
-        // Trigger initial fade-in loader
         showLoader();
 
         const modalOverlay = document.getElementById('resource-modal');
