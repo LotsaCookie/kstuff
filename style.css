@@ -139,14 +139,10 @@ body.size-large.text-hide {
 }
 
 .section-loader {
-    position: sticky;
-    top: 0;
-    margin-top: -1.5rem;
-    margin-left: -3rem;
-    margin-right: -3rem;
-    margin-bottom: -100vh; 
-    width: calc(100% + 6rem);
-    height: 100vh;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background: color-mix(in srgb, var(--bg-color) 85%, transparent);
     display: flex;
     flex-direction: column;
@@ -170,9 +166,8 @@ body.size-large.text-hide {
 
 #studymaterial-area {
     flex-grow: 1;
-    /* Reduced top padding from 3rem to 1.5rem to move the content up */
-    padding: 1.5rem 3rem 3rem 3rem;
-    overflow-y: auto;
+    padding: 0; 
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -460,16 +455,17 @@ body.text-hide .nav-right .nav-divider {
 #lessonplanner.page.active {
     display: flex;
     flex-direction: column;
-    /* Adjusted height and margin to match the new top padding of 1.5rem */
-    height: calc(100% + 4.5rem);
-    width: calc(100% + 6rem);
-    margin: -1.5rem -3rem -3rem -3rem;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    position: relative;
 }
 
-#readingcorner-grid,
-#sciencequiz-grid {
-    transition: opacity 0.3s ease-in-out;
-    opacity: 1;
+#readingcorner.page,
+#sciencequiz.page {
+    padding: 1.5rem 3rem 3rem 3rem;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .full-page-iframe {
