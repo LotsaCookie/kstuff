@@ -141,7 +141,10 @@ body.size-large.text-hide {
 .section-loader {
     position: sticky;
     top: 0;
-    margin: -1.5rem -3rem 0 -3rem;
+    margin-top: -1.5rem;
+    margin-left: -3rem;
+    margin-right: -3rem;
+    margin-bottom: -100vh; 
     width: calc(100% + 6rem);
     height: 100vh;
     background: color-mix(in srgb, var(--bg-color) 85%, transparent);
