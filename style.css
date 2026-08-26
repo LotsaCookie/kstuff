@@ -803,7 +803,7 @@ body.text-hide .nav-right .nav-divider {
     color: var(--text-color);
     width: 90vw;
     height: 85vh;
-    border-radius: 16px;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
