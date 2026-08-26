@@ -362,6 +362,7 @@ function initApp() {
         let readingSearchTimeout;
         if (readingSearchInput) readingSearchInput.addEventListener('input', (e) => {
             clearTimeout(readingSearchTimeout);
+            showLoader();
             readingSearchTimeout = setTimeout(() => {
                 currentReadingSearch = e.target.value.toLowerCase().trim();
                 currentReadingPage = 1;
@@ -372,6 +373,7 @@ function initApp() {
         let scienceSearchTimeout;
         if (scienceSearchInput) scienceSearchInput.addEventListener('input', (e) => {
             clearTimeout(scienceSearchTimeout);
+            showLoader();
             scienceSearchTimeout = setTimeout(() => {
                 currentScienceSearch = e.target.value.toLowerCase().trim();
                 currentSciencePage = 1;
@@ -466,6 +468,7 @@ function initApp() {
 
             return Promise.all(imagePromises).then(() => {
                 if (gridEl) gridEl.style.opacity = '1';
+                hideLoader();
             });
         }
 
@@ -512,6 +515,7 @@ function initApp() {
                 
                 if (currentReadingPage > 1) {
                     prevBtn.addEventListener('click', () => {
+                        showLoader(); 
                         currentReadingPage--;
                         renderReadingResources(true);
                     });
@@ -536,6 +540,7 @@ function initApp() {
                 
                 if (currentReadingPage < totalPages) {
                     nextBtn.addEventListener('click', () => {
+                        showLoader(); 
                         currentReadingPage++;
                         renderReadingResources(true);
                     });
@@ -590,6 +595,7 @@ function initApp() {
                 
                 if (currentSciencePage > 1) {
                     prevBtn.addEventListener('click', () => {
+                        showLoader(); 
                         currentSciencePage--;
                         renderScienceModules(true);
                     });
@@ -614,6 +620,7 @@ function initApp() {
                 
                 if (currentSciencePage < totalPages) {
                     nextBtn.addEventListener('click', () => {
+                        showLoader(); 
                         currentSciencePage++;
                         renderScienceModules(true);
                     });
@@ -669,18 +676,16 @@ function initApp() {
                         buildReadingPool();
                         setTimeout(() => {
                             renderReadingResources(false);
-                            hideLoader(); // Fade loader out when buttons/grid ready
                         }, 50);
                     } else if (targetId === 'sciencequiz') {
                         buildSciencePool();
                         setTimeout(() => {
                             renderScienceModules(false);
-                            hideLoader(); // Fade loader out when buttons/grid ready
                         }, 50);
                     } else if (iframePages[targetId]) {
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
                         setTimeout(() => {
-                            hideLoader(); // Fade loader out when iframe pages ready
+                            hideLoader();
                         }, 300);
                     } else {
                         hideLoader();
@@ -801,6 +806,7 @@ function initApp() {
                     readingSelect.appendChild(option);
                 });
                 readingSelect.addEventListener('change', (e) => {
+                    showLoader();
                     currentReadingCategory = e.target.value;
                     currentReadingPage = 1;
                     renderReadingResources(true);
@@ -815,6 +821,7 @@ function initApp() {
                     scienceSelect.appendChild(option);
                 });
                 scienceSelect.addEventListener('change', (e) => {
+                    showLoader();
                     currentScienceCategory = e.target.value;
                     currentSciencePage = 1;
                     renderScienceModules(true);
@@ -916,17 +923,17 @@ function initApp() {
                 } else {
                     destroyReadingPool();
                     destroySciencePool();
+                    hideLoader();
                 }
             } else {
                 destroyReadingPool();
                 destroySciencePool();
+                hideLoader();
             }
-
-            hideLoader();
 
         }).catch(err => {
             console.error(err);
-            hideLoader(); 
+            hideLoader();
         });
     }
 }
