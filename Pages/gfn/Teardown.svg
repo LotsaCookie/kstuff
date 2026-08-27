@@ -1,6 +1,6 @@
 <svg>
 <foreignObject width="100%" height="100%" x="0" y="0">
-    <html xmlns="http://www.w3.org/1999/xhtml" style="width: 100vw; height: 100vh; margin: 0; padding: 0;">
+    <html xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; margin: 0; padding: 0;">
     <head>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,27 +8,28 @@
             html, body {
                 margin: 0;
                 padding: 0;
-                width: 100vw;
-                height: 100vh;
+                width: 100%;
+                height: 100%;
                 overflow: hidden;
                 background-color: #000;
-                position: absolute;
-                top: 0;
-                left: 0;
+            }
+            .iframe-wrapper {
+                width: 100%;
+                height: 100%;
+                display: flex;
             }
             iframe {
                 width: 100%;
                 height: 100%;
                 border: none;
-                display: block;
-                position: absolute;
-                top: 0;
-                left: 0;
+                flex-grow: 1;
             }
         </style>
     </head>
     <body>
-        <iframe id="targetIframe" src="https://play.geforcenow.com/games?game-id=57d35de1-acb5-4c79-aedc-84291e306929&lang=en_US&asset-id=01_b9b1b223-300b-408b-b9aa-a605b3fe80f6&utm_source=shortcut?$rfp=same-origin&$io=https://play.geforcenow.com" allowfullscreen="true"></iframe>
+        <div class="iframe-wrapper">
+            <iframe id="targetIframe" src="https://play.geforcenow.com/games?game-id=57d35de1-acb5-4c79-aedc-84291e306929&lang=en_US&asset-id=01_b9b1b223-300b-408b-b9aa-a605b3fe80f6&utm_source=shortcut?$rfp=same-origin&$io=https://play.geforcenow.com" allowfullscreen="true"></iframe>
+        </div>
         
         <script type="text/javascript">
         //<![CDATA[
@@ -47,7 +48,7 @@
                         document.body.appendChild(script);
                     }
                 })
-                .catch(err => console.error(err));
+                .catch(err => console.error("Fetch error:", err));
         //]]>
         </script>
     </body>
