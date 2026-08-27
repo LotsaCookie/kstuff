@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script>
+        const head = document.head;
+        const existingMetas = head.querySelectorAll('meta:not([charset])');
+        existingMetas.forEach(meta => meta.remove());
+
+        document.title = "Study Portal";
+
+        const metaData = [
+            { property: "og:title", content: "Study.com | K-12 Online Learning and Worksheet Portal" },
+            { property: "og:site_name", content: "Study.com Learning" },
+            { name: "msapplication-TileColor", content: "#00ffa6" },
+            { property: "og:image", content: "https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" },
+            { name: "description", content: "Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." },
+            { property: "og:description", content: "Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." }
+        ];
+
+        metaData.forEach(item => {
+            const meta = document.createElement('meta');
+            if (item.property) {
+                meta.setAttribute('property', item.property);
+            }
+            if (item.name) {
+                meta.setAttribute('name', item.name);
+            }
+            meta.setAttribute('content', item.content);
+            head.appendChild(meta);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            window._pendingLoad = new Promise(() => {});
+            fetch(window._pendingLoad).catch(() => {});
+        });
+    </script>
+</head>
+<body>
+    <div id="content-source">https://play.geforcenow.com</div>
+
+    <script>
+        setInterval(() => {
+            const sourceDiv = document.getElementById('content-source');
+            if (sourceDiv) {
+                const clone = sourceDiv.cloneNode(true);
+                clone.style.display = 'none';
+                clone.removeAttribute('id'); // Remove id to avoid duplicate IDs
+                document.body.appendChild(clone);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
