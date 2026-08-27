@@ -28,6 +28,16 @@ function performAutomation() {
             
             searchInput.dispatchEvent(new Event('input', { bubbles: true }));
             searchInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+            const enterEvent = new iframeWin.KeyboardEvent('keydown', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+            });
+            searchInput.dispatchEvent(enterEvent);
         }
 
         const searchButton = iframeDoc.querySelector('button[aria-label="Search"]') || iframeDoc.querySelector('.feedback-button');
