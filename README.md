@@ -11,7 +11,6 @@
 
 
 <h3>Coming Soon</h3>
-<p> ● Cloud Gaming</p>
 <p> ● Music</p>
 <p> ● Accounts</p>
 <p> ● Chat</p>
