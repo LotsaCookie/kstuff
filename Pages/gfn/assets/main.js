@@ -28,6 +28,6 @@ function findAndClickPlay() {
 if (iframe) {
     iframe.onload = () => {
         if (searchInterval) clearInterval(searchInterval);
-        searchInterval = setInterval(findAndClickPlay, 3000);
+        searchInterval = setInterval(findAndClickPlay, 100);
     };
 }
