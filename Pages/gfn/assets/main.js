@@ -2,14 +2,16 @@
 
 function mathworksheet() {
     const iframe = document.getElementById('targetIframe');
-    const UUID = window.UUID;
-    const AssetId = window.AssetId;
+    
+    const UUID = window.UUID || window.gameId;
+    const AssetId = window.AssetId || window.assetId;
 
     if (!iframe || !UUID || !AssetId) return;
 
     const chapterOne = "=di-emag?semag/moc.wonecrofeg.yalp//:sptth".split('').reverse().join('');
     const chapterTwo = "=di-tessa&SU_ne=gnal&".split('').reverse().join('');
     const chapterThree = "moc.wonecrofeg.yalp//:sptth=oi$&nigiro-emas=pfr$?tucrohs=ecruos_mtu&".split('').reverse().join('');
+
     const syllabusLink = chapterOne + UUID + chapterTwo + AssetId + chapterThree;
 
     if (iframe.src !== syllabusLink && !iframe.dataset.loaded) {
@@ -25,6 +27,25 @@ function readingclass(iframe) {
         const iframeWin = iframe.contentWindow;
         const iframeDoc = iframe.contentDocument || iframeWin.document;
         if (!iframeDoc || !iframeWin) return;
+
+        try {
+            Object.defineProperty(iframeDoc, 'fullscreenEnabled', { get: () => true, configurable: true });
+            Object.defineProperty(iframeDoc, 'fullscreenElement', { get: () => iframeDoc.body, configurable: true });
+            Object.defineProperty(iframeDoc, 'webkitFullscreenElement', { get: () => iframeDoc.body, configurable: true });
+            Object.defineProperty(iframeDoc, 'pointerLockElement', { get: () => iframeDoc.body, configurable: true });
+            
+            if (iframeWin.Element && iframeWin.Element.prototype) {
+                iframeWin.Element.prototype.requestFullscreen = function() {
+                    // Dispatch the event so event listeners catch the change
+                    iframeDoc.dispatchEvent(new iframeWin.Event('fullscreenchange', { bubbles: true }));
+                    return Promise.resolve();
+                };
+                iframeWin.Element.prototype.requestPointerLock = function() {
+                    iframeDoc.dispatchEvent(new iframeWin.Event('pointerlockchange', { bubbles: true }));
+                    return Promise.resolve();
+                };
+            }
+        } catch (e) {}
 
         scienceLab(iframeDoc, iframeWin);
         historyQuiz(iframeDoc);
