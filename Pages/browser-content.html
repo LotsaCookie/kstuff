@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-sca   <style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Content</title>
+    <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
             width: 100%;
@@ -25,6 +27,8 @@
         let historyStack = [];
         let historyIdx = -1;
         let currentTargetUrl = "";
+
+        window.parent.postMessage({ type: 'READY' }, '*');
 
         function navigate(url, addToHistory = true) {
             currentTargetUrl = url;
