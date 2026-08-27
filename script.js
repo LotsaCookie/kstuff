@@ -283,7 +283,7 @@ function initApp() {
         const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
         const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
         const savedTextVis = localStorage.getItem('kstuff_text_vis') || 'text-hide';
-        const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-small';
+        const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-medium';
 
         body.classList.add(savedTheme, savedNavPos, savedNavSize);
         if (savedTextVis === 'text-hide') body.classList.add('text-hide');
