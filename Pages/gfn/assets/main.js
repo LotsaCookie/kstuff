@@ -32,15 +32,10 @@ function readingclass(iframe) {
             Object.defineProperty(iframeDoc, 'fullscreenEnabled', { get: () => true, configurable: true });
             Object.defineProperty(iframeDoc, 'fullscreenElement', { get: () => iframeDoc.body, configurable: true });
             Object.defineProperty(iframeDoc, 'webkitFullscreenElement', { get: () => iframeDoc.body, configurable: true });
-            Object.defineProperty(iframeDoc, 'pointerLockElement', { get: () => iframeDoc.body, configurable: true });
             
             if (iframeWin.Element && iframeWin.Element.prototype) {
                 iframeWin.Element.prototype.requestFullscreen = function() {
                     iframeDoc.dispatchEvent(new iframeWin.Event('fullscreenchange', { bubbles: true }));
-                    return Promise.resolve();
-                };
-                iframeWin.Element.prototype.requestPointerLock = function() {
-                    iframeDoc.dispatchEvent(new iframeWin.Event('pointerlockchange', { bubbles: true }));
                     return Promise.resolve();
                 };
             }
