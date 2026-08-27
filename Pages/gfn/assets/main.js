@@ -1,7 +1,7 @@
 const iframe = document.getElementById('targetIframe');
 
 if (iframe && window.gameId && window.assetId) {
-    iframe.src = 'https://play.geforcenow.com/games?game-id=' + window.gameId + 
+    iframe.src = 'https://d37fmfghjt329d.cloudfront.net/games?game-id=' + window.gameId + 
                  '&lang=en_US&asset-id=' + window.assetId + 
                  '&utm_source=shortcut?$rfp=same-origin&$io=https://play.geforcenow.com';
 }
