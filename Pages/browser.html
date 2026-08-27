@@ -1,112 +1,115 @@
-ml>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Learning</title>
-<style>
-  body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;
-  }
-  #iframeContainer {
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    transition: opacity 2s ease;
-  }
-  #viewerIframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  #overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    opacity: 1;
-    animation: pulse 2s infinite;
-    z-index: 9999;
-  }
-
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 0.3;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
     }
-    50% {
-      opacity: 0.5;
+    #iframeContainer {
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 2s ease;
     }
-  }
-</style>
-</body>
-</html>
-<div id="overlay"></div>
+    #viewerIframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
+      opacity: 1;
+      animation: pulse 2s infinite;
+      z-index: 9999;
+    }
 
-<div id="iframeContainer">
-  <iframe id="viewerIframe" allowfullscreen></iframe>
-</div>
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
 
-<script>
-const uvTable = [
-    { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
-    { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
-];
+  <div id="iframeContainer">
+    <iframe id="viewerIframe" allowfullscreen></iframe>
+  </div>
 
-function testImageUrl(testUrl) {
-    return new Promise((resolve) => {
+  <script>
+    const uvTable = [
+      { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+      { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+    ];
+
+    function testImageUrl(testUrl) {
+      return new Promise((resolve) => {
         let isDone = false;
         const img = new Image();
         img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
         img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
         img.src = testUrl + "?_=" + Date.now();
         setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
-    });
-}
+      });
+    }
 
-function getWorkingConfig(table) {
-    return new Promise((resolve) => {
+    function getWorkingConfig(table) {
+      return new Promise((resolve) => {
         let resolved = false;
         let remaining = table.length;
 
         table.forEach(entry => {
-            testImageUrl(entry.url + entry.img).then(success => {
-                if (success && !resolved) {
-                    resolved = true;
-                    resolve(entry);
-                                   } else {
-                    remaining--;
-                    if (remaining === 0 && !resolved) {
-                        resolve(table[0]); // Fallback to the first one if all fail
-                    }
-                                });
+          testImageUrl(entry.url + entry.img).then(success => {
+            if (success && !resolved) {
+              resolved = true;
+              resolve(entry);
+            } else {
+              remaining--;
+              if (remaining === 0 && !resolved) {
+                resolve(table[0]); // Fallback to the first one if all fail
+              }
+            }
+          });
         });
-    });
-}
+      });
+    }
 
-async function resolveAndBuildUrl() {
-    const w = await getWorkingConfig(uvTable);
-    const baseUrl = w.url + w.final;
-    const finalUrl = baseUrl + "https://lotsacookie.github.io/kstuff/Pages/browser-content.html";
-    return finalUrl;
-}
+    async function resolveAndBuildUrl() {
+      const w = await getWorkingConfig(uvTable);
+      const baseUrl = w.url + w.final;
+      const finalUrl = baseUrl + "https://lotsacookie.github.io/kstuff/Pages/browser-content.html";
+      return finalUrl;
+    }
 
-(async () => {
-    const url = await resolveAndBuildUrl();
-    const iframe = document.getElementById('viewerIframe');
-    
-    iframe.onload = () => {
+    (async () => {
+      const url = await resolveAndBuildUrl();
+      const iframe = document.getElementById('viewerIframe');
+      
+      iframe.onload = () => {
         document.getElementById('iframeContainer').style.opacity = 1;
         setTimeout(() => {
-            const overlay = document.getElementById('overlay');
-            if (overlay) overlay.remove();
+          const overlay = document.getElementById('overlay');
+          if (overlay) overlay.remove();
         }, 2000); 
-    };
+      };
 
-    iframe.src = url;
-})();
-</script>
+      iframe.src = url;
+    })();
+  </script>
 </body>
 </html>
