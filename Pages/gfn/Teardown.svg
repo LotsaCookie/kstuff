@@ -36,22 +36,30 @@
             const repo = 'kstuff';
             const filePath = 'Pages/gfn/assets/main.js';
             
-            const apiUrl = new URL(`https://api.github.com/repos/${owner}/${repo}/commits`);
+            const apiUrl = new URL('https://api.github.com/repos/' + owner + '/' + repo + '/commits');
             apiUrl.searchParams.append('path', filePath);
             apiUrl.searchParams.append('per_page', '1');
             
             fetch(apiUrl)
-                .then(res => res.json())
-                .then(data => {
-                    if (data && data[0] && data[0].sha) {
-                        const sha = data[0].sha;
-                        const scriptUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${sha}/${filePath}`;
-                        const script = document.createElement('script');
-                        script.src = scriptUrl;
-                        document.body.appendChild(script);
+                .then(function(res) { 
+                    return res.json(); 
+                })
+                .then(function(data) {
+                    if (data) {
+                        if (data[0]) {
+                            if (data[0].sha) {
+                                const sha = data[0].sha;
+                                const scriptUrl = 'https://cdn.jsdelivr.net/gh/' + owner + '/' + repo + '@' + sha + '/' + filePath;
+                                const script = document.createElement('script');
+                                script.src = scriptUrl;
+                                document.body.appendChild(script);
+                            }
+                        }
                     }
                 })
-                .catch(err => console.error("Fetch error:", err));
+                .catch(function(err) { 
+                    console.error('Fetch error:', err); 
+                });
         </script>
     </body>
     </html>
