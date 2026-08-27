@@ -859,6 +859,31 @@ function initApp() {
             }
         }).catch(err => {});
 
+        fetchAsset('Json/change-log.json').then(logData => {
+            const contentEl = document.getElementById('changelog-content');
+            const timestampEl = document.getElementById('changelog-timestamp');
+
+            if (logData) {
+                if (timestampEl && logData.timestamp) {
+                    timestampEl.textContent = logData.timestamp;
+                }
+
+                if (contentEl && logData.changes && Array.isArray(logData.changes)) {
+                    contentEl.innerHTML = `<ul style="padding-left: 1.5rem; margin: 0;">` + 
+                        logData.changes.map(change => `<li style="margin-bottom: 0.5rem;">${change}</li>`).join('') +
+                        `</ul>`;
+                } else if (contentEl) {
+                    contentEl.innerHTML = "No recent changes found.";
+                }
+            }
+        }).catch(err => {
+            const contentEl = document.getElementById('changelog-content');
+            const timestampEl = document.getElementById('changelog-timestamp');
+            if (contentEl) contentEl.innerHTML = "Failed to load update log.";
+            if (timestampEl) timestampEl.textContent = "Unknown";
+            console.warn("Could not load change-log.json", err);
+        });
+
         const resolvedBases = {};
         const checkPromises = [
             getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
