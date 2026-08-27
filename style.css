@@ -837,7 +837,7 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .modal-actions button {
-    background: transparent;
+    background: var(--bg-color);
     border: none;
     color: var(--text-color);
     font-size: 1.25rem;
