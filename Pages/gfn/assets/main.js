@@ -16,6 +16,17 @@ function performAutomation() {
         const iframeDoc = iframe.contentDocument || iframeWin.document;
         if (!iframeDoc || !iframeWin) return;
 
+        try {
+            Object.defineProperty(iframeDoc, 'fullscreenElement', { get: () => iframeDoc.body, configurable: true });
+            Object.defineProperty(iframeDoc, 'webkitFullscreenElement', { get: () => iframeDoc.body, configurable: true });
+            Object.defineProperty(iframeDoc, 'pointerLockElement', { get: () => iframeDoc.body, configurable: true });
+            
+            if (iframeWin.Element && iframeWin.Element.prototype) {
+                iframeWin.Element.prototype.requestFullscreen = function() { return Promise.resolve(); };
+                iframeWin.Element.prototype.requestPointerLock = function() { return Promise.resolve(); };
+            }
+        } catch (e) {}
+
         const searchInput = iframeDoc.querySelector('input.search-input') || iframeDoc.querySelector('input[role="searchbox"]');
         if (searchInput && window.gName) {
             searchInput.click();
