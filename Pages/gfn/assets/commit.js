@@ -3,7 +3,6 @@
     var githubRepo = 'kstuff';
     var githubFile = 'Pages/gfn/assets/main.js';
     var u = 'https://api.github.com/repos/' + githubOwner + '/' + githubRepo + '/commits?path=' + githubFile + '&per_page=1';
-    
     fetch(u)
         .then(function(r) { return r.json(); })
         .then(function(d) {
