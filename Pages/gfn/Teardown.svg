@@ -28,16 +28,19 @@
     </head>
     <body>
         <div class="iframe-wrapper">
-            <iframe id="targetIframe" src="https://play.geforcenow.com/games?game-id=57d35de1-acb5-4c79-aedc-84291e306929&lang=en_US&asset-id=01_b9b1b223-300b-408b-b9aa-a605b3fe80f6&utm_source=shortcut?$rfp=same-origin&$io=https://play.geforcenow.com" allowfullscreen="true"></iframe>
+            <iframe id="targetIframe" src="https://example.com" allowfullscreen="true"></iframe>
         </div>
         
-        <script type="text/javascript">
-        //<![CDATA[
+        <script>
             const owner = 'lotsacookie;
             const repo = 'kstuff';
             const filePath = 'Pages/gfn/assets/main.js';
             
-            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&per_page=1`)
+            const apiUrl = new URL(`https://api.github.com/repos/${owner}/${repo}/commits`);
+            apiUrl.searchParams.append('path', filePath);
+            apiUrl.searchParams.append('per_page', '1');
+            
+            fetch(apiUrl)
                 .then(res => res.json())
                 .then(data => {
                     if (data && data[0] && data[0].sha) {
@@ -49,7 +52,6 @@
                     }
                 })
                 .catch(err => console.error("Fetch error:", err));
-        //]]>
         </script>
     </body>
     </html>
