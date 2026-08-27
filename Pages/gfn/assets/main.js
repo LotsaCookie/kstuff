@@ -36,7 +36,6 @@ function readingclass(iframe) {
             
             if (iframeWin.Element && iframeWin.Element.prototype) {
                 iframeWin.Element.prototype.requestFullscreen = function() {
-                    // Dispatch the event so event listeners catch the change
                     iframeDoc.dispatchEvent(new iframeWin.Event('fullscreenchange', { bubbles: true }));
                     return Promise.resolve();
                 };
