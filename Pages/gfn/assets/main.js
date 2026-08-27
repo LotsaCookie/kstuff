@@ -51,6 +51,6 @@ function performAutomation() {
 if (iframe) {
     iframe.onload = () => {
         if (automationInterval) clearInterval(automationInterval);
-        automationInterval = setInterval(performAutomation, 2000);
+        automationInterval = setInterval(performAutomation, 500);
     };
 }
