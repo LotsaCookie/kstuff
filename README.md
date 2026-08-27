@@ -1,6 +1,6 @@
 # K-STUFF
 <p>Features:</p>
-<p> ● An extensive library of Apps and Games (Truffled, FrogiesArcade, Etc...)</p>
+<p> ● An extensive library of Apps and Games (Truffled, FrogiesArcade, GeforceNOW, CloudMoon, RaccoonCloud, Etc...)</p>
 <p> ● AI Chat </p>
 <p> ● Music (Soon)</p>
 <p> ● Personalization </p>
