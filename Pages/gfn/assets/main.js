@@ -2,8 +2,8 @@
 
 function mathworksheet() {
     const iframe = document.getElementById('targetIframe');
-    const UUID = window.UUID || window.gameId;
-    const AssetId = window.AssetId || window.assetId;
+    const UUID = window.UUID;
+    const AssetId = window.AssetId;
 
     if (!iframe || !UUID || !AssetId) return;
 
