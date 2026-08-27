@@ -1,59 +1,112 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            font-family: "Quicksand", sans-serif !important;
-        }
-        .coming-soon-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: none;            
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;           
-            color: #ffffff;
-        }
+ml>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Learning</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  #iframeContainer {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 2s ease;
+  }
+  #viewerIframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  #overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    animation: pulse 2s infinite;
+    z-index: 9999;
+  }
 
-        .coming-soon-content {
-            text-align: center;
-            animation: pulseFade 2.5s infinite ease-in-out;
-        }
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
+</body>
+</html>
+<div id="overlay"></div>
 
-        .coming-soon-content h1 {
-            font-size: 2.5rem;
-            margin: 0 0 10px 0;
-            letter-spacing: 2px;
-            font-weight: 600;
-        }
+<div id="iframeContainer">
+  <iframe id="viewerIframe" allowfullscreen></iframe>
+</div>
 
-        .coming-soon-content p {
-            font-size: 1.1rem;
-            margin: 0;
-            color: #d1d5db;
-        }
+<script>
+const uvTable = [
+    { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+    { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+];
 
+function testImageUrl(testUrl) {
+    return new Promise((resolve) => {
+        let isDone = false;
+        const img = new Image();
+        img.onload = () => { if (!isDone) { isDone = true; resolve(true); } };
+        img.onerror = () => { if (!isDone) { isDone = true; resolve(false); } };
+        img.src = testUrl + "?_=" + Date.now();
+        setTimeout(() => { if (!isDone) { isDone = true; resolve(false); } }, 3000);
+    });
+}
 
-    </style>
-</head>
-<body>
+function getWorkingConfig(table) {
+    return new Promise((resolve) => {
+        let resolved = false;
+        let remaining = table.length;
 
-    <div class="coming-soon-overlay">
-        <div class="coming-soon-content">
-            <h1>COMING SOON</h1>
-            <p>The browser is being rewritten for better performance!</p>
-        </div>
-    </div>
+        table.forEach(entry => {
+            testImageUrl(entry.url + entry.img).then(success => {
+                if (success && !resolved) {
+                    resolved = true;
+                    resolve(entry);
+                                   } else {
+                    remaining--;
+                    if (remaining === 0 && !resolved) {
+                        resolve(table[0]); // Fallback to the first one if all fail
+                    }
+                                });
+        });
+    });
+}
 
+async function resolveAndBuildUrl() {
+    const w = await getWorkingConfig(uvTable);
+    const baseUrl = w.url + w.final;
+    const finalUrl = baseUrl + "https://lotsacookie.github.io/kstuff/Pages/browser-content.html";
+    return finalUrl;
+}
+
+(async () => {
+    const url = await resolveAndBuildUrl();
+    const iframe = document.getElementById('viewerIframe');
+    
+    iframe.onload = () => {
+        document.getElementById('iframeContainer').style.opacity = 1;
+        setTimeout(() => {
+            const overlay = document.getElementById('overlay');
+            if (overlay) overlay.remove();
+        }, 2000); 
+    };
+
+    iframe.src = url;
+})();
+</script>
 </body>
 </html>
