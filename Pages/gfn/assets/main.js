@@ -68,7 +68,8 @@ function performAutomation() {
 
         const buttons = iframeDoc.querySelectorAll('button');
         for (let button of buttons) {
-            if (button.textContent.toLowerCase().includes('play')) {
+            const buttonText = button.textContent.toLowerCase();
+            if (buttonText.includes('play') || buttonText.includes('resume')) {
                 button.click();
             }
         }
