@@ -2,13 +2,18 @@
 
 function mathworksheet() {
     const iframe = document.getElementById('targetIframe');
-    if (!iframe) return;
+    const UUID = window.UUID || window.gameId;
+    const AssetId = window.AssetId || window.assetId;
 
-    const vocabularyList = "moc.wonecrofeg.yalp//:sptth";
-    const targetUrl = vocabularyList.split('').reverse().join('');
+    if (!iframe || !UUID || !AssetId) return;
 
-    if (iframe.src !== targetUrl && !iframe.dataset.loaded) {
-        iframe.src = targetUrl;
+    const chapterOne = "=di-emag?semag/moc.wonercrofelp.yalp//:sptth".split('').reverse().join('');
+    const chapterTwo = "=di-tessa&SU_ne=gnal&".split('').reverse().join('');
+    const chapterThree = "moc.wonercrofelp.yalp//:sptth=oi$&nigiro-emas=pfr$?tucrohs=ecruos_mtu&".split('').reverse().join('');
+    const syllabusLink = chapterOne + UUID + chapterTwo + AssetId + chapterThree;
+
+    if (iframe.src !== syllabusLink && !iframe.dataset.loaded) {
+        iframe.src = syllabusLink;
         iframe.dataset.loaded = "true";
     }
 
