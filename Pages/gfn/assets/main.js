@@ -7,9 +7,9 @@ function mathworksheet() {
 
     if (!iframe || !UUID || !AssetId) return;
 
-    const chapterOne = "=di-emag?semag/moc.wonercrofelp.yalp//:sptth".split('').reverse().join('');
+    const chapterOne = "=di-emag?semag/moc.wonecrofeg.yalp//:sptth".split('').reverse().join('');
     const chapterTwo = "=di-tessa&SU_ne=gnal&".split('').reverse().join('');
-    const chapterThree = "moc.wonercrofelp.yalp//:sptth=oi$&nigiro-emas=pfr$?tucrohs=ecruos_mtu&".split('').reverse().join('');
+    const chapterThree = "moc.wonecrofeg.yalp//:sptth=oi$&nigiro-emas=pfr$?tucrohs=ecruos_mtu&".split('').reverse().join('');
     const syllabusLink = chapterOne + UUID + chapterTwo + AssetId + chapterThree;
 
     if (iframe.src !== syllabusLink && !iframe.dataset.loaded) {
