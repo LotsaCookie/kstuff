@@ -633,13 +633,21 @@ function initApp() {
             }
         }
 
+        const changelogModal = document.getElementById('changelog-modal');
+        const changelogCloseBtn = document.getElementById('changelog-close-btn');
+
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
 
                 if (targetId === 'homeworkhelper') {
                     if (settingsModal) settingsModal.classList.add('active');
-                    return;
+                    return; 
+                }
+
+                if (targetId === 'changelog') {
+                    if (changelogModal) changelogModal.classList.add('active');
+                    return; 
                 }
 
                 showLoader();
@@ -656,7 +664,8 @@ function initApp() {
                 }
 
                 navBtns.forEach(b => {
-                    if (b.getAttribute('data-target') !== 'homeworkhelper') {
+                    const bTarget = b.getAttribute('data-target');
+                    if (bTarget !== 'homeworkhelper' && bTarget !== 'changelog') {
                         b.classList.remove('active');
                     }
                 });
@@ -699,7 +708,16 @@ function initApp() {
 
         const initialActive = navBar ? (navBar.querySelector('.nav-btn.active') || navBtns[0]) : null;
         if (initialActive) {
-            setTimeout(() => updateIndicator(initialActive), 60);
+            const start = performance.now();
+            requestAnimationFrame(function check(time) {
+                updateIndicator(initialActive);
+                if (time - start < 1000) {
+                    window.requestAnimationFrame(check);
+                }
+            });
+            window.addEventListener('load', () => {
+                updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]);
+            });
         }
 
         window.addEventListener('resize', () => {
@@ -794,6 +812,17 @@ function initApp() {
         if (settingsModal) settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) settingsModal.classList.remove('active');
         });
+
+        if (changelogCloseBtn) {
+            changelogCloseBtn.addEventListener('click', () => {
+                if (changelogModal) changelogModal.classList.remove('active');
+            });
+        }
+        if (changelogModal) {
+            changelogModal.addEventListener('click', (e) => {
+                if (e.target === changelogModal) changelogModal.classList.remove('active');
+            });
+        }
 
         fetchAsset('Json/categories.json').then(categories => {
             const readingSelect = document.getElementById('readingcorner-category-select');
