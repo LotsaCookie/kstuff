@@ -54,8 +54,9 @@
         <button onclick="closeGamePlayer()" style="background:#ff4d4f;border:0;color:#fff;padding:6px 10px;border-radius:4px;cursor:pointer;margin-left:8px">Quit / Close</button>
       </div>
     </div>
-    <div id="cloudVideoWrap">
-      <video id="cloudVideo" autoplay playsinline></video>
+    
+    <div id="cloudVideoWrap" style="position: relative;">
+      <video id="cloudVideo" autoplay playsinline style="width: 100%; height: 100%;"></video>
       
       <div id="cloudOverlay">
         <div id="cloudSpinner"></div>
@@ -64,6 +65,10 @@
       </div>
 
       <div id="cloudRelockHint">Click here to lock mouse & resume playing</div>
+      
+      <div id="cloudUnmuteHint" style="display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 77, 79, 0.9); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; z-index: 100;">
+        🔇 Click here to enable Audio
+      </div>
     </div>
   </div>
 
@@ -794,10 +799,29 @@ async function createCloudPeer(iceServers) {
     
     if (state === "connected") {
       if (connectionTimeout) { clearTimeout(connectionTimeout); connectionTimeout = null; }
-      if(document.getElementById("cloudOverlay")) document.getElementById("cloudOverlay").style.display = "none";
-      if(videoEl) {
-        videoEl.muted = false;
-        videoEl.play().catch(() => {});
+      if (document.getElementById("cloudOverlay")) document.getElementById("cloudOverlay").style.display = "none";
+      
+      const unmuteHint = document.getElementById("cloudUnmuteHint");
+      
+      if (videoEl) {
+        videoEl.playsInline = true;
+        videoEl.autoplay = true;
+        videoEl.muted = false; 
+        
+        videoEl.play().catch((err) => {
+          console.warn("[WebRTC] Autoplay with audio blocked. Muting to allow video to play.", err);
+          videoEl.muted = true;
+          videoEl.play().catch(e => console.error("[WebRTC] Video failed completely:", e));
+          
+          if (unmuteHint) {
+            unmuteHint.style.display = "block";
+            unmuteHint.onclick = () => {
+              videoEl.muted = false;
+              unmuteHint.style.display = "none"; // Hide button after unmuting
+              videoEl.requestPointerLock?.().catch(() => {});
+            };
+          }
+        });
       }
       _cloudInputActive = true;
       _cloudStarting = false;
