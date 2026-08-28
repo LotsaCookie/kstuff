@@ -114,7 +114,6 @@ function _gamesReload(keyword) {
   loadGames();
 }
 
-// --- Resilient API Wrapper ---
 function getStratusBase(index) {
   const rawServer = window.serverList[index !== undefined && index !== null ? index : window._activeServerIndex] || window.serverList[0];
   if (rawServer.includes("://")) {
@@ -174,11 +173,9 @@ async function stratusApi(path, method = "GET", body, pinnedIndex = null) {
         return res.status === 304 ? { status: 304 } : data;
       } else {
         lastError = data.error || `HTTP ${res.status}`;
-        console.warn(`[API] Warn ${method} /${path}:`, lastError);
       }
     } catch (err) {
       lastError = err.message;
-      console.error(`[API] Error ${method} /${path}:`, err);
     }
   }
 
@@ -188,7 +185,6 @@ async function stratusApi(path, method = "GET", body, pinnedIndex = null) {
 async function _loadGamesCacheEntry(key) { return null; }
 async function _saveGamesCacheEntry(key, data) { }
 
-// --- Cloud Player Control Functions ---
 function closeGamePlayer() {
   console.log("[UI] Closing Game Player");
   _cloudEndedActive = false;
@@ -238,12 +234,10 @@ function setCloudPhase(name, detail, spin) {
 function _quitCloudSession(uuid, serverIndex) {
   if (!uuid) return;
   const targetIndex = serverIndex !== undefined ? serverIndex : window._activeServerIndex;
-  console.log("[Cloud] Quitting session:", uuid);
   stratusApi(`session/${uuid}/quit`, "POST", {}, targetIndex).catch(() => { });
 }
 
 function teardownCloud(quit) {
-  console.log("[Cloud] Tearing down cloud instance. Quit:", quit);
   _cloudRunId++;
   if (quit && _cloudSession) _quitCloudSession(_cloudSession.uuid, _cloudSession.serverIndex);
 
@@ -292,7 +286,6 @@ async function loadCloudGames() {
 
   if (!_cloudGamesFetchPromise) {
     _cloudGamesFetchPromise = (async () => {
-      console.log("[Games] Fetching cloud games list...");
       const r = await stratusApi("games");
       if (r.error) throw new Error(r.error);
 
@@ -315,7 +308,6 @@ async function loadCloudGames() {
 
 function toggleCloudGames() {
   _cloudEnabled = !_cloudEnabled;
-  console.log("[UI] Cloud Games Toggled:", _cloudEnabled);
   const btn = document.getElementById("cloudToggle");
   if(btn) {
     btn.classList.toggle("on", _cloudEnabled);
@@ -329,18 +321,12 @@ if(document.getElementById("cloudToggle")) {
 }
 
 async function startCloudGame(gameKey, gameName) {
-  console.log(`[Game] Starting game: ${gameName} (${gameKey})`);
-  if (!window.isSecureContext) {
-    console.warn("WARNING: NOT IN A SECURE CONTEXT (HTTPS or Localhost)! WebRTC may fail.");
-  }
-
   if (_cloudStarting) return;
   teardownCloud(true);
   const currentRunId = _cloudRunId;
   _cloudStarting = true;
 
   const sessionServerIndex = window._activeServerIndex;
-
   const player = document.getElementById("gamePlayer");
   const videoWrap = document.getElementById("cloudVideoWrap");
   const videoEl = document.getElementById("cloudVideo");
@@ -374,13 +360,11 @@ async function startCloudGame(gameKey, gameName) {
           setCloudPhase("Waiting for capacity", `Found ${idleCount} idle accounts (waiting for 3+)`, true);
         }
       }
-
       await new Promise(r => setTimeout(r, 3000));
     }
 
     if (currentRunId !== _cloudRunId) return;
 
-    console.log("[Cloud] Creating session on server...");
     const s = await stratusApi("session", "POST", { game_key: gameKey }, sessionServerIndex);
     if (currentRunId !== _cloudRunId) return;
     if (s.error) throw new Error(s.error);
@@ -448,19 +432,11 @@ async function startCloudGame(gameKey, gameName) {
     _cloudTimers.push(timerInterval);
 
   } catch (e) {
-    console.error("[Cloud] Start Game Error:", e);
     if (currentRunId !== _cloudRunId) return;
     if (_cloudSession) _quitCloudSession(_cloudSession.uuid, _cloudSession.serverIndex);
     _cloudSession = null;
     setCloudPhase("Error", e.message, false);
     _cloudStarting = false;
-  }
-}
-
-function _flushPendingCandidates() {
-  if (_cloudWs && _cloudWs.readyState === 1 && _cloudPendingCandidates.length > 0) {
-    _cloudPendingCandidates.forEach(obj => _cloudWs.send(JSON.stringify(obj)));
-    _cloudPendingCandidates = [];
   }
 }
 
@@ -472,8 +448,16 @@ function cloudSigSend(obj) {
   }
 }
 
+function _flushPendingCandidates() {
+  if (!_cloudPendingCandidates.length) {
+    return;
+  }
+  const copy = _cloudPendingCandidates;
+  _cloudPendingCandidates = [];
+  copy.forEach(obj => cloudSigSend(obj));
+}
+
 function showCloudEndedScreen(title, detail) {
-  console.log(`[Cloud] Session ended: ${title} - ${detail}`);
   if (!_cloudSession) return;
   teardownCloud(true);
   _cloudEndedActive = true;
@@ -538,14 +522,12 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
     const scheme = (urlObj.protocol === "https:" ? "wss://" : "ws://");
     let wsUrl = scheme + urlObj.host + urlObj.pathname.replace(/\/$/, '') + "/signal/" + signalingId;
 
-    console.log("[Signaling] Connecting to:", wsUrl);
     try {
       const ws = new WebSocket(wsUrl);
       _cloudWs = ws;
 
       const readyTimeout = setTimeout(() => {
         if (_cloudWs === ws && !_cloudPc) {
-          console.warn("[Signaling] game_ready timed out after 35s. Instance failed to boot.");
           showCloudEndedScreen("Session Ended", "The game server took too long to start.");
           reject(new Error("game_ready timeout"));
         }
@@ -553,7 +535,6 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
       _cloudTimers.push(readyTimeout);
 
       ws.onopen = () => {
-        console.log("[Signaling] WS open:", wsUrl);
         ws._heartbeat = setInterval(() => {
           if (ws.readyState === 1) ws.send(JSON.stringify({ type: "ping" }));
         }, 3000);
@@ -562,7 +543,7 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
 
         if (window._cloudPendingMsgs && window._cloudPendingMsgs.length) {
           window._cloudPendingMsgs.forEach(m => {
-            try { ws.send(JSON.stringify(m)); console.log("[Signaling] flushed pending msg:", m.type); } catch (e) { console.warn("[Signaling] flush send failed", e); }
+            try { ws.send(JSON.stringify(m)); } catch (e) {}
           });
           window._cloudPendingMsgs = [];
         }
@@ -571,13 +552,11 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
       };
 
       ws.onerror = (err) => {
-        console.error("[Signaling] WS error:", err);
         if (ws._heartbeat) clearInterval(ws._heartbeat);
         if (_cloudWs === ws && !isReconnect) reject(new Error("Signaling connection failed"));
       };
 
       ws.onclose = ev => {
-        console.log("[Signaling] WS closed:", ev.code, ev.reason);
         if (ws._heartbeat) clearInterval(ws._heartbeat);
         if (_cloudWs !== ws) return;
         _cloudWs = null;
@@ -592,7 +571,7 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
         if (_cloudWs !== ws) return;
         console.log("[Signaling] recv:", ev.data);
         let m;
-        try { m = JSON.parse(ev.data); } catch (err) { console.warn("[Signaling] invalid json:", err); return; }
+        try { m = JSON.parse(ev.data); } catch (err) { return; }
 
         switch (m.type) {
           case "error":
@@ -606,12 +585,9 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
             
             if (!_cloudPc) {
               try {
-                console.log("[Signaling] game_ready received. Initializing WebRTC peer...");
                 await createCloudPeer(iceServers);
                 resolve();
-                console.log("[Signaling] WebRTC peer successfully created and initialized.");
               } catch (peerErr) {
-                console.error("[Signaling] Critical error inside createCloudPeer:", peerErr);
                 reject(peerErr);
               }
             }
@@ -623,7 +599,6 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
               let remoteDesc = m.sdp;
               if (typeof remoteDesc === "string") remoteDesc = { type: "answer", sdp: remoteDesc };
               await _cloudPc.setRemoteDescription(new RTCSessionDescription(remoteDesc));
-              console.log("[WebRTC] Remote description set.");
             } catch (err) {
               console.error('[WebRTC] setRemoteDescription failed:', err);
             }
@@ -632,9 +607,7 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
           case "rtc_candidate":
             try {
               await _cloudPc.addIceCandidate(new RTCIceCandidate(m.candidate));
-            } catch (err) {
-              console.error('[WebRTC] addIceCandidate failed:', err);
-            }
+            } catch (err) {}
             break;
 
           case "ping":
@@ -650,28 +623,21 @@ function connectCloudSignaling(signalingWs, iceServers, isReconnect) {
             if (readyTimeout) clearTimeout(readyTimeout);
             showCloudEndedScreen("Session Ended", m.message);
             break;
-
-          default:
-            console.log("[Signaling] unknown message type:", m.type, m);
         }
       };
     } catch (err) {
-      console.error("[Signaling] WebSocket construction failed:", err);
       reject(err);
     }
   });
 }
 
 async function createCloudPeer(iceServers) {
-  console.log("[WebRTC] Initializing createCloudPeer(). Incoming iceServers parameter:", iceServers);
-  
   const resolvedIceServers = (Array.isArray(iceServers) && iceServers.length > 0)
     ? iceServers
     : [{ urls: "stun:stun.l.google.com:19302" }];
 
   const videoEl = document.getElementById("cloudVideo");
   
-  // GUARANTEE: Initialize _cloudPc immediately so it is never undefined
   try {
     _cloudPc = new RTCPeerConnection({
       iceServers: resolvedIceServers,
@@ -679,9 +645,7 @@ async function createCloudPeer(iceServers) {
       rtcpMuxPolicy: "require",
       iceCandidatePoolSize: 4
     });
-    console.log("[WebRTC] RTCPeerConnection constructed successfully.");
   } catch (err) {
-    console.error("[WebRTC] Fatal error constructing RTCPeerConnection:", err);
     throw err;
   }
 
@@ -713,43 +677,32 @@ async function createCloudPeer(iceServers) {
       } catch {}
       videoTransceiver.setCodecPreferences(useAv1 ? [...av1, ...h264, ...others] : [...h264, ...av1, ...others]);
     }
-  } catch (err) {
-    console.warn("[WebRTC] Codec preference setup skipped/failed:", err);
-  }
+  } catch (err) {}
 
+  // FIX: Explicitly match the old code's data channel setup: "JYSKD" + id: 1
   try {
-    _cloudDc = _cloudPc.createDataChannel("JYSDK", { 
+    _cloudDc = _cloudPc.createDataChannel("JYSKD", { 
+      id: 1,
       ordered: false, 
       maxRetransmits: 0, 
       priority: "high" 
     });
-    console.log("[DataChannel] JYSDK data channel created locally.");
   } catch (err) {
     console.error("[DataChannel] Failed to create data channel:", err);
   }
 
-  _cloudDc.onopen = () => {
-    console.log("[DataChannel] JYSDK opened successfully.");
-    try {
-      const initBuf = new ArrayBuffer(4);
-      const view = new DataView(initBuf);
-      view.setUint8(0, 1);
-      view.setUint8(1, 0); 
-      _cloudDc.send(initBuf);
-    } catch (e) {
-      console.warn("[DataChannel] Failed to send init packet:", e);
-    }
-  };
+  _cloudDc.onopen = () => {};
 
   _cloudDc.onclose = () => {
-    console.warn("[DataChannel] JYSDK closed by remote peer.");
     if (_cloudDc && _cloudSession) {
       showCloudEndedScreen("Session Ended", "Lost the input channel.");
     }
   };
 
   _cloudDc.onerror = (err) => {
-    console.error("[DataChannel] JYSDK error:", err);
+    if (_cloudDc && _cloudSession) {
+      showCloudEndedScreen("Session Ended", "Input channel error.");
+    }
   };
 
   let currentJitterTarget = 0;
@@ -813,15 +766,11 @@ async function createCloudPeer(iceServers) {
   _cloudTimers.push(statsInterval);
 
   _cloudPc.ontrack = ev => {
-    console.log("[WebRTC] Track received! Kind:", ev.track.kind, "Stream ID:", ev.streams[0]?.id);
     if(videoEl) {
       if (!videoEl.srcObject) videoEl.srcObject = new MediaStream();
       try { 
         videoEl.srcObject.addTrack(ev.track); 
-        console.log("[WebRTC] Track successfully added to video element srcObject.");
-      } catch (err) { 
-        console.warn('[WebRTC] addTrack failed:', err); 
-      }
+      } catch (err) {}
     }
     
     if (ev.track.kind === "video") {
@@ -848,7 +797,7 @@ async function createCloudPeer(iceServers) {
       if(document.getElementById("cloudOverlay")) document.getElementById("cloudOverlay").style.display = "none";
       if(videoEl) {
         videoEl.muted = false;
-        videoEl.play().catch((err) => { console.warn("[WebRTC] Autoplay prevented or failed:", err); });
+        videoEl.play().catch(() => {});
       }
       _cloudInputActive = true;
       _cloudStarting = false;
@@ -876,15 +825,13 @@ async function createCloudPeer(iceServers) {
   };
 
   try {
-    console.log("[WebRTC] Creating local offer...");
     const offer = await _cloudPc.createOffer();
-    console.log("[WebRTC] Local offer created, setting local description...");
     await _cloudPc.setLocalDescription(offer);
-    console.log("[WebRTC] Local description set. Sending rtc_offer via signaling...");
     
+    // FIX: Send SDP as a raw string directly, just like the old code did!
     cloudSigSend({ 
       type: 'rtc_offer', 
-      sdp: { type: offer.type || 'offer', sdp: offer.sdp } 
+      sdp: offer.sdp 
     });
   } catch (offerErr) {
     console.error("[WebRTC] Error during offer creation/signaling:", offerErr);
