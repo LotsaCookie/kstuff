@@ -68,175 +68,7 @@
   </div>
 
   <script>
- const serverList = [
-  "cdn.northstreetumc.org",
-  "cdn.perstufbol.com",
-  "cdn.pcesc.org",
-  "cdn.kcchallengevbc.com",
-  "cdn.slcbmooc.org",
-  "wss://girlspreples.org/wi/"
-];
-
-window.serverList = serverList;
-window._activeServerIndex = 0;
-
-function wispPath() {
-  return "false" !== localStorage['ABDE'] ? "/adblock/" : "/";
-}
-
-function wispUrl(e) {
-  return e['includes']("://") ? e : `wss://${e}${wispPath()}`;
-}
-
-let _gamesSearchTimer = null;
-let _gamesKeyword = null;
-let _cloudEnabled = false;
-let _cloudSession = null;
-let _cloudPc = null;
-let _cloudDc = null;
-let _cloudWs = null;
-let _cloudTimers = [];
-let _cloudInputActive = false;
-let _cloudInputHandlers = null;
-let _cloudStarting = false;
-let _cloudEndedActive = false;
-let _cloudPendingCandidates = [];
-let _cloudRunId = 0;
-let _cloudGamesFetchPromise = null;
-
-function _filterByName(list, keyword) {
-  if (!keyword) return list;
-  return list.filter(g => (g.name || '').toLowerCase().includes(keyword.toLowerCase()));
-}
-
-function _gamesReload(keyword) {
-  _gamesKeyword = keyword;
-  loadGames();
-}
-
-// --- Resilient API Wrapper ---
-function getStratusBase(index) {
-  const rawServer = window.serverList[index !== undefined && index !== null ? index : window._activeServerIndex] || window.serverList[0];
-  if (rawServer.includes("://")) {
-    try {
-      const urlObj = new URL(rawServer);
-      let p = urlObj.pathname;
-      if (p === "/") p = "";
-      if (p.endsWith("/")) p = p.slice(0, -1);
-      return `https://${urlObj.host}${p}/stratus`;
-    } catch {
-      return "";
-    }
-  }
-  return `https://${rawServer}/stratus`;
-}
-
-async function stratusApi(path, method = "GET", body, pinnedIndex = null) {
-  let lastError = null;
-  const totalServers = window.serverList.length;
-  const startIndex = pinnedIndex !== null ? pinnedIndex : window._activeServerIndex;
-  const attempts = pinnedIndex !== null ? 1 : totalServers;
-
-  console.log(`[API] Attempting ${method} to /${path}`);
-
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    const index = (startIndex + attempt) % totalServers;
-    const baseUrl = getStratusBase(index);
-
-    if (!baseUrl) continue;
-
-    try {
-      const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-      const fetchUrl = new URL(`${baseUrl}/${cleanPath}`);
-
-      if (method.toUpperCase() === "GET") {
-        fetchUrl.searchParams.set("_t", Date.now().toString());
-      }
-
-      const res = await fetch(fetchUrl.toString(), {
-        method: method,
-        cache: "no-store",
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          ...(body ? { 'content-type': 'application/json' } : {})
-        },
-        body: body ? JSON.stringify(body) : undefined
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok || res.status === 304) {
-        if (pinnedIndex === null) {
-          window._activeServerIndex = index;
-        }
-        console.log(`[API] Success ${method} /${path}`, data);
-        return res.status === 304 ? { status: 304 } : data;
-      } else {
-        lastError = data.error || `HTTP ${res.status}`;
-        console.warn(`[API] Warn ${method} /${path}:`, lastError);
-      }
-    } catch (err) {
-      lastError = err.message;
-      console.error(`[API] Error ${method} /${path}:`, err);
-    }
-  }
-
-  return { error: lastError || "All server endpoints failed connection." };
-}
-
-async function _loadGamesCacheEntry(key) { return null; }
-async function _saveGamesCacheEntry(key, data) { }
-
-// --- Cloud Player Control Functions ---
-function closeGamePlayer() {
-  console.log("[UI] Closing Game Player");
-  _cloudEndedActive = false;
-  const player = document.getElementById("gamePlayer");
-  const videoWrap = document.getElementById("cloudVideoWrap");
-
-  if(player) player.classList.remove("open");
-  if(videoWrap) videoWrap.style.display = "flex";
-
-  if(document.getElementById("gamePlayerId")) document.getElementById("gamePlayerId").textContent = '';
-  if(document.getElementById("gamePlayerTimeLeft")) document.getElementById("gamePlayerTimeLeft").textContent = '';
-
-  teardownCloud(true);
-}
-
-function toggleGameFullscreen() {
-  const target = _cloudSession ? document.getElementById("cloudVideoWrap") : document.getElementById("gamePlayer");
-  if (!target) return;
-  if (!document.fullscreenElement) {
-    target.requestFullscreen().catch((err) => console.error("[UI] Fullscreen Error:", err));
-  } else {
-    document.exitFullscreen().catch((err) => console.error("[UI] Exit Fullscreen Error:", err));
-  }
-}
-
-if(document.getElementById("gamesSearch")) {
-  document.getElementById("gamesSearch").addEventListener("input", function () {
-    clearTimeout(_gamesSearchTimer);
-    const val = this.value.trim();
-    _gamesSearchTimer = setTimeout(() => _gamesReload(val || null), 350);
-  });
-}
-
-if(document.getElementById("refreshBtn")) {
-  document.getElementById("refreshBtn").addEventListener("click", function () {
-    loadGames();
-  });
-}
-
-function setCloudPhase(name, detail, spin) {
-  console.log(`[Phase] ${name}: ${detail}`);
-  if(document.getElementById("cloudPhase")) document.getElementById("cloudPhase").textContent = name;
-  if(document.getElementById("cloudPhaseDetail")) document.getElementById("cloudPhaseDetail").textContent = detail || '';
-  if(document.getElementById("cloudSpinner")) document.getElementById("cloudSpinner").style.display = spin ? "block" : "none";
-}
-
-function _quitCloudSession(uuid, serverIndex) {
-const serverList = [
+   const serverList = [
   "cdn.northstreetumc.org",
   "cdn.perstufbol.com",
   "cdn.pcesc.org",
@@ -802,6 +634,7 @@ async function createCloudPeer(iceServers) {
   _cloudPc.addTransceiver("audio", { direction: 'recvonly' });
   const videoTransceiver = _cloudPc.addTransceiver("video", { direction: "recvonly" });
 
+  // 1. Smart Codec Selection
   try {
     const caps = RTCRtpReceiver.getCapabilities?.("video");
     if (caps?.codecs?.length && videoTransceiver.setCodecPreferences) {
@@ -829,6 +662,7 @@ async function createCloudPeer(iceServers) {
     }
   } catch {}
 
+  // 2. Data Channel Fix ("JYSDK")
   try {
     _cloudDc = _cloudPc.createDataChannel("JYSDK", { 
       id: 1, 
@@ -850,6 +684,7 @@ async function createCloudPeer(iceServers) {
     if (_cloudDc && _cloudSession) showCloudEndedScreen("Session Ended", "Lost the input channel.");
   };
 
+  // 3. Dynamic Jitter Buffer
   let currentJitterTarget = 0;
   let videoReceiver = null;
   let audioReceiver = null;
@@ -910,6 +745,7 @@ async function createCloudPeer(iceServers) {
   
   _cloudTimers.push(statsInterval);
 
+  // 4. Track Routing
   _cloudPc.ontrack = ev => {
     if(videoEl) {
       if (!videoEl.srcObject) videoEl.srcObject = new MediaStream();
