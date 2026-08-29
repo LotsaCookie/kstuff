@@ -816,9 +816,12 @@ async function createCloudPeer(iceServers) {
           if (unmuteHint) {
             unmuteHint.style.display = "block";
             unmuteHint.onclick = () => {
-              videoEl.muted = false;
-              unmuteHint.style.display = "none"; // Hide button after unmuting
-              videoEl.requestPointerLock?.().catch(() => {});
+             videoEl.muted = false;
+             unmuteHint.style.display = "none";
+             try {
+               const lockPromise = videoEl.requestPointerLock();
+               if (lockPromise && typeof lockPromise.catch === "function") lockPromise.catch(()=>{});
+             } catch (e) {}
             };
           }
         });
