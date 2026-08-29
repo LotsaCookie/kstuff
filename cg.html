@@ -946,11 +946,20 @@ function setupCloudInput() {
   const videoClickHandler = () => {
     if (!_cloudDc || !videoEl) return;
     if (document.pointerLockElement === videoEl) return;
+    
     cachedRect = null;
     const r = getRect();
     relX = r.width / 2; relY = r.height / 2;
     cursorX = r.left + relX; cursorY = r.top + relY;
-    videoEl.requestPointerLock?.().catch(() => {});
+    
+    try {
+      const lockPromise = videoEl.requestPointerLock();
+      if (lockPromise && typeof lockPromise.catch === "function") {
+        lockPromise.catch((e) => console.warn("[PointerLock] Blocked by browser", e));
+      }
+    } catch (err) {
+      console.warn("[PointerLock] Error:", err);
+    }
   };
 
   const pointerLockChangeHandler = () => {
@@ -992,19 +1001,26 @@ function setupCloudInput() {
     sendInputBuf(buf.slice(0, offset));
   };
 
+  
+
   const keyDownHandler = keyHandler(true);
   const keyUpHandler = keyHandler(false);
+  const videoWrap = document.getElementById("cloudVideoWrap");
 
   document.addEventListener("mousemove", mouseMoveHandler);
   document.addEventListener("mousedown", mouseButtonHandler);
   document.addEventListener("mouseup", mouseButtonHandler);
   document.addEventListener("contextmenu", e => { if (_cloudInputActive) e.preventDefault(); });
   document.addEventListener("wheel", wheelHandler, { passive: false });
-  if(videoEl) videoEl.addEventListener("click", videoClickHandler);
+  
+  if (videoEl) videoEl.addEventListener("click", videoClickHandler);
+  if (videoWrap) videoWrap.addEventListener("click", videoClickHandler);
+  
   document.addEventListener("keydown", keyDownHandler, true);
   document.addEventListener("keyup", keyUpHandler, true);
   document.addEventListener("pointerlockchange", pointerLockChangeHandler);
-  if(relockHint) relockHint.addEventListener("click", videoClickHandler);
+  
+  if (relockHint) relockHint.addEventListener("click", videoClickHandler);
 
   _cloudInputHandlers = {
     mouseMoveHandler, mouseButtonHandler, wheelHandler,
