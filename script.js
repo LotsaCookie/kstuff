@@ -945,7 +945,7 @@ function initApp() {
                         processedItem.title = matchedItem.name;
                         processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
                         processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
-                        processedItem.description = processedItem.description || '';
+                        processedItem.description = '';
                         processedItem.category = processedItem.category || 'Truffled';
                     }
                 }
