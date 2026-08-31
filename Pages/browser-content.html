@@ -556,469 +556,379 @@
             </div>
         </div>
     </div>
+ <script>
+let mathWorksheets = [];
+let activeWorksheetId = null;
+let nextWorksheetId = 1;
+let cachedQuote = "";
 
-    <script>
-        let mathWorksheets = [];
-        let activeWorksheetId = null;
-        let nextWorksheetId = 1;
-        let cachedQuote = "";
+let flashcards = JSON.parse(localStorage.getItem('study_flashcards')) || [
+    { name: 'DuckDuckGo', url: 'https://duckduckgo.com' },
+    { name: 'now.gg', url: 'https://now.gg' },
+    { name: 'Realtime HTML', url: 'https://realtimehtml.com' }
+];
 
-        let flashcards = JSON.parse(localStorage.getItem('study_flashcards')) || [
-            { name: 'DuckDuckGo', url: 'https://duckduckgo.com' },
-            { name: 'now.gg', url: 'https://now.gg' },
-            { name: 'Realtime HTML', url: 'https://realtimehtml.com' }
-        ];
+// Reusable Flashcard Helper
+function addFlashcard(name, url) {
+    if (!name || !url) return;
+    flashcards.push({ name, url });
+    localStorage.setItem('study_flashcards', JSON.stringify(flashcards));
+    refreshAllFlashcards();
+}
 
-        function saveFlashcards() {
-            localStorage.setItem('study_flashcards', JSON.stringify(flashcards));
+// Reusable URL Formatter
+function formatUrl(rawUrl, allowSearch = false) {
+    let validUrl = rawUrl.trim();
+    if (!validUrl) return '';
+    if (validUrl.startsWith('http://') || validUrl.startsWith('https://')) return validUrl;
+    
+    if (allowSearch && (!validUrl.includes('.') || validUrl.includes(' '))) {
+        return 'https://www.google.com/search?q=' + encodeURIComponent(validUrl);
+    }
+    return 'https://' + validUrl;
+}
+
+const worksheetsContainer = document.getElementById('worksheets-container');
+const campusViewport = document.getElementById('campus-viewport');
+const textbookInput = document.getElementById('textbook-input');
+const studyEnterBtn = document.getElementById('study-enter-btn');
+const reloadStudyBtn = document.getElementById('reload-study-btn');
+const homeStudyBtn = document.getElementById('home-study-btn');
+const flashcardShortcutBtn = document.getElementById('flashcard-shortcut-btn');
+const newWorksheetPlusBtn = document.getElementById('new-worksheet-plus-btn');
+const studyBackBtn = document.getElementById('study-back-btn');
+const studyForwardBtn = document.getElementById('study-forward-btn');
+const examModal = document.getElementById('exam-modal');
+const examNameInput = document.getElementById('exam-name-input');
+const examUrlInput = document.getElementById('exam-url-input');
+const examSaveBtn = document.getElementById('exam-save-btn');
+const examCancelBtn = document.getElementById('exam-cancel-btn');
+
+let currentModalCallback = null;
+
+async function fetchLatestQuote() {
+    try {
+        const commitData = await (await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main')).json();
+        const messages = await (await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitData.sha || 'main'}/Json/messages.json`)).json();
+        
+        if (Array.isArray(messages) && messages.length > 0) {
+            cachedQuote = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
+            document.querySelectorAll('.library-home-quote').forEach(el => el.textContent = cachedQuote);
         }
+    } catch (err) {
+        console.warn('Could not load random quote:', err);
+    }
+}
+fetchLatestQuote();
 
-        const worksheetsContainer = document.getElementById('worksheets-container');
-        const campusViewport = document.getElementById('campus-viewport');
-        const textbookInput = document.getElementById('textbook-input');
-        const studyEnterBtn = document.getElementById('study-enter-btn');
-        const reloadStudyBtn = document.getElementById('reload-study-btn');
-        const homeStudyBtn = document.getElementById('home-study-btn');
-        const flashcardShortcutBtn = document.getElementById('flashcard-shortcut-btn');
-        const newWorksheetPlusBtn = document.getElementById('new-worksheet-plus-btn');
-        const studyBackBtn = document.getElementById('study-back-btn');
-        const studyForwardBtn = document.getElementById('study-forward-btn');
-        const examModal = document.getElementById('exam-modal');
-        const examNameInput = document.getElementById('exam-name-input');
-        const examUrlInput = document.getElementById('exam-url-input');
-        const examSaveBtn = document.getElementById('exam-save-btn');
-        const examCancelBtn = document.getElementById('exam-cancel-btn');
-        let currentModalCallback = null;
+function openExamModal(defaultName, defaultUrl, callback) {
+    examNameInput.value = defaultName || '';
+    examUrlInput.value = defaultUrl || '';
+    currentModalCallback = callback;
+    examModal.classList.add('active');
+    examNameInput.focus();
+}
 
-        async function fetchLatestQuote() {
-            try {
-                const commitRes = await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');
-                const commitData = await commitRes.json();
-                const sha = commitData.sha || 'main';
-                
-                const quoteRes = await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/Json/messages.json`);
-                const messages = await quoteRes.json();
-                
-                if (Array.isArray(messages) && messages.length > 0) {
-                    cachedQuote = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
-                    document.querySelectorAll('.library-home-quote').forEach(el => el.textContent = cachedQuote);
-                }
-            } catch (err) {
-                console.warn('Could not load random quote:', err);
-            }
+function closeExamModal() {
+    examModal.classList.remove('active');
+    currentModalCallback = null;
+}
+
+examSaveBtn.addEventListener('click', () => {
+    if (currentModalCallback) currentModalCallback(examNameInput.value.trim(), examUrlInput.value.trim());
+    closeExamModal();
+});
+examCancelBtn.addEventListener('click', closeExamModal);
+
+function updateNavButtons() {
+    if (activeWorksheetId === null) return;
+    const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
+    if (!worksheet) return;
+    
+    studyBackBtn.disabled = worksheet.historyIndex <= 0;
+    studyForwardBtn.disabled = worksheet.historyIndex >= worksheet.history.length - 1;
+}
+
+function createMathWorksheet(initialUrl = '') {
+    const worksheetId = nextWorksheetId++;
+    const worksheetEl = document.createElement('div');
+    worksheetEl.className = 'math-worksheet';
+    worksheetEl.dataset.id = worksheetId;
+    worksheetEl.innerHTML = `
+        <img class="worksheet-icon" src="" alt="" style="display: none;" />
+        <span class="worksheet-label">New Tab</span>
+        <button class="worksheet-close" title="Close Tab">&times;</button>
+    `;
+
+    const viewEl = document.createElement('div');
+    viewEl.className = 'campus-view';
+    viewEl.dataset.id = worksheetId;
+    // FIX: Replaced initialUrl || '' with initialUrl || 'about:blank' to stop parent page flickering
+    viewEl.innerHTML = `
+        <div class="library-home-page" style="display: ${initialUrl ? 'none' : 'flex'};">
+            <h1 class="library-home-title">K-STUFF</h1>
+            <p class="library-home-quote">${cachedQuote}</p>
+            <div class="flashcards-container"></div>
+            <button class="add-flashcard-btn"><span>+</span> Create Shortcut</button>
+        </div>
+        <iframe class="study-iframe" src="${initialUrl || 'about:blank'}" style="display: ${initialUrl ? 'block' : 'none'};"></iframe>
+    `;
+
+    const worksheet = {
+        id: worksheetId,
+        title: 'New Tab',
+        url: initialUrl,
+        mode: initialUrl ? 'iframe' : 'library',
+        iframeSrc: initialUrl,
+        history: [initialUrl || ''],
+        historyIndex: 0,
+        isNavigating: false,
+        elements: {
+            tab: worksheetEl,
+            view: viewEl,
+            label: worksheetEl.querySelector('.worksheet-label'),
+            icon: worksheetEl.querySelector('.worksheet-icon'),
+            iframe: viewEl.querySelector('.study-iframe'),
+            library: viewEl.querySelector('.library-home-page')
         }
-        fetchLatestQuote();
+    };
 
-        function getFaviconUrl(rawUrl) {
-            try {
-                let validUrl = rawUrl.trim();
-                if (!validUrl.startsWith('http://') && !validUrl.startsWith('https://')) {
-                    validUrl = 'https://' + validUrl;
-                }
-                const parsed = new URL(validUrl);
-                return `https://www.google.com/s2/favicons?domain=${parsed.hostname}&sz=64`;
-            } catch(e) {
-                return '';
-            }
-        }
+    mathWorksheets.push(worksheet);
 
-        function openExamModal(defaultName, defaultUrl, callback) {
-            examNameInput.value = defaultName || '';
-            examUrlInput.value = defaultUrl || '';
-            currentModalCallback = callback;
-            examModal.classList.add('active');
-            examNameInput.focus();
-        }
+    worksheetEl.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('worksheet-close')) switchMathWorksheet(worksheetId);
+    });
 
-        function closeExamModal() {
-            examModal.classList.remove('active');
-            currentModalCallback = null;
-        }
+    worksheetEl.querySelector('.worksheet-close').addEventListener('click', () => closeMathWorksheet(worksheetId));
 
-        examSaveBtn.addEventListener('click', () => {
-            if (currentModalCallback) {
-                currentModalCallback(examNameInput.value.trim(), examUrlInput.value.trim());
-            }
-            closeExamModal();
-        });
+    worksheetsContainer.appendChild(worksheetEl);
+    
+    // Setup Library Page
+    const flashcardContainer = viewEl.querySelector('.flashcards-container');
+    renderFlashcardsForView(flashcardContainer, worksheetId);
+    viewEl.querySelector('.add-flashcard-btn').addEventListener('click', () => openExamModal('', '', addFlashcard));
 
-        examCancelBtn.addEventListener('click', closeExamModal);
+    campusViewport.appendChild(viewEl);
+    switchMathWorksheet(worksheetId);
+    
+    if (initialUrl) loadUrlInMathWorksheet(worksheetId, initialUrl, false, true);
+}
 
-        function updateNavButtons() {
-            if (activeWorksheetId === null) return;
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (!worksheet) return;
-            
-            studyBackBtn.disabled = worksheet.historyIndex <= 0;
-            studyForwardBtn.disabled = worksheet.historyIndex >= worksheet.history.length - 1;
-        }
+function renderFlashcardsForView(container, worksheetId) {
+    container.innerHTML = '';
+    flashcards.forEach((fc, index) => {
+        const card = document.createElement('div');
+        card.className = 'flashcard-card';
+        
+        let faviconUrl = '';
+        try { faviconUrl = `https://www.google.com/s2/favicons?domain=${new URL(formatUrl(fc.url)).hostname}&sz=64`; } catch(e) {}
 
-        function createMathWorksheet(initialUrl = '') {
-            const worksheetId = nextWorksheetId++;
-            
-            const worksheetEl = document.createElement('div');
-            worksheetEl.className = 'math-worksheet';
-            worksheetEl.dataset.id = worksheetId;
-            worksheetEl.innerHTML = `
-                <img class="worksheet-icon" src="" alt="" style="display: none;" />
-                <span class="worksheet-label">New Tab</span>
-                <button class="worksheet-close" title="Close Tab">&times;</button>
-            `;
-
-            const viewEl = document.createElement('div');
-            viewEl.className = 'campus-view';
-            viewEl.dataset.id = worksheetId;
-            viewEl.innerHTML = `
-                <div class="library-home-page" style="display: ${initialUrl ? 'none' : 'flex'};">
-                    <h1 class="library-home-title">K-STUFF</h1>
-                    <p class="library-home-quote">${cachedQuote}</p>
-                    <div class="flashcards-container"></div>
-                    <button class="add-flashcard-btn"><span>+</span> Create Shortcut</button>
+        card.innerHTML = `
+            <div class="flashcard-icon-wrapper">
+                <button class="remove-flashcard-btn" title="Remove Shortcut">&times;</button>
+                <div class="flashcard-icon">
+                    ${faviconUrl ? `<img src="${faviconUrl}" alt="${fc.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" /><span style="display:none;">${fc.name.charAt(0).toUpperCase()}</span>` : `<span>${fc.name.charAt(0).toUpperCase()}</span>`}
                 </div>
-                <iframe class="study-iframe" src="${initialUrl || ''}" style="display: ${initialUrl ? 'block' : 'none'};"></iframe>
-            `;
+            </div>
+            <span class="flashcard-name" title="${fc.name}">${fc.name}</span>
+        `;
 
-            const worksheet = {
-                id: worksheetId,
-                title: 'New Tab',
-                url: initialUrl,
-                mode: initialUrl ? 'iframe' : 'library',
-                iframeSrc: initialUrl,
-                history: [initialUrl || ''],
-                historyIndex: 0,
-                isNavigating: false,
-                elements: {
-                    tab: worksheetEl,
-                    view: viewEl,
-                    label: worksheetEl.querySelector('.worksheet-label'),
-                    icon: worksheetEl.querySelector('.worksheet-icon'),
-                    iframe: viewEl.querySelector('.study-iframe'),
-                    library: viewEl.querySelector('.library-home-page')
-                }
-            };
-
-            mathWorksheets.push(worksheet);
-
-            worksheetEl.addEventListener('click', (e) => {
-                if (e.target.classList.contains('worksheet-close')) return;
-                switchMathWorksheet(worksheetId);
-            });
-
-            worksheetEl.querySelector('.worksheet-close').addEventListener('click', () => {
-                closeMathWorksheet(worksheetId);
-            });
-
-            worksheetsContainer.appendChild(worksheetEl);
-            setupLibraryPageEvents(viewEl, worksheetId);
-            campusViewport.appendChild(viewEl);
-
-            switchMathWorksheet(worksheetId);
-            if (initialUrl) {
-                loadUrlInMathWorksheet(worksheetId, initialUrl, false, true);
-            }
-        }
-
-        function setupLibraryPageEvents(viewEl, worksheetId) {
-            const flashcardContainer = viewEl.querySelector('.flashcards-container');
-            const addFlashcardBtn = viewEl.querySelector('.add-flashcard-btn');
-
-            renderFlashcardsForView(flashcardContainer, worksheetId);
-
-            addFlashcardBtn.addEventListener('click', () => {
-                openExamModal('', '', (name, url) => {
-                    if (!name || !url) return;
-                    flashcards.push({ name, url });
-                    saveFlashcards();
-                    refreshAllFlashcards();
-                });
-            });
-        }
-
-        function renderFlashcardsForView(container, worksheetId) {
-            container.innerHTML = '';
-            flashcards.forEach((fc, index) => {
-                const card = document.createElement('div');
-                card.className = 'flashcard-card';
-                const faviconUrl = getFaviconUrl(fc.url);
-
-                card.innerHTML = `
-                    <div class="flashcard-icon-wrapper">
-                        <button class="remove-flashcard-btn" title="Remove Shortcut">&times;</button>
-                        <div class="flashcard-icon">
-                            ${faviconUrl ? `<img src="${faviconUrl}" alt="${fc.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" /><span style="display:none;">${fc.name.charAt(0).toUpperCase()}</span>` : `<span>${fc.name.charAt(0).toUpperCase()}</span>`}
-                        </div>
-                    </div>
-                    <span class="flashcard-name" title="${fc.name}">${fc.name}</span>
-                `;
-
-                card.querySelector('.remove-flashcard-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    flashcards.splice(index, 1);
-                    saveFlashcards();
-                    refreshAllFlashcards();
-                });
-
-                card.addEventListener('click', () => {
-                    loadUrlInMathWorksheet(worksheetId, fc.url, true);
-                });
-
-                container.appendChild(card);
-            });
-        }
-
-        function refreshAllFlashcards() {
-            mathWorksheets.forEach(w => {
-                const container = w.elements.view.querySelector('.flashcards-container');
-                if (container) renderFlashcardsForView(container, w.id);
-            });
-        }
-
-        function switchMathWorksheet(worksheetId) {
-            activeWorksheetId = worksheetId;
-
-            mathWorksheets.forEach(w => {
-                const isActive = w.id === worksheetId;
-                w.elements.tab.classList.toggle('active', isActive);
-                w.elements.view.classList.toggle('active', isActive);
-            });
-
-            const worksheet = mathWorksheets.find(w => w.id === worksheetId);
-            if (worksheet) {
-                textbookInput.value = worksheet.mode === 'iframe' ? worksheet.url : '';
-            }
-            updateNavButtons();
-        }
-
-        function closeMathWorksheet(worksheetId) {
-            const index = mathWorksheets.findIndex(w => w.id === worksheetId);
-            if (index === -1) return;
-
-            const [removed] = mathWorksheets.splice(index, 1);
-            removed.elements.tab.remove();
-            removed.elements.view.remove();
-
-            if (mathWorksheets.length === 0) {
-                createMathWorksheet();
-            } else if (activeWorksheetId === worksheetId) {
-                const newActive = mathWorksheets[Math.max(0, index - 1)];
-                switchMathWorksheet(newActive.id);
-            }
-        }
-
-        function loadUrlInMathWorksheet(worksheetId, inputVal, updateInput = true, isHistoryNav = false) {
-            if (!inputVal) return;
-
-            let targetUrl = inputVal.trim();
-            if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
-                if (targetUrl.includes('.') && !targetUrl.includes(' ')) {
-                    targetUrl = 'https://' + targetUrl;
-                } else {
-                    targetUrl = 'https://www.google.com/search?q=' + encodeURIComponent(targetUrl);
-                }
-            }
-
-            const worksheet = mathWorksheets.find(w => w.id === worksheetId);
-            if (!worksheet) return;
-
-            worksheet.url = targetUrl;
-            worksheet.mode = 'iframe';
-            worksheet.iframeSrc = targetUrl;
-            worksheet.isNavigating = true;
-
-            if (!isHistoryNav) {
-                if (worksheet.history[worksheet.historyIndex] !== targetUrl) {
-                    worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
-                    worksheet.history.push(targetUrl);
-                    worksheet.historyIndex++;
-                }
-            }
-
-            try {
-                const domain = new URL(targetUrl).hostname;
-                worksheet.title = domain;
-                worksheet.elements.label.textContent = domain;
-            } catch (e) {
-                worksheet.title = targetUrl;
-            }
-
-            const iframe = worksheet.elements.iframe;
-            iframe.onload = () => {
-                worksheet.isNavigating = false;
-                try {
-                    if (iframe.contentDocument && iframe.contentDocument.title) {
-                        worksheet.title = iframe.contentDocument.title;
-                        worksheet.elements.label.textContent = worksheet.title;
-                    }
-                    const iconLink = iframe.contentDocument?.querySelector("link[rel*='icon']");
-                    if (iconLink && iconLink.href) {
-                        worksheet.elements.icon.src = iconLink.href;
-                        worksheet.elements.icon.style.display = 'block';
-                    }
-                } catch (err) {}
-            };
-
-            worksheet.elements.library.style.display = 'none';
-            iframe.style.display = 'block';
-            iframe.src = targetUrl;
-
-            if (updateInput && activeWorksheetId === worksheetId) {
-                textbookInput.value = targetUrl;
-            }
-
-            updateNavButtons();
-        }
-
-        function showLibraryPageForActiveWorksheet(isHistoryNav = false) {
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (!worksheet) return;
-
-            worksheet.mode = 'library';
-            worksheet.url = '';
-            worksheet.title = 'New Tab';
-            worksheet.iframeSrc = '';
-            worksheet.isNavigating = false;
-
-            if (!isHistoryNav) {
-                if (worksheet.history[worksheet.historyIndex] !== '') {
-                    worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
-                    worksheet.history.push('');
-                    worksheet.historyIndex++;
-                }
-            }
-
-            worksheet.elements.label.textContent = 'New Tab';
-            worksheet.elements.icon.src = '';
-            worksheet.elements.icon.style.display = 'none';
-
-            worksheet.elements.iframe.style.display = 'none';
-            worksheet.elements.iframe.src = '';
-            worksheet.elements.library.style.display = 'flex';
-
-            textbookInput.value = '';
-            updateNavButtons();
-        }
-
-        studyBackBtn.addEventListener('click', () => {
-            if (activeWorksheetId === null) return;
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (worksheet && worksheet.historyIndex > 0) {
-                worksheet.historyIndex--;
-                const prevUrl = worksheet.history[worksheet.historyIndex];
-                if (prevUrl === '') {
-                    showLibraryPageForActiveWorksheet(true);
-                } else {
-                    loadUrlInMathWorksheet(activeWorksheetId, prevUrl, true, true);
-                }
-            }
+        card.querySelector('.remove-flashcard-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            flashcards.splice(index, 1);
+            localStorage.setItem('study_flashcards', JSON.stringify(flashcards));
+            refreshAllFlashcards();
         });
 
-        studyForwardBtn.addEventListener('click', () => {
-            if (activeWorksheetId === null) return;
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (worksheet && worksheet.historyIndex < worksheet.history.length - 1) {
-                worksheet.historyIndex++;
-                const nextUrl = worksheet.history[worksheet.historyIndex];
-                if (nextUrl === '') {
-                    showLibraryPageForActiveWorksheet(true);
-                } else {
-                    loadUrlInMathWorksheet(activeWorksheetId, nextUrl, true, true);
-                }
-            }
-        });
+        card.addEventListener('click', () => loadUrlInMathWorksheet(worksheetId, fc.url, true));
+        container.appendChild(card);
+    });
+}
 
-        // Polling interval throttled from 200ms to 1000ms to eliminate UI lag & GPU thrashing
-        setInterval(() => {
-            if (activeWorksheetId === null) return;
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (!worksheet || worksheet.mode !== 'iframe' || worksheet.isNavigating) return;
+function refreshAllFlashcards() {
+    mathWorksheets.forEach(w => {
+        const container = w.elements.view.querySelector('.flashcards-container');
+        if (container) renderFlashcardsForView(container, w.id);
+    });
+}
 
-            const iframe = worksheet.elements.iframe;
-            if (!iframe) return;
+function switchMathWorksheet(worksheetId) {
+    activeWorksheetId = worksheetId;
+    mathWorksheets.forEach(w => {
+        const isActive = w.id === worksheetId;
+        w.elements.tab.classList.toggle('active', isActive);
+        w.elements.view.classList.toggle('active', isActive);
+        if (isActive) textbookInput.value = w.mode === 'iframe' ? w.url : '';
+    });
+    updateNavButtons();
+}
 
-            try {
-                if (iframe.contentWindow && iframe.contentWindow.location) {
-                    const currentLoc = iframe.contentWindow.location.href;
-                    if (currentLoc && currentLoc !== 'about:blank') {
-                        const getNorm = (u) => {
-                            if (!u) return '';
-                            try { return new URL(u).href; } catch(e) { return u; }
-                        };
+function closeMathWorksheet(worksheetId) {
+    const index = mathWorksheets.findIndex(w => w.id === worksheetId);
+    if (index === -1) return;
 
-                        if (getNorm(currentLoc) !== getNorm(worksheet.url)) {
-                            worksheet.url = currentLoc;
-                            textbookInput.value = currentLoc;
-                            
-                            const tipUrl = worksheet.history[worksheet.historyIndex];
-                            if (getNorm(tipUrl) !== getNorm(currentLoc)) {
-                                worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
-                                worksheet.history.push(currentLoc);
-                                worksheet.historyIndex++;
-                                updateNavButtons();
-                            }
-                        }
-                    }
-                    if (iframe.contentDocument && iframe.contentDocument.title) {
-                        worksheet.title = iframe.contentDocument.title;
-                        worksheet.elements.label.textContent = worksheet.title;
-                    }
-                }
-            } catch (e) {}
-        }, 1000);
+    const [removed] = mathWorksheets.splice(index, 1);
+    removed.elements.tab.remove();
+    removed.elements.view.remove();
 
-        newWorksheetPlusBtn.addEventListener('click', () => createMathWorksheet());
-
-        studyEnterBtn.addEventListener('click', () => {
-            if (activeWorksheetId !== null) {
-                loadUrlInMathWorksheet(activeWorksheetId, textbookInput.value);
-            }
-        });
-
-        textbookInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && activeWorksheetId !== null) {
-                loadUrlInMathWorksheet(activeWorksheetId, textbookInput.value);
-            }
-        });
-
-        reloadStudyBtn.addEventListener('click', () => {
-            const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
-            if (worksheet && worksheet.mode === 'iframe') {
-                const iframe = worksheet.elements.iframe;
-                try {
-                    iframe.contentWindow.location.reload();
-                } catch (e) {
-                    iframe.src = iframe.src;
-                }
-            }
-        });
-
-        homeStudyBtn.addEventListener('click', () => showLibraryPageForActiveWorksheet(false));
-
-        flashcardShortcutBtn.addEventListener('click', () => {
-            const currentUrl = textbookInput.value;
-            if (!currentUrl) {
-                openExamModal('', '', (name, url) => {
-                    if (!name || !url) return;
-                    flashcards.push({ name, url });
-                    saveFlashcards();
-                    refreshAllFlashcards();
-                });
-                return;
-            }
-            let defaultName = currentUrl;
-            try {
-                const urlObj = new URL(currentUrl);
-                defaultName = urlObj.hostname.replace('www.', '');
-            } catch(e) {}
-
-            openExamModal(defaultName, currentUrl, (name, url) => {
-                if (!name || !url) return;
-                flashcards.push({ name, url });
-                saveFlashcards();
-                refreshAllFlashcards();
-            });
-        });
-
+    if (mathWorksheets.length === 0) {
         createMathWorksheet();
-    </script>
+    } else if (activeWorksheetId === worksheetId) {
+        switchMathWorksheet(mathWorksheets[Math.max(0, index - 1)].id);
+    }
+}
+
+function loadUrlInMathWorksheet(worksheetId, inputVal, updateInput = true, isHistoryNav = false) {
+    if (!inputVal) return;
+    const targetUrl = formatUrl(inputVal, true);
+    const worksheet = mathWorksheets.find(w => w.id === worksheetId);
+    if (!worksheet) return;
+
+    worksheet.url = targetUrl;
+    worksheet.mode = 'iframe';
+    worksheet.iframeSrc = targetUrl;
+    worksheet.isNavigating = true;
+
+    if (!isHistoryNav && worksheet.history[worksheet.historyIndex] !== targetUrl) {
+        worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
+        worksheet.history.push(targetUrl);
+        worksheet.historyIndex++;
+    }
+
+    try {
+        const domain = new URL(targetUrl).hostname;
+        worksheet.title = domain;
+        worksheet.elements.label.textContent = domain;
+    } catch (e) {
+        worksheet.title = targetUrl;
+    }
+
+    const iframe = worksheet.elements.iframe;
+    iframe.onload = () => {
+        worksheet.isNavigating = false;
+        try {
+            if (iframe.contentDocument?.title) {
+                worksheet.title = iframe.contentDocument.title;
+                worksheet.elements.label.textContent = worksheet.title;
+            }
+            const iconLink = iframe.contentDocument?.querySelector("link[rel*='icon']");
+            if (iconLink?.href) {
+                worksheet.elements.icon.src = iconLink.href;
+                worksheet.elements.icon.style.display = 'block';
+            }
+        } catch (err) {} // Ignore CORS errors
+    };
+
+    worksheet.elements.library.style.display = 'none';
+    iframe.style.display = 'block';
+    iframe.src = targetUrl;
+
+    if (updateInput && activeWorksheetId === worksheetId) textbookInput.value = targetUrl;
+    updateNavButtons();
+}
+
+function showLibraryPageForActiveWorksheet(isHistoryNav = false) {
+    const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
+    if (!worksheet) return;
+
+    worksheet.mode = 'library';
+    worksheet.url = '';
+    worksheet.title = 'New Tab';
+    worksheet.iframeSrc = '';
+    worksheet.isNavigating = false;
+
+    if (!isHistoryNav && worksheet.history[worksheet.historyIndex] !== '') {
+        worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
+        worksheet.history.push('');
+        worksheet.historyIndex++;
+    }
+
+    worksheet.elements.label.textContent = 'New Tab';
+    worksheet.elements.icon.style.display = 'none';
+    worksheet.elements.iframe.style.display = 'none';
+    
+    // FIX: 'about:blank' prevents parent page from reloading inside the iframe
+    worksheet.elements.iframe.src = 'about:blank'; 
+    worksheet.elements.library.style.display = 'flex';
+
+    textbookInput.value = '';
+    updateNavButtons();
+}
+
+// Consolidated History Navigation
+function navigateHistory(offset) {
+    if (activeWorksheetId === null) return;
+    const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
+    
+    if (worksheet) {
+        const newIndex = worksheet.historyIndex + offset;
+        if (newIndex >= 0 && newIndex < worksheet.history.length) {
+            worksheet.historyIndex = newIndex;
+            const targetUrl = worksheet.history[newIndex];
+            if (targetUrl === '') showLibraryPageForActiveWorksheet(true);
+            else loadUrlInMathWorksheet(activeWorksheetId, targetUrl, true, true);
+        }
+    }
+}
+
+studyBackBtn.addEventListener('click', () => navigateHistory(-1));
+studyForwardBtn.addEventListener('click', () => navigateHistory(1));
+
+setInterval(() => {
+    if (activeWorksheetId === null) return;
+    const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
+    if (!worksheet || worksheet.mode !== 'iframe' || worksheet.isNavigating) return;
+
+    try {
+        const iframe = worksheet.elements.iframe;
+        const currentLoc = iframe.contentWindow?.location?.href;
+        
+        if (currentLoc && currentLoc !== 'about:blank') {
+            const getNorm = (u) => { try { return new URL(u).href; } catch(e) { return u; } };
+
+            if (getNorm(currentLoc) !== getNorm(worksheet.url)) {
+                worksheet.url = currentLoc;
+                textbookInput.value = currentLoc;
+                
+                if (getNorm(worksheet.history[worksheet.historyIndex]) !== getNorm(currentLoc)) {
+                    worksheet.history = worksheet.history.slice(0, worksheet.historyIndex + 1);
+                    worksheet.history.push(currentLoc);
+                    worksheet.historyIndex++;
+                    updateNavButtons();
+                }
+            }
+            if (iframe.contentDocument?.title) {
+                worksheet.title = iframe.contentDocument.title;
+                worksheet.elements.label.textContent = worksheet.title;
+            }
+        }
+    } catch (e) {}
+}, 1000);
+
+newWorksheetPlusBtn.addEventListener('click', () => createMathWorksheet());
+studyEnterBtn.addEventListener('click', () => { if (activeWorksheetId !== null) loadUrlInMathWorksheet(activeWorksheetId, textbookInput.value); });
+textbookInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && activeWorksheetId !== null) loadUrlInMathWorksheet(activeWorksheetId, textbookInput.value); });
+
+reloadStudyBtn.addEventListener('click', () => {
+    const worksheet = mathWorksheets.find(w => w.id === activeWorksheetId);
+    if (worksheet && worksheet.mode === 'iframe') {
+        try { worksheet.elements.iframe.contentWindow.location.reload(); } 
+        catch (e) { worksheet.elements.iframe.src = worksheet.elements.iframe.src; }
+    }
+});
+
+homeStudyBtn.addEventListener('click', () => showLibraryPageForActiveWorksheet(false));
+
+flashcardShortcutBtn.addEventListener('click', () => {
+    const currentUrl = textbookInput.value;
+    if (!currentUrl) return openExamModal('', '', addFlashcard);
+    
+    let defaultName = currentUrl;
+    try { defaultName = new URL(currentUrl).hostname.replace('www.', ''); } catch(e) {}
+    openExamModal(defaultName, currentUrl, addFlashcard);
+});
+
+createMathWorksheet();
+ </script>
 </body>
 </html>
