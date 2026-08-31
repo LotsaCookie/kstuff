@@ -1,1 +1,4 @@
-
+[
+  { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+  { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" }
+]
