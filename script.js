@@ -83,9 +83,9 @@ function initApp() {
             } catch { cachedCommitHash = "main"; }
         }
         return [
+            `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
             `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`,
             `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`,
-            `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
             `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`,
             ""
         ];
