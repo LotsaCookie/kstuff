@@ -103,12 +103,5 @@
     "category": "Search Engine",
     "url": "${static}https://www.google.com/",
     "image": "https://logowik.com/content/uploads/images/google-new7326.jpg"
-  },
-  {
-    "title": "Fedora Workstation X86_64-38-1 .6 VM",
-    "description": "",
-    "category": "Cloud",
-    "url": "${scram}https://kstuff.neocities.org/data_archive/data_new/Cloud/onworks.html?url=https://onworks.net/runos/create-osgpu.html?os=Fedora-Workstation-Live-x86_64-38-1.6&home=init",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRASG6DQp3rw6PI59NjEOzuUKhmx2arX6IIvA&s"
   }
 ]
