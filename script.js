@@ -492,22 +492,16 @@ function initApp() {
         });
 
         const resolvedBases = {};
-        
-        // Single fetch for static so we can map it to frogiee below without fetching twice
         const staticDataPromise = fetchAsset('Json/urls/static.json').catch(() => []);
         
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
             fetchAsset('Json/a.json').catch(() => []),
             fetchAsset('Json/truffled.json').catch(() => null),
-            
-            // Dynamic Url Fetching -> getWorkingConfig -> map to resolvedBases
             fetchAsset('Json/urls/scram.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.scram = w),
             staticDataPromise.then(getWorkingConfig).then(w => resolvedBases.static = w),
             fetchAsset('Json/urls/uv.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.uv = w),
             fetchAsset('Json/urls/truffled.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.truffled = w),
-            
-            // Frogiee pulls the static data but strips the 'final' key out before passing to getWorkingConfig
             staticDataPromise.then(data => 
                 getWorkingConfig(data.map(item => ({ url: item.url, img: item.img, final: "" })))
             ).then(w => resolvedBases.frogiee = w)
