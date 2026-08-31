@@ -863,10 +863,12 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .settings-modal-content {
+.settings-modal-content {
     height: auto;
     max-height: 90vh;
     width: 650px;
     max-width: 95vw;
+    overflow: visible !important;
 }
 
 .modal-settings-body {
@@ -875,6 +877,8 @@ body.text-hide .nav-right .nav-divider {
     padding: 1.5rem !important;
     margin: 0 !important;
     max-width: 100% !important;
+    max-height: calc(90vh - 70px); /* Keeps the body scrollable if content is long */
+    overflow-y: auto !important;   /* Enables scrolling inside the modal body */
 }
 
 .custom-select-wrapper {
