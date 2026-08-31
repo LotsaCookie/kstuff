@@ -879,7 +879,8 @@ body.text-hide .nav-right .nav-divider {
 
 .custom-select-wrapper {
     position: relative;
-    width: 100%;
+    width: 220px; /* Standardized to match category dropdown width */
+    max-width: 100%;
     user-select: none;
 }
 
@@ -980,9 +981,6 @@ body.text-hide .nav-right .nav-divider {
     background: rgba(128, 128, 128, 0.5);
 }
 
-/* ==========================================
-   MOBILE MEDIA QUERY
-   ========================================== */
 @media (max-width: 768px) {
     :root {
         --btn-icon-size: 0.75rem;
