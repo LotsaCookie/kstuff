@@ -20,7 +20,8 @@
     </script>
     <style>
         body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-color);color:var(--text-color);height:100vh;overflow:hidden;transition:background var(--transition-speed) ease,color var(--transition-speed) ease;font-weight:bold}
-        #loading-screen{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg-color,#1a1216);color:var(--text-color,#ffb8d9);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:999999;transition:opacity .5s ease,visibility .5s ease}
+        #loading-screen{position:fixed;inset:0;width:100vw;height:100vh;background:var(--bg-color,#1a1216);color:var(--text-color,#ffb8d9);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:999999;filter:brightness(0);transition:filter .8s ease,opacity .5s ease,visibility .5s ease}
+        #loading-screen.loaded{filter:brightness(1)}
         #loading-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
         .spinner{width:48px;height:48px;border:4px solid var(--bg-color);border-top-color:var(--text-color,#ffb8d9);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:1.5rem}
         .loading-text{font-size:1.25rem;font-weight:900!important;letter-spacing:.25em;text-transform:uppercase;animation:pulse 1.5s ease-in-out infinite}
@@ -34,7 +35,23 @@
     </script>
     <div id="loading-screen"><div class="spinner"></div><div class="loading-text">Loading</div></div>
     <script>
-        window.addEventListener('load',async ()=>{if(window.kAssets)await window.kAssets;setTimeout(()=>{const l=document.getElementById('loading-screen');if(l)l.classList.add('hidden');setTimeout(()=>{document.body.style.removeProperty('--bg-color');document.body.style.removeProperty('--text-color')},600)},4000)});
+        window.addEventListener('load', async () => {
+            if (window.kAssets) await window.kAssets;
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+            const l = document.getElementById('loading-screen');
+            if (l) {
+                l.classList.add('loaded');
+                setTimeout(() => {
+                    l.classList.add('hidden');
+                    setTimeout(() => {
+                        document.body.style.removeProperty('--bg-color');
+                        document.body.style.removeProperty('--text-color');
+                    }, 600);
+                }, 800);
+            }
+        });
     </script>
     <div style="display:none;" aria-hidden="true">
         <h1>Educational Resources and Online Learning Platform</h1><p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
