@@ -4771,7 +4771,7 @@
     "description": "",
     "category": "Shooter",
     "url": "https://raw.githack.com/l0tzie-bug/Spectra-Cloud/main/index.html?launch=Battlefield 6",
-    "image": ""
+    "image": "https://assets-prd.ignimgs.com/2025/07/23/battlefield6-1753290173215.jpg"
   },
   {
     "title": "Mafia: The Old Country",
@@ -4877,5 +4877,12 @@
     "category": "Action",
     "url": "https://raw.githack.com/l0tzie-bug/Spectra-Cloud/main/index.html?launch=FEROCIOUS",
     "image": ""
+  },
+  {
+    "title": "The Long Drive",
+    "description": "",
+    "category": "Adventure",
+    "url": "https://raw.githack.com/l0tzie-bug/Spectra-Cloud/main/index.html?launch=The Long Drive",
+    "image": "https://media.moddb.com/images/games/1/73/72401/LogoSquare.png"
   }
 ]
