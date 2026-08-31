@@ -1,69 +1,4 @@
 function initApp() {
-    const scramTable = [
-        { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
-        { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" }
-    ]; 
-    const staticTable = [
-        { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://larp.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://nickolas.industries", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://shrimpy.website", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://gloverschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://miku.hair", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://yourfrogiesarcadelink.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://tetosarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://bogbot.shop", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://nsd160.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://ixl.rocks", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://denisonisd.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://anthonyisgooningat3am.space", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://caisseforsmithfieldschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://frogiesarcade.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://austinisd.net", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://brooklyn.foundation", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://frog.bar", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://edgy.blog", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://cliffschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://columbiapublicschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://northfayetteschools.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://smdpschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://burrvillees.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://pleasantonmiddleschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://hcstemm.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://riversideacademy.site", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://highschoolmathteachers.com", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://oldmillschool.org", img: "/stuff/logo.png", final: "/embed.html#" },
-        { url: "https://frogiesarcade.net", img: "/stuff/logo.png", final: "/embed.html#" }
-    ];
-    const uvTable = [
-        { url: "https://tutoring4free.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.net", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.info", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.icu", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.education", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://dataccrafted.org", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" },
-        { url: "https://extrememath.cyou", img: "/images/extrememathtextlogo.png", final: "/uv.html?site=" }
-    ];
-    const truffledTable = [
-        { url: "https://boat.strongson.com/", img: "/favicon.ico", final: "" },
-        { url: "https://lib.stcath.net/", img: "/favicon.ico", final: "" },
-        { url: "https://thislinkworks.b-cdn.net/", img: "/favicon.ico", final: "" },
-        { url: "https://truffledlinklol.b-cdn.net/", img: "/favicon.ico", final: "" },
-        { url: "https://snoopy.patelmortgage.com/", img: "/favicon.ico", final: "" },
-        { url: "https://truffled.lol/", img: "/favicon.ico", final: "" },
-        { url: "https://boon.busse.li/", img: "/favicon.ico", final: "" },
-        { url: "https://buff.loscantarostemuco.cl/", img: "/favicon.ico", final: "" },
-        { url: "https://hibrooklyn.site/", img: "/favicon.ico", final: "" },
-        { url: "https://for-ravipati03121e3.shared-with.de/", img: "/favicon.ico", final: "" },
-        { url: "https://tutoring-services.org", img: "/favicon.ico", final: "" },
-        { url: "https://mathteachersforhire.org", img: "/favicon.ico", final: "" },
-        { url: "https://classlink.com.de", img: "/favicon.ico", final: "" },
-        { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
-    ];
-    
-    const frogieeTable = staticTable.map(item => ({ url: item.url, img: item.img, final: "" }));
-
     async function getWorkingConfig(table) {
         if (!table || !table.length) return null;
         const chunkSize = 5;
@@ -557,15 +492,26 @@ function initApp() {
         });
 
         const resolvedBases = {};
+        
+        // Single fetch for static so we can map it to frogiee below without fetching twice
+        const staticDataPromise = fetchAsset('Json/urls/static.json').catch(() => []);
+        
         Promise.all([
             fetchAsset('Json/g.json').catch(() => []),
             fetchAsset('Json/a.json').catch(() => []),
             fetchAsset('Json/truffled.json').catch(() => null),
-            getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
-            getWorkingConfig(staticTable).then(w => resolvedBases.static = w),
-            getWorkingConfig(uvTable).then(w => resolvedBases.uv = w),
-            getWorkingConfig(truffledTable).then(w => resolvedBases.truffled = w),
-            getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
+            
+            // Dynamic Url Fetching -> getWorkingConfig -> map to resolvedBases
+            fetchAsset('Json/urls/scram.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.scram = w),
+            staticDataPromise.then(getWorkingConfig).then(w => resolvedBases.static = w),
+            fetchAsset('Json/urls/uv.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.uv = w),
+            fetchAsset('Json/urls/truffled.json').catch(() => []).then(getWorkingConfig).then(w => resolvedBases.truffled = w),
+            
+            // Frogiee pulls the static data but strips the 'final' key out before passing to getWorkingConfig
+            staticDataPromise.then(data => 
+                getWorkingConfig(data.map(item => ({ url: item.url, img: item.img, final: "" })))
+            ).then(w => resolvedBases.frogiee = w)
+            
         ]).then(([gData, aData, truffledData]) => {
 
             function applyBases(str) {
