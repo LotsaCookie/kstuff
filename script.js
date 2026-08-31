@@ -383,6 +383,63 @@ function initApp() {
         setupSetting(document.getElementById('layout-size-select'), 'kstuff_nav_size', 'size', v => body.classList.add(v));
         setupSetting(document.getElementById('layout-text-select'), 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
 
+        function applyCustomDropdown(selectEl) {
+            if (!selectEl) return;
+            
+            if (selectEl.dataset.customized) {
+                const existing = selectEl.nextElementSibling;
+                if (existing && existing.classList.contains('custom-select-wrapper')) existing.remove();
+            }
+            
+            selectEl.style.display = 'none';
+            selectEl.dataset.customized = 'true';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'custom-select-wrapper';
+            
+            const trigger = document.createElement('div');
+            trigger.className = 'custom-select-trigger';
+            const selectedText = selectEl.options[selectEl.selectedIndex]?.text || '';
+            trigger.innerHTML = `<span>${selectedText}</span> <i class="ph ph-caret-down"></i>`;
+            
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'custom-select-options';
+            
+            Array.from(selectEl.options).forEach((opt, idx) => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'custom-select-option' + (idx === selectEl.selectedIndex ? ' selected' : '');
+                optionEl.textContent = opt.text;
+                
+                optionEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectEl.value = opt.value;
+                    trigger.querySelector('span').textContent = opt.text;
+                    optionsContainer.querySelectorAll('.custom-select-option').forEach(el => el.classList.remove('selected'));
+                    optionEl.classList.add('selected');
+                    optionsContainer.classList.remove('open');
+                    
+                    selectEl.dispatchEvent(new Event('change'));
+                });
+                optionsContainer.appendChild(optionEl);
+            });
+            
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.custom-select-options.open').forEach(el => { if (el !== optionsContainer) el.classList.remove('open'); });
+                optionsContainer.classList.toggle('open');
+            });
+            
+            wrapper.appendChild(trigger);
+            wrapper.appendChild(optionsContainer);
+            selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open'));
+        });
+
+        document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
+
         function bindModal(modalId, closeBtnId) {
             const modal = document.getElementById(modalId), closeBtn = document.getElementById(closeBtnId);
             if (closeBtn) closeBtn.addEventListener('click', () => modal?.classList.remove('active'));
@@ -473,6 +530,9 @@ function initApp() {
                     opt.value = opt.textContent = c;
                     select.appendChild(opt);
                 });
+                
+                applyCustomDropdown(select);
+
                 select.addEventListener('change', (e) => {
                     showLoader();
                     grids[type].category = e.target.value;
