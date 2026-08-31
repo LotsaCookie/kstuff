@@ -864,7 +864,7 @@ body.text-hide .nav-right .nav-divider {
 
 .settings-modal-content {
     height: auto;
-    max-height: 85vh;
+    max-height: none;
     width: 460px;
     max-width: 90vw;
     overflow: visible !important;
@@ -876,8 +876,8 @@ body.text-hide .nav-right .nav-divider {
     padding: 1.5rem !important;
     margin: 0 !important;
     max-width: 100% !important;
-    max-height: calc(85vh - 70px); /* Keeps the body scrollable inside the original size */
-    overflow-y: auto !important;
+    max-height: none !important; 
+    overflow: visible !important;
 }
 
 .custom-select-wrapper {
