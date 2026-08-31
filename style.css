@@ -879,8 +879,7 @@ body.text-hide .nav-right .nav-divider {
 
 .custom-select-wrapper {
     position: relative;
-    width: 220px; /* Standardized to match category dropdown width */
-    max-width: 100%;
+    width: 100%;
     user-select: none;
 }
 
