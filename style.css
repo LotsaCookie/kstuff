@@ -865,9 +865,9 @@ body.text-hide .nav-right .nav-divider {
 .settings-modal-content {
 .settings-modal-content {
     height: auto;
-    max-height: 90vh;
+    max-height: 50vh;
     width: 650px;
-    max-width: 95vw;
+    max-width: 55vw;
     overflow: visible !important;
 }
 
