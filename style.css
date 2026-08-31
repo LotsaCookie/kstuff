@@ -877,54 +877,6 @@ body.text-hide .nav-right .nav-divider {
     max-width: 100% !important;
 }
 
-@media (max-width: 768px) {
-    :root {
-        --btn-icon-size: 0.75rem;
-        --btn-text-size: 0.55rem;
-        --nav-width-mobile: 41px;
-    }
-    
-    body.size-medium {
-        --btn-icon-size: 0.95rem;
-        --btn-text-size: 0.7rem;
-        --nav-width-mobile: 48px;
-    }
-    
-    body.size-large {
-        --btn-icon-size: 1.15rem;
-        --btn-text-size: 0.85rem;
-        --nav-width-mobile: 56px;
-    }
-
-    #teachertouchbar {
-        padding: 0.28rem;
-        gap: 0.14rem;
-    }
-    
-    .nav-btn {
-        flex-direction: column;
-        padding: 0.28rem 0.22rem;
-        width: auto;
-        height: auto;
-        min-height: auto;
-        font-size: 0.65rem;
-        text-align: center;
-    }
-
-    .nav-btn i {
-        font-size: var(--btn-icon-size);
-        margin-bottom: 1px;
-    }
-
-    .nav-btn span {
-        display: block;
-        margin-left: 0;
-        font-size: var(--btn-text-size);
-        max-width: 100%;
-        text-align: center;
-        white-space: normal;
-    }
-
 .custom-select-wrapper {
     position: relative;
     width: 100%;
@@ -1027,6 +979,57 @@ body.text-hide .nav-right .nav-divider {
 .custom-select-options::-webkit-scrollbar-thumb:hover {
     background: rgba(128, 128, 128, 0.5);
 }
+
+/* ==========================================
+   MOBILE MEDIA QUERY
+   ========================================== */
+@media (max-width: 768px) {
+    :root {
+        --btn-icon-size: 0.75rem;
+        --btn-text-size: 0.55rem;
+        --nav-width-mobile: 41px;
+    }
+    
+    body.size-medium {
+        --btn-icon-size: 0.95rem;
+        --btn-text-size: 0.7rem;
+        --nav-width-mobile: 48px;
+    }
+    
+    body.size-large {
+        --btn-icon-size: 1.15rem;
+        --btn-text-size: 0.85rem;
+        --nav-width-mobile: 56px;
+    }
+
+    #teachertouchbar {
+        padding: 0.28rem;
+        gap: 0.14rem;
+    }
+    
+    .nav-btn {
+        flex-direction: column;
+        padding: 0.28rem 0.22rem;
+        width: auto;
+        height: auto;
+        min-height: auto;
+        font-size: 0.65rem;
+        text-align: center;
+    }
+
+    .nav-btn i {
+        font-size: var(--btn-icon-size);
+        margin-bottom: 1px;
+    }
+
+    .nav-btn span {
+        display: block;
+        margin-left: 0;
+        font-size: var(--btn-text-size);
+        max-width: 100%;
+        text-align: center;
+        white-space: normal;
+    }
 
     .nav-left #teachertouchbar, 
     .nav-right #teachertouchbar {
