@@ -925,6 +925,109 @@ body.text-hide .nav-right .nav-divider {
         white-space: normal;
     }
 
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.setting-group .custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    background: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.setting-group .custom-select-trigger:hover, 
+.setting-group .custom-select-trigger.open {
+    border-color: var(--text-color);
+}
+
+.modern-select-wrapper .custom-select-wrapper {
+    width: 100%;
+}
+
+.modern-select-wrapper .custom-select-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 1.05rem;
+    font-weight: 900 !important;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    width: 100%;
+}
+
+.custom-select-options {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--nav-bg);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 250px;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.custom-select-options.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-select-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+    color: var(--text-color);
+}
+
+.custom-select-option:last-child {
+    border-bottom: none;
+}
+
+.custom-select-option:hover, 
+.custom-select-option.selected {
+    background: color-mix(in srgb, var(--text-color) 15%, transparent);
+}
+
+.custom-select-options::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-select-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-select-options::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 4px;
+}
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.5);
+}
+
     .nav-left #teachertouchbar, 
     .nav-right #teachertouchbar {
         width: var(--nav-width-mobile);
