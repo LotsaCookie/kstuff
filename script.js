@@ -1,7 +1,7 @@
 function initApp() {
     const scramTable = [
         { url: "https://raw.githack.com/lotsacookie/kstuff/main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
-        { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" },
+        { url: "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main", img: "/assets/img/fav.png", final: "/scram.svg?url=" }
     ]; 
     const staticTable = [
         { url: "https://frogiesarcade.win", img: "/stuff/logo.png", final: "/embed.html#" },
@@ -62,21 +62,24 @@ function initApp() {
         { url: "https://geometrycalculatorhelprvhs.college", img: "/favicon.ico", final: "" }
     ];
     
-    const frogieeTable = staticTable.map(item => ({
-        url: item.url,
-        img: item.img,
-        final: ""
-    }));
+    const frogieeTable = staticTable.map(item => ({ url: item.url, img: item.img, final: "" }));
 
     async function getWorkingConfig(table) {
-        if (!table || table.length === 0) return null;
+        if (!table || !table.length) return null;
         const chunkSize = 5;
         for (let i = 0; i < table.length; i += chunkSize) {
             const chunk = table.slice(i, i + chunkSize);
             const winner = await new Promise((resolve) => {
-                let resolved = false;
-                let failedCount = 0;
-                let activeImages = [];
+                let resolved = false, failedCount = 0;
+                const activeImages = [];
+
+                const cleanup = () => {
+                    activeImages.forEach(im => {
+                        im.onload = im.onerror = null;
+                        im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                    });
+                    activeImages.length = 0;
+                };
 
                 chunk.forEach(entry => {
                     const img = new Image();
@@ -85,103 +88,48 @@ function initApp() {
                     
                     img.onload = () => {
                         if (!resolved) {
-                            if (img.naturalWidth > 0) {
-                                resolved = true;
-                                cleanup();
-                                resolve(entry);
-                            } else {
-                                failedCount++;
-                                if (!resolved && failedCount === chunk.length) {
-                                    resolved = true;
-                                    cleanup();
-                                    resolve(null);
-                                }
-                            }
+                            if (img.naturalWidth > 0) { resolved = true; cleanup(); resolve(entry); } 
+                            else if (++failedCount === chunk.length) { resolved = true; cleanup(); resolve(null); }
                         }
                     };
                     
                     img.onerror = () => {
-                        failedCount++;
-                        if (!resolved && failedCount === chunk.length) {
-                            resolved = true;
-                            cleanup();
-                            resolve(null); 
-                        }
+                        if (!resolved && ++failedCount === chunk.length) { resolved = true; cleanup(); resolve(null); }
                     };
-                    
-                    function cleanup() {
-                        activeImages.forEach(im => {
-                            im.onload = null;
-                            im.onerror = null;
-                            im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                        });
-                        activeImages.length = 0;
-                    }
                     
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
                 setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        activeImages.forEach(im => { 
-                            im.onload = null;
-                            im.onerror = null;
-                            im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
-                        });
-                        activeImages.length = 0;
-                        resolve(null);
-                    }
+                    if (!resolved) { resolved = true; cleanup(); resolve(null); }
                 }, 8000);
             });
-
             if (winner) return winner; 
         }
         return table[0]; 
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', runLogic);
-    } else {
-        runLogic();
-    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runLogic);
+    else runLogic();
 
     function runLogic() {
+        const body = document.body;
         const navBar = document.getElementById('teachertouchbar');
         const navBtns = document.querySelectorAll('.nav-btn');
         const pages = document.querySelectorAll('.page');
-        const themeSelect = document.getElementById('layout-theme-select');
-        const navSelect = document.getElementById('layout-nav-select');
-        const textSelect = document.getElementById('layout-text-select');
-        const sizeSelect = document.getElementById('layout-size-select');
-        const body = document.body;
-
         const loader = document.querySelector('.section-loader');
-
-        if (loader) {
-            loader.style.opacity = '0';
-        }
         
-        function showLoader() {
-            if (loader) loader.style.opacity = '1'; loader.classList.remove('hidden');
-        }
-        function hideLoader() {
-            if (loader) loader.style.opacity = '0'; loader.classList.add('hidden');
-        }
+        const showLoader = () => { if (loader) { loader.style.opacity = '1'; loader.classList.remove('hidden'); } };
+        const hideLoader = () => { if (loader) { loader.style.opacity = '0'; loader.classList.add('hidden'); } };
+        if (loader) loader.style.opacity = '0';
 
         const modalOverlay = document.getElementById('resource-modal');
         const modalIframe = document.getElementById('resource-modal-iframe');
         const modalTitle = document.getElementById('resource-modal-title');
-        const modalCloseBtn = document.getElementById('resource-close-btn');
-        const modalFullscreenBtn = document.getElementById('resource-fullscreen-btn');
+        
+        let savedWindowScrollY = 0, savedPageScrollTop = 0, cachedCommitHash = null;
 
-        const settingsModal = document.getElementById('homeworkhelper-modal');
-        const settingsCloseBtn = document.getElementById('homeworkhelper-close-btn');
-
-        let savedWindowScrollY = 0;
-        let savedPageScrollTop = 0;
-
-        let indicator = navBar ? navBar.querySelector('.nav-indicator') : null;
+        let indicator = navBar?.querySelector('.nav-indicator');
         if (navBar && !indicator) {
             indicator = document.createElement('div');
             indicator.className = 'nav-indicator';
@@ -193,61 +141,42 @@ function initApp() {
             const isVertical = body.classList.contains('nav-left') || body.classList.contains('nav-right');
             const navRect = navBar.getBoundingClientRect();
             const btnRect = activeBtn.getBoundingClientRect();
-
-            indicator.style.left = ''; indicator.style.right = ''; indicator.style.top = ''; indicator.style.bottom = '';
-
+            
+            indicator.style.cssText = ''; 
             if (isVertical) {
-                const topOffset = btnRect.top - navRect.top;
                 indicator.style.width = '3px';
                 indicator.style.height = `${btnRect.height}px`;
-                indicator.style.transform = `translateY(${topOffset}px)`;
+                indicator.style.transform = `translateY(${btnRect.top - navRect.top}px)`;
             } else {
-                const leftOffset = btnRect.left - navRect.left;
                 indicator.style.width = `${btnRect.width}px`;
                 indicator.style.height = '3px';
-                indicator.style.transform = `translateX(${leftOffset}px)`;
+                indicator.style.transform = `translateX(${btnRect.left - navRect.left}px)`;
             }
-        }
-
-        let cachedCommitHash = null;
-
-        async function getCommitHash() {
-            if (cachedCommitHash) return cachedCommitHash;
-            try {
-                const res = await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main");
-                if (res.ok) {
-                    const data = await res.json();
-                    cachedCommitHash = data.sha; 
-                    return cachedCommitHash;
-                }
-            } catch (e) {
-                console.warn("GitHub API fetch failed, falling back to 'main'", e);
-            }
-            cachedCommitHash = "main";
-            return cachedCommitHash;
         }
 
         async function getProxyList() {
-            const hash = await getCommitHash();
+            if (!cachedCommitHash) {
+                try {
+                    const res = await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main");
+                    cachedCommitHash = res.ok ? (await res.json()).sha : "main";
+                } catch { cachedCommitHash = "main"; }
+            }
             return [
-                `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${hash}/`,
-                `https://raw.githubusercontent.com/lotsacookie/kstuff/${hash}/`,
-                `https://raw.githack.com/lotsacookie/kstuff/${hash}/`,
-                `https://cdn.statically.io/gh/lotsacookie/kstuff/${hash}/`,
+                `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`,
+                `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`,
+                `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
+                `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`,
                 ""
             ];
         }
 
         async function fetchAsset(path) {
             const proxies = await getProxyList();
-            const cacheBuster = "?_=" + Date.now();
-            
             for (const proxy of proxies) {
                 try {
-                    const url = proxy + path + (proxy ? "" : cacheBuster);
-                    const response = await fetch(url);
-                    if (response.ok) return await response.json();
-                } catch (err) {}
+                    const res = await fetch(proxy + path + (proxy ? "" : "?_=" + Date.now()));
+                    if (res.ok) return await res.json();
+                } catch {}
             }
             throw new Error("All proxies failed for " + path);
         }
@@ -261,173 +190,84 @@ function initApp() {
         async function loadProxyContentAsIframe(id, path, pageId) {
             const iframe = document.getElementById(id);
             if (!iframe) return;
-            
             const proxies = await getProxyList();
-            
             for (const proxy of proxies) {
                 try {
-                    const url = proxy + path + (proxy ? "" : "?_=" + Date.now());
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const content = await response.text();
+                    const res = await fetch(proxy + path + (proxy ? "" : "?_=" + Date.now()));
+                    if (res.ok) {
                         const activePage = document.querySelector('.page.active');
-                        if (activePage && activePage.id === pageId) {
-                            iframe.srcdoc = content;
-                        }
+                        if (activePage?.id === pageId) iframe.srcdoc = await res.text();
                         return;
                     }
-                } catch (err) {}
+                } catch {}
             }
         }
 
-        const savedTheme = localStorage.getItem('kstuff_theme') || 'theme-sakura';
-        const savedNavPos = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
-        const savedTextVis = localStorage.getItem('kstuff_text_vis') || 'text-hide';
-        const savedNavSize = localStorage.getItem('kstuff_nav_size') || 'size-medium';
-
-        body.classList.add(savedTheme, savedNavPos, savedNavSize);
-        if (savedTextVis === 'text-hide') body.classList.add('text-hide');
-        if (themeSelect) themeSelect.value = savedTheme;
-        if (navSelect) navSelect.value = savedNavPos;
-        if (textSelect) textSelect.value = savedTextVis;
-        if (sizeSelect) sizeSelect.value = savedNavSize;
-
-        let readingItemsData = [];
-        let scienceItemsData = [];
-        let currentReadingCategory = "All";
-        let currentScienceCategory = "All";
-        let currentReadingSearch = "";
-        let currentScienceSearch = "";
-        let currentReadingPage = 1;
-        let currentSciencePage = 1;
         const itemsPerPage = 32;
+        const grids = {
+            readingcorner: { data: [], pool: [], gridEl: document.getElementById('readingcorner-grid'), pageEl: document.getElementById('readingcorner-pagination'), category: "All", search: "", page: 1 },
+            sciencequiz: { data: [], pool: [], gridEl: document.getElementById('sciencequiz-grid'), pageEl: document.getElementById('sciencequiz-pagination'), category: "All", search: "", page: 1 }
+        };
 
-        const readingGrid = document.getElementById('readingcorner-grid');
-        const scienceGrid = document.getElementById('sciencequiz-grid');
-        const readingCardPool = [];
-        const scienceCardPool = [];
-
-        function buildReadingPool() {
-            destroyReadingPool();
-            if (!readingGrid) return;
+        function buildPool(type) {
+            destroyPool(type);
+            const grid = grids[type];
+            if (!grid.gridEl) return;
             for (let i = 0; i < itemsPerPage; i++) {
                 const card = document.createElement('div');
                 card.className = 'round-btn';
                 card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
-                readingCardPool.push({
-                    element: card,
-                    imgEl: card.querySelector('img'),
-                    titleEl: card.querySelector('h3'),
-                    descEl: card.querySelector('p'),
-                    catEl: card.querySelector('.category-label') 
-                });
-                readingGrid.appendChild(card);
+                grid.pool.push({ element: card, imgEl: card.querySelector('img'), titleEl: card.querySelector('h3'), descEl: card.querySelector('p'), catEl: card.querySelector('.category-label') });
+                grid.gridEl.appendChild(card);
             }
         }
 
-        function destroyReadingPool() {
-            if (readingGrid) readingGrid.innerHTML = '';
-            readingCardPool.length = 0;
-            const readingPagination = document.getElementById('readingcorner-pagination');
-            if (readingPagination) readingPagination.innerHTML = '';
+        function destroyPool(type) {
+            const grid = grids[type];
+            if (grid.gridEl) grid.gridEl.innerHTML = '';
+            grid.pool = [];
+            if (grid.pageEl) grid.pageEl.innerHTML = '';
         }
 
-        function buildSciencePool() {
-            destroySciencePool();
-            if (!scienceGrid) return;
-            for (let i = 0; i < itemsPerPage; i++) {
-                const card = document.createElement('div');
-                card.className = 'round-btn';
-                card.innerHTML = `<img src="" alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
-                scienceCardPool.push({
-                    element: card,
-                    imgEl: card.querySelector('img'),
-                    titleEl: card.querySelector('h3'),
-                    descEl: card.querySelector('p'),
-                    catEl: card.querySelector('.category-label')
-                });
-                scienceGrid.appendChild(card);
-            }
+        function bindSearch(inputEl, type) {
+            let timeout;
+            if (inputEl) inputEl.addEventListener('input', (e) => {
+                clearTimeout(timeout);
+                showLoader();
+                timeout = setTimeout(() => {
+                    grids[type].search = e.target.value.toLowerCase().trim();
+                    grids[type].page = 1;
+                    renderGrid(type, true);
+                }, 150);
+            });
         }
-
-        function destroySciencePool() {
-            if (scienceGrid) scienceGrid.innerHTML = '';
-            scienceCardPool.length = 0;
-            const sciencePagination = document.getElementById('sciencequiz-pagination');
-            if (sciencePagination) sciencePagination.innerHTML = '';
-        }
-
-        const readingSearchInput = document.getElementById('readingcorner-search');
-        const scienceSearchInput = document.getElementById('sciencequiz-search');
-
-        let readingSearchTimeout;
-        if (readingSearchInput) readingSearchInput.addEventListener('input', (e) => {
-            clearTimeout(readingSearchTimeout);
-            showLoader();
-            readingSearchTimeout = setTimeout(() => {
-                currentReadingSearch = e.target.value.toLowerCase().trim();
-                currentReadingPage = 1;
-                renderReadingResources(true);
-            }, 150);
-        });
-
-        let scienceSearchTimeout;
-        if (scienceSearchInput) scienceSearchInput.addEventListener('input', (e) => {
-            clearTimeout(scienceSearchTimeout);
-            showLoader();
-            scienceSearchTimeout = setTimeout(() => {
-                currentScienceSearch = e.target.value.toLowerCase().trim();
-                currentSciencePage = 1;
-                renderScienceModules(true);
-            }, 150);
-        });
+        bindSearch(document.getElementById('readingcorner-search'), 'readingcorner');
+        bindSearch(document.getElementById('sciencequiz-search'), 'sciencequiz');
 
         function populateCardPool(cardPool, paginatedData) {
             cardPool.forEach((poolItem, index) => {
                 const item = paginatedData[index];
                 if (item) {
                     poolItem.element.style.display = 'block';
-                    
                     const targetImage = item.image || '';
                     if (poolItem.imgEl.dataset.src !== targetImage) {
                         poolItem.imgEl.dataset.src = targetImage;
-                        if (targetImage) {
-                            poolItem.imgEl.src = targetImage;
-                            poolItem.imgEl.style.display = 'block';
-                        } else {
-                            poolItem.imgEl.removeAttribute('src');
-                            poolItem.imgEl.style.display = 'none';
-                        }
+                        poolItem.imgEl.src = targetImage;
+                        poolItem.imgEl.style.display = targetImage ? 'block' : 'none';
+                        if (!targetImage) poolItem.imgEl.removeAttribute('src');
                     }
-
-                    if (poolItem.titleEl.textContent !== item.title) {
-                        poolItem.titleEl.textContent = item.title;
-                    }
-                    const descText = item.description || '';
-                    if (poolItem.descEl.textContent !== descText) {
-                        poolItem.descEl.textContent = descText;
-                    }
-
-                    const categoryText = item.category || 'All';
-                    if (poolItem.catEl && poolItem.catEl.textContent !== categoryText) {
-                        poolItem.catEl.textContent = categoryText;
-                    }
+                    if (poolItem.titleEl.textContent !== item.title) poolItem.titleEl.textContent = item.title;
+                    if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
+                    if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
 
                     poolItem.element.onclick = () => {
                         savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
                         const activePage = document.querySelector('.page.active');
-                        if (activePage) {
-                            savedPageScrollTop = activePage.scrollTop;
-                        }
-
+                        if (activePage) savedPageScrollTop = activePage.scrollTop;
                         if (modalTitle) modalTitle.textContent = item.title;
                         if (modalOverlay) modalOverlay.classList.add('active');
                         if (modalIframe) modalIframe.src = item.url;
-                        
-                        setTimeout(() => {
-                            destroyReadingPool();
-                            destroySciencePool();
-                        }, 50);
+                        setTimeout(() => Object.keys(grids).forEach(destroyPool), 50);
                     };
                 } else {
                     poolItem.element.style.display = 'none';
@@ -436,240 +276,140 @@ function initApp() {
                         poolItem.imgEl.removeAttribute('src');
                         poolItem.imgEl.style.display = 'none';
                     }
-                    if (poolItem.catEl) {
-                        poolItem.catEl.textContent = '';
-                    }
+                    if (poolItem.catEl) poolItem.catEl.textContent = '';
                     poolItem.element.onclick = null;
                 }
             });
         }
 
+        function renderPagination(type, totalPages) {
+            const grid = grids[type];
+            if (!grid.pageEl) return;
+            grid.pageEl.innerHTML = '';
+            
+            if (totalPages > 1) {
+                const addBtn = (icon, isNext) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'page-btn';
+                    btn.innerHTML = `<i class="ph ph-caret-${icon}"></i>`;
+                    if ((isNext && grid.page < totalPages) || (!isNext && grid.page > 1)) {
+                        btn.addEventListener('click', () => { showLoader(); grid.page += isNext ? 1 : -1; renderGrid(type, true); });
+                    } else {
+                        btn.style.opacity = '0.4';
+                        btn.style.cursor = 'not-allowed';
+                    }
+                    grid.pageEl.appendChild(btn);
+                };
+                
+                addBtn('left', false);
+                const pageInfo = document.createElement('span');
+                pageInfo.style.cssText = 'font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;';
+                pageInfo.textContent = `${grid.page} / ${totalPages}`;
+                grid.pageEl.appendChild(pageInfo);
+                addBtn('right', true);
+            }
+        }
+
         function waitForImagesAndFadeIn(cardPool, paginatedData, gridEl) {
-            const imagePromises = [];
-            cardPool.forEach((poolItem, index) => {
+            const promises = cardPool.map((poolItem, index) => {
                 const item = paginatedData[index];
-                if (item && item.image && poolItem.imgEl) {
-                    imagePromises.push(new Promise((resolve) => {
+                if (item?.image && poolItem.imgEl) {
+                    return new Promise((res) => {
                         const img = poolItem.imgEl;
-                        if (img.complete && img.naturalWidth > 0) {
-                            resolve();
-                        } else {
-                            const done = () => {
-                                img.onload = null;
-                                img.onerror = null;
-                                resolve();
-                            };
-                            img.onload = done;
-                            img.onerror = done;
+                        if (img.complete && img.naturalWidth > 0) res();
+                        else {
+                            const done = () => { img.onload = img.onerror = null; res(); };
+                            img.onload = img.onerror = done;
                             setTimeout(done, 3000); 
                         }
-                    }));
+                    });
                 }
             });
-
-            return Promise.all(imagePromises).then(() => {
-                if (gridEl) gridEl.style.opacity = '1';
-                hideLoader();
-            });
+            return Promise.all(promises).then(() => { if (gridEl) gridEl.style.opacity = '1'; hideLoader(); });
         }
 
-        function renderReadingResources(withPreload = false) {
+        function renderGrid(type, withPreload = false) {
             window.requestAnimationFrame(() => {
-                if (!readingGrid) return;
+                const grid = grids[type];
+                if (!grid.gridEl) return;
 
-                const filteredData = readingItemsData.filter(item => {
-                    const matchesCategory = currentReadingCategory === "All" || item.category === currentReadingCategory;
-                    const matchesSearch = item.title.toLowerCase().includes(currentReadingSearch);
-                    return matchesCategory && matchesSearch;
-                });
+                const filtered = grid.data.filter(item => 
+                    (grid.category === "All" || item.category === grid.category) && 
+                    item.title.toLowerCase().includes(grid.search)
+                );
 
-                const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-                if (currentReadingPage > totalPages) currentReadingPage = 1;
+                const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+                if (grid.page > totalPages) grid.page = 1;
 
-                const start = (currentReadingPage - 1) * itemsPerPage;
-                const paginatedData = filteredData.slice(start, start + itemsPerPage);
+                const start = (grid.page - 1) * itemsPerPage;
+                const paginated = filtered.slice(start, start + itemsPerPage);
+
+                const exec = () => {
+                    populateCardPool(grid.pool, paginated);
+                    renderPagination(type, totalPages);
+                    waitForImagesAndFadeIn(grid.pool, paginated, grid.gridEl);
+                };
 
                 if (withPreload) {
-                    readingGrid.style.opacity = '0';
-                    setTimeout(() => {
-                        populateCardPool(readingCardPool, paginatedData);
-                        renderReadingPagination(totalPages);
-                        waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
-                    }, 250); 
-                } else {
-                    populateCardPool(readingCardPool, paginatedData);
-                    renderReadingPagination(totalPages);
-                    waitForImagesAndFadeIn(readingCardPool, paginatedData, readingGrid);
-                }
+                    grid.gridEl.style.opacity = '0';
+                    setTimeout(exec, 250);
+                } else exec();
             });
         }
 
-        function renderReadingPagination(totalPages) {
-            const readingPagination = document.getElementById('readingcorner-pagination');
-            if (!readingPagination) return;
-            readingPagination.innerHTML = '';
-            
-            if (totalPages > 1) {
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'page-btn';
-                prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
-                
-                if (currentReadingPage > 1) {
-                    prevBtn.addEventListener('click', () => {
-                        showLoader(); 
-                        currentReadingPage--;
-                        renderReadingResources(true);
-                    });
-                } else {
-                    prevBtn.style.opacity = '0.4';
-                    prevBtn.style.cursor = 'not-allowed';
-                }
-                readingPagination.appendChild(prevBtn);
-
-                const pageInfo = document.createElement('span');
-                pageInfo.style.fontWeight = '700';
-                pageInfo.style.fontSize = '1.1rem';
-                pageInfo.style.minWidth = '80px';
-                pageInfo.style.textAlign = 'center';
-                pageInfo.style.userSelect = 'none';
-                pageInfo.textContent = `${currentReadingPage} / ${totalPages}`;
-                readingPagination.appendChild(pageInfo);
-
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'page-btn';
-                nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
-                
-                if (currentReadingPage < totalPages) {
-                    nextBtn.addEventListener('click', () => {
-                        showLoader(); 
-                        currentReadingPage++;
-                        renderReadingResources(true);
-                    });
-                } else {
-                    nextBtn.style.opacity = '0.4';
-                    nextBtn.style.cursor = 'not-allowed';
-                }
-                readingPagination.appendChild(nextBtn);
-            }
-        }
-
-        function renderScienceModules(withPreload = false) {
-            window.requestAnimationFrame(() => {
-                if (!scienceGrid) return;
-
-                const filteredData = scienceItemsData.filter(item => {
-                    const matchesCategory = currentScienceCategory === "All" || item.category === currentScienceCategory;
-                    const matchesSearch = item.title.toLowerCase().includes(currentScienceSearch);
-                    return matchesCategory && matchesSearch;
-                });
-
-                const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
-                if (currentSciencePage > totalPages) currentSciencePage = 1;
-                
-                const start = (currentSciencePage - 1) * itemsPerPage;
-                const paginatedData = filteredData.slice(start, start + itemsPerPage);
-
-                if (withPreload) {
-                    scienceGrid.style.opacity = '0';
-                    setTimeout(() => {
-                        populateCardPool(scienceCardPool, paginatedData);
-                        renderSciencePagination(totalPages);
-                        waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
-                    }, 250); 
-                } else {
-                    populateCardPool(scienceCardPool, paginatedData);
-                    renderSciencePagination(totalPages);
-                    waitForImagesAndFadeIn(scienceCardPool, paginatedData, scienceGrid);
-                }
+        function animateIndicatorUpdate(duration = 500) {
+            const start = performance.now();
+            requestAnimationFrame(function step(time) {
+                updateIndicator(navBar?.querySelector('.nav-btn.active'));
+                if (time - start < duration) window.requestAnimationFrame(step);
             });
         }
 
-        function renderSciencePagination(totalPages) {
-            const sciencePagination = document.getElementById('sciencequiz-pagination');
-            if (!sciencePagination) return;
-            sciencePagination.innerHTML = '';
-            
-            if (totalPages > 1) {
-                const prevBtn = document.createElement('button');
-                prevBtn.className = 'page-btn';
-                prevBtn.innerHTML = '<i class="ph ph-caret-left"></i>';
-                
-                if (currentSciencePage > 1) {
-                    prevBtn.addEventListener('click', () => {
-                        showLoader(); 
-                        currentSciencePage--;
-                        renderScienceModules(true);
-                    });
-                } else {
-                    prevBtn.style.opacity = '0.4';
-                    prevBtn.style.cursor = 'not-allowed';
-                }
-                sciencePagination.appendChild(prevBtn);
-
-                const pageInfo = document.createElement('span');
-                pageInfo.style.fontWeight = '700';
-                pageInfo.style.fontSize = '1.1rem';
-                pageInfo.style.minWidth = '80px';
-                pageInfo.style.textAlign = 'center';
-                pageInfo.style.userSelect = 'none';
-                pageInfo.textContent = `${currentSciencePage} / ${totalPages}`;
-                sciencePagination.appendChild(pageInfo);
-
-                const nextBtn = document.createElement('button');
-                nextBtn.className = 'page-btn';
-                nextBtn.innerHTML = '<i class="ph ph-caret-right"></i>';
-                
-                if (currentSciencePage < totalPages) {
-                    nextBtn.addEventListener('click', () => {
-                        showLoader(); 
-                        currentSciencePage++;
-                        renderScienceModules(true);
-                    });
-                } else {
-                    nextBtn.style.opacity = '0.4';
-                    nextBtn.style.cursor = 'not-allowed';
-                }
-                sciencePagination.appendChild(nextBtn);
-            }
+        function setupSetting(selectEl, storageKey, classPrefix, classFn) {
+            if (!selectEl) return;
+            const saved = localStorage.getItem(storageKey) || selectEl.value;
+            selectEl.value = saved;
+            classFn(saved);
+            selectEl.addEventListener('change', (e) => {
+                if (classPrefix) body.className = body.className.replace(new RegExp(`\\b${classPrefix}-\\S+`, 'g'), '').trim();
+                classFn(e.target.value);
+                localStorage.setItem(storageKey, e.target.value);
+                animateIndicatorUpdate(); 
+            });
         }
 
-        const changelogModal = document.getElementById('changelog-modal');
-        const changelogCloseBtn = document.getElementById('changelog-close-btn');
+        setupSetting(document.getElementById('layout-theme-select'), 'kstuff_theme', 'theme', v => body.classList.add(v));
+        setupSetting(document.getElementById('layout-nav-select'), 'kstuff_nav_pos', 'nav', v => body.classList.add(v));
+        setupSetting(document.getElementById('layout-size-select'), 'kstuff_nav_size', 'size', v => body.classList.add(v));
+        setupSetting(document.getElementById('layout-text-select'), 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
+
+        function bindModal(modalId, closeBtnId) {
+            const modal = document.getElementById(modalId), closeBtn = document.getElementById(closeBtnId);
+            if (closeBtn) closeBtn.addEventListener('click', () => modal?.classList.remove('active'));
+            if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+            return modal;
+        }
+        
+        const settingsModal = bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn');
+        const changelogModal = bindModal('changelog-modal', 'changelog-close-btn');
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
-
-                if (targetId === 'homeworkhelper') {
-                    if (settingsModal) settingsModal.classList.add('active');
-                    return; 
-                }
-
-                if (targetId === 'changelog') {
-                    if (changelogModal) changelogModal.classList.add('active');
-                    return; 
-                }
+                if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
+                if (targetId === 'changelog') return changelogModal?.classList.add('active');
 
                 showLoader();
-
-                const currentActiveBtn = document.querySelector('.nav-btn.active');
-                if (currentActiveBtn) {
-                    const currentId = currentActiveBtn.getAttribute('data-target');
+                const activeBtn = document.querySelector('.nav-btn.active');
+                if (activeBtn) {
+                    const currentId = activeBtn.getAttribute('data-target');
                     if (currentId !== targetId && iframePages[currentId]) {
-                        const iframeToClear = document.getElementById(iframePages[currentId].id);
-                        if (iframeToClear) {
-                            iframeToClear.srcdoc = ''; 
-                        }
+                        const frame = document.getElementById(iframePages[currentId].id);
+                        if (frame) frame.srcdoc = '';
                     }
                 }
 
-                navBtns.forEach(b => {
-                    const bTarget = b.getAttribute('data-target');
-                    if (bTarget !== 'homeworkhelper' && bTarget !== 'changelog') {
-                        b.classList.remove('active');
-                    }
-                });
-
+                navBtns.forEach(b => { if (!['homeworkhelper', 'changelog'].includes(b.dataset.target)) b.classList.remove('active'); });
                 pages.forEach(p => p.classList.remove('active'));
 
                 btn.classList.add('active');
@@ -678,323 +418,145 @@ function initApp() {
                 const targetPage = document.getElementById(targetId);
                 if (targetPage) {
                     targetPage.classList.add('active');
-
-                    if (targetId !== 'readingcorner') destroyReadingPool();
-                    if (targetId !== 'sciencequiz') destroySciencePool();
-
-                    if (targetId === 'readingcorner') {
-                        buildReadingPool();
-                        setTimeout(() => {
-                            renderReadingResources(false);
-                        }, 50);
-                    } else if (targetId === 'sciencequiz') {
-                        buildSciencePool();
-                        setTimeout(() => {
-                            renderScienceModules(false);
-                        }, 50);
+                    Object.keys(grids).forEach(k => k !== targetId && destroyPool(k));
+                    
+                    if (grids[targetId]) {
+                        buildPool(targetId);
+                        setTimeout(() => renderGrid(targetId, false), 50);
                     } else if (iframePages[targetId]) {
                         loadProxyContentAsIframe(iframePages[targetId].id, iframePages[targetId].path, targetId);
-                        setTimeout(() => {
-                            hideLoader();
-                        }, 300);
-                    } else {
-                        hideLoader();
-                    }
-                } else {
-                    hideLoader();
-                }
+                        setTimeout(hideLoader, 300);
+                    } else hideLoader();
+                } else hideLoader();
             });
         });
 
-        const initialActive = navBar ? (navBar.querySelector('.nav-btn.active') || navBtns[0]) : null;
-        if (initialActive) {
-            const start = performance.now();
-            requestAnimationFrame(function check(time) {
-                updateIndicator(initialActive);
-                if (time - start < 1000) {
-                    window.requestAnimationFrame(check);
-                }
-            });
-            window.addEventListener('load', () => {
-                updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]);
-            });
+        if (navBar?.querySelector('.nav-btn.active') || navBtns[0]) {
+            animateIndicatorUpdate(1000);
+            window.addEventListener('load', () => updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]));
         }
-
-        window.addEventListener('resize', () => {
-            const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-            updateIndicator(currentActive);
-        });
-
-        function animateIndicatorUpdate(duration = 500) {
-            const start = performance.now();
-            function step(timestamp) {
-                const currentActive = navBar ? navBar.querySelector('.nav-btn.active') : null;
-                if (currentActive) {
-                    updateIndicator(currentActive);
-                }
-                if (timestamp - start < duration) {
-                    window.requestAnimationFrame(step);
-                }
-            }
-            window.requestAnimationFrame(step);
-        }
-
-        if (themeSelect) themeSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_theme', e.target.value);
-            animateIndicatorUpdate(); 
-        });
-
-        if (navSelect) navSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\bnav-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_nav_pos', e.target.value);
-            animateIndicatorUpdate(); 
-        });
-
-        if (textSelect) textSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'text-hide') body.classList.add('text-hide');
-            else body.classList.remove('text-hide');
-            localStorage.setItem('kstuff_text_vis', e.target.value);
-            animateIndicatorUpdate();
-        });
-
-        if (sizeSelect) sizeSelect.addEventListener('change', (e) => {
-            body.className = body.className.replace(/\bsize-\S+/g, '').trim();
-            body.classList.add(e.target.value);
-            localStorage.setItem('kstuff_nav_size', e.target.value);
-            animateIndicatorUpdate();
-        });
+        window.addEventListener('resize', () => updateIndicator(navBar?.querySelector('.nav-btn.active')));
 
         function closeResourceModal() {
             if (modalOverlay) modalOverlay.classList.remove('active');
             if (modalIframe) modalIframe.src = 'about:blank';
             
             const activePage = document.querySelector('.page.active');
-            if (activePage) {
-                if (activePage.id === 'readingcorner') {
-                    buildReadingPool();
-                    renderReadingResources(false);
-                } else if (activePage.id === 'sciencequiz') {
-                    buildSciencePool();
-                    renderScienceModules(false);
-                }
+            if (activePage && grids[activePage.id]) {
+                buildPool(activePage.id);
+                renderGrid(activePage.id, false);
             }
 
-            let scrollAttempts = 0;
-            const scrollInterval = setInterval(() => {
+            let attempts = 0;
+            const scrollInt = setInterval(() => {
                 window.scrollTo(0, savedWindowScrollY);
-                if (activePage) {
-                    activePage.scrollTop = savedPageScrollTop;
-                }
-                scrollAttempts++;
-                if (scrollAttempts >= 20) {
-                    clearInterval(scrollInterval);
-                }
+                if (activePage) activePage.scrollTop = savedPageScrollTop;
+                if (++attempts >= 20) clearInterval(scrollInt);
             }, 50);
         }
 
-        if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeResourceModal);
+        document.getElementById('resource-close-btn')?.addEventListener('click', closeResourceModal);
+        modalOverlay?.addEventListener('click', (e) => { if (e.target === modalOverlay) closeResourceModal(); });
         
-        if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) closeResourceModal();
-        });
-
-        if (modalFullscreenBtn) modalFullscreenBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) modalIframe.requestFullscreen().catch(err => {});
+        document.getElementById('resource-fullscreen-btn')?.addEventListener('click', () => {
+            if (!document.fullscreenElement) modalIframe?.requestFullscreen().catch(()=>{});
             else document.exitFullscreen();
         });
 
-        if (settingsCloseBtn) settingsCloseBtn.addEventListener('click', () => {
-            if (settingsModal) settingsModal.classList.remove('active');
-        });
-        if (settingsModal) settingsModal.addEventListener('click', (e) => {
-            if (e.target === settingsModal) settingsModal.classList.remove('active');
-        });
-
-        if (changelogCloseBtn) {
-            changelogCloseBtn.addEventListener('click', () => {
-                if (changelogModal) changelogModal.classList.remove('active');
-            });
-        }
-        if (changelogModal) {
-            changelogModal.addEventListener('click', (e) => {
-                if (e.target === changelogModal) changelogModal.classList.remove('active');
-            });
-        }
-
-        fetchAsset('Json/categories.json').then(categories => {
-            const readingSelect = document.getElementById('readingcorner-category-select');
-            const scienceSelect = document.getElementById('sciencequiz-category-select');
-            if (readingSelect) {
-                readingSelect.innerHTML = '';
-                categories.Games.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    readingSelect.appendChild(option);
+        fetchAsset('Json/categories.json').then(cats => {
+            const setupCatSelect = (id, options, type) => {
+                const select = document.getElementById(id);
+                if (!select) return;
+                select.innerHTML = '';
+                (options || []).forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.textContent = c;
+                    select.appendChild(opt);
                 });
-                readingSelect.addEventListener('change', (e) => {
+                select.addEventListener('change', (e) => {
                     showLoader();
-                    currentReadingCategory = e.target.value;
-                    currentReadingPage = 1;
-                    renderReadingResources(true);
+                    grids[type].category = e.target.value;
+                    grids[type].page = 1;
+                    renderGrid(type, true);
                 });
-            }
-            if (scienceSelect) {
-                scienceSelect.innerHTML = '';
-                categories.Apps.forEach(cat => {
-                    const option = document.createElement('option');
-                    option.value = cat;
-                    option.textContent = cat;
-                    scienceSelect.appendChild(option);
-                });
-                scienceSelect.addEventListener('change', (e) => {
-                    showLoader();
-                    currentScienceCategory = e.target.value;
-                    currentSciencePage = 1;
-                    renderScienceModules(true);
-                });
-            }
-        }).catch(err => {});
+            };
+            setupCatSelect('readingcorner-category-select', cats.Games, 'readingcorner');
+            setupCatSelect('sciencequiz-category-select', cats.Apps, 'sciencequiz');
+        }).catch(()=>{});
 
-        fetchAsset('Json/change-log.json').then(logData => {
-            const contentEl = document.getElementById('changelog-content');
-            const timestampEl = document.getElementById('changelog-timestamp');
-
-            if (logData) {
-                if (timestampEl && logData.timestamp) {
-                    timestampEl.textContent = logData.timestamp;
-                }
-
-                if (contentEl && logData.changes && Array.isArray(logData.changes)) {
-                    contentEl.innerHTML = `<ul style="padding-left: 1.5rem; margin: 0;">` + 
-                        logData.changes.map(change => `<li style="margin-bottom: 0.5rem;">${change}</li>`).join('') +
-                        `</ul>`;
-                } else if (contentEl) {
-                    contentEl.innerHTML = "No recent changes found.";
-                }
+        fetchAsset('Json/change-log.json').then(log => {
+            const contentEl = document.getElementById('changelog-content'), tsEl = document.getElementById('changelog-timestamp');
+            if (log) {
+                if (tsEl) tsEl.textContent = log.timestamp || "Unknown";
+                if (contentEl) contentEl.innerHTML = log.changes?.length ? `<ul style="padding-left: 1.5rem; margin: 0;">${log.changes.map(c => `<li style="margin-bottom: 0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
             }
-        }).catch(err => {
-            const contentEl = document.getElementById('changelog-content');
-            const timestampEl = document.getElementById('changelog-timestamp');
+        }).catch(() => {
+            const contentEl = document.getElementById('changelog-content'), tsEl = document.getElementById('changelog-timestamp');
             if (contentEl) contentEl.innerHTML = "Failed to load update log.";
-            if (timestampEl) timestampEl.textContent = "Unknown";
-            console.warn("Could not load change-log.json", err);
+            if (tsEl) tsEl.textContent = "Unknown";
         });
 
         const resolvedBases = {};
-        const checkPromises = [
+        Promise.all([
+            fetchAsset('Json/g.json').catch(() => []),
+            fetchAsset('Json/a.json').catch(() => []),
+            fetchAsset('Json/truffled.json').catch(() => null),
             getWorkingConfig(scramTable).then(w => resolvedBases.scram = w),
             getWorkingConfig(staticTable).then(w => resolvedBases.static = w),
             getWorkingConfig(uvTable).then(w => resolvedBases.uv = w),
             getWorkingConfig(truffledTable).then(w => resolvedBases.truffled = w),
             getWorkingConfig(frogieeTable).then(w => resolvedBases.frogiee = w)
-        ];
-
-        Promise.all([
-            fetchAsset('Json/g.json').catch(() => []),
-            fetchAsset('Json/a.json').catch(() => []),
-            fetchAsset('Json/truffled.json').catch(() => null),
-            ...checkPromises 
         ]).then(([gData, aData, truffledData]) => {
 
             function applyBases(str) {
                 if (!str || typeof str !== 'string') return str;
-                let newStr = str;
-                
-                if (newStr.includes('${scram}')) {
-                    const w = resolvedBases.scram;
-                    newStr = newStr.split('${scram}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
-                }
-                if (newStr.includes('${static}')) {
-                    const w = resolvedBases.static;
-                    newStr = newStr.split('${static}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
-                }
-                if (newStr.includes('${uv}')) {
-                    const w = resolvedBases.uv;
-                    newStr = newStr.split('${uv}').join(w ? w.url.replace(/\/+$/, '') + w.final : '');
-                }
-                if (newStr.includes('${frogiee}')) {
-                    const w = resolvedBases.frogiee;
-                    newStr = newStr.split('${frogiee}').join(w ? w.url.replace(/\/+$/, '') : '');
-                }
-                if (newStr.includes('${truffled}')) {
-                    const w = resolvedBases.truffled;
-                    newStr = newStr.split('${truffled}').join(w ? w.url.replace(/\/+$/, '') : 'https://boat.strongson.com');
-                }
-                
-                return newStr.replace(/([^:]\/)\/+/g, '$1');
+                const replacements = {
+                    'scram': resolvedBases.scram ? resolvedBases.scram.url.replace(/\/+$/, '') + resolvedBases.scram.final : '',
+                    'static': resolvedBases.static ? resolvedBases.static.url.replace(/\/+$/, '') + resolvedBases.static.final : '',
+                    'uv': resolvedBases.uv ? resolvedBases.uv.url.replace(/\/+$/, '') + resolvedBases.uv.final : '',
+                    'frogiee': resolvedBases.frogiee ? resolvedBases.frogiee.url.replace(/\/+$/, '') : '',
+                    'truffled': resolvedBases.truffled ? resolvedBases.truffled.url.replace(/\/+$/, '') : 'https://boat.strongson.com'
+                };
+                for (const [key, val] of Object.entries(replacements)) str = str.split(`\${${key}}`).join(val);
+                return str.replace(/([^:]\/)\/+/g, '$1');
             }
 
             const truffledMap = new Map();
-            if (truffledData && truffledData.games) {
-                truffledData.games.forEach(g => {
-                    truffledMap.set(g.name.toLowerCase().trim(), g);
-                });
-            }
+            truffledData?.games?.forEach(g => truffledMap.set(g.name.toLowerCase().trim(), g));
 
-            let finalResources = [];
-            for (const item of gData) {
-                let processedItem = { ...item };
-                if (processedItem.url && processedItem.url.includes('${truffled}')) {
-                    const searchTitle = (processedItem.title || "").toLowerCase().trim();
-                    const matchedItem = truffledMap.get(searchTitle);
-                    if (matchedItem) {
-                        processedItem.title = matchedItem.name;
-                        processedItem.url = '${truffled}/' + matchedItem.url.replace(/^\/+/, '');
-                        processedItem.image = '${truffled}/' + matchedItem.thumbnail.replace(/^\/+/, '');
-                        processedItem.description = '';
-                        processedItem.category = processedItem.category || 'Truffled';
+            const processItems = (dataArr) => dataArr.map(item => {
+                let processed = { ...item };
+                if (processed.url?.includes('${truffled}')) {
+                    const match = truffledMap.get((processed.title || "").toLowerCase().trim());
+                    if (match) {
+                        processed.title = match.name;
+                        processed.url = '${truffled}/' + match.url.replace(/^\/+/, '');
+                        processed.image = '${truffled}/' + match.thumbnail.replace(/^\/+/, '');
+                        processed.description = '';
+                        processed.category = processed.category || 'Truffled';
                     }
                 }
-                processedItem.url = applyBases(processedItem.url);
-                processedItem.image = applyBases(processedItem.image);
-                finalResources.push(processedItem);
-            }
-            
-            let finalScience = [];
-            for (const item of aData) {
-                let processedItem = { ...item };
-                processedItem.url = applyBases(processedItem.url);
-                processedItem.image = applyBases(processedItem.image);
-                finalScience.push(processedItem);
-            }
+                processed.url = applyBases(processed.url);
+                processed.image = applyBases(processed.image);
+                return processed;
+            }).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
-            readingItemsData = finalResources.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
-            scienceItemsData = finalScience.sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
+            grids.readingcorner.data = processItems(gData);
+            grids.sciencequiz.data = processItems(aData);
 
             const activePage = document.querySelector('.page.active');
             if (activePage) {
-                if (activePage.id === 'sciencequiz') {
-                    buildSciencePool();
-                    renderScienceModules(false);
-                } else if (activePage.id === 'readingcorner') {
-                    buildReadingPool();
-                    renderReadingResources(false);
+                if (grids[activePage.id]) {
+                    buildPool(activePage.id);
+                    renderGrid(activePage.id, false);
                 } else if (iframePages[activePage.id]) {
                     loadProxyContentAsIframe(iframePages[activePage.id].id, iframePages[activePage.id].path, activePage.id);
-                } else {
-                    destroyReadingPool();
-                    destroySciencePool();
-                    hideLoader();
-                }
-            } else {
-                destroyReadingPool();
-                destroySciencePool();
-                hideLoader();
-            }
+                } else { Object.keys(grids).forEach(destroyPool); hideLoader(); }
+            } else { Object.keys(grids).forEach(destroyPool); hideLoader(); }
 
-        }).catch(err => {
-            console.error(err);
-            hideLoader();
-        });
+        }).catch(() => hideLoader());
     }
 }
 
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initApp);
-} else {
-    initApp();
-}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initApp);
+else initApp();
