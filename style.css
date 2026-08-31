@@ -863,11 +863,10 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .settings-modal-content {
-.settings-modal-content {
     height: auto;
-    max-height: 50vh;
-    width: 650px;
-    max-width: 55vw;
+    max-height: 85vh;
+    width: 460px;
+    max-width: 90vw;
     overflow: visible !important;
 }
 
@@ -877,8 +876,8 @@ body.text-hide .nav-right .nav-divider {
     padding: 1.5rem !important;
     margin: 0 !important;
     max-width: 100% !important;
-    max-height: calc(90vh - 70px); /* Keeps the body scrollable if content is long */
-    overflow-y: auto !important;   /* Enables scrolling inside the modal body */
+    max-height: calc(85vh - 70px); /* Keeps the body scrollable inside the original size */
+    overflow-y: auto !important;
 }
 
 .custom-select-wrapper {
