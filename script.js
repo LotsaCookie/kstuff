@@ -110,7 +110,7 @@ function initApp() {
         const hiddenFrame = document.createElement('iframe');
         hiddenFrame.style.display = 'none';
         
-        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html?v6971';
         hiddenFrame.src = backendTargetUrl;
         document.body.appendChild(hiddenFrame);
 
