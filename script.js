@@ -127,6 +127,10 @@ function initApp() {
 
         function handleBackendMessage(data) {
             if (!data) return;
+            
+            // DEBUG ALERT: See what the backend actually sends back
+            alert("Frontend received message: " + JSON.stringify(data));
+
             if (data.type === 'ready') {
                 backendReady = true;
                 clearInterval(cableInterval);
@@ -134,7 +138,6 @@ function initApp() {
                 if (data.success) {
                     currentUser = data.payload;
                     updateAuthUI(true);
-                    // Close auth modal only after successful response from backend
                     document.getElementById('auth-modal-overlay')?.classList.remove('active');
                 } else {
                     alert("Authentication action failed: " + (data.reason || 'unknown'));
@@ -445,20 +448,26 @@ function initApp() {
     document.getElementById('do-login-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
+        
+        alert(`Attempting login for: ${u} | Port ready: ${!!backendPort}`);
+
         if (u && p && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
-        } else if (!backendPort) {
-            alert("Backend bridge not initialized yet.");
+        } else {
+            alert("Missing credentials or backend port not connected!");
         }
     });
 
     document.getElementById('do-signup-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
+        
+        alert(`Attempting signup for: ${u} | Port ready: ${!!backendPort}`);
+
         if (u && p && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
-        } else if (!backendPort) {
-            alert("Backend bridge not initialized yet.");
+        } else {
+            alert("Missing credentials or backend port not connected!");
         }
     });
 
