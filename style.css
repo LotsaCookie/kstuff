@@ -337,6 +337,8 @@ body.show-logo.nav-right #teachertouchbar {
     border-radius: 7px;
     opacity: 1;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: visible !important;
 }
 
 .nav-btn i {
@@ -1036,4 +1038,60 @@ body.text-hide .nav-right .nav-divider {
         width: var(--nav-width-mobile);
         padding-top: 0.55rem;
     }
+}
+
+.nav-tooltip {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5px;
+    background: var(--nav-bg);
+    color: var(--text-color);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 900 !important;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    border: 1px solid rgba(128, 128, 128, 0.15);
+    z-index: 99999;
+    white-space: nowrap;
+}
+
+.nav-left .nav-tooltip {
+    left: calc(100% + 15px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-10px);
+}
+.nav-left .nav-btn:hover .nav-tooltip {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-right .nav-tooltip {
+    right: calc(100% + 15px);
+    top: 50%;
+    transform: translateY(-50%) translateX(10px);
+}
+.nav-right .nav-btn:hover .nav-tooltip {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.nav-top .nav-tooltip,
+.nav-bottom .nav-tooltip {
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-5px);
+}
+.nav-top .nav-btn:hover .nav-tooltip,
+.nav-bottom .nav-btn:hover .nav-tooltip {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    visibility: visible;
 }
