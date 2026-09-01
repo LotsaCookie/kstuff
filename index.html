@@ -106,18 +106,25 @@
     <div id="resource-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><span id="resource-modal-title"></span><div class="modal-actions"><button id="resource-fullscreen-btn"><i class="ph ph-corners-out"></i></button><button id="resource-close-btn"><i class="ph ph-x"></i></button></div></div><iframe id="resource-modal-iframe" src="" allow="autoplay; fullscreen; pointer-lock; gamepad"></iframe></div></div>
     <div id="homeworkhelper-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="homeworkhelper-title"><i class="ph ph-gear"></i> Settings</span><div class="modal-actions"><button id="homeworkhelper-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body"><div class="setting-group"><label for="layout-theme-select"><i class="ph ph-palette"></i> App Theme</label><select id="layout-theme-select"><option value="theme-sakura" selected>Sakura</option><option value="theme-dark">Dark</option><option value="theme-light">Light</option><option value="theme-ocean">Ocean</option><option value="theme-sunset">Sunset</option><option value="theme-emerald">Emerald</option><option value="theme-midnight">Midnight</option><option value="theme-cyber">Cyber</option><option value="theme-ruby">Ruby</option><option value="theme-latte">Latte</option></select></div><div class="setting-group"><label for="layout-nav-select"><i class="ph ph-layout"></i> Navbar Position</label><select id="layout-nav-select"><option value="nav-top">Top</option><option value="nav-left" selected>Left</option><option value="nav-right">Right</option><option value="nav-bottom">Bottom</option></select></div><div class="setting-group" style="display: none;"><label for="layout-text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label><select id="layout-text-select"><option value="text-show">Show</option><option value="text-hide" selected>Hide</option></select></div><div class="setting-group"><label for="layout-size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label><select id="layout-size-select"><option value="size-small" selected>Small</option><option value="size-medium">Medium</option><option value="size-large">Large</option></select></div></div></div></div>
     <div id="changelog-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="changelog-title-header"><i class="ph ph-clipboard-text"></i> Change Log</span><div class="modal-actions"><button id="changelog-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; max-height: 100%; overflow-y: auto;"><h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="ph ph-sparkle"></i> Changes:</h3><div id="changelog-content" style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; opacity: 0.9;">Loading updates...</div><div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(128, 128, 128, 0.2); text-align: right; font-size: 0.8rem; opacity: 0.7;"><i class="ph ph-clock"></i> Last Updated: <span id="changelog-timestamp">Fetching...</span></div></div></div></div>
-
     <div id="auth-modal-overlay" class="modal-overlay">
-        <div class="modal-content settings-modal-content" style="max-width: 380px;">
+        <div class="modal-content settings-modal-content" style="max-width: 425px;">
             <div class="modal-header">
                 <span id="auth-modal-title"><i class="ph ph-user-circle"></i> Account Portal</span>
                 <div class="modal-actions"><button id="auth-close-btn"><i class="ph ph-x"></i></button></div>
             </div>
-            <div class="settings-card modal-settings-body" id="auth-modal-body" style="display: flex; flex-direction: column; gap: 15px;">
-                <input type="text" id="auth-user" placeholder="Username" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
-                <input type="password" id="auth-pass" placeholder="Password" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
-                <button id="do-login-btn" class="page-btn" style="justify-content:center; background:var(--text-color); color:var(--bg-color);">Log In</button>
-                <button id="do-signup-btn" class="page-btn" style="justify-content:center;">Sign Up</button>
+            <div class="settings-card modal-settings-body" id="auth-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="setting-group" style="margin-bottom: 0;">
+                    <label for="auth-user"><i class="ph ph-user"></i> Username</label>
+                    <input type="text" id="auth-user" placeholder="Enter username" class="setting-group select" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg); color: var(--text-color); outline: none;">
+                </div>
+                <div class="setting-group" style="margin-bottom: 0.5rem;">
+                    <label for="auth-pass"><i class="ph ph-lock"></i> Password</label>
+                    <input type="password" id="auth-pass" placeholder="Enter password" class="setting-group select" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg); color: var(--text-color); outline: none;">
+                </div>
+                <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                    <button id="do-login-btn" class="page-btn" style="flex: 1; justify-content: center; background: var(--text-color); color: var(--bg-color);">Log In</button>
+                    <button id="do-signup-btn" class="page-btn" style="flex: 1; justify-content: center;">Sign Up</button>
+                </div>
             </div>
         </div>
     </div>
