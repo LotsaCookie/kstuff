@@ -342,8 +342,31 @@ function initApp() {
     };
     const settingsModal = bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn');
     const changelogModal = bindModal('changelog-modal', 'changelog-close-btn');
+    const navTitles = {
+        'mathworksheets': 'emoH',
+        'readingcorner': 'semaG',
+        'sciencequiz': 'sppA',
+        'gradebook': 'cisuM',
+        'lessonplanner': 'IA',
+        'changelog': 'golegnahC',
+        'homeworkhelper': 'sgnitteS'
+    };
 
     navBtns.forEach(btn => {
+        btn.style.position = 'relative';
+        const tooltip = document.createElement('div');
+        tooltip.className = 'nav-tooltip';
+        const rawTitle = navTitles[btn.dataset.target] || 'egaP';
+        const targetTitle = rawTitle.split('').reverse().join('');
+        
+        targetTitle.split('').forEach(letter => {
+            const letterDiv = document.createElement('div');
+            letterDiv.textContent = letter;
+            tooltip.appendChild(letterDiv);
+        });
+        
+        btn.appendChild(tooltip);
+
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
