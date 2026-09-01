@@ -43,6 +43,10 @@ function initApp() {
     const pages = document.querySelectorAll('.page');
     const loader = document.querySelector('.section-loader');
     
+    let backendPort = null;
+    let backendReady = false;
+    let currentUser = null;
+
     const toggleLoader = (show) => {
         if (!loader) return;
         loader.style.opacity = show ? '1' : '0';
@@ -100,6 +104,43 @@ function initApp() {
             } catch {}
         }
         throw new Error("All proxies failed for " + path);
+    }
+
+    function initBackendBridge(workingStaticUrl) {
+        const hiddenFrame = document.createElement('iframe');
+        hiddenFrame.style.display = 'none';
+        
+        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        hiddenFrame.src = backendTargetUrl;
+        document.body.appendChild(hiddenFrame);
+
+        const cableInterval = setInterval(() => {
+            if (!backendReady && hiddenFrame.contentWindow) {
+                const channel = new MessageChannel();
+                channel.port1.onmessage = (e) => handleBackendMessage(e.data);
+                try {
+                    hiddenFrame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
+                    backendPort = channel.port1;
+                } catch (err) {}
+            }
+        }, 1500);
+
+        function handleBackendMessage(data) {
+            if (!data) return;
+            if (data.type === 'ready') {
+                backendReady = true;
+                clearInterval(cableInterval);
+            } else if (data.type === 'login' || data.type === 'auto-login' || data.type === 'signup') {
+                if (data.success) {
+                    currentUser = data.payload;
+                    updateAuthUI(true);
+                } else {
+                    alert("Authentication action failed: " + (data.reason || 'unknown'));
+                }
+            } else if (data.type === 'settings-saved') {
+                alert("Settings successfully saved to cloud storage!");
+            }
+        }
     }
 
     const iframePages = {
@@ -284,6 +325,97 @@ function initApp() {
     setupSetting('layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v));
     setupSetting('layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v));
     setupSetting('layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
+
+    const settingsBody = document.querySelector('.modal-settings-body');
+    if (settingsBody && !document.getElementById('save-settings-btn')) {
+        const authActionCard = document.createElement('div');
+        authActionCard.className = 'setting-group';
+        authActionCard.style.cssText = 'flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;';
+        authActionCard.innerHTML = `
+            <div id="auth-status-display" style="font-size: 0.9rem; opacity: 0.8;">Not logged in.</div>
+            <button id="open-auth-modal-btn" class="page-btn" style="width: 100%; justify-content: center; background: var(--text-color); color: var(--bg-color);">Log In / Sign Up</button>
+            <button id="save-settings-btn" class="page-btn" style="width: 100%; justify-content: center; background: #00ffcc; color: #000;">Save Changes to Cloud</button>
+        `;
+        settingsBody.appendChild(authActionCard);
+
+        document.getElementById('save-settings-btn').addEventListener('click', () => {
+            if (!backendReady || !backendPort) {
+                alert("Backend cable not yet established.");
+                return;
+            }
+            const settingsPayload = {
+                theme: document.getElementById('layout-theme-select').value,
+                navPos: document.getElementById('layout-nav-select').value,
+                navSize: document.getElementById('layout-size-select').value
+            };
+            if (currentUser) {
+                backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
+            } else {
+                alert("Please log in to sync settings to your specific cloud account profile.");
+            }
+        });
+    }
+
+    function updateAuthUI(isLoggedIn) {
+        const statusEl = document.getElementById('auth-status-display');
+        const authBtn = document.getElementById('open-auth-modal-btn');
+        if (statusEl && authBtn) {
+            if (isLoggedIn && currentUser) {
+                statusEl.textContent = `Logged in as: ${currentUser.username}`;
+                authBtn.textContent = 'Log Out';
+                authBtn.onclick = () => {
+                    currentUser = null;
+                    if (backendPort) backendPort.postMessage({ type: 'logout' });
+                    updateAuthUI(false);
+                };
+            } else {
+                statusEl.textContent = 'Not logged in.';
+                authBtn.textContent = 'Log In / Sign Up';
+                authBtn.onclick = () => openAuthModal();
+            }
+        }
+    }
+
+    function openAuthModal() {
+        let authModal = document.getElementById('auth-modal-overlay');
+        if (!authModal) {
+            authModal = document.createElement('div');
+            authModal.id = 'auth-modal-overlay';
+            authModal.className = 'modal-overlay active';
+            authModal.innerHTML = `
+                <div class="modal-content settings-modal-content" style="max-width: 350px;">
+                    <div class="modal-header"><span>Account Portal</span><div class="modal-actions"><button id="auth-close-btn"><i class="ph ph-x"></i></button></div></div>
+                    <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="auth-user" placeholder="Username" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
+                        <input type="password" id="auth-pass" placeholder="Password" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
+                        <button id="do-login-btn" class="page-btn" style="justify-content:center; background:var(--text-color); color:var(--bg-color);">Log In</button>
+                        <button id="do-signup-btn" class="page-btn" style="justify-content:center;">Sign Up</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(authModal);
+            document.getElementById('auth-close-btn').onclick = () => authModal.classList.remove('active');
+            
+            document.getElementById('do-login-btn').onclick = () => {
+                const u = document.getElementById('auth-user').value.trim();
+                const p = document.getElementById('auth-pass').value.trim();
+                if (u && p && backendPort) {
+                    backendPort.postMessage({ type: 'login', username: u, password: p });
+                    authModal.classList.remove('active');
+                }
+            };
+            document.getElementById('do-signup-btn').onclick = () => {
+                const u = document.getElementById('auth-user').value.trim();
+                const p = document.getElementById('auth-pass').value.trim();
+                if (u && p && backendPort) {
+                    backendPort.postMessage({ type: 'signup', username: u, password: p });
+                    authModal.classList.remove('active');
+                }
+            };
+        } else {
+            authModal.classList.add('active');
+        }
+    }
 
     function applyCustomDropdown(selectEl) {
         if (!selectEl || selectEl.dataset.customized) {
@@ -476,6 +608,10 @@ function initApp() {
         staticDataPromise.then(data => getWorkingConfig(data.map(item => ({ url: item.url, img: item.img, final: "" }))))
     ]).then(([gData, aData, truffledData, scram, stat, uv, truffled, frogiee]) => {
         
+        if (stat) {
+            initBackendBridge(stat.url);
+        }
+
         function applyBases(str) {
             if (!str || typeof str !== 'string') return str;
             const replacements = {
