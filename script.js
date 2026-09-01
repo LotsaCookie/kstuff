@@ -474,6 +474,7 @@ function initApp() {
     };
     const settingsModal = bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn');
     const changelogModal = bindModal('changelog-modal', 'changelog-close-btn');
+    
     const navTitles = {
         'mathworksheets': 'emoH',
         'readingcorner': 'semaG',
@@ -481,7 +482,8 @@ function initApp() {
         'gradebook': 'cisuM',
         'lessonplanner': 'IA',
         'changelog': 'golegnahC',
-        'homeworkhelper': 'sgnitteS'
+        'homeworkhelper': 'sgnitteS',
+        'profile': 'eliforP'
     };
 
     navBtns.forEach(btn => {
@@ -501,6 +503,17 @@ function initApp() {
 
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
+            
+            // Properly mapped profile button action
+            if (targetId === 'profile') {
+                if (!currentUser) {
+                    openAuthModal();
+                } else {
+                    settingsModal?.classList.add('active');
+                }
+                return;
+            }
+            
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
             if (targetId === 'changelog') return changelogModal?.classList.add('active');
 
@@ -514,7 +527,7 @@ function initApp() {
                 }
             }
 
-            navBtns.forEach(b => !['homeworkhelper', 'changelog'].includes(b.dataset.target) && b.classList.remove('active'));
+            navBtns.forEach(b => !['homeworkhelper', 'changelog', 'profile'].includes(b.dataset.target) && b.classList.remove('active'));
             pages.forEach(p => p.classList.remove('active'));
 
             btn.classList.add('active');
