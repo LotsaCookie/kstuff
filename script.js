@@ -376,47 +376,6 @@ function initApp() {
         }
     }
 
-    function openAuthModal() {
-        let authModal = document.getElementById('auth-modal-overlay');
-        if (!authModal) {
-            authModal = document.createElement('div');
-            authModal.id = 'auth-modal-overlay';
-            authModal.className = 'modal-overlay active';
-            authModal.innerHTML = `
-                <div class="modal-content settings-modal-content" style="max-width: 350px;">
-                    <div class="modal-header"><span>Account Portal</span><div class="modal-actions"><button id="auth-close-btn"><i class="ph ph-x"></i></button></div></div>
-                    <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; gap: 10px;">
-                        <input type="text" id="auth-user" placeholder="Username" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
-                        <input type="password" id="auth-pass" placeholder="Password" class="modern-input" style="padding: 10px; width: 100%; border-radius: 6px;">
-                        <button id="do-login-btn" class="page-btn" style="justify-content:center; background:var(--text-color); color:var(--bg-color);">Log In</button>
-                        <button id="do-signup-btn" class="page-btn" style="justify-content:center;">Sign Up</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(authModal);
-            document.getElementById('auth-close-btn').onclick = () => authModal.classList.remove('active');
-            
-            document.getElementById('do-login-btn').onclick = () => {
-                const u = document.getElementById('auth-user').value.trim();
-                const p = document.getElementById('auth-pass').value.trim();
-                if (u && p && backendPort) {
-                    backendPort.postMessage({ type: 'login', username: u, password: p });
-                    authModal.classList.remove('active');
-                }
-            };
-            document.getElementById('do-signup-btn').onclick = () => {
-                const u = document.getElementById('auth-user').value.trim();
-                const p = document.getElementById('auth-pass').value.trim();
-                if (u && p && backendPort) {
-                    backendPort.postMessage({ type: 'signup', username: u, password: p });
-                    authModal.classList.remove('active');
-                }
-            };
-        } else {
-            authModal.classList.add('active');
-        }
-    }
-
     function applyCustomDropdown(selectEl) {
         if (!selectEl || selectEl.dataset.customized) {
             if (selectEl?.dataset.customized) selectEl.nextElementSibling?.classList.contains('custom-select-wrapper') && selectEl.nextElementSibling.remove();
@@ -472,9 +431,37 @@ function initApp() {
         m?.addEventListener('click', (e) => e.target === m && m.classList.remove('active'));
         return m;
     };
+    
     const settingsModal = bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn');
     const changelogModal = bindModal('changelog-modal', 'changelog-close-btn');
-    
+    const authModal = bindModal('auth-modal-overlay', 'auth-close-btn');
+
+    function openAuthModal() {
+        authModal?.classList.add('active');
+    }
+
+    document.getElementById('do-login-btn')?.addEventListener('click', () => {
+        const u = document.getElementById('auth-user')?.value.trim();
+        const p = document.getElementById('auth-pass')?.value.trim();
+        if (u && p && backendPort) {
+            backendPort.postMessage({ type: 'login', username: u, password: p });
+            authModal?.classList.remove('active');
+        } else if (!backendPort) {
+            alert("Backend bridge not initialized yet.");
+        }
+    });
+
+    document.getElementById('do-signup-btn')?.addEventListener('click', () => {
+        const u = document.getElementById('auth-user')?.value.trim();
+        const p = document.getElementById('auth-pass')?.value.trim();
+        if (u && p && backendPort) {
+            backendPort.postMessage({ type: 'signup', username: u, password: p });
+            authModal?.classList.remove('active');
+        } else if (!backendPort) {
+            alert("Backend bridge not initialized yet.");
+        }
+    });
+
     const navTitles = {
         'mathworksheets': 'emoH',
         'readingcorner': 'semaG',
@@ -504,7 +491,7 @@ function initApp() {
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             
-            // Properly mapped profile button action
+            // Correct Profile Mapping to Auth Modal / Settings
             if (targetId === 'profile') {
                 if (!currentUser) {
                     openAuthModal();
