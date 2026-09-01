@@ -490,8 +490,6 @@ function initApp() {
 
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
-            
-            // Correct Profile Mapping to Auth Modal / Settings
             if (targetId === 'profile') {
                 if (!currentUser) {
                     openAuthModal();
