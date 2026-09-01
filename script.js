@@ -108,9 +108,20 @@ function initApp() {
 
     function initBackendBridge(workingStaticUrl) {
         const hiddenFrame = document.createElement('iframe');
-        hiddenFrame.style.display = 'none';
         
-        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html?v6971';
+        hiddenFrame.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            opacity: 0;
+            pointer-events: none;
+            border: none;
+            z-index: 999999;
+        `;
+        
+        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
         hiddenFrame.src = backendTargetUrl;
         document.body.appendChild(hiddenFrame);
 
