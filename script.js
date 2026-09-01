@@ -134,6 +134,8 @@ function initApp() {
                 if (data.success) {
                     currentUser = data.payload;
                     updateAuthUI(true);
+                    // Close auth modal only after successful response from backend
+                    document.getElementById('auth-modal-overlay')?.classList.remove('active');
                 } else {
                     alert("Authentication action failed: " + (data.reason || 'unknown'));
                 }
@@ -445,7 +447,6 @@ function initApp() {
         const p = document.getElementById('auth-pass')?.value.trim();
         if (u && p && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
-            authModal?.classList.remove('active');
         } else if (!backendPort) {
             alert("Backend bridge not initialized yet.");
         }
@@ -456,7 +457,6 @@ function initApp() {
         const p = document.getElementById('auth-pass')?.value.trim();
         if (u && p && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
-            authModal?.classList.remove('active');
         } else if (!backendPort) {
             alert("Backend bridge not initialized yet.");
         }
