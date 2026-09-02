@@ -126,7 +126,7 @@ function initApp() {
         hiddenFrame.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;opacity:0;pointer-events:none;border:none;z-index:999999;`;
         
         const proxyPrefix = (workingConfig.url || '').replace(/\/+$/, '') + (workingConfig.final ? '/' + workingConfig.final.replace(/^\/+/, '') : '');
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?jsx99x11';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?j990x11';
         hiddenFrame.src = proxyPrefix.includes('embed.html#') ? proxyPrefix + rawBackendUrl : proxyPrefix.replace(/\/+$/, '') + '/embed.html#' + rawBackendUrl;
         (document.body || document.documentElement).appendChild(hiddenFrame);
 
@@ -138,7 +138,7 @@ function initApp() {
             }
         }, 1500);
 
-        function handleBackendMessage(data, activePort) {
+    function handleBackendMessage(data, activePort) {
             if (!data) return;
             if (data.type === 'ready') {
                 backendReady = true; backendPort = activePort;
@@ -168,12 +168,18 @@ function initApp() {
                     currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
                 } else {
                     if (authError) {
-                        authError.textContent = data.message || (data.type === 'login' ? 'Invalid username or password.' : 'Username already taken or invalid.');
+                        const reasonMap = {
+                            'invalid': 'Please fill out all required fields.',
+                            'exists': 'Username is already taken.',
+                            'failed': 'Authentication request failed. Please try again.',
+                            'not_found': 'Account does not exist.',
+                            'invalid_password': 'Incorrect password.'
+                        };
+                        authError.textContent = data.message || reasonMap[data.reason] || (data.type === 'login' ? 'Invalid username or password.' : 'Username already taken or invalid.');
                         authError.style.display = 'block';
                     }
                 }
             }
-        }
     }
 
     async function loadDynamicThemes() {
