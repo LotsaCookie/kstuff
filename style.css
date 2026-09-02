@@ -62,76 +62,6 @@ body.size-large.text-hide {
     --nav-width: 62px;
 }
 
-.theme-sakura {
-    --bg-color: #1a1216;
-    --text-color: #ffb8d9;
-    --nav-bg: #271a22;
-    --card-bg: #362530;
-}
-
-.theme-dark {
-    --bg-color: #121212;
-    --text-color: #ffffff;
-    --nav-bg: #1e1e1e;
-    --card-bg: #2a2a2a;
-}
-
-.theme-light {
-    --bg-color: #f4f5f7;
-    --text-color: #1a1a1a;
-    --nav-bg: #ffffff;
-    --card-bg: #e2e8f0;
-}
-
-.theme-ocean {
-    --bg-color: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    --text-color: #ffffff;
-    --nav-bg: rgba(0, 0, 0, 0.4);
-    --card-bg: rgba(255, 255, 255, 0.1);
-}
-
-.theme-sunset {
-    --bg-color: linear-gradient(135deg, #41295a, #2f0743);
-    --text-color: #ffffff;
-    --nav-bg: rgba(0, 0, 0, 0.4);
-    --card-bg: rgba(255, 255, 255, 0.1);
-}
-
-.theme-emerald {
-    --bg-color: #0b1712;
-    --text-color: #d1fae5;
-    --nav-bg: #13261e;
-    --card-bg: #1d382b;
-}
-
-.theme-midnight {
-    --bg-color: #0b0c16;
-    --text-color: #e2e8f0;
-    --nav-bg: #141624;
-    --card-bg: #1f2238;
-}
-
-.theme-cyber {
-    --bg-color: #0d0c1d;
-    --text-color: #00ffcc;
-    --nav-bg: #16142e;
-    --card-bg: #221f42;
-}
-
-.theme-ruby {
-    --bg-color: #1c0d10;
-    --text-color: #ffe4e6;
-    --nav-bg: #2e151b;
-    --card-bg: #421d26;
-}
-
-.theme-latte {
-    --bg-color: #1a1614;
-    --text-color: #fef3c7;
-    --nav-bg: #292320;
-    --card-bg: #3d3430;
-}
-
 #classroom-portal-container {
     display: flex;
     height: 100vh;
@@ -1094,4 +1024,4 @@ body.text-hide .nav-right .nav-divider {
     transform: translateY(-50%) translateX(0);
     opacity: 1;
     visibility: visible;
-}
+    }
