@@ -460,6 +460,8 @@ function initApp() {
 
     document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
+
+    // Save Settings Button Logic (Local vs Cloud)
     document.getElementById('save-settings-btn')?.addEventListener('click', (e) => {
         const btn = e.target;
         const originalText = btn.textContent;
@@ -481,7 +483,6 @@ function initApp() {
             backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
             btn.textContent = "Saved to Cloud!";
         } else {
-            // Unauthenticated: Data already saved locally via the 'change' event on the inputs.
             btn.textContent = "Saved Locally!";
         }
 
@@ -571,6 +572,62 @@ function initApp() {
         if (backendPort) backendPort.postMessage({ type: 'logout' });
         updateAuthUI(false);
         profileModal?.classList.remove('active');
+    });
+
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const profileEditContainer = document.getElementById('profile-edit-container');
+    const profileEditPicUrl = document.getElementById('profile-edit-pic-url');
+    const profileEditDesc = document.getElementById('profile-edit-desc');
+    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
+
+    editProfileBtn?.addEventListener('click', () => {
+        if (!currentUser) return;
+        const isHidden = profileEditContainer.style.display === 'none';
+        
+        if (isHidden) {
+            profileEditPicUrl.value = currentUser.profilePicture || "";
+            profileEditDesc.value = currentUser.description || "";
+            profileEditContainer.style.display = 'flex';
+            setTimeout(() => profileEditContainer.style.opacity = '1', 10);
+        } else {
+            profileEditContainer.style.opacity = '0';
+            setTimeout(() => profileEditContainer.style.display = 'none', 300);
+        }
+    });
+
+    saveProfileChangesBtn?.addEventListener('click', () => {
+        if (!currentUser || !backendReady || !backendPort) {
+            alert("Backend not connected or user not logged in.");
+            return;
+        }
+        
+        const originalText = saveProfileChangesBtn.textContent;
+        saveProfileChangesBtn.textContent = "Saving to Cloud...";
+        
+        const newPic = profileEditPicUrl.value.trim();
+        const newDesc = profileEditDesc.value.trim();
+        
+        currentUser.profilePicture = newPic || "https://kstuff.neocities.org/assets/default-profile.png";
+        currentUser.description = newDesc || "No bio provided yet.";
+        
+        localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
+        
+        updateProfileModal();
+        
+        backendPort.postMessage({ 
+            type: 'update-settings', 
+            username: currentUser.username, 
+            settings: { 
+                profilePicture: currentUser.profilePicture, 
+                description: currentUser.description 
+            } 
+        });
+
+        setTimeout(() => {
+            saveProfileChangesBtn.textContent = originalText;
+            profileEditContainer.style.opacity = '0';
+            setTimeout(() => profileEditContainer.style.display = 'none', 300);
+        }, 600);
     });
 
     const navTitles = {
