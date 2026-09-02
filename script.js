@@ -151,19 +151,33 @@ function initApp() {
         function handleBackendMessage(data, activePort) {
             if (!data) return;
             
-            alert("Frontend received message: " + JSON.stringify(data));
-
             if (data.type === 'ready') {
                 backendReady = true;
                 backendPort = activePort;
                 clearInterval(cableInterval);
+                
+                // Poll backend for saved user on load
+                const savedUser = localStorage.getItem('kstuff_username');
+                if (savedUser) {
+                    backendPort.postMessage({ type: 'auto-login', username: savedUser });
+                }
             } else if (data.type === 'login' || data.type === 'auto-login' || data.type === 'signup') {
                 if (data.success) {
                     currentUser = data.payload;
+                    localStorage.setItem('kstuff_username', currentUser.username); // Persist username
+                    
+                    if (currentUser.settings) {
+                        applyCloudSettings(currentUser.settings);
+                    }
+                    
                     updateAuthUI(true);
                     document.getElementById('auth-modal-overlay')?.classList.remove('active');
                 } else {
-                    alert("Authentication action failed: " + (data.reason || 'unknown'));
+                    if (data.type === 'auto-login') {
+                        localStorage.removeItem('kstuff_username'); // Clear if auto-login fails
+                    } else {
+                        alert("Authentication action failed: " + (data.reason || 'unknown'));
+                    }
                 }
             } else if (data.type === 'settings-saved') {
                 alert("Settings successfully saved to cloud storage!");
@@ -354,6 +368,36 @@ function initApp() {
     setupSetting('layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v));
     setupSetting('layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
 
+    function applyCloudSettings(settings) {
+        if (!settings) return;
+        const updates = {
+            'layout-theme-select': settings.theme,
+            'layout-nav-select': settings.navPos,
+            'layout-size-select': settings.navSize
+        };
+        
+        for (const [id, val] of Object.entries(updates)) {
+            if (!val) continue;
+            const el = document.getElementById(id);
+            if (el && el.value !== val) {
+                el.value = val;
+                el.dispatchEvent(new Event('change'));
+                
+                const wrapper = el.nextElementSibling;
+                if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+                    const triggerSpan = wrapper.querySelector('.custom-select-trigger span');
+                    if (triggerSpan) triggerSpan.textContent = el.options[el.selectedIndex]?.text || '';
+                    
+                    const options = wrapper.querySelectorAll('.custom-select-option');
+                    options.forEach((opt, idx) => {
+                        if (idx === el.selectedIndex) opt.classList.add('selected');
+                        else opt.classList.remove('selected');
+                    });
+                }
+            }
+        }
+    }
+
     const settingsBody = document.querySelector('.modal-settings-body');
     if (settingsBody && !document.getElementById('save-settings-btn')) {
         const authActionCard = document.createElement('div');
@@ -393,6 +437,7 @@ function initApp() {
                 authBtn.textContent = 'Log Out';
                 authBtn.onclick = () => {
                     currentUser = null;
+                    localStorage.removeItem('kstuff_username'); // Clear local storage on logout
                     if (backendPort) backendPort.postMessage({ type: 'logout' });
                     updateAuthUI(false);
                 };
@@ -472,8 +517,6 @@ function initApp() {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
         
-        alert(`Attempting login for: ${u} | Port ready: ${backendReady && !!backendPort}`);
-
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
         } else {
@@ -485,8 +528,6 @@ function initApp() {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
         
-        alert(`Attempting signup for: ${u} | Port ready: ${backendReady && !!backendPort}`);
-
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
         } else {
