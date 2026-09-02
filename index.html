@@ -44,12 +44,26 @@
             object-fit: cover;
         }
 
-        .split-text-container {
+        .custom-tooltip {
+            position: fixed;
+            background: var(--text-color);
+            color: var(--bg-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 9999999;
             display: inline-flex;
             flex-direction: row;
-            white-space: pre; 
+            white-space: pre;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: opacity 0.1s;
         }
-        .split-text-container div {
+        .custom-tooltip.visible {
+            opacity: 1;
+        }
+        .custom-tooltip div {
             margin: 0;
             padding: 0;
         }
@@ -90,15 +104,15 @@
     <div id="classroom-portal-container">
         <nav id="teachertouchbar">
             <div style="display:none;" id="edu-logo">T</div>
-            <button class="nav-btn active" data-target="mathworksheets"><i class="ph ph-house"></i></button>
-            <button class="nav-btn" data-target="readingcorner"><i class="ph ph-game-controller"></i></button>
-            <button class="nav-btn" data-target="sciencequiz"><i class="ph ph-app-window"></i></button>
-            <button class="nav-btn" data-target="gradebook"><i class="ph ph-music-notes"></i></button>
-            <button class="nav-btn" data-target="lessonplanner"><i class="ph ph-robot"></i></button>
+            <button class="nav-btn active" data-target="mathworksheets" data-tip="emoh"><i class="ph ph-house"></i></button>
+            <button class="nav-btn" data-target="readingcorner" data-tip="aemaG"><i class="ph ph-game-controller"></i></button>
+            <button class="nav-btn" data-target="sciencequiz" data-tip="sppA"><i class="ph ph-app-window"></i></button>
+            <button class="nav-btn" data-target="gradebook" data-tip="cisuM"><i class="ph ph-music-notes"></i></button>
+            <button class="nav-btn" data-target="lessonplanner" data-tip="slooT"><i class="ph ph-robot"></i></button>
             <div class="nav-divider"></div>
-            <button class="nav-btn" data-target="changelog" id="changelog-btn"><i class="ph ph-list-bullets"></i></button>
-            <button class="nav-btn" data-target="homeworkhelper"><i class="ph ph-gear"></i></button>
-            <button class="nav-btn" data-target="profile" id="profile-nav-btn"><i class="ph ph-user" id="profile-nav-icon"></i></button>
+            <button class="nav-btn" data-target="changelog" id="changelog-btn" data-tip="goL egnahC"><i class="ph ph-list-bullets"></i></button>
+            <button class="nav-btn" data-target="homeworkhelper" data-tip="sgnitteS"><i class="ph ph-gear"></i></button>
+            <button class="nav-btn" data-target="profile" id="profile-nav-btn" data-tip="eliforP"><i class="ph ph-user" id="profile-nav-icon"></i></button>
             <div class="nav-indicator"></div>
         </nav>
         <main id="studymaterial-area">
@@ -146,7 +160,8 @@
         <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;">
             <img id="profile-modal-pic" src="" alt="Profile Picture" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--text-color); margin-bottom: 0.5rem; background: var(--bg-color);">
             <h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2>
-            <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>       
+            <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>
+            
             <div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;">
                 <div style="text-align: left;">
                     <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label>
@@ -158,10 +173,12 @@
                 </div>
                 <button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button>
             </div>
+
             <button id="do-logout-btn" style="width: 100%; margin-top: 10px; padding: 12px; background: transparent; color: #ff4d4d; border: 2px solid #ff4d4d; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s;">Log Out</button>
         </div>
     </div>
     </div>
+
     <div id="auth-modal-overlay" class="modal-overlay">
         <div class="modal-content settings-modal-content" style="max-width: 425px;">
             <div class="modal-header">
@@ -184,17 +201,45 @@
             </div>
         </div>
     </div>
+
     <script>
-        document.querySelectorAll('.auto-split').forEach(element => {
-            const text = element.textContent;
-            element.textContent = ''; 
-            element.classList.add('split-text-container'); 
+        const reversedDict = {
+            'emoh': 'Home',
+            'aemaG': 'Game',
+            'sppA': 'Apps',
+            'cisuM': 'Music',
+            'slooT': 'Tools',
+            'goL egnahC': 'Change Log',
+            'sgnitteS': 'Settings',
+            'eliforP': 'Profile'
+        };
+
+        const tooltipDiv = document.createElement('div');
+        tooltipDiv.className = 'custom-tooltip';
+        document.body.appendChild(tooltipDiv);
+
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('mousemove', e => {
+                const rawCode = btn.getAttribute('data-tip');
+                if (!rawCode) return;
+                
+                const decoded = reversedDict[rawCode] || rawCode.split('').reverse().join('');
+                
+                tooltipDiv.innerHTML = '';
+                for (let char of decoded) {
+                    let d = document.createElement('div');
+                    d.textContent = char;
+                    tooltipDiv.appendChild(d);
+                }
+                
+                tooltipDiv.classList.add('visible');
+                tooltipDiv.style.left = (e.clientX + 15) + 'px';
+                tooltipDiv.style.top = (e.clientY + 15) + 'px';
+            });
             
-            for (let char of text) {
-                const letterDiv = document.createElement('div');
-                letterDiv.textContent = char;
-                element.appendChild(letterDiv);
-            }
+            btn.addEventListener('mouseleave', () => {
+                tooltipDiv.classList.remove('visible');
+            });
         });
     </script>
 </body>
