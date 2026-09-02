@@ -201,9 +201,8 @@ function initApp() {
                         currentUser = null;
                         localStorage.removeItem('kstuff_user'); 
                         updateAuthUI(false);
-                    } else {
-                        alert("Authentication action failed: " + (data.reason || 'unknown'));
                     }
+                    // Alerts removed for failure states
                 }
             }
         }
@@ -214,6 +213,29 @@ function initApp() {
         'gradebook': { id: 'gradebook-iframe', path: 'Pages/music.html' },
         'lessonplanner': { id: 'lessonplanner-iframe', path: 'Pages/ai.html' }
     };
+
+    // Correctly synchronizes loader state with iframe onload event
+    function loadIframePage(iframeId, path) {
+        const iframe = document.getElementById(iframeId);
+        if (!iframe) {
+            toggleLoader(false);
+            return;
+        }
+        
+        const currentSrc = iframe.getAttribute('src');
+        if (currentSrc && currentSrc.includes(path)) {
+            toggleLoader(false);
+            return;
+        }
+
+        toggleLoader(true);
+        
+        iframe.onload = () => {
+            toggleLoader(false);
+        };
+        
+        iframe.src = path;
+    }
 
     const initGrid = (id) => ({ data: [], pool: [], gridEl: document.getElementById(`${id}-grid`), pageEl: document.getElementById(`${id}-pagination`), category: "All", search: "", page: 1 });
     const grids = { readingcorner: initGrid('readingcorner'), sciencequiz: initGrid('sciencequiz') };
@@ -461,7 +483,6 @@ function initApp() {
     document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
 
-    // Save Settings Button Logic (Local vs Cloud)
     document.getElementById('save-settings-btn')?.addEventListener('click', (e) => {
         const btn = e.target;
         const originalText = btn.textContent;
@@ -550,9 +571,8 @@ function initApp() {
         
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
-        } else {
-            alert("Missing credentials or backend port not connected!");
         }
+        // Alerts removed
     });
 
     document.getElementById('do-signup-btn')?.addEventListener('click', () => {
@@ -561,9 +581,8 @@ function initApp() {
         
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
-        } else {
-            alert("Missing credentials or backend port not connected!");
         }
+        // Alerts removed
     });
 
     document.getElementById('do-logout-btn')?.addEventListener('click', () => {
@@ -597,7 +616,7 @@ function initApp() {
 
     saveProfileChangesBtn?.addEventListener('click', () => {
         if (!currentUser || !backendReady || !backendPort) {
-            alert("Backend not connected or user not logged in.");
+            // Alerts removed
             return;
         }
         
@@ -696,10 +715,13 @@ function initApp() {
                     buildPool(targetId);
                     setTimeout(() => renderGrid(targetId, false), 50);
                 } else if (iframePages[targetId]) {
-                    loadIframePage(iframePages[targetId].id, iframePages[targetId].path, targetId);
-                    setTimeout(() => toggleLoader(false), 300);
-                } else toggleLoader(false);
-            } else toggleLoader(false);
+                    loadIframePage(iframePages[targetId].id, iframePages[targetId].path);
+                } else {
+                    toggleLoader(false);
+                }
+            } else {
+                toggleLoader(false);
+            }
         });
     });
 
@@ -824,7 +846,7 @@ function initApp() {
                 buildPool(activePage.id);
                 renderGrid(activePage.id, false);
             } else if (iframePages[activePage.id]) {
-                loadIframePage(iframePages[activePage.id].id, iframePages[activePage.id].path, activePage.id);
+                loadIframePage(iframePages[activePage.id].id, iframePages[activePage.id].path);
             } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
         } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
 
