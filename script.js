@@ -413,7 +413,15 @@ function initApp() {
         el.value = saved; classFn(saved);
         el.addEventListener('change', (e) => {
             if (classPrefix) body.className = body.className.replace(new RegExp(`\\b${classPrefix}-\\S+`, 'g'), '').trim();
-            classFn(e.target.value); localStorage.setItem(storageKey, e.target.value); animateIndicatorUpdate(); 
+            classFn(e.target.value); 
+            localStorage.setItem(storageKey, e.target.value); 
+            animateIndicatorUpdate(); 
+            Object.values(iframePages).forEach(page => {
+                const frame = $(page.id);
+                if (frame && frame.contentWindow) {
+                    frame.contentWindow.postMessage('theme-updated', '*');
+                }
+            });
         });
     };
 
