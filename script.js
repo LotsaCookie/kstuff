@@ -136,7 +136,7 @@ function initApp() {
         const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
         const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
         
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?esz';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
         
         let backendTargetUrl;
         if (proxyPrefix.includes('embed.html#')) {
@@ -229,6 +229,7 @@ function initApp() {
         
         try {
             const htmlContent = await fetchWithProxy(path, true);
+            
             iframe.onload = () => {
                 toggleLoader(false);
             };
@@ -619,10 +620,7 @@ function initApp() {
     });
 
     saveProfileChangesBtn?.addEventListener('click', () => {
-        if (!currentUser || !backendReady || !backendPort) {
-            // Alerts removed
-            return;
-        }
+        if (!currentUser || !backendReady || !backendPort) return;
         
         const originalText = saveProfileChangesBtn.textContent;
         saveProfileChangesBtn.textContent = "Saving to Cloud...";
@@ -653,32 +651,9 @@ function initApp() {
         }, 600);
     });
 
-    const navTitles = {
-        'mathworksheets': 'emoH',
-        'readingcorner': 'semaG',
-        'sciencequiz': 'sppA',
-        'gradebook': 'cisuM',
-        'lessonplanner': 'IA',
-        'changelog': 'golegnahC',
-        'homeworkhelper': 'sgnitteS',
-        'profile': 'eliforP'
-    };
-
     navBtns.forEach(btn => {
         btn.style.position = 'relative';
-        const tooltip = document.createElement('div');
-        tooltip.className = 'nav-tooltip';
-        const rawTitle = navTitles[btn.dataset.target] || 'egaP';
-        const targetTitle = rawTitle.split('').reverse().join('');
         
-        targetTitle.split('').forEach(letter => {
-            const letterDiv = document.createElement('div');
-            letterDiv.textContent = letter;
-            tooltip.appendChild(letterDiv);
-        });
-        
-        btn.appendChild(tooltip);
-
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             if (targetId === 'profile') {
@@ -696,12 +671,16 @@ function initApp() {
 
             toggleLoader(true);
             const activeBtn = document.querySelector('.nav-btn.active');
+            
             if (activeBtn) {
                 const currentId = activeBtn.dataset.target;
                 if (currentId !== targetId && iframePages[currentId]) {
                     const frame = document.getElementById(iframePages[currentId].id);
-                    // Avoid wiping srcdoc out if it was just loaded, otherwise we lose it when navigating back
-                    // if (frame) frame.srcdoc = ''; 
+                    if (frame) {
+                        frame.srcdoc = ''; 
+                        frame.removeAttribute('srcdoc'); 
+                        delete frame.dataset.loadedPath;
+                    }
                 }
             }
 
@@ -720,7 +699,6 @@ function initApp() {
                     buildPool(targetId);
                     setTimeout(() => renderGrid(targetId, false), 50);
                 } else if (iframePages[targetId]) {
-                    // Call our new async loadIframePage to fetch the HTML via proxy and embed as srcdoc
                     loadIframePage(iframePages[targetId].id, iframePages[targetId].path);
                 } else {
                     toggleLoader(false);
