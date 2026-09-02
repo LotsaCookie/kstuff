@@ -640,7 +640,7 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .round-btn:active .overlay {
-    opacity: 1;
+    opacity: 0; /* Since tool tip exists */
     background: rgba(0, 0, 0, 0.8); 
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
