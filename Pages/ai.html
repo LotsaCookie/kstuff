@@ -630,575 +630,338 @@
     </div>
 
     <script type="module">
-        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+const GREETING_TEXT = "Hello, how may I assist you?";
+let engine, isModelReady = false, attachedFile = null;
+let chats = JSON.parse(localStorage.getItem('ai_chats')) || [];
+let currentChatId = localStorage.getItem('ai_current_chat_id') || null;
+let selectedModel = localStorage.getItem('ai_selected_model') || "Llama-3.2-1B-Instruct-q4f16_1-MLC";
 
-        const GREETING_TEXT = "Hello, how may I assist you?";
-        
-        let engine;
-        let chats = JSON.parse(localStorage.getItem('ai_chats')) || [];
-        let currentChatId = localStorage.getItem('ai_current_chat_id') || null;
-        let selectedModel = localStorage.getItem('ai_selected_model') || "Llama-3.2-1B-Instruct-q4f16_1-MLC";
-        let attachedFile = null;
+const AVAILABLE_MODELS = [
+    { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", name: "Llama 3.2 (1B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Ultra-compact model, lightning fast on phones." },
+    { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", name: "Llama 3.2 (3B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Great balance of speed and reasoning." },
+    { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", name: "Qwen 2.5 (1.5B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Strong multilingual and coding performance." },
+    { id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC", name: "SmolLM2 (1.7B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Compact model optimized for everyday tasks." },
+    { id: "Gemma-2-2b-it-q4f16_1-MLC", name: "Gemma 2 (2B)", tag: "Mobile-Friendly", category: "Bite-Sized & Mobile-Friendly", desc: "Google's efficient small architecture." },
+    { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", name: "Phi-3.5 Mini (3.8B)", tag: "Mobile-Friendly", category: "Bite-Sized & Mobile-Friendly", desc: "High reasoning capacity in a small footprint." },
+    { id: "Llama-3-8B-Instruct-q4f16_1-MLC", name: "Llama 3 (8B)", tag: "Desktop", category: "Standard Desktop Models", desc: "Full-sized model requiring more RAM/VRAM." },
+    { id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC", name: "Mistral v0.3 (7B)", tag: "Desktop", category: "Standard Desktop Models", desc: "Reliable general-purpose assistant." },
+    { id: "Gemma-2-9b-it-q4f16_1-MLC", name: "Gemma 2 (9B)", tag: "Desktop Heavy", category: "Standard Desktop Models", desc: "Advanced capabilities for powerful devices." },
+    { id: "Llama-3.2-11B-Vision-Instruct-q4f16_1-MLC", name: "Llama 3.2 Vision (11B)", tag: "Multimodal", category: "Multimodal Vision Models", desc: "Supports images, documents, and visual reasoning." }
+];
 
-        const sendBtn = document.getElementById('send-btn');
-        const userInput = document.getElementById('user-input');
-        const chatContainer = document.getElementById('chat-container');
-        const statusText = document.getElementById('status-text');
-        const chatListEl = document.getElementById('chat-list');
-        const newChatBtn = document.getElementById('new-chat-btn');
-        const menuToggle = document.getElementById('menu-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const attachBtn = document.getElementById('attach-btn');
-        const fileInput = document.getElementById('file-input');
-        const attachmentPreview = document.getElementById('attachment-preview');
-        const modelPickerBtn = document.getElementById('model-picker-btn');
-        const currentModelLabel = document.getElementById('current-model-label');
-        const modelModalOverlay = document.getElementById('model-modal-overlay');
-        const modelModalClose = document.getElementById('model-modal-close');
-        const modelListContainer = document.getElementById('model-list-container');
-        const clearCacheBtn = document.getElementById('clear-cache-btn');
+const ICON_EDIT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
+const ICON_DELETE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        let isModelReady = false;
+const el = (id) => document.getElementById(id);
+const DOM = {
+    sendBtn: el('send-btn'), userInput: el('user-input'), chatContainer: el('chat-container'),
+    statusText: el('status-text'), chatList: el('chat-list'), newChatBtn: el('new-chat-btn'),
+    menuToggle: el('menu-toggle'), sidebar: el('sidebar'), overlay: el('overlay'),
+    attachBtn: el('attach-btn'), fileInput: el('file-input'), attachmentPreview: el('attachment-preview'),
+    modelPickerBtn: el('model-picker-btn'), currentModelLabel: el('current-model-label'),
+    modelModalOverlay: el('model-modal-overlay'), modelModalClose: el('model-modal-close'),
+    modelListContainer: el('model-list-container'), clearCacheBtn: el('clear-cache-btn')
+};
 
-        const AVAILABLE_MODELS = [
-            { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", name: "Llama 3.2 (1B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Ultra-compact model, lightning fast on phones." },
-            { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", name: "Llama 3.2 (3B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Great balance of speed and reasoning." },
-            { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", name: "Qwen 2.5 (1.5B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Strong multilingual and coding performance." },
-            { id: "SmolLM2-1.7B-Instruct-q4f16_1-MLC", name: "SmolLM2 (1.7B)", tag: "Bite-Sized", category: "Bite-Sized & Mobile-Friendly", desc: "Compact model optimized for everyday tasks." },
-            { id: "Gemma-2-2b-it-q4f16_1-MLC", name: "Gemma 2 (2B)", tag: "Mobile-Friendly", category: "Bite-Sized & Mobile-Friendly", desc: "Google's efficient small architecture." },
-            { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", name: "Phi-3.5 Mini (3.8B)", tag: "Mobile-Friendly", category: "Bite-Sized & Mobile-Friendly", desc: "High reasoning capacity in a small footprint." },
-            { id: "Llama-3-8B-Instruct-q4f16_1-MLC", name: "Llama 3 (8B)", tag: "Desktop", category: "Standard Desktop Models", desc: "Full-sized model requiring more RAM/VRAM." },
-            { id: "Mistral-7B-Instruct-v0.3-q4f16_1-MLC", name: "Mistral v0.3 (7B)", tag: "Desktop", category: "Standard Desktop Models", desc: "Reliable general-purpose assistant." },
-            { id: "Gemma-2-9b-it-q4f16_1-MLC", name: "Gemma 2 (9B)", tag: "Desktop Heavy", category: "Standard Desktop Models", desc: "Advanced capabilities for powerful devices." },
-            { id: "Llama-3.2-11B-Vision-Instruct-q4f16_1-MLC", name: "Llama 3.2 Vision (11B)", tag: "Multimodal", category: "Multimodal Vision Models", desc: "Supports images, documents, and visual reasoning." }
-        ];
+const formatMarkdown = (text) => text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') 
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
+    .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px;">$1</code>')
+    .replace(/\n/g, '<br>');
 
-        const ICON_EDIT = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
-        const ICON_DELETE = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+const scrollToBottom = () => DOM.chatContainer.scrollTop = DOM.chatContainer.scrollHeight;
 
-        function saveChats() {
-            localStorage.setItem('ai_chats', JSON.stringify(chats));
-            if (currentChatId) {
-                localStorage.setItem('ai_current_chat_id', currentChatId);
-            } else {
-                localStorage.removeItem('ai_current_chat_id');
-            }
-        }
+function saveChats() {
+    localStorage.setItem('ai_chats', JSON.stringify(chats));
+    currentChatId ? localStorage.setItem('ai_current_chat_id', currentChatId) : localStorage.removeItem('ai_current_chat_id');
+}
 
-        function renderChatList() {
-            chatListEl.innerHTML = '';
-            chats.forEach(chat => {
-                const item = document.createElement('div');
-                item.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-                item.innerHTML = `
-                    <span class="chat-title">${chat.title}</span>
-                    <div class="chat-actions">
-                        <button class="action-btn edit-btn" title="Rename">${ICON_EDIT}</button>
-                        <button class="action-btn delete-btn" title="Delete">${ICON_DELETE}</button>
-                    </div>
-                `;
-                
-                // Rename Chat
-                item.querySelector('.edit-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showModal({
-                        title: 'Rename Chat',
-                        showInput: true,
-                        defaultValue: chat.title,
-                        confirmText: 'Save',
-                        onConfirm: (newTitle) => {
-                            if (newTitle && newTitle.trim()) {
-                                chat.title = newTitle.trim();
-                                saveChats();
-                                renderChatList();
-                            }
-                        }
-                    });
-                });
-
-                // Delete Chat
-                item.querySelector('.delete-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showModal({
-                        title: 'Delete Chat',
-                        message: 'Are you sure you want to delete this chat?',
-                        confirmText: 'Delete',
-                        isDanger: true,
-                        onConfirm: () => {
-                            chats = chats.filter(c => c.id !== chat.id);
-                            if (currentChatId === chat.id) {
-                                currentChatId = chats.length ? chats[0].id : null;
-                                if (currentChatId) loadChat(currentChatId);
-                                else createNewChat();
-                            }
-                            saveChats();
-                            renderChatList();
-                        }
-                    });
-                });
-
-                // Load Chat
-                item.addEventListener('click', () => {
-                    if (window.innerWidth <= 768) toggleSidebar();
-                    loadChat(chat.id);
-                });
-
-                chatListEl.appendChild(item);
-            });
-        }
-
-        function createNewChat() {
-            currentChatId = Date.now().toString();
-            chats.unshift({ id: currentChatId, title: 'New Chat', messages: [] });
-            saveChats();
-            renderChatList();
-            loadChat(currentChatId);
-        }
-
-        function loadChat(id) {
-            currentChatId = id;
-            saveChats();
-            renderChatList();
-            chatContainer.innerHTML = '';
-            
-            const chat = chats.find(c => c.id === id);
-            if (!chat || chat.messages.length === 0) {
-                addMessageToUI('ai', GREETING_TEXT);
-                return;
-            }
-
-            chat.messages.forEach(msg => {
-                let contentText = "";
-                let imgUrl = null;
-
-                if (typeof msg.content === 'string') {
-                    contentText = msg.content;
-                } else if (Array.isArray(msg.content)) {
-                    const textPart = msg.content.find(p => p.type === 'text');
-                    const imgPart = msg.content.find(p => p.type === 'image_url');
-                    if (textPart) contentText = textPart.text;
-                    if (imgPart) imgUrl = imgPart.image_url.url;
-                }
-                addMessageToUI(msg.role === 'user' ? 'user' : 'ai', contentText, imgUrl);
-            });
+let isUpdatingDOM = false;
+let pendingHTML = "";
+function throttledUpdateBubble(bubbleEl, rawText) {
+    pendingHTML = formatMarkdown(rawText);
+    if (!isUpdatingDOM) {
+        isUpdatingDOM = true;
+        requestAnimationFrame(() => {
+            bubbleEl.innerHTML = `<div>${pendingHTML}</div>`;
             scrollToBottom();
-        }
-
-        function addMessageToUI(role, text, imageUrl = null, isError = false) {
-            const msgDiv = document.createElement('div');
-            let className = role === 'user' ? 'user-message' : 'ai-message';
-            if (isError) className += ' error-message';
-            
-            msgDiv.className = `message ${className}`;
-            
-            let html = '';
-            if (imageUrl) {
-                html += `<img src="${imageUrl}" class="message-img" />`;
-            }
-            
-            const formattedText = text
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') 
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
-                .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px;">$1</code>')
-                .replace(/\n/g, '<br>');
-                
-            html += `<div>${formattedText}</div>`;
-            msgDiv.innerHTML = html;
-            chatContainer.appendChild(msgDiv);
-            scrollToBottom();
-            return msgDiv; 
-        }
-
-        function scrollToBottom() {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // === CHAT SEND & RECEIVE LOGIC ===
-        
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if ((!text && !attachedFile) || !isModelReady) return;
-
-            if (!currentChatId || !chats.find(c => c.id === currentChatId)) {
-                createNewChat();
-            }
-
-            const chat = chats.find(c => c.id === currentChatId);
-            
-            let messageContent;
-            let uiImageUrl = null;
-
-            if (attachedFile) {
-                if (attachedFile.type === 'image') {
-                    messageContent = [
-                        { type: "text", text: text || "Describe this image." },
-                        { type: "image_url", image_url: { url: attachedFile.dataUrl } }
-                    ];
-                    uiImageUrl = attachedFile.dataUrl;
-                } else if (attachedFile.type === 'text') {
-                    const combinedText = `Attached File (${attachedFile.name}):\n\`\`\`\n${attachedFile.content}\n\`\`\`\n\nUser Input: ${text}`;
-                    messageContent = combinedText;
-                }
-            } else {
-                messageContent = text;
-            }
-
-            addMessageToUI('user', text, uiImageUrl);
-            chat.messages.push({ role: 'user', content: messageContent });
-            
-            if (chat.title === 'New Chat' && text) {
-                chat.title = text.substring(0, 30) + (text.length > 30 ? '...' : '');
-                renderChatList();
-            }
-            saveChats();
-
-            userInput.value = '';
-            userInput.style.height = '24px';
-            clearAttachment();
-            
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-            attachBtn.disabled = true;
-            sendBtn.innerHTML = `<div class="spinner"></div><span>Thinking</span>`;
-
-            try {
-                const messagesForEngine = [
-                    { role: "system", content: "You are a helpful AI assistant." },
-                    ...chat.messages.map(m => ({
-                        role: m.role,
-                        content: m.content
-                    }))
-                ];
-
-                const asyncChunkGenerator = await engine.chat.completions.create({
-                    messages: messagesForEngine,
-                    stream: true,
-                    temperature: 0.7
-                });
-
-                const aiMsgBubble = addMessageToUI('ai', '');
-                let aiFullResponse = "";
-
-                for await (const chunk of asyncChunkGenerator) {
-                    const delta = chunk.choices[0]?.delta?.content || "";
-                    aiFullResponse += delta;
-                    
-                    const formattedDelta = aiFullResponse
-                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/```([\s\S]*?)```/g, '<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; overflow-x: auto;"><code>$1</code></pre>')
-                        .replace(/`(.*?)`/g, '<code style="background: rgba(0,0,0,0.2); padding: 2px 4px; border-radius: 4px;">$1</code>')
-                        .replace(/\n/g, '<br>');
-                        
-                    aiMsgBubble.innerHTML = `<div>${formattedDelta}</div>`;
-                    scrollToBottom();
-                }
-
-                chat.messages.push({ role: 'assistant', content: aiFullResponse });
-                saveChats();
-
-            } catch (error) {
-                console.error("Inference Error:", error);
-                const errorText = error.message || String(error);
-                addMessageToUI('ai', `**Inference Error:**<br>${errorText}<br><br>*Tip: If this says 'Out of Memory', try switching to a smaller model in the top menu or starting a new chat.*`, null, true);
-                
-                chat.messages.pop();
-                saveChats();
-            } finally {
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = "<span>Send</span>";
-                updateAttachmentSupport(selectedModel);
-                userInput.focus();
-            }
-        }
-
-        // === MODALS & ATTACHMENT LOGIC ===
-
-        function renderModelModalOptions() {
-            modelListContainer.innerHTML = '';
-            
-            const categories = [...new Set(AVAILABLE_MODELS.map(m => m.category))];
-            categories.forEach(cat => {
-                const catTitle = document.createElement('div');
-                catTitle.className = 'model-category-title';
-                catTitle.innerText = cat;
-                modelListContainer.appendChild(catTitle);
-
-                const modelsInCat = AVAILABLE_MODELS.filter(m => m.category === cat);
-                modelsInCat.forEach(model => {
-                    const card = document.createElement('div');
-                    card.className = `model-option-card ${model.id === selectedModel ? 'selected' : ''}`;
-                    card.innerHTML = `
-                        <div class="model-card-header">
-                            <span class="model-card-name">${model.name}</span>
-                            <span class="model-card-tag">${model.tag}</span>
-                        </div>
-                        <span class="model-card-desc">${model.desc}</span>
-                    `;
-
-                    card.addEventListener('click', () => {
-                        closeModelModal();
-                        if (model.id !== selectedModel) {
-                            showModal({
-                                title: 'Download & Load Model',
-                                message: `Switch model to "${model.name}"? This will download/load the model locally into your browser.`,
-                                confirmText: 'Download & Load',
-                                onConfirm: () => {
-                                    initModel(model.id);
-                                }
-                            });
-                        }
-                    });
-
-                    modelListContainer.appendChild(card);
-                });
-            });
-        }
-
-        function openModelModal() {
-            renderModelModalOptions();
-            modelModalOverlay.classList.add('active');
-        }
-
-        function closeModelModal() {
-            modelModalOverlay.classList.remove('active');
-        }
-
-        modelPickerBtn.addEventListener('click', openModelModal);
-        modelModalClose.addEventListener('click', closeModelModal);
-        modelModalOverlay.addEventListener('click', (e) => {
-            if (e.target === modelModalOverlay) closeModelModal();
+            isUpdatingDOM = false;
         });
-        clearCacheBtn.addEventListener('click', () => {
-            closeModelModal();
+    }
+}
+
+function addMessageToUI(role, text, imageUrl = null, isError = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'} ${isError ? 'error-message' : ''}`;
+    let html = imageUrl ? `<img src="${imageUrl}" class="message-img" />` : '';
+    html += `<div>${formatMarkdown(text)}</div>`;
+    msgDiv.innerHTML = html;
+    DOM.chatContainer.appendChild(msgDiv);
+    scrollToBottom();
+    return msgDiv; 
+}
+
+function renderChatList() {
+    DOM.chatList.innerHTML = '';
+    chats.forEach(chat => {
+        const item = document.createElement('div');
+        item.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+        item.innerHTML = `
+            <span class="chat-title">${chat.title}</span>
+            <div class="chat-actions">
+                <button class="action-btn edit-btn" title="Rename">${ICON_EDIT}</button>
+                <button class="action-btn delete-btn" title="Delete">${ICON_DELETE}</button>
+            </div>
+        `;
+        
+        item.querySelector('.edit-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             showModal({
-                title: 'Clear AI Model Cache',
-                message: 'This will purge all downloaded WebLLM AI model weights from your device memory. Your chat history will not be deleted.',
-                confirmText: 'Clear Model Cache',
-                isDanger: true,
-                onConfirm: async () => {
-                    statusText.innerText = "Clearing model cache...";
-                    try {
-                        // WebLLM native clear cache
-                        if (webllm.clearModelCache) {
-                            await webllm.clearModelCache();
-                        } else {
-                            // Manual fallback purge for WebLLM cache stores
-                            const cacheNames = await caches.keys();
-                            for (const name of cacheNames) {
-                                if (name.includes('webllm') || name.includes('mlc') || name.includes('wasm')) {
-                                    await caches.delete(name);
-                                }
-                            }
-                        }
-                        showModal({
-                            title: 'Cache Cleared',
-                            message: 'Model cache purged successfully. Re-select a model to download fresh weights.',
-                            confirmText: 'OK',
-                            showCancel: false,
-                            onConfirm: () => { window.location.reload(); }
-                        });
-                    } catch (err) {
-                        console.error("Cache Clear Error:", err);
-                        showModal({
-                            title: 'Error',
-                            message: 'Failed to clear model cache: ' + err.message,
-                            confirmText: 'OK',
-                            showCancel: false
-                        });
-                    }
+                title: 'Rename Chat', showInput: true, defaultValue: chat.title, confirmText: 'Save',
+                onConfirm: (newTitle) => {
+                    if (newTitle?.trim()) { chat.title = newTitle.trim(); saveChats(); renderChatList(); }
                 }
             });
         });
 
-        function updateHeaderModelLabel(modelId) {
-            const found = AVAILABLE_MODELS.find(m => m.id === modelId);
-            currentModelLabel.innerText = found ? found.name : "Select Model";
-        }
-
-        function updateAttachmentSupport(modelId) {
-            const isVisionModel = modelId.toLowerCase().includes('vision');
-            if (isVisionModel && isModelReady) {
-                attachBtn.disabled = false;
-            } else {
-                attachBtn.disabled = true;
-                clearAttachment();
-            }
-        }
-
-        attachBtn.addEventListener('click', () => {
-            if (!attachBtn.disabled) fileInput.click();
+        item.querySelector('.delete-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            showModal({
+                title: 'Delete Chat', message: 'Are you sure you want to delete this chat?', confirmText: 'Delete', isDanger: true,
+                onConfirm: () => {
+                    chats = chats.filter(c => c.id !== chat.id);
+                    if (currentChatId === chat.id) {
+                        currentChatId = chats.length ? chats[0].id : null;
+                        currentChatId ? loadChat(currentChatId) : createNewChat();
+                    }
+                    saveChats(); renderChatList();
+                }
+            });
         });
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            if (file.type.startsWith('image/')) {
-                reader.onload = function(uploadEvent) {
-                    attachedFile = {
-                        type: 'image',
-                        name: file.name,
-                        dataUrl: uploadEvent.target.result
-                    };
-                    renderAttachmentPreview();
-                };
-                reader.readAsDataURL(file);
-            } else {
-                reader.onload = function(uploadEvent) {
-                    attachedFile = {
-                        type: 'text',
-                        name: file.name,
-                        content: uploadEvent.target.result
-                    };
-                    renderAttachmentPreview();
-                };
-                reader.readAsText(file);
-            }
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) toggleSidebar();
+            loadChat(chat.id);
         });
+        DOM.chatList.appendChild(item);
+    });
+}
 
-        function renderAttachmentPreview() {
-            if (!attachedFile) {
-                attachmentPreview.style.display = 'none';
-                attachmentPreview.innerHTML = '';
-                return;
-            }
+function createNewChat() {
+    currentChatId = Date.now().toString();
+    chats.unshift({ id: currentChatId, title: 'New Chat', messages: [] });
+    saveChats(); renderChatList(); loadChat(currentChatId);
+}
 
-            attachmentPreview.style.display = 'flex';
-            attachmentPreview.innerHTML = `
-                <div class="preview-chip">
-                    ${attachedFile.type === 'image' ? `<img src="${attachedFile.dataUrl}" />` : `<span>📄</span>`}
-                    <span style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${attachedFile.name}</span>
-                    <button class="remove-attachment" id="remove-file-btn">×</button>
-                </div>
-            `;
-            document.getElementById('remove-file-btn').addEventListener('click', clearAttachment);
+function loadChat(id) {
+    currentChatId = id; saveChats(); renderChatList(); DOM.chatContainer.innerHTML = '';
+    const chat = chats.find(c => c.id === id);
+    if (!chat || chat.messages.length === 0) return addMessageToUI('ai', GREETING_TEXT);
+
+    chat.messages.forEach(msg => {
+        let contentText = "", imgUrl = null;
+        if (typeof msg.content === 'string') contentText = msg.content;
+        else if (Array.isArray(msg.content)) {
+            contentText = msg.content.find(p => p.type === 'text')?.text || "";
+            imgUrl = msg.content.find(p => p.type === 'image_url')?.image_url.url || null;
         }
+        addMessageToUI(msg.role, contentText, imgUrl);
+    });
+}
 
-        function clearAttachment() {
-            attachedFile = null;
-            fileInput.value = '';
-            attachmentPreview.style.display = 'none';
-            attachmentPreview.innerHTML = '';
+async function sendMessage() {
+    const text = DOM.userInput.value.trim();
+    if ((!text && !attachedFile) || !isModelReady) return;
+
+    if (!chats.find(c => c.id === currentChatId)) createNewChat();
+    const chat = chats.find(c => c.id === currentChatId);
+    
+    let messageContent = text, uiImageUrl = null;
+    if (attachedFile) {
+        if (attachedFile.type === 'image') {
+            messageContent = [{ type: "text", text: text || "Describe this image." }, { type: "image_url", image_url: { url: attachedFile.dataUrl } }];
+            uiImageUrl = attachedFile.dataUrl;
+        } else if (attachedFile.type === 'text') {
+            messageContent = `Attached File (${attachedFile.name}):\n\`\`\`\n${attachedFile.content}\n\`\`\`\n\nUser Input: ${text}`;
         }
+    }
 
-        function showModal({ title, message, showInput, defaultValue, confirmText, isDanger, showCancel = true, onConfirm }) {
-            const modalOverlay = document.getElementById('modal-overlay');
-            const titleEl = document.getElementById('modal-title');
-            const msgEl = document.getElementById('modal-message');
-            const inputEl = document.getElementById('modal-input');
-            const confirmBtn = document.getElementById('modal-confirm-btn');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
+    addMessageToUI('user', text, uiImageUrl);
+    chat.messages.push({ role: 'user', content: messageContent });
+    
+    if (chat.title === 'New Chat' && text) {
+        chat.title = text.substring(0, 30) + (text.length > 30 ? '...' : '');
+        renderChatList();
+    }
+    saveChats();
 
-            titleEl.innerText = title;
-            if (message) { msgEl.innerText = message; msgEl.style.display = 'block'; }
-            else { msgEl.style.display = 'none'; }
+    DOM.userInput.value = ''; DOM.userInput.style.height = '24px';
+    clearAttachment();
+    DOM.userInput.disabled = DOM.sendBtn.disabled = DOM.attachBtn.disabled = true;
+    DOM.sendBtn.innerHTML = `<div class="spinner"></div><span>Thinking</span>`;
 
-            if (showInput) {
-                inputEl.value = defaultValue || '';
-                inputEl.style.display = 'block';
-                setTimeout(() => inputEl.focus(), 100);
-            } else {
-                inputEl.style.display = 'none';
-            }
+    try {
+        const messagesForEngine = [{ role: "system", content: "You are a helpful AI assistant." }, ...chat.messages];
+        const asyncChunkGenerator = await engine.chat.completions.create({ messages: messagesForEngine, stream: true, temperature: 0.7 });
+        
+        const aiMsgBubble = addMessageToUI('ai', '');
+        let aiFullResponse = "";
 
-            cancelBtn.style.display = showCancel ? 'block' : 'none';
-            confirmBtn.innerText = confirmText || 'Confirm';
-            confirmBtn.className = `modal-btn ${isDanger ? 'danger' : 'primary'}`;
-            modalOverlay.classList.add('active');
-
-            const closeModal = () => {
-                modalOverlay.classList.remove('active');
-                confirmBtn.onclick = null;
-                cancelBtn.onclick = null;
-            };
-
-            cancelBtn.onclick = closeModal;
-            confirmBtn.onclick = () => {
-                const val = showInput ? inputEl.value : null;
-                closeModal();
-                if (onConfirm) onConfirm(val);
-            };
-            if (showInput) {
-                inputEl.onkeydown = (e) => { if (e.key === 'Enter') confirmBtn.click(); };
-            }
+        for await (const chunk of asyncChunkGenerator) {
+            aiFullResponse += chunk.choices[0]?.delta?.content || "";
+            throttledUpdateBubble(aiMsgBubble, aiFullResponse);
         }
+        
+        aiMsgBubble.innerHTML = `<div>${formatMarkdown(aiFullResponse)}</div>`;
+        scrollToBottom();
 
-        function toggleSidebar() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-        }
-        menuToggle.addEventListener('click', toggleSidebar);
-        overlay.addEventListener('click', toggleSidebar);
+        chat.messages.push({ role: 'assistant', content: aiFullResponse });
+        saveChats();
+    } catch (error) {
+        console.error("Inference Error:", error);
+        addMessageToUI('ai', `**Inference Error:**<br>${error.message || String(error)}<br><br>*Tip: If this says 'Out of Memory', try switching to a smaller model in the top menu or starting a new chat.*`, null, true);
+        chat.messages.pop(); saveChats();
+    } finally {
+        DOM.userInput.disabled = DOM.sendBtn.disabled = false;
+        DOM.sendBtn.innerHTML = "<span>Send</span>";
+        updateAttachmentSupport(selectedModel);
+        DOM.userInput.focus();
+    }
+}
 
-        // === WEBLLM INITIALIZATION ===
+function showModal({ title, message, showInput, defaultValue, confirmText, isDanger, showCancel = true, onConfirm }) {
+    const modalOverlay = el('modal-overlay'), titleEl = el('modal-title'), msgEl = el('modal-message'), inputEl = el('modal-input');
+    const confirmBtn = el('modal-confirm-btn'), cancelBtn = el('modal-cancel-btn');
 
-        async function initModel(modelId) {
-            isModelReady = false;
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-            attachBtn.disabled = true;
-            sendBtn.innerHTML = `<div class="spinner"></div><span>Loading</span>`;
+    titleEl.innerText = title;
+    msgEl.style.display = message ? 'block' : 'none';
+    if (message) msgEl.innerText = message;
 
-            selectedModel = modelId;
-            localStorage.setItem('ai_selected_model', selectedModel);
-            updateHeaderModelLabel(selectedModel);
+    if (showInput) { inputEl.value = defaultValue || ''; inputEl.style.display = 'block'; setTimeout(() => inputEl.focus(), 100); } 
+    else inputEl.style.display = 'none';
 
+    cancelBtn.style.display = showCancel ? 'block' : 'none';
+    confirmBtn.innerText = confirmText || 'Confirm';
+    confirmBtn.className = `modal-btn ${isDanger ? 'danger' : 'primary'}`;
+    modalOverlay.classList.add('active');
+
+    const closeModal = () => { modalOverlay.classList.remove('active'); confirmBtn.onclick = cancelBtn.onclick = null; };
+    cancelBtn.onclick = closeModal;
+    confirmBtn.onclick = () => { const val = showInput ? inputEl.value : null; closeModal(); if (onConfirm) onConfirm(val); };
+    if (showInput) inputEl.onkeydown = (e) => { if (e.key === 'Enter') confirmBtn.click(); };
+}
+
+function openModelModal() {
+    DOM.modelListContainer.innerHTML = '';
+    const categories = [...new Set(AVAILABLE_MODELS.map(m => m.category))];
+    categories.forEach(cat => {
+        const catTitle = document.createElement('div');
+        catTitle.className = 'model-category-title';
+        catTitle.innerText = cat;
+        DOM.modelListContainer.appendChild(catTitle);
+
+        AVAILABLE_MODELS.filter(m => m.category === cat).forEach(model => {
+            const card = document.createElement('div');
+            card.className = `model-option-card ${model.id === selectedModel ? 'selected' : ''}`;
+            card.innerHTML = `<div class="model-card-header"><span class="model-card-name">${model.name}</span><span class="model-card-tag">${model.tag}</span></div><span class="model-card-desc">${model.desc}</span>`;
+            card.addEventListener('click', () => {
+                DOM.modelModalOverlay.classList.remove('active');
+                if (model.id !== selectedModel) {
+                    showModal({
+                        title: 'Download & Load Model', message: `Switch model to "${model.name}"? This will download/load the model locally.`, confirmText: 'Download & Load',
+                        onConfirm: () => initModel(model.id)
+                    });
+                }
+            });
+            DOM.modelListContainer.appendChild(card);
+        });
+    });
+    DOM.modelModalOverlay.classList.add('active');
+}
+
+DOM.clearCacheBtn.addEventListener('click', () => {
+    DOM.modelModalOverlay.classList.remove('active');
+    showModal({
+        title: 'Clear AI Model Cache', message: 'This will purge all downloaded WebLLM AI model weights. Chat history remains.', confirmText: 'Clear Cache', isDanger: true,
+        onConfirm: async () => {
+            DOM.statusText.innerText = "Clearing cache...";
             try {
-                engine = await webllm.CreateMLCEngine(modelId, {
-                    initProgressCallback: (report) => {
-                        statusText.innerText = report.text;
-                    }
-                });
-
-                statusText.innerText = "Ready (Local)";
-                isModelReady = true;
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = "<span>Send</span>";
-                updateAttachmentSupport(selectedModel);
-            } catch (error) {
-                statusText.innerText = "Error loading model.";
-                console.error(error);
-                sendBtn.innerHTML = "<span>Failed</span>";
-            }
+                if (webllm.clearModelCache) await webllm.clearModelCache();
+                else {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) if (name.includes('webllm') || name.includes('mlc') || name.includes('wasm')) await caches.delete(name);
+                }
+                showModal({ title: 'Cache Cleared', message: 'Model cache purged. Page will reload.', confirmText: 'OK', showCancel: false, onConfirm: () => window.location.reload() });
+            } catch (err) { showModal({ title: 'Error', message: 'Failed to clear cache: ' + err.message, confirmText: 'OK', showCancel: false }); }
         }
-        window.addEventListener('DOMContentLoaded', async () => {
-            renderChatList();
-            if (chats.length > 0) {
-                if (!currentChatId || !chats.find(c => c.id === currentChatId)) {
-                    currentChatId = chats[0].id;
-                }
-                loadChat(currentChatId);
-            } else {
-                addMessageToUI('ai', GREETING_TEXT);
-            }
+    });
+});
 
-            sendBtn.addEventListener('click', sendMessage);
-            
-            userInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-            
-            userInput.addEventListener('input', function() {
-                this.style.height = '24px';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
+function updateAttachmentSupport(modelId) {
+    DOM.attachBtn.disabled = !(modelId.toLowerCase().includes('vision') && isModelReady);
+    if (DOM.attachBtn.disabled) clearAttachment();
+}
 
-            newChatBtn.addEventListener('click', () => {
-                if (window.innerWidth <= 768) toggleSidebar();
-                createNewChat();
-            });
+function clearAttachment() {
+    attachedFile = null; DOM.fileInput.value = ''; DOM.attachmentPreview.style.display = 'none'; DOM.attachmentPreview.innerHTML = '';
+}
 
-            await initModel(selectedModel);
-        });
+DOM.fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        attachedFile = file.type.startsWith('image/') ? { type: 'image', name: file.name, dataUrl: ev.target.result } : { type: 'text', name: file.name, content: ev.target.result };
+        DOM.attachmentPreview.style.display = 'flex';
+        DOM.attachmentPreview.innerHTML = `<div class="preview-chip">${attachedFile.type === 'image' ? `<img src="${attachedFile.dataUrl}" />` : `<span>📄</span>`}<span style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${attachedFile.name}</span><button class="remove-attachment" id="remove-file-btn">×</button></div>`;
+        el('remove-file-btn').addEventListener('click', clearAttachment);
+    };
+    file.type.startsWith('image/') ? reader.readAsDataURL(file) : reader.readAsText(file);
+});
+
+const toggleSidebar = () => { DOM.sidebar.classList.toggle('open'); DOM.overlay.classList.toggle('active'); };
+
+DOM.modelPickerBtn.addEventListener('click', openModelModal);
+DOM.modelModalClose.addEventListener('click', () => DOM.modelModalOverlay.classList.remove('active'));
+DOM.modelModalOverlay.addEventListener('click', (e) => { if (e.target === DOM.modelModalOverlay) DOM.modelModalOverlay.classList.remove('active'); });
+DOM.attachBtn.addEventListener('click', () => { if (!DOM.attachBtn.disabled) DOM.fileInput.click(); });
+DOM.menuToggle.addEventListener('click', toggleSidebar);
+DOM.overlay.addEventListener('click', toggleSidebar);
+DOM.newChatBtn.addEventListener('click', () => { if (window.innerWidth <= 768) toggleSidebar(); createNewChat(); });
+
+DOM.sendBtn.addEventListener('click', sendMessage);
+DOM.userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+DOM.userInput.addEventListener('input', function() { this.style.height = '24px'; this.style.height = this.scrollHeight + 'px'; });
+
+async function initModel(modelId) {
+    isModelReady = false; DOM.userInput.disabled = DOM.sendBtn.disabled = DOM.attachBtn.disabled = true;
+    DOM.sendBtn.innerHTML = `<div class="spinner"></div><span>Loading</span>`;
+    
+    selectedModel = modelId; localStorage.setItem('ai_selected_model', selectedModel);
+    DOM.currentModelLabel.innerText = AVAILABLE_MODELS.find(m => m.id === modelId)?.name || "Select Model";
+
+    try {
+        engine = await webllm.CreateMLCEngine(modelId, { initProgressCallback: (report) => DOM.statusText.innerText = report.text });
+        DOM.statusText.innerText = "Ready (Local)";
+        isModelReady = true; DOM.userInput.disabled = DOM.sendBtn.disabled = false;
+        DOM.sendBtn.innerHTML = "<span>Send</span>";
+        updateAttachmentSupport(selectedModel);
+    } catch (error) {
+        DOM.statusText.innerText = "Error loading model."; console.error(error); DOM.sendBtn.innerHTML = "<span>Failed</span>";
+    }
+}
+
+window.addEventListener('DOMContentLoaded', async () => {
+    renderChatList();
+    if (chats.length > 0) {
+        if (!currentChatId || !chats.find(c => c.id === currentChatId)) currentChatId = chats[0].id;
+        loadChat(currentChatId);
+    } else addMessageToUI('ai', GREETING_TEXT);
+
+    await initModel(selectedModel);
+});
     </script>
 </body>
 </html>
