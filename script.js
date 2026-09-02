@@ -202,7 +202,6 @@ function initApp() {
                         localStorage.removeItem('kstuff_user'); 
                         updateAuthUI(false);
                     }
-                    // Alerts removed for failure states
                 }
             }
         }
@@ -214,27 +213,34 @@ function initApp() {
         'lessonplanner': { id: 'lessonplanner-iframe', path: 'Pages/ai.html' }
     };
 
-    // Correctly synchronizes loader state with iframe onload event
-    function loadIframePage(iframeId, path) {
+    async function loadIframePage(iframeId, path) {
         const iframe = document.getElementById(iframeId);
         if (!iframe) {
             toggleLoader(false);
             return;
         }
         
-        const currentSrc = iframe.getAttribute('src');
-        if (currentSrc && currentSrc.includes(path)) {
+        if (iframe.dataset.loadedPath === path && iframe.srcdoc) {
             toggleLoader(false);
             return;
         }
 
         toggleLoader(true);
         
-        iframe.onload = () => {
-            toggleLoader(false);
-        };
-        
-        iframe.src = path;
+        try {
+            const htmlContent = await fetchWithProxy(path, true);
+            iframe.onload = () => {
+                toggleLoader(false);
+            };
+            
+            iframe.dataset.loadedPath = path;
+            iframe.srcdoc = htmlContent;
+
+        } catch (error) {
+            console.error("Failed to load page content:", error);
+            iframe.onload = () => toggleLoader(false);
+            iframe.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white); font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;"><h2>Failed to load page content. Please try again.</h2></body></html>`;
+        }
     }
 
     const initGrid = (id) => ({ data: [], pool: [], gridEl: document.getElementById(`${id}-grid`), pageEl: document.getElementById(`${id}-pagination`), category: "All", search: "", page: 1 });
@@ -572,7 +578,6 @@ function initApp() {
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
         }
-        // Alerts removed
     });
 
     document.getElementById('do-signup-btn')?.addEventListener('click', () => {
@@ -582,7 +587,6 @@ function initApp() {
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
         }
-        // Alerts removed
     });
 
     document.getElementById('do-logout-btn')?.addEventListener('click', () => {
@@ -696,7 +700,8 @@ function initApp() {
                 const currentId = activeBtn.dataset.target;
                 if (currentId !== targetId && iframePages[currentId]) {
                     const frame = document.getElementById(iframePages[currentId].id);
-                    if (frame) frame.srcdoc = '';
+                    // Avoid wiping srcdoc out if it was just loaded, otherwise we lose it when navigating back
+                    // if (frame) frame.srcdoc = ''; 
                 }
             }
 
@@ -715,6 +720,7 @@ function initApp() {
                     buildPool(targetId);
                     setTimeout(() => renderGrid(targetId, false), 50);
                 } else if (iframePages[targetId]) {
+                    // Call our new async loadIframePage to fetch the HTML via proxy and embed as srcdoc
                     loadIframePage(iframePages[targetId].id, iframePages[targetId].path);
                 } else {
                     toggleLoader(false);
