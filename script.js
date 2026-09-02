@@ -137,49 +137,50 @@ function initApp() {
                 try { hiddenFrame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]); } catch {}
             }
         }, 1500);
+    }
 
     function handleBackendMessage(data, activePort) {
-            if (!data) return;
-            if (data.type === 'ready') {
-                backendReady = true; backendPort = activePort;
-                clearInterval(cableInterval);
-                if (currentUser) {
-                    const attemptSync = () => backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); 
-                    attemptSync(); syncInterval = setInterval(attemptSync, 5000);
+        if (!data) return;
+        if (data.type === 'ready') {
+            backendReady = true; backendPort = activePort;
+            clearInterval(cableInterval);
+            if (currentUser) {
+                const attemptSync = () => backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); 
+                attemptSync(); syncInterval = setInterval(attemptSync, 5000);
+            }
+        } else if (['login', 'auto-login', 'signup'].includes(data.type)) {
+            if (data.type === 'auto-login' && syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+            
+            const authError = $('auth-error-msg'); 
+            
+            if (data.success) {
+                const incomingUser = data.payload;
+                if (currentUser?.settings?.lastUpdated && currentUser.settings.lastUpdated > (incomingUser.settings?.lastUpdated || 0)) {
+                    incomingUser.settings = currentUser.settings; 
                 }
-            } else if (['login', 'auto-login', 'signup'].includes(data.type)) {
-                if (data.type === 'auto-login' && syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+                currentUser = incomingUser;
+                localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
+                applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
+                updateAuthUI();
                 
-                const authError = $('auth-error-msg'); 
-                
-                if (data.success) {
-                    const incomingUser = data.payload;
-                    if (currentUser?.settings?.lastUpdated && currentUser.settings.lastUpdated > (incomingUser.settings?.lastUpdated || 0)) {
-                        incomingUser.settings = currentUser.settings; 
-                    }
-                    currentUser = incomingUser;
-                    localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
-                    applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
-                    updateAuthUI();
-                    
-                    if (authError) authError.style.display = 'none'; 
-                    $('auth-modal-overlay')?.classList.remove('active');
-                } else if (data.type === 'auto-login') {
-                    currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
-                } else {
-                    if (authError) {
-                        const reasonMap = {
-                            'invalid': 'Please fill out all required fields.',
-                            'exists': 'Username is already taken.',
-                            'failed': 'Authentication request failed. Please try again.',
-                            'not_found': 'Account does not exist.',
-                            'invalid_password': 'Incorrect password.'
-                        };
-                        authError.textContent = data.message || reasonMap[data.reason] || (data.type === 'login' ? 'Invalid username or password.' : 'Username already taken or invalid.');
-                        authError.style.display = 'block';
-                    }
+                if (authError) authError.style.display = 'none'; 
+                $('auth-modal-overlay')?.classList.remove('active');
+            } else if (data.type === 'auto-login') {
+                currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
+            } else {
+                if (authError) {
+                    const reasonMap = {
+                        'invalid': 'Please fill out all required fields.',
+                        'exists': 'Username is already taken.',
+                        'failed': 'Authentication request failed. Please try again.',
+                        'not_found': 'Account does not exist.',
+                        'invalid_password': 'Incorrect password.'
+                    };
+                    authError.textContent = data.message || reasonMap[data.reason] || (data.type === 'login' ? 'Invalid username or password.' : 'Username already taken or invalid.');
+                    authError.style.display = 'block';
                 }
             }
+        }
     }
 
     async function loadDynamicThemes() {
@@ -696,7 +697,7 @@ function initApp() {
         globalTruffledMap.clear();
         truffledData?.games?.forEach(g => globalTruffledMap.set(g.name.toLowerCase().trim(), g));
         
-        grids.readingcorner.data = processItems(gData); grids.sciencequiz.data = processItems(aData);
+        grids.readingcorner.data = processItems(gData); grids.sciencequiz.data =  processItems(aData);
         loadContent(document.querySelector('.page.active')?.id);
 
     }).catch(() => toggleLoader(false));
