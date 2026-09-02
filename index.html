@@ -43,6 +43,16 @@
             height: 100%;
             object-fit: cover;
         }
+
+        .split-text-container {
+            display: inline-flex;
+            flex-direction: row;
+            white-space: pre; 
+        }
+        .split-text-container div {
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body class="theme-sakura nav-left text-hide size-small">
@@ -136,8 +146,7 @@
         <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;">
             <img id="profile-modal-pic" src="" alt="Profile Picture" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--text-color); margin-bottom: 0.5rem; background: var(--bg-color);">
             <h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2>
-            <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>
-            
+            <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>       
             <div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;">
                 <div style="text-align: left;">
                     <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label>
@@ -149,12 +158,10 @@
                 </div>
                 <button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button>
             </div>
-
             <button id="do-logout-btn" style="width: 100%; margin-top: 10px; padding: 12px; background: transparent; color: #ff4d4d; border: 2px solid #ff4d4d; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s;">Log Out</button>
         </div>
     </div>
     </div>
-
     <div id="auth-modal-overlay" class="modal-overlay">
         <div class="modal-content settings-modal-content" style="max-width: 425px;">
             <div class="modal-header">
@@ -177,5 +184,18 @@
             </div>
         </div>
     </div>
+    <script>
+        document.querySelectorAll('.auto-split').forEach(element => {
+            const text = element.textContent;
+            element.textContent = ''; 
+            element.classList.add('split-text-container'); 
+            
+            for (let char of text) {
+                const letterDiv = document.createElement('div');
+                letterDiv.textContent = char;
+                element.appendChild(letterDiv);
+            }
+        });
+    </script>
 </body>
 </html>
