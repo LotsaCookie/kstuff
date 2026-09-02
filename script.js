@@ -240,10 +240,32 @@ function initApp() {
 
     Object.keys(grids).forEach(type => {
         let timeout;
-        $(`${type}-search`)?.addEventListener('input', (e) => {
-            clearTimeout(timeout); toggleLoader(true);
-            timeout = setTimeout(() => { grids[type].search = e.target.value.toLowerCase().trim(); grids[type].page = 1; renderGrid(type, true); }, 150);
-        });
+        const searchInput = $(`${type}-search`);
+        const clearBtn = $(`${type}-search-clear`);
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                if (clearBtn) clearBtn.style.display = e.target.value.length > 0 ? 'block' : 'none';
+                clearTimeout(timeout); 
+                toggleLoader(true);
+                timeout = setTimeout(() => { 
+                    grids[type].search = e.target.value.toLowerCase().trim(); 
+                    grids[type].page = 1; 
+                    renderGrid(type, true); 
+                }, 150);
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                clearBtn.style.display = 'none';
+                grids[type].search = '';
+                grids[type].page = 1;
+                toggleLoader(true);
+                renderGrid(type, true);
+            });
+        }
     });
 
     function renderPagination(type, totalPages) {
@@ -292,6 +314,7 @@ function initApp() {
                         if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
                         if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
                         
+                        // Card Tooltip Handling
                         poolItem.element.onmouseenter = (e) => showTooltip(e, item.title);
                         poolItem.element.onmousemove = (e) => {
                             tooltipEl.style.left = `${e.clientX + 12}px`;
