@@ -460,7 +460,6 @@ function initApp() {
 
     document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
-
     document.getElementById('save-settings-btn')?.addEventListener('click', (e) => {
         const btn = e.target;
         const originalText = btn.textContent;
@@ -482,6 +481,7 @@ function initApp() {
             backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
             btn.textContent = "Saved to Cloud!";
         } else {
+            // Unauthenticated: Data already saved locally via the 'change' event on the inputs.
             btn.textContent = "Saved Locally!";
         }
 
@@ -508,7 +508,8 @@ function initApp() {
         if (pic) pic.src = userPic;
         if (name) name.textContent = currentUser.username || "User";
         if (desc) desc.textContent = currentUser.description || "No description provided.";
-                if (navBtn) {
+        
+        if (navBtn) {
             navBtn.innerHTML = `<div class="profile-avatar-container"><img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'"></div>`;
         }
     }
