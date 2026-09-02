@@ -106,7 +106,17 @@ function initApp() {
         throw new Error("All proxies failed for " + path);
     }
 
-    function initBackendBridge(workingStaticUrl) {
+    function encodeUVUrl(url) {
+        if (!url) return '';
+        return encodeURIComponent(
+            url.split('').map((char, ind) => 
+                ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char
+            ).join('')
+        );
+    }
+
+    function initBackendBridge(workingConfig) {
+        if (!workingConfig) return;
         const hiddenFrame = document.createElement('iframe');
         
         hiddenFrame.style.cssText = `
@@ -121,29 +131,34 @@ function initApp() {
             z-index: 999999;
         `;
         
-        const backendTargetUrl = (workingStaticUrl ? workingStaticUrl.replace(/\/+$/, '') + '/' : '') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        const baseUrl = (workingConfig.url || '').replace(/\/+$/, '');
+        const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
+        const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
+        
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        const backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/' + encodeUVUrl(rawBackendUrl);
+        
         hiddenFrame.src = backendTargetUrl;
-        document.body.appendChild(hiddenFrame);
+        (document.body || document.documentElement).appendChild(hiddenFrame);
 
         const cableInterval = setInterval(() => {
             if (!backendReady && hiddenFrame.contentWindow) {
                 const channel = new MessageChannel();
-                channel.port1.onmessage = (e) => handleBackendMessage(e.data);
+                channel.port1.onmessage = (e) => handleBackendMessage(e.data, channel.port1);
                 try {
                     hiddenFrame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
-                    backendPort = channel.port1;
                 } catch (err) {}
             }
         }, 1500);
 
-        function handleBackendMessage(data) {
+        function handleBackendMessage(data, activePort) {
             if (!data) return;
             
-            // DEBUG ALERT: See what the backend actually sends back
             alert("Frontend received message: " + JSON.stringify(data));
 
             if (data.type === 'ready') {
                 backendReady = true;
+                backendPort = activePort;
                 clearInterval(cableInterval);
             } else if (data.type === 'login' || data.type === 'auto-login' || data.type === 'signup') {
                 if (data.success) {
@@ -460,9 +475,9 @@ function initApp() {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
         
-        alert(`Attempting login for: ${u} | Port ready: ${!!backendPort}`);
+        alert(`Attempting login for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
-        if (u && p && backendPort) {
+        if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
         } else {
             alert("Missing credentials or backend port not connected!");
@@ -473,9 +488,9 @@ function initApp() {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
         
-        alert(`Attempting signup for: ${u} | Port ready: ${!!backendPort}`);
+        alert(`Attempting signup for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
-        if (u && p && backendPort) {
+        if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
         } else {
             alert("Missing credentials or backend port not connected!");
@@ -627,7 +642,7 @@ function initApp() {
     ]).then(([gData, aData, truffledData, scram, stat, uv, truffled, frogiee]) => {
         
         if (stat) {
-            initBackendBridge(stat.url);
+            initBackendBridge(stat);
         }
 
         function applyBases(str) {
