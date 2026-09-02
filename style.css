@@ -634,7 +634,7 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .round-btn:hover .overlay {
-    opacity: 1;
+    opacity: 0;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
 }
