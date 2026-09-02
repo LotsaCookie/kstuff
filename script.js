@@ -1,6 +1,26 @@
 function initApp() {
     const $ = id => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = 'js-custom-tooltip';
+    tooltipEl.style.cssText = `
+        position: fixed; display: none; padding: 6px 10px; background: rgba(0, 0, 0, 0.85);
+        color: #fff; font-size: 0.75rem; border-radius: 6px; pointer-events: none;
+        z-index: 999999; white-space: nowrap; transition: opacity 0.15s ease;
+    `;
+    document.body.appendChild(tooltipEl);
+
+    function showTooltip(e, text) {
+        if (!text) return;
+        tooltipEl.textContent = text;
+        tooltipEl.style.display = 'block';
+        tooltipEl.style.left = `${e.clientX + 12}px`;
+        tooltipEl.style.top = `${e.clientY + 12}px`;
+    }
+
+    function hideTooltip() {
+        tooltipEl.style.display = 'none';
+    }
 
     async function getWorkingConfig(table) {
         if (!table?.length) return null;
@@ -271,7 +291,17 @@ function initApp() {
                         if (poolItem.titleEl.textContent !== item.title) poolItem.titleEl.textContent = item.title;
                         if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
                         if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
+                        
+                        // Card Tooltip Handling
+                        poolItem.element.onmouseenter = (e) => showTooltip(e, item.title);
+                        poolItem.element.onmousemove = (e) => {
+                            tooltipEl.style.left = `${e.clientX + 12}px`;
+                            tooltipEl.style.top = `${e.clientY + 12}px`;
+                        };
+                        poolItem.element.onmouseleave = hideTooltip;
+
                         poolItem.element.onclick = () => {
+                            hideTooltip();
                             savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
                             savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
                             if (modalTitle) modalTitle.textContent = item.title;
@@ -281,7 +311,11 @@ function initApp() {
                         };
                     } else {
                         if (poolItem.imgEl.dataset.src !== '') { poolItem.imgEl.dataset.src = ''; poolItem.imgEl.removeAttribute('src'); poolItem.imgEl.style.display = 'none'; }
-                        if (poolItem.catEl) poolItem.catEl.textContent = ''; poolItem.element.onclick = null;
+                        if (poolItem.catEl) poolItem.catEl.textContent = ''; 
+                        poolItem.element.onclick = null;
+                        poolItem.element.onmouseenter = null;
+                        poolItem.element.onmousemove = null;
+                        poolItem.element.onmouseleave = null;
                     }
                 });
                 renderPagination(type, totalPages);
@@ -384,7 +418,6 @@ function initApp() {
         setTimeout(() => { btn.textContent = origT; btn.style.background = origBg; btn.style.color = origC; }, 2000);
     });
 
-    // Make the avatar an <i> tag so it correctly targets your CSS size classes
     document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `i.profile-avatar-container { width: 1.2em; height: 1.2em; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; align-items: center; } i.profile-avatar-container img { width: 100%; height: 100%; object-fit: cover; }` }));
 
     const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
@@ -398,7 +431,6 @@ function initApp() {
             if ($('profile-modal-desc')) $('profile-modal-desc').textContent = currentUser.description || "No description provided.";
             
             if (navBtn) {
-                // We use replaceChild to safely target ONLY the icon, leaving the tooltip completely untouched
                 const oldIcon = navBtn.querySelector('i');
                 if (oldIcon && !oldIcon.classList.contains('profile-avatar-container')) {
                     const newIcon = document.createElement('i');
@@ -486,7 +518,18 @@ function initApp() {
 
     navBtns.forEach(btn => {
         btn.style.position = 'relative';
+
+        // Navigation Button Tooltip Handling
+        const label = btn.getAttribute('data-tooltip') || btn.getAttribute('title') || btn.getAttribute('data-target');
+        btn.addEventListener('mouseenter', (e) => showTooltip(e, label));
+        btn.addEventListener('mousemove', (e) => {
+            tooltipEl.style.left = `${e.clientX + 12}px`;
+            tooltipEl.style.top = `${e.clientY + 12}px`;
+        });
+        btn.addEventListener('mouseleave', hideTooltip);
+
         btn.addEventListener('click', () => {
+            hideTooltip();
             const targetId = btn.dataset.target;
             if (targetId === 'profile') return !currentUser ? authModal?.classList.add('active') : (updateAuthUI(), profileModal?.classList.add('active'));
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
