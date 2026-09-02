@@ -292,7 +292,6 @@ function initApp() {
                         if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
                         if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
                         
-                        // Card Tooltip Handling
                         poolItem.element.onmouseenter = (e) => showTooltip(e, item.title);
                         poolItem.element.onmousemove = (e) => {
                             tooltipEl.style.left = `${e.clientX + 12}px`;
@@ -519,8 +518,11 @@ function initApp() {
     navBtns.forEach(btn => {
         btn.style.position = 'relative';
 
-        // Navigation Button Tooltip Handling
-        const label = btn.getAttribute('data-tooltip') || btn.getAttribute('title') || btn.getAttribute('data-target');
+        const letterDivs = btn.querySelectorAll('.label-data div');
+        const label = letterDivs.length > 0 
+            ? Array.from(letterDivs).map(div => div.textContent).reverse().join('') 
+            : (btn.getAttribute('data-tooltip') || btn.getAttribute('title') || btn.getAttribute('data-target'));
+
         btn.addEventListener('mouseenter', (e) => showTooltip(e, label));
         btn.addEventListener('mousemove', (e) => {
             tooltipEl.style.left = `${e.clientX + 12}px`;
