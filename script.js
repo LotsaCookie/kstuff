@@ -149,6 +149,9 @@ function initApp() {
                 }
             } else if (['login', 'auto-login', 'signup'].includes(data.type)) {
                 if (data.type === 'auto-login' && syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+                
+                const authError = $('auth-error-msg'); 
+                
                 if (data.success) {
                     const incomingUser = data.payload;
                     if (currentUser?.settings?.lastUpdated && currentUser.settings.lastUpdated > (incomingUser.settings?.lastUpdated || 0)) {
@@ -158,9 +161,16 @@ function initApp() {
                     localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
                     applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
                     updateAuthUI();
+                    
+                    if (authError) authError.style.display = 'none'; 
                     $('auth-modal-overlay')?.classList.remove('active');
                 } else if (data.type === 'auto-login') {
                     currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
+                } else {
+                    if (authError) {
+                        authError.textContent = data.message || (data.type === 'login' ? 'Invalid username or password.' : 'Username already taken or invalid.');
+                        authError.style.display = 'block';
+                    }
                 }
             }
         }
@@ -314,7 +324,6 @@ function initApp() {
                         if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
                         if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
                         
-                        // Card Tooltip Handling
                         poolItem.element.onmouseenter = (e) => showTooltip(e, item.title);
                         poolItem.element.onmousemove = (e) => {
                             tooltipEl.style.left = `${e.clientX + 12}px`;
@@ -495,6 +504,13 @@ function initApp() {
     $('do-login-btn')?.addEventListener('click', handleAuth('login'));
     $('do-signup-btn')?.addEventListener('click', handleAuth('signup'));
 
+    const clearAuthError = () => { 
+        const err = $('auth-error-msg'); 
+        if (err) err.style.display = 'none'; 
+    };
+    $('auth-user')?.addEventListener('input', clearAuthError);
+    $('auth-pass')?.addEventListener('input', clearAuthError);
+
     $('do-logout-btn')?.addEventListener('click', () => {
         currentUser = null; localStorage.removeItem('kstuff_user'); 
         if (backendPort) backendPort.postMessage({ type: 'logout' });
@@ -540,11 +556,8 @@ function initApp() {
 
     navBtns.forEach(btn => {
         btn.style.position = 'relative';
-
         const letterDivs = btn.querySelectorAll('.label-data div');
-        const label = letterDivs.length > 0 
-            ? Array.from(letterDivs).map(div => div.textContent).reverse().join('') 
-            : (btn.getAttribute('data-tooltip') || btn.getAttribute('title') || btn.getAttribute('data-target'));
+        const label = letterDivs.length > 0 ? Array.from(letterDivs).map(div => div.textContent).reverse().join('') : (btn.getAttribute('data-tooltip') || btn.getAttribute('title') || btn.getAttribute('data-target'));
 
         btn.addEventListener('mouseenter', (e) => showTooltip(e, label));
         btn.addEventListener('mousemove', (e) => {
@@ -614,6 +627,48 @@ function initApp() {
         if ($('changelog-timestamp')) $('changelog-timestamp').textContent = "Unknown";
     });
 
+    let globalReplacements = {};
+    let globalTruffledMap = new Map();
+
+    const applyBases = (str) => {
+        if (!str || typeof str !== 'string') return str;
+        for (const [key, val] of Object.entries(globalReplacements)) str = str.split(`\${${key}}`).join(val);
+        return str.replace(/([^:]\/)\/+/g, '$1');
+    };
+
+    const processItems = (dataArr) => dataArr.map(item => {
+        let processed = { ...item };
+        if (processed.url?.includes('${truffled}')) {
+            const match = globalTruffledMap.get((processed.title || "").toLowerCase().trim());
+            if (match) {
+                processed.title = match.name; processed.url = '${truffled}/' + match.url.replace(/^\/+/, '');
+                processed.image = '${truffled}/' + match.thumbnail.replace(/^\/+/, ''); processed.description = '';
+                processed.category = processed.category || 'Truffled';
+            }
+        }
+        processed.url = applyBases(processed.url); processed.image = applyBases(processed.image);
+        return processed;
+    }).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
+
+    async function refreshData(type, jsonPath) {
+        toggleLoader(true);
+        try {
+            const newData = await fetchWithProxy(jsonPath).catch(() => []);
+            if (newData && newData.length) {
+                grids[type].data = processItems(newData);
+                grids[type].page = 1;
+                renderGrid(type, true);
+            } else {
+                toggleLoader(false);
+            }
+        } catch (e) {
+            toggleLoader(false);
+        }
+    }
+
+    $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshData('readingcorner', 'Json/g.json'));
+    $('sciencequiz-refresh-btn')?.addEventListener('click', () => refreshData('sciencequiz', 'Json/a.json'));
+
     const fetchCfg = (url) => fetchWithProxy(url).catch(() => []).then(getWorkingConfig);
     const staticDataPromise = fetchWithProxy('Json/urls/static.json').catch(() => []);
     
@@ -624,7 +679,7 @@ function initApp() {
     ]).then(([gData, aData, truffledData, scram, stat, uv, truffled, frogiee]) => {
         if (stat) initBackendBridge(stat);
         
-        const replacements = {
+        globalReplacements = {
             'scram': scram ? scram.url.replace(/\/+$/, '') + scram.final : '',
             'static': stat ? stat.url.replace(/\/+$/, '') + stat.final : '',
             'uv': uv ? uv.url.replace(/\/+$/, '') + uv.final : '',
@@ -632,29 +687,9 @@ function initApp() {
             'truffled': truffled ? truffled.url.replace(/\/+$/, '') : 'https://boat.strongson.com'
         };
 
-        const applyBases = (str) => {
-            if (!str || typeof str !== 'string') return str;
-            for (const [key, val] of Object.entries(replacements)) str = str.split(`\${${key}}`).join(val);
-            return str.replace(/([^:]\/)\/+/g, '$1');
-        };
-
-        const truffledMap = new Map();
-        truffledData?.games?.forEach(g => truffledMap.set(g.name.toLowerCase().trim(), g));
+        globalTruffledMap.clear();
+        truffledData?.games?.forEach(g => globalTruffledMap.set(g.name.toLowerCase().trim(), g));
         
-        const processItems = (dataArr) => dataArr.map(item => {
-            let processed = { ...item };
-            if (processed.url?.includes('${truffled}')) {
-                const match = truffledMap.get((processed.title || "").toLowerCase().trim());
-                if (match) {
-                    processed.title = match.name; processed.url = '${truffled}/' + match.url.replace(/^\/+/, '');
-                    processed.image = '${truffled}/' + match.thumbnail.replace(/^\/+/, ''); processed.description = '';
-                    processed.category = processed.category || 'Truffled';
-                }
-            }
-            processed.url = applyBases(processed.url); processed.image = applyBases(processed.image);
-            return processed;
-        }).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
-
         grids.readingcorner.data = processItems(gData); grids.sciencequiz.data = processItems(aData);
         loadContent(document.querySelector('.page.active')?.id);
 
