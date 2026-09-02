@@ -126,7 +126,7 @@ function initApp() {
         hiddenFrame.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;opacity:0;pointer-events:none;border:none;z-index:999999;`;
         
         const proxyPrefix = (workingConfig.url || '').replace(/\/+$/, '') + (workingConfig.final ? '/' + workingConfig.final.replace(/^\/+/, '') : '');
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?jsxx11';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?jsx99x11';
         hiddenFrame.src = proxyPrefix.includes('embed.html#') ? proxyPrefix + rawBackendUrl : proxyPrefix.replace(/\/+$/, '') + '/embed.html#' + rawBackendUrl;
         (document.body || document.documentElement).appendChild(hiddenFrame);
 
