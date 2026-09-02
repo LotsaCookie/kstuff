@@ -50,7 +50,33 @@
         (()=>{const t=localStorage.getItem('kstuff_theme')||'theme-sakura',n=localStorage.getItem('kstuff_nav_pos')||'nav-left',v=localStorage.getItem('kstuff_text_vis')||'text-hide',s=localStorage.getItem('kstuff_nav_size')||'size-small';document.body.className=`${t} ${n} ${v} ${s}`;const c={'theme-sakura':{bg:'#1a1216',text:'#ffb8d9'},'theme-dark':{bg:'#121212',text:'#ffffff'},'theme-light':{bg:'#f4f5f7',text:'#1a1a1a'},'theme-ocean':{bg:'#203a43',text:'#ffffff'},'theme-sunset':{bg:'#41295a',text:'#ffffff'},'theme-emerald':{bg:'#0b1712',text:'#d1fae5'},'theme-midnight':{bg:'#0b0c16',text:'#e2e8f0'},'theme-cyber':{bg:'#0d0c1d',text:'#00ffcc'},'theme-ruby':{bg:'#1c0d10',text:'#ffe4e6'},'theme-latte':{bg:'#1a1614',text:'#fef3c7'}}[t]||{'bg':'#1a1216','text':'#ffb8d9'};document.body.style.setProperty('--bg-color',c.bg);document.body.style.setProperty('--text-color',c.text)})();
     </script>
     <div id="loading-screen"><div class="spinner"></div><div class="loading-text">Loading</div></div>
-    
+    <script>
+        window.addEventListener('load', async () => {
+            if (window.kAssets) await window.kAssets;
+            if (document.fonts && document.fonts.ready) {
+                await document.fonts.ready;
+            }
+            const l = document.getElementById('loading-screen');
+            if (l) {
+                l.classList.add('loaded');
+                setTimeout(() => {
+                    l.classList.add('hidden');
+                    setTimeout(() => {
+                        document.body.style.removeProperty('--bg-color');
+                        document.body.style.removeProperty('--text-color');
+                    }, 600);
+                }, 800);
+            }
+        });
+    </script>
+    <div style="display:none;" aria-hidden="true">
+        <h1>Educational Resources and Online Learning Platform</h1><p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
+        <section><h2>Academic Subjects</h2><p>Mathematics, Science, English, History, Literature, Writing, Reading, Social Studies, Geography, Biology, Chemistry, Physics, Algebra, Geometry, Calculus, Statistics, Computer Science, Programming, Foreign Languages, Art, Music</p></section>
+        <section><h2>Educational Services</h2><p>Online courses, college credit, exam preparation, test prep, tutoring, homework help, study guides, practice tests, educational videos, interactive lessons, learning resources, curriculum development, academic support, student success, teacher resources, educational technology, e-learning, distance education, virtual classroom, online tutoring, academic coaching</p></section>
+        <section><h2>Student Levels</h2><p>K-12 education, elementary school, middle school, high school, college, university, graduate school, continuing education, adult learning, professional development, certification programs, degree programs, homeschool education</p></section>
+        <section><h2>Test Preparation</h2><p>SAT prep, ACT prep, GRE prep, GMAT prep, LSAT prep, MCAT prep, AP courses, Advanced Placement, standardized tests, college entrance exams, professional certification exams, state assessments, final exams, midterms</p></section>
+        <section><h3>Learning Methods</h3><p>Interactive learning, video lessons, practice quizzes, flashcards, study notes, educational games, adaptive learning, personalized education, self-paced learning, collaborative learning, project-based learning, STEM education, critical thinking, problem solving</p></section>
+    </div>
     <div id="classroom-portal-container">
         <nav id="teachertouchbar">
             <div style="display:none;" id="edu-logo">T</div>
@@ -77,7 +103,9 @@
             <section id="lessonplanner" class="page"><iframe id="lessonplanner-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
         </main>
     </div>
+    
     <div id="resource-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><span id="resource-modal-title"></span><div class="modal-actions"><button id="resource-fullscreen-btn"><i class="ph ph-corners-out"></i></button><button id="resource-close-btn"><i class="ph ph-x"></i></button></div></div><iframe id="resource-modal-iframe" src="" allow="autoplay; fullscreen; pointer-lock; gamepad"></iframe></div></div>
+    
     <div id="homeworkhelper-modal" class="modal-overlay">
         <div class="modal-content settings-modal-content">
             <div class="modal-header">
@@ -95,7 +123,8 @@
     </div>
     
     <div id="changelog-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="changelog-title-header"><i class="ph ph-clipboard-text"></i> Change Log</span><div class="modal-actions"><button id="changelog-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; max-height: 100%; overflow-y: auto;"><h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="ph ph-sparkle"></i> Changes:</h3><div id="changelog-content" style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; opacity: 0.9;">Loading updates...</div><div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(128, 128, 128, 0.2); text-align: right; font-size: 0.8rem; opacity: 0.7;"><i class="ph ph-clock"></i> Last Updated: <span id="changelog-timestamp">Fetching...</span></div></div></div></div>
-        <div id="profile-modal-overlay" class="modal-overlay">
+    
+    <div id="profile-modal-overlay" class="modal-overlay">
         <div class="modal-content settings-modal-content" style="max-width: 400px; text-align: center;">
             <div class="modal-header">
                 <span id="profile-modal-title"><i class="ph ph-user"></i> My Profile</span>
@@ -109,6 +138,7 @@
             </div>
         </div>
     </div>
+
     <div id="auth-modal-overlay" class="modal-overlay">
         <div class="modal-content settings-modal-content" style="max-width: 425px;">
             <div class="modal-header">
