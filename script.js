@@ -702,4 +702,4 @@ function initApp() {
     }).catch(() => toggleLoader(false));
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initApp); else initApp();
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initApp);
