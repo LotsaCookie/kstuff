@@ -33,20 +33,20 @@
     "id": "theme-ocean",
     "name": "Ocean",
     "variables": {
-      "--bg-color": "#13252f",
-      "--text-color": "#ffffff",
-      "--nav-bg": "#1c3645",
-      "--card-bg": "#264a5e"
+      "--bg-color": "#0a192f",
+      "--text-color": "#64ffda",
+      "--nav-bg": "#112240",
+      "--card-bg": "#233554"
     }
   },
   {
     "id": "theme-sunset",
     "name": "Sunset",
     "variables": {
-      "--bg-color": "#2c1536",
-      "--text-color": "#ffffff",
-      "--nav-bg": "#412150",
-      "--card-bg": "#572b6b"
+      "--bg-color": "#2c1525",
+      "--text-color": "#ffb86c",
+      "--nav-bg": "#412137",
+      "--card-bg": "#572b49"
     }
   },
   {
@@ -54,7 +54,7 @@
     "name": "Emerald",
     "variables": {
       "--bg-color": "#0b1712",
-      "--text-color": "#d1fae5",
+      "--text-color": "#34d399",
       "--nav-bg": "#13261e",
       "--card-bg": "#1d382b"
     }
@@ -64,7 +64,7 @@
     "name": "Midnight",
     "variables": {
       "--bg-color": "#0b0c16",
-      "--text-color": "#e2e8f0",
+      "--text-color": "#8b9bb4",
       "--nav-bg": "#141624",
       "--card-bg": "#1f2238"
     }
@@ -83,120 +83,120 @@
     "id": "theme-ruby",
     "name": "Ruby",
     "variables": {
-      "--bg-color": "#1c0d10",
-      "--text-color": "#ffe4e6",
-      "--nav-bg": "#2e151b",
-      "--card-bg": "#421d26"
+      "--bg-color": "#24070a",
+      "--text-color": "#ff7b89",
+      "--nav-bg": "#380d12",
+      "--card-bg": "#54141d"
     }
   },
   {
     "id": "theme-latte",
     "name": "Latte",
     "variables": {
-      "--bg-color": "#1a1614",
-      "--text-color": "#fef3c7",
-      "--nav-bg": "#292320",
-      "--card-bg": "#3d3430"
+      "--bg-color": "#f3e8e0",
+      "--text-color": "#5c4033",
+      "--nav-bg": "#e6d5c9",
+      "--card-bg": "#d9c3b3"
     }
   },
   {
     "id": "theme-mocha",
     "name": "Mocha",
     "variables": {
-      "--bg-color": "#2a211f",
-      "--text-color": "#e6d5c3",
-      "--nav-bg": "#3e322f",
-      "--card-bg": "#4f403c"
+      "--bg-color": "#2b1c18",
+      "--text-color": "#e8d3c5",
+      "--nav-bg": "#3e2923",
+      "--card-bg": "#52372f"
     }
   },
   {
     "id": "theme-matcha",
     "name": "Matcha",
     "variables": {
-      "--bg-color": "#1f291c",
-      "--text-color": "#d4e8c1",
-      "--nav-bg": "#2d3b29",
-      "--card-bg": "#3b4d36"
+      "--bg-color": "#182415",
+      "--text-color": "#a3cc95",
+      "--nav-bg": "#253621",
+      "--card-bg": "#334a2e"
     }
   },
   {
     "id": "theme-plum",
     "name": "Plum",
     "variables": {
-      "--bg-color": "#1c1221",
-      "--text-color": "#e3c5f5",
-      "--nav-bg": "#2b1d33",
-      "--card-bg": "#3a2845"
+      "--bg-color": "#1f102e",
+      "--text-color": "#d4a8ff",
+      "--nav-bg": "#2e1a42",
+      "--card-bg": "#3e2557"
     }
   },
   {
     "id": "theme-peach",
     "name": "Peach",
     "variables": {
-      "--bg-color": "#2b1b19",
-      "--text-color": "#ffdac1",
-      "--nav-bg": "#422b27",
-      "--card-bg": "#593c37"
+      "--bg-color": "#331c15",
+      "--text-color": "#ffb088",
+      "--nav-bg": "#4a2a20",
+      "--card-bg": "#61382b"
     }
   },
   {
     "id": "theme-mint",
     "name": "Mint",
     "variables": {
-      "--bg-color": "#152622",
-      "--text-color": "#c1ffea",
-      "--nav-bg": "#233d36",
-      "--card-bg": "#30544b"
+      "--bg-color": "#e0f2f1",
+      "--text-color": "#00695c",
+      "--nav-bg": "#b2dfdb",
+      "--card-bg": "#80cbc4"
     }
   },
   {
     "id": "theme-berry",
     "name": "Berry",
     "variables": {
-      "--bg-color": "#21131c",
-      "--text-color": "#ffcce6",
-      "--nav-bg": "#361e2d",
-      "--card-bg": "#4d2a40"
+      "--bg-color": "#29101c",
+      "--text-color": "#ff80bf",
+      "--nav-bg": "#401b2d",
+      "--card-bg": "#592740"
     }
   },
   {
     "id": "theme-honey",
     "name": "Honey",
     "variables": {
-      "--bg-color": "#292112",
-      "--text-color": "#ffe8a1",
-      "--nav-bg": "#40331d",
-      "--card-bg": "#594829"
+      "--bg-color": "#2e220b",
+      "--text-color": "#ffd166",
+      "--nav-bg": "#453313",
+      "--card-bg": "#5c451b"
     }
   },
   {
     "id": "theme-forest",
     "name": "Forest",
     "variables": {
-      "--bg-color": "#0f1a14",
-      "--text-color": "#a3e6be",
-      "--nav-bg": "#192e23",
-      "--card-bg": "#264534"
+      "--bg-color": "#0a1f11",
+      "--text-color": "#81c793",
+      "--nav-bg": "#11331c",
+      "--card-bg": "#194728"
     }
   },
   {
     "id": "theme-sky",
     "name": "Sky",
     "variables": {
-      "--bg-color": "#0f1e2b",
-      "--text-color": "#badeff",
-      "--nav-bg": "#193147",
-      "--card-bg": "#254a69"
+      "--bg-color": "#e0f7fa",
+      "--text-color": "#006064",
+      "--nav-bg": "#b2ebf2",
+      "--card-bg": "#80deea"
     }
   },
   {
     "id": "theme-sand",
     "name": "Sand",
     "variables": {
-      "--bg-color": "#2b2721",
-      "--text-color": "#f5e4c6",
-      "--nav-bg": "#423c34",
-      "--card-bg": "#595147"
+      "--bg-color": "#211f1c",
+      "--text-color": "#d4c5b4",
+      "--nav-bg": "#33302b",
+      "--card-bg": "#47433c"
     }
   },
   {
@@ -204,7 +204,7 @@
     "name": "Slate",
     "variables": {
       "--bg-color": "#1c1e21",
-      "--text-color": "#d6d9e0",
+      "--text-color": "#a0a5b5",
       "--nav-bg": "#2a2c30",
       "--card-bg": "#383b42"
     }
@@ -213,50 +213,50 @@
     "id": "theme-coral",
     "name": "Coral",
     "variables": {
-      "--bg-color": "#261414",
-      "--text-color": "#ffbfa8",
-      "--nav-bg": "#3d2121",
-      "--card-bg": "#573030"
+      "--bg-color": "#331616",
+      "--text-color": "#ff8a8a",
+      "--nav-bg": "#4a2121",
+      "--card-bg": "#632d2d"
     }
   },
   {
     "id": "theme-amethyst",
     "name": "Amethyst",
     "variables": {
-      "--bg-color": "#1d1526",
-      "--text-color": "#d8bdf5",
-      "--nav-bg": "#2d223b",
-      "--card-bg": "#403152"
+      "--bg-color": "#160b24",
+      "--text-color": "#c894ff",
+      "--nav-bg": "#231238",
+      "--card-bg": "#311a4d"
     }
   },
   {
     "id": "theme-sapphire",
     "name": "Sapphire",
     "variables": {
-      "--bg-color": "#0d1726",
-      "--text-color": "#b0d3ff",
-      "--nav-bg": "#16273d",
-      "--card-bg": "#203859"
+      "--bg-color": "#071836",
+      "--text-color": "#80b3ff",
+      "--nav-bg": "#0c234d",
+      "--card-bg": "#123169"
     }
   },
   {
     "id": "theme-onyx",
     "name": "Onyx",
     "variables": {
-      "--bg-color": "#0a0a0a",
-      "--text-color": "#d4d4d4",
-      "--nav-bg": "#171717",
-      "--card-bg": "#262626"
+      "--bg-color": "#000000",
+      "--text-color": "#cccccc",
+      "--nav-bg": "#121212",
+      "--card-bg": "#242424"
     }
   },
   {
     "id": "theme-neon",
     "name": "Neon",
     "variables": {
-      "--bg-color": "#091009",
+      "--bg-color": "#070a07",
       "--text-color": "#39ff14",
-      "--nav-bg": "#122112",
-      "--card-bg": "#1c331c"
+      "--nav-bg": "#121a12",
+      "--card-bg": "#1d291d"
     }
   },
   {
@@ -264,9 +264,59 @@
     "name": "Pastel",
     "variables": {
       "--bg-color": "#fdfbf7",
-      "--text-color": "#5c5c5c",
-      "--nav-bg": "#f5f0e6",
-      "--card-bg": "#ede5d5"
+      "--text-color": "#6b6b6b",
+      "--nav-bg": "#f0eade",
+      "--card-bg": "#e3dac5"
+    }
+  },
+  {
+    "id": "theme-rose",
+    "name": "Rose",
+    "variables": {
+      "--bg-color": "#241116",
+      "--text-color": "#ffb3c6",
+      "--nav-bg": "#3d1b24",
+      "--card-bg": "#572733"
+    }
+  },
+  {
+    "id": "theme-bubblegum",
+    "name": "Bubblegum",
+    "variables": {
+      "--bg-color": "#fce4ec",
+      "--text-color": "#c2185b",
+      "--nav-bg": "#f8bbd0",
+      "--card-bg": "#f48fb1"
+    }
+  },
+  {
+    "id": "theme-fuchsia",
+    "name": "Fuchsia",
+    "variables": {
+      "--bg-color": "#210b1a",
+      "--text-color": "#ff66cc",
+      "--nav-bg": "#3a132e",
+      "--card-bg": "#541c42"
+    }
+  },
+  {
+    "id": "theme-blush",
+    "name": "Blush",
+    "variables": {
+      "--bg-color": "#fff0f5",
+      "--text-color": "#88304e",
+      "--nav-bg": "#ffe4e1",
+      "--card-bg": "#ffb6c1"
+    }
+  },
+  {
+    "id": "theme-magenta",
+    "name": "Magenta",
+    "variables": {
+      "--bg-color": "#1a0515",
+      "--text-color": "#ff00ff",
+      "--nav-bg": "#330a2a",
+      "--card-bg": "#4d0f3f"
     }
   },
   {
