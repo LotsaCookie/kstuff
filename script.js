@@ -222,9 +222,40 @@ function initApp() {
         if (!iframe || (iframe.dataset.loadedPath === path && iframe.srcdoc)) return toggleLoader(false);
         toggleLoader(true);
         try {
-            const htmlContent = await fetchWithProxy(path, true);
+            let htmlContent = await fetchWithProxy(path, true);
+            const themeInjection = `
+                <script>
+                    function syncTheme() {
+                        if (!window.parent) return;
+                        const pStyle = window.parent.getComputedStyle(window.parent.document.body);
+                        
+                        const bg = pStyle.getPropertyValue('--background') || pStyle.backgroundColor || '#1a1216';
+                        const text = pStyle.getPropertyValue('--text-color') || pStyle.color || '#ffb8d9';
+                        const nav = pStyle.getPropertyValue('--nav-bg') || 'rgba(26, 18, 22, 0.85)';
+                        const card = pStyle.getPropertyValue('--card-bg') || 'rgba(255, 255, 255, 0.06)';
+                        
+                        document.documentElement.style.setProperty('--bg', bg);
+                        document.documentElement.style.setProperty('--text', text);
+                        document.documentElement.style.setProperty('--nav', nav);
+                        document.documentElement.style.setProperty('--card', card);
+                    }
+                    syncTheme();
+                    
+                    window.addEventListener('message', (e) => {
+                        if (e.data === 'theme-updated') syncTheme();
+                    });
+                <\/script>
+            `;
+
+            if (htmlContent.includes('</body>')) {
+                htmlContent = htmlContent.replace('</body>', themeInjection + '</body>');
+            } else {
+                htmlContent += themeInjection;
+            }
+
             iframe.onload = () => toggleLoader(false);
-            iframe.dataset.loadedPath = path; iframe.srcdoc = htmlContent;
+            iframe.dataset.loadedPath = path; 
+            iframe.srcdoc = htmlContent;
         } catch {
             iframe.onload = () => toggleLoader(false);
             iframe.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white); font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;"><h2>Failed to load page content. Please try again.</h2></body></html>`;
