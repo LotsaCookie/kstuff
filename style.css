@@ -665,7 +665,7 @@ body.text-hide .nav-right .nav-divider {
 }
 
 .round-btn:hover .category-label {
-    opacity: 0;
+    opacity: 1; /* since tool tip exists */
     transition: opacity 0.2s ease;
 }
 
