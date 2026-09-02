@@ -207,6 +207,51 @@ function initApp() {
         }
     }
 
+    async function loadDynamicThemes() {
+        try {
+            const res = await (typeof fetchWithProxy === 'function' 
+                ? fetchWithProxy('Json/themes.json') 
+                : fetch('Json/themes.json').then(r => r.json()));
+            const themes = res;
+            let cssString = '';
+            let optionsHTML = '';
+            themes.forEach(theme => {
+                cssString += `.${theme.id} {\n`;
+                for (const [prop, val] of Object.entries(theme.variables)) {
+                    cssString += `    ${prop}: ${val};\n`;
+                }
+                cssString += `}\n\n`;
+                optionsHTML += `<option value="${theme.id}">${theme.name}</option>`;
+            });
+            const styleTag = document.createElement('style');
+            styleTag.id = 'dynamic-themes-style';
+            styleTag.textContent = cssString;
+            document.head.appendChild(styleTag);
+            const selectEl = document.getElementById('layout-theme-select');
+            if (selectEl) {
+                const currentVal = localStorage.getItem('kstuff_theme') || themes[0].id;
+                if (selectEl.dataset.customized) {
+                    const wrapper = selectEl.nextElementSibling;
+                    if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
+                        wrapper.remove();
+                    }
+                    delete selectEl.dataset.customized;
+                    selectEl.style.display = ''; 
+                }
+                selectEl.innerHTML = optionsHTML;
+                selectEl.value = currentVal;
+                document.body.className = document.body.className.replace(/\btheme-\S+/g, '').trim();
+                document.body.classList.add(currentVal);
+                if (typeof applyCustomDropdown === 'function') {
+                    applyCustomDropdown(selectEl);
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load themes from Json/themes.json:", error);
+        }
+    }
+    loadDynamicThemes();
+
     const iframePages = {
         'mathworksheets': { id: 'mathworksheets-iframe', path: 'Pages/browser.html' },
         'gradebook': { id: 'gradebook-iframe', path: 'Pages/music.html' },
