@@ -22,7 +22,7 @@
             --text-muted: #a1a1aa;
             --accent-color: #ffffff;
             --accent-hover: #e4e4e7;
-            --border-color: rgba(255,255,255,0.05);
+            --border-color: rgba(255,255,255,0.2);
         }
         * {
             box-sizing: border-box;
@@ -136,24 +136,23 @@
         .new-worksheet-btn:hover {
             background-color: rgba(0,0,0,0.1);
             color: var(--text-color);
-            border-color: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.3);
         }
+
         .learning-header {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 10px 16px;
-            background-color: rgba(0,0,0,0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            background-color: transparent;
+            border: 1px solid var(--border-color); 
+            box-shadow: none;
             z-index: 10;
             flex-shrink: 0;
         }
         .study-nav-btn {
-            background: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
+            background: transparent; 
+            border: 1px solid var(--border-color); 
             color: var(--text-muted);
             cursor: pointer;
             padding: 8px;
@@ -161,17 +160,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            transition: color 0.2s, border-color 0.2s;
             flex-shrink: 0;
         }
         .study-nav-btn:hover:not(:disabled) {
-            background-color: rgba(0,0,0,0.1);
+            background-color: transparent; 
             color: var(--text-color);
-            border-color: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.5);
         }
         .study-nav-btn:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+            border-color: rgba(255,255,255,0.05);
         }
         .study-nav-btn svg {
             width: 16px;
@@ -183,16 +183,15 @@
             min-width: 120px;
             display: flex;
             align-items: center;
-            background-color: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
+            background-color: transparent;
+            border: 1px solid var(--border-color); 
             border-radius: 24px;
             padding: 4px 6px 4px 16px;
-            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+            transition: border-color 0.2s;
         }
         .textbook-bar-container:focus-within {
-            background-color: rgba(0,0,0,0.1);
-            border-color: rgba(255,255,255,0.15);
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.05);
+            background-color: transparent; 
+            border-color: rgba(255,255,255,0.5); 
         }
         .textbook-input {
             flex: 1;
@@ -207,7 +206,7 @@
             color: var(--text-muted);
         }
         .subject-action-btn, .study-action-btn {
-            background: rgba(0,0,0,0.05);
+            background: transparent; 
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             cursor: pointer;
@@ -216,21 +215,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, color 0.2s, border-color 0.2s;
+            transition: color 0.2s, border-color 0.2s;
             flex-shrink: 0;
         }
         .subject-action-btn { margin-right: 4px; }
         .study-action-btn { margin-left: 4px; color: var(--text-color); }
         .subject-action-btn:hover, .study-action-btn:hover {
-            background-color: rgba(0,0,0,0.1);
+            background-color: transparent;
             color: var(--text-color);
-            border-color: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.5); 
         }
         .subject-action-btn svg, .study-action-btn svg {
             width: 16px;
             height: 16px;
             fill: currentColor;
         }
+
         .campus-viewport {
             flex: 1;
             position: relative;
