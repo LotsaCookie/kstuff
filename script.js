@@ -30,7 +30,7 @@ function initApp() {
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                setTimeout(() => { if (!resolved) { resolved = true; cleanup(); resolve(null); } }, 8000);
+                setTimeout(() => { if (!resolved) { resolved = true; cleanup(); resolve(null); } }, 3000);
             });
             if (winner) return winner; 
         }
@@ -106,15 +106,6 @@ function initApp() {
         throw new Error("All proxies failed for " + path);
     }
 
-    function encodeUVUrl(url) {
-        if (!url) return '';
-        return encodeURIComponent(
-            url.split('').map((char, ind) => 
-                ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char
-            ).join('')
-        );
-    }
-
     function initBackendBridge(workingConfig) {
         if (!workingConfig) return;
         const hiddenFrame = document.createElement('iframe');
@@ -123,12 +114,12 @@ function initApp() {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 1px;
+            height: 1px;
             opacity: 0;
             pointer-events: none;
             border: none;
-            z-index: 999999;
+            z-index: -999999;
         `;
         
         const baseUrl = (workingConfig.url || '').replace(/\/+$/, '');
@@ -136,7 +127,8 @@ function initApp() {
         const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
         
         const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
-        const backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/' + encodeUVUrl(rawBackendUrl);
+        
+        const backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/' + rawBackendUrl;
         
         hiddenFrame.src = backendTargetUrl;
         (document.body || document.documentElement).appendChild(hiddenFrame);
@@ -153,9 +145,6 @@ function initApp() {
 
         function handleBackendMessage(data, activePort) {
             if (!data) return;
-            
-            alert("Frontend received message: " + JSON.stringify(data));
-
             if (data.type === 'ready') {
                 backendReady = true;
                 backendPort = activePort;
@@ -217,12 +206,11 @@ function initApp() {
         let timeout;
         document.getElementById(`${type}-search`)?.addEventListener('input', (e) => {
             clearTimeout(timeout);
-            toggleLoader(true);
             timeout = setTimeout(() => {
                 grids[type].search = e.target.value.toLowerCase().trim();
                 grids[type].page = 1;
-                renderGrid(type, true);
-            }, 150);
+                renderGrid(type, false); // Removed true (preload) for faster search
+            }, 100); // Faster search response
         });
     });
 
@@ -276,7 +264,10 @@ function initApp() {
                 btn.innerHTML = `<i class="ph ph-caret-${icon}"></i>`;
                 const canClick = (isNext && grid.page < totalPages) || (!isNext && grid.page > 1);
                 if (canClick) {
-                    btn.addEventListener('click', () => { toggleLoader(true); grid.page += isNext ? 1 : -1; renderGrid(type, true); });
+                    btn.addEventListener('click', () => { 
+                        grid.page += isNext ? 1 : -1; 
+                        renderGrid(type, false); 
+                    });
                 } else {
                     btn.style.opacity = '0.4';
                     btn.style.cursor = 'not-allowed';
@@ -293,7 +284,8 @@ function initApp() {
         }
     }
 
-    function renderGrid(type, withPreload = false) {
+    // Removed the heavy Promise.all image preload. Images load natively without blocking the thread now.
+    function renderGrid(type) {
         window.requestAnimationFrame(() => {
             const grid = grids[type];
             if (!grid.gridEl) return;
@@ -305,28 +297,11 @@ function initApp() {
             const start = (grid.page - 1) * itemsPerPage;
             const paginated = filtered.slice(start, start + itemsPerPage);
 
-            const exec = () => {
-                populateCardPool(grid.pool, paginated);
-                renderPagination(type, totalPages);
-                
-                Promise.all(grid.pool.map((pItem, idx) => {
-                    const item = paginated[idx];
-                    if (item?.image && pItem.imgEl) {
-                        return new Promise(res => {
-                            const img = pItem.imgEl;
-                            if (img.complete && img.naturalWidth > 0) return res();
-                            const done = () => { img.onload = img.onerror = null; res(); };
-                            img.onload = img.onerror = done;
-                            setTimeout(done, 3000); 
-                        });
-                    }
-                })).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
-            };
-
-            if (withPreload) {
-                grid.gridEl.style.opacity = '0';
-                setTimeout(exec, 250);
-            } else exec();
+            populateCardPool(grid.pool, paginated);
+            renderPagination(type, totalPages);
+            
+            grid.gridEl.style.opacity = '1'; 
+            toggleLoader(false);
         });
     }
 
@@ -474,8 +449,6 @@ function initApp() {
     document.getElementById('do-login-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
-        
-        alert(`Attempting login for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
@@ -487,8 +460,6 @@ function initApp() {
     document.getElementById('do-signup-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
-        
-        alert(`Attempting signup for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
@@ -537,7 +508,6 @@ function initApp() {
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
             if (targetId === 'changelog') return changelogModal?.classList.add('active');
 
-            toggleLoader(true);
             const activeBtn = document.querySelector('.nav-btn.active');
             if (activeBtn) {
                 const currentId = activeBtn.dataset.target;
@@ -560,12 +530,11 @@ function initApp() {
                 
                 if (grids[targetId]) {
                     buildPool(targetId);
-                    setTimeout(() => renderGrid(targetId, false), 50);
+                    setTimeout(() => renderGrid(targetId), 50);
                 } else if (iframePages[targetId]) {
                     loadIframePage(iframePages[targetId].id, iframePages[targetId].path, targetId);
-                    setTimeout(() => toggleLoader(false), 300);
-                } else toggleLoader(false);
-            } else toggleLoader(false);
+                }
+            }
         });
     });
 
@@ -582,7 +551,7 @@ function initApp() {
         const activePage = document.querySelector('.page.active');
         if (activePage && grids[activePage.id]) {
             buildPool(activePage.id);
-            renderGrid(activePage.id, false);
+            renderGrid(activePage.id);
         }
 
         let attempts = 0;
@@ -604,10 +573,9 @@ function initApp() {
             select.innerHTML = (options || []).map(c => `<option value="${c}">${c}</option>`).join('');
             applyCustomDropdown(select);
             select.addEventListener('change', (e) => {
-                toggleLoader(true);
                 grids[type].category = e.target.value;
                 grids[type].page = 1;
-                renderGrid(type, true);
+                renderGrid(type); // Removed preload lag
             });
         };
         setupCatSelect('readingcorner-category-select', cats.Games, 'readingcorner');
@@ -685,7 +653,7 @@ function initApp() {
         if (activePage) {
             if (grids[activePage.id]) {
                 buildPool(activePage.id);
-                renderGrid(activePage.id, false);
+                renderGrid(activePage.id);
             } else if (iframePages[activePage.id]) {
                 loadIframePage(iframePages[activePage.id].id, iframePages[activePage.id].path, activePage.id);
             } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
