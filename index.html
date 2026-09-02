@@ -25,8 +25,6 @@
         .loading-text{font-size:1.25rem;font-weight:900!important;letter-spacing:.25em;text-transform:uppercase;animation:pulse 1.5s ease-in-out infinite}
         @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        .nav-btn .profile-avatar-container{width:24px;height:24px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--text-color)}
-        .nav-btn .profile-avatar-container img{width:100%;height:100%;object-fit:cover}
         .js-custom-tooltip{background:var(--nav-bg,var(--bg-color))!important;color:var(--text-color)!important;border:1px solid rgba(255,255,255,0.15);box-shadow:0 4px 12px rgba(0,0,0,0.3);backdrop-filter:blur(8px)}
         .label-data{display:none;}
         .label-data div{display:inline-block;letter-spacing:normal;}
@@ -107,7 +105,36 @@
     <div id="resource-modal" class="modal-overlay"><div class="modal-content"><div class="modal-header"><span id="resource-modal-title"></span><div class="modal-actions"><button id="resource-fullscreen-btn"><i class="ph ph-corners-out"></i></button><button id="resource-close-btn"><i class="ph ph-x"></i></button></div></div><iframe id="resource-modal-iframe" src="" allow="autoplay; fullscreen; pointer-lock; gamepad"></iframe></div></div>
     <div id="homeworkhelper-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="homeworkhelper-title"><i class="ph ph-gear"></i> Settings</span><div class="modal-actions"><button id="homeworkhelper-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body"><div class="setting-group"><label for="layout-theme-select"><i class="ph ph-palette"></i> Theme</label><select id="layout-theme-select"><option value="theme-sakura" selected>Sakura</option><option value="theme-dark">Dark</option><option value="theme-light">Light</option><option value="theme-ocean">Ocean</option><option value="theme-sunset">Sunset</option><option value="theme-emerald">Emerald</option><option value="theme-midnight">Midnight</option><option value="theme-cyber">Cyber</option><option value="theme-ruby">Ruby</option><option value="theme-latte">Latte</option></select></div><div class="setting-group"><label for="layout-nav-select"><i class="ph ph-layout"></i> Navbar Position</label><select id="layout-nav-select"><option value="nav-top">Top</option><option value="nav-left" selected>Left</option><option value="nav-right">Right</option><option value="nav-bottom">Bottom</option></select></div><div class="setting-group" style="display: none;"><label for="layout-text-select"><i class="ph ph-text-aa"></i> Nav Text Visibility</label><select id="layout-text-select"><option value="text-show">Show</option><option value="text-hide" selected>Hide</option></select></div><div class="setting-group"><label for="layout-size-select"><i class="ph ph-bounding-box"></i> Nav Button Size</label><select id="layout-size-select"><option value="size-small" selected>Small</option><option value="size-medium">Medium</option><option value="size-large">Large</option></select></div><button id="save-settings-btn" style="width: 100%; margin-top: 20px; padding: 12px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer; transition: background 0.3s, color 0.3s;">Save Changes</button></div></div></div>
     <div id="changelog-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="changelog-title-header"><i class="ph ph-clipboard-text"></i> Change Log</span><div class="modal-actions"><button id="changelog-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; max-height: 100%; overflow-y: auto;"><h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="ph ph-sparkle"></i> Changes:</h3><div id="changelog-content" style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; opacity: 0.9;">Loading updates...</div><div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(128, 128, 128, 0.2); text-align: right; font-size: 0.8rem; opacity: 0.7;"><i class="ph ph-clock"></i> Last Updated: <span id="changelog-timestamp">Fetching...</span></div></div></div></div>
-    <div id="profile-modal-overlay" class="modal-overlay"><div class="modal-content settings-modal-content" style="max-width: 400px; text-align: center;"><div class="modal-header"><span id="profile-modal-title"><i class="ph ph-user"></i> Profile</span><div class="modal-actions"><button id="edit-profile-btn" style="background: none; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; margin-right: 5px; transition: 0.2s;"><i class="ph ph-pencil-simple"></i></button><button id="profile-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;"><img id="profile-modal-pic" src="" alt="Profile Picture" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--text-color); margin-bottom: 0.5rem; background: var(--bg-color);"><h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2><p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p><div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;"><div style="text-align: left;"><label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label><input type="text" id="profile-edit-pic-url" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; outline: none;"></div><div style="text-align: left;"><label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-text-align-left"></i> Description</label><textarea id="profile-edit-desc" rows="3" placeholder="Tell us about yourself..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; resize: none; outline: none; font-family: inherit;"></textarea></div><button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button></div><button id="do-logout-btn" style="width: 100%; margin-top: 10px; padding: 12px; background: transparent; color: #ff4d4d; border: 2px solid #ff4d4d; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s;">Log Out</button></div></div></div>
+        <div id="profile-modal-overlay" class="modal-overlay">
+        <div class="modal-content settings-modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-header">
+                <span id="profile-modal-title"><i class="ph ph-user"></i> Profile</span>
+                <div class="modal-actions">
+                    <button id="edit-profile-btn" style="background: none; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; margin-right: 5px; transition: 0.2s;"><i class="ph ph-pencil-simple"></i></button>
+                    <button id="profile-close-btn"><i class="ph ph-x"></i></button>
+                </div>
+            </div>
+            <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;">
+                <img id="profile-modal-pic" src="" alt="Profile Picture">
+                <h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2>
+                <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>
+                
+                <div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;">
+                    <div style="text-align: left;">
+                        <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label>
+                        <input type="text" id="profile-edit-pic-url" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; outline: none;">
+                    </div>
+                    <div style="text-align: left;">
+                        <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-text-align-left"></i> Description</label>
+                        <textarea id="profile-edit-desc" rows="3" placeholder="Tell us about yourself..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; resize: none; outline: none; font-family: inherit;"></textarea>
+                    </div>
+                    <button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button>
+                </div>
+                <button id="do-logout-btn">Log Out</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="auth-modal-overlay" class="modal-overlay">
         <div class="modal-content settings-modal-content" style="max-width: 425px;">
             <div class="modal-header">
@@ -127,8 +154,8 @@
                 <div id="auth-error-msg" style="color: #ff4d4d; font-size: 0.9rem; text-align: center; display: none; font-weight: bold; margin-top: -0.5rem;"></div>
                 
                 <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-                    <button id="do-login-btn" style="flex: 1; justify-content: center; background: var(--text-color); color: var(--bg-color); border: none; padding: 12px; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer;">Log In</button>
-                    <button id="do-signup-btn" style="flex: 1; justify-content: center; background: transparent; color: var(--text-color); border: 2px solid var(--text-color); padding: 12px; border-radius: 8px; font-weight: bold; font-family: inherit; font-size: 1rem; cursor: pointer;">Sign Up</button>
+                    <button id="do-login-btn">Log In</button>
+                    <button id="do-signup-btn">Sign Up</button>
                 </div>
             </div>
         </div>
