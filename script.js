@@ -30,7 +30,7 @@ function initApp() {
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
 
-                setTimeout(() => { if (!resolved) { resolved = true; cleanup(); resolve(null); } }, 3000);
+                setTimeout(() => { if (!resolved) { resolved = true; cleanup(); resolve(null); } }, 8000);
             });
             if (winner) return winner; 
         }
@@ -114,12 +114,12 @@ function initApp() {
             position: fixed;
             top: 0;
             left: 0;
-            width: 1px;
-            height: 1px;
+            width: 100vw;
+            height: 100vh;
             opacity: 0;
             pointer-events: none;
             border: none;
-            z-index: -999999;
+            z-index: 999999;
         `;
         
         const baseUrl = (workingConfig.url || '').replace(/\/+$/, '');
@@ -128,7 +128,12 @@ function initApp() {
         
         const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
         
-        const backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/' + rawBackendUrl;
+        let backendTargetUrl;
+        if (proxyPrefix.includes('embed.html#')) {
+            backendTargetUrl = proxyPrefix + rawBackendUrl;
+        } else {
+            backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/embed.html#' + rawBackendUrl;
+        }
         
         hiddenFrame.src = backendTargetUrl;
         (document.body || document.documentElement).appendChild(hiddenFrame);
@@ -145,6 +150,9 @@ function initApp() {
 
         function handleBackendMessage(data, activePort) {
             if (!data) return;
+            
+            alert("Frontend received message: " + JSON.stringify(data));
+
             if (data.type === 'ready') {
                 backendReady = true;
                 backendPort = activePort;
@@ -206,11 +214,12 @@ function initApp() {
         let timeout;
         document.getElementById(`${type}-search`)?.addEventListener('input', (e) => {
             clearTimeout(timeout);
+            toggleLoader(true);
             timeout = setTimeout(() => {
                 grids[type].search = e.target.value.toLowerCase().trim();
                 grids[type].page = 1;
-                renderGrid(type, false); // Removed true (preload) for faster search
-            }, 100); // Faster search response
+                renderGrid(type, true);
+            }, 150);
         });
     });
 
@@ -264,10 +273,7 @@ function initApp() {
                 btn.innerHTML = `<i class="ph ph-caret-${icon}"></i>`;
                 const canClick = (isNext && grid.page < totalPages) || (!isNext && grid.page > 1);
                 if (canClick) {
-                    btn.addEventListener('click', () => { 
-                        grid.page += isNext ? 1 : -1; 
-                        renderGrid(type, false); 
-                    });
+                    btn.addEventListener('click', () => { toggleLoader(true); grid.page += isNext ? 1 : -1; renderGrid(type, true); });
                 } else {
                     btn.style.opacity = '0.4';
                     btn.style.cursor = 'not-allowed';
@@ -284,8 +290,7 @@ function initApp() {
         }
     }
 
-    // Removed the heavy Promise.all image preload. Images load natively without blocking the thread now.
-    function renderGrid(type) {
+    function renderGrid(type, withPreload = false) {
         window.requestAnimationFrame(() => {
             const grid = grids[type];
             if (!grid.gridEl) return;
@@ -297,15 +302,32 @@ function initApp() {
             const start = (grid.page - 1) * itemsPerPage;
             const paginated = filtered.slice(start, start + itemsPerPage);
 
-            populateCardPool(grid.pool, paginated);
-            renderPagination(type, totalPages);
-            
-            grid.gridEl.style.opacity = '1'; 
-            toggleLoader(false);
+            const exec = () => {
+                populateCardPool(grid.pool, paginated);
+                renderPagination(type, totalPages);
+                
+                Promise.all(grid.pool.map((pItem, idx) => {
+                    const item = paginated[idx];
+                    if (item?.image && pItem.imgEl) {
+                        return new Promise(res => {
+                            const img = pItem.imgEl;
+                            if (img.complete && img.naturalWidth > 0) return res();
+                            const done = () => { img.onload = img.onerror = null; res(); };
+                            img.onload = img.onerror = done;
+                            setTimeout(done, 3000); 
+                        });
+                    }
+                })).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
+            };
+
+            if (withPreload) {
+                grid.gridEl.style.opacity = '0';
+                setTimeout(exec, 250);
+            } else exec();
         });
     }
 
-    function animateIndicatorUpdate(duration = 500) {
+    function animateIndicatorUpdate(duration = 300) {
         const start = performance.now();
         requestAnimationFrame(function step(time) {
             updateIndicator(navBar?.querySelector('.nav-btn.active'));
@@ -449,6 +471,8 @@ function initApp() {
     document.getElementById('do-login-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
+        
+        alert(`Attempting login for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'login', username: u, password: p });
@@ -460,6 +484,8 @@ function initApp() {
     document.getElementById('do-signup-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
         const p = document.getElementById('auth-pass')?.value.trim();
+        
+        alert(`Attempting signup for: ${u} | Port ready: ${backendReady && !!backendPort}`);
 
         if (u && p && backendReady && backendPort) {
             backendPort.postMessage({ type: 'signup', username: u, password: p });
@@ -508,6 +534,7 @@ function initApp() {
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
             if (targetId === 'changelog') return changelogModal?.classList.add('active');
 
+            toggleLoader(true);
             const activeBtn = document.querySelector('.nav-btn.active');
             if (activeBtn) {
                 const currentId = activeBtn.dataset.target;
@@ -530,19 +557,25 @@ function initApp() {
                 
                 if (grids[targetId]) {
                     buildPool(targetId);
-                    setTimeout(() => renderGrid(targetId), 50);
+                    setTimeout(() => renderGrid(targetId, false), 50);
                 } else if (iframePages[targetId]) {
                     loadIframePage(iframePages[targetId].id, iframePages[targetId].path, targetId);
-                }
-            }
+                    setTimeout(() => toggleLoader(false), 300);
+                } else toggleLoader(false);
+            } else toggleLoader(false);
         });
     });
 
     if (navBar?.querySelector('.nav-btn.active') || navBtns[0]) {
-        animateIndicatorUpdate(1000);
+        animateIndicatorUpdate(600);
         window.addEventListener('load', () => updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]));
     }
-    window.addEventListener('resize', () => updateIndicator(navBar?.querySelector('.nav-btn.active')));
+    
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => updateIndicator(navBar?.querySelector('.nav-btn.active')), 100);
+    });
 
     function closeResourceModal() {
         modalOverlay?.classList.remove('active');
@@ -551,14 +584,12 @@ function initApp() {
         const activePage = document.querySelector('.page.active');
         if (activePage && grids[activePage.id]) {
             buildPool(activePage.id);
-            renderGrid(activePage.id);
+            renderGrid(activePage.id, false);
         }
 
-        let attempts = 0;
-        const scrollInt = setInterval(() => {
+        setTimeout(() => {
             window.scrollTo(0, savedWindowScrollY);
             if (activePage) activePage.scrollTop = savedPageScrollTop;
-            if (++attempts >= 20) clearInterval(scrollInt);
         }, 50);
     }
 
@@ -573,9 +604,10 @@ function initApp() {
             select.innerHTML = (options || []).map(c => `<option value="${c}">${c}</option>`).join('');
             applyCustomDropdown(select);
             select.addEventListener('change', (e) => {
+                toggleLoader(true);
                 grids[type].category = e.target.value;
                 grids[type].page = 1;
-                renderGrid(type); // Removed preload lag
+                renderGrid(type, true);
             });
         };
         setupCatSelect('readingcorner-category-select', cats.Games, 'readingcorner');
@@ -653,7 +685,7 @@ function initApp() {
         if (activePage) {
             if (grids[activePage.id]) {
                 buildPool(activePage.id);
-                renderGrid(activePage.id);
+                renderGrid(activePage.id, false);
             } else if (iframePages[activePage.id]) {
                 loadIframePage(iframePages[activePage.id].id, iframePages[activePage.id].path, activePage.id);
             } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
