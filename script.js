@@ -136,7 +136,7 @@ function initApp() {
         const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
         const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
         
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?esz';
         
         let backendTargetUrl;
         if (proxyPrefix.includes('embed.html#')) {
