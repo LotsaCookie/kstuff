@@ -1,0 +1,102 @@
+[
+  {
+    "id": "theme-sakura",
+    "name": "Sakura",
+    "variables": {
+      "--bg-color": "#1a1216",
+      "--text-color": "#ffb8d9",
+      "--nav-bg": "#271a22",
+      "--card-bg": "#362530"
+    }
+  },
+  {
+    "id": "theme-dark",
+    "name": "Dark",
+    "variables": {
+      "--bg-color": "#121212",
+      "--text-color": "#ffffff",
+      "--nav-bg": "#1e1e1e",
+      "--card-bg": "#2a2a2a"
+    }
+  },
+  {
+    "id": "theme-light",
+    "name": "Light",
+    "variables": {
+      "--bg-color": "#f4f5f7",
+      "--text-color": "#1a1a1a",
+      "--nav-bg": "#ffffff",
+      "--card-bg": "#e2e8f0"
+    }
+  },
+  {
+    "id": "theme-ocean",
+    "name": "Ocean",
+    "variables": {
+      "--bg-color": "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+      "--text-color": "#ffffff",
+      "--nav-bg": "rgba(0, 0, 0, 0.4)",
+      "--card-bg": "rgba(255, 255, 255, 0.1)"
+    }
+  },
+  {
+    "id": "theme-sunset",
+    "name": "Sunset",
+    "variables": {
+      "--bg-color": "linear-gradient(135deg, #41295a, #2f0743)",
+      "--text-color": "#ffffff",
+      "--nav-bg": "rgba(0, 0, 0, 0.4)",
+      "--card-bg": "rgba(255, 255, 255, 0.1)"
+    }
+  },
+  {
+    "id": "theme-emerald",
+    "name": "Emerald",
+    "variables": {
+      "--bg-color": "#0b1712",
+      "--text-color": "#d1fae5",
+      "--nav-bg": "#13261e",
+      "--card-bg": "#1d382b"
+    }
+  },
+  {
+    "id": "theme-midnight",
+    "name": "Midnight",
+    "variables": {
+      "--bg-color": "#0b0c16",
+      "--text-color": "#e2e8f0",
+      "--nav-bg": "#141624",
+      "--card-bg": "#1f2238"
+    }
+  },
+  {
+    "id": "theme-cyber",
+    "name": "Cyber",
+    "variables": {
+      "--bg-color": "#0d0c1d",
+      "--text-color": "#00ffcc",
+      "--nav-bg": "#16142e",
+      "--card-bg": "#221f42"
+    }
+  },
+  {
+    "id": "theme-ruby",
+    "name": "Ruby",
+    "variables": {
+      "--bg-color": "#1c0d10",
+      "--text-color": "#ffe4e6",
+      "--nav-bg": "#2e151b",
+      "--card-bg": "#421d26"
+    }
+  },
+  {
+    "id": "theme-latte",
+    "name": "Latte",
+    "variables": {
+      "--bg-color": "#1a1614",
+      "--text-color": "#fef3c7",
+      "--nav-bg": "#292320",
+      "--card-bg": "#3d3430"
+    }
+  }
+]
