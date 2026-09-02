@@ -45,7 +45,18 @@ function initApp() {
     
     let backendPort = null;
     let backendReady = false;
+    let syncInterval = null;
+    
+    // 1. INSTANT LOAD: Grab the entire user profile from local storage immediately
     let currentUser = null;
+    try {
+        const cachedUser = localStorage.getItem('kstuff_user');
+        if (cachedUser) {
+            currentUser = JSON.parse(cachedUser);
+        }
+    } catch (e) {
+        localStorage.removeItem('kstuff_user');
+    }
 
     const toggleLoader = (show) => {
         if (!loader) return;
@@ -155,16 +166,22 @@ function initApp() {
                 backendReady = true;
                 backendPort = activePort;
                 clearInterval(cableInterval);
-                
-                // Poll backend for saved user on load
-                const savedUser = localStorage.getItem('kstuff_username');
-                if (savedUser) {
-                    backendPort.postMessage({ type: 'auto-login', username: savedUser });
+                if (currentUser) {
+                    const attemptSync = () => {
+                        backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); // Assuming auto-login validates the session
+                    };
+                    attemptSync();
+                    syncInterval = setInterval(attemptSync, 5000);
                 }
             } else if (data.type === 'login' || data.type === 'auto-login' || data.type === 'signup') {
+                if (data.type === 'auto-login' && syncInterval) {
+                    clearInterval(syncInterval);
+                    syncInterval = null;
+                }
+
                 if (data.success) {
                     currentUser = data.payload;
-                    localStorage.setItem('kstuff_username', currentUser.username); // Persist username
+                    localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
                     
                     if (currentUser.settings) {
                         applyCloudSettings(currentUser.settings);
@@ -174,7 +191,9 @@ function initApp() {
                     document.getElementById('auth-modal-overlay')?.classList.remove('active');
                 } else {
                     if (data.type === 'auto-login') {
-                        localStorage.removeItem('kstuff_username'); // Clear if auto-login fails
+                        currentUser = null;
+                        localStorage.removeItem('kstuff_user'); 
+                        updateAuthUI(false);
                     } else {
                         alert("Authentication action failed: " + (data.reason || 'unknown'));
                     }
@@ -190,15 +209,6 @@ function initApp() {
         'gradebook': { id: 'gradebook-iframe', path: 'Pages/music.html' },
         'lessonplanner': { id: 'lessonplanner-iframe', path: 'Pages/ai.html' }
     };
-
-    async function loadIframePage(id, path, pageId) {
-        const iframe = document.getElementById(id);
-        if (!iframe) return;
-        try {
-            const html = await fetchWithProxy(path, true);
-            if (document.querySelector('.page.active')?.id === pageId) iframe.srcdoc = html;
-        } catch {}
-    }
 
     const initGrid = (id) => ({ data: [], pool: [], gridEl: document.getElementById(`${id}-grid`), pageEl: document.getElementById(`${id}-pagination`), category: "All", search: "", page: 1 });
     const grids = { readingcorner: initGrid('readingcorner'), sciencequiz: initGrid('sciencequiz') };
@@ -370,16 +380,19 @@ function initApp() {
 
     function applyCloudSettings(settings) {
         if (!settings) return;
-        const updates = {
-            'layout-theme-select': settings.theme,
-            'layout-nav-select': settings.navPos,
-            'layout-size-select': settings.navSize
-        };
         
-        for (const [id, val] of Object.entries(updates)) {
-            if (!val) continue;
+        const updates = [
+            { id: 'layout-theme-select', val: settings.theme, key: 'kstuff_theme' },
+            { id: 'layout-nav-select', val: settings.navPos, key: 'kstuff_nav_pos' },
+            { id: 'layout-size-select', val: settings.navSize, key: 'kstuff_nav_size' },
+            { id: 'layout-text-select', val: settings.textVis, key: 'kstuff_text_vis' }
+        ];
+        
+        updates.forEach(({ id, val, key }) => {
+            if (!val) return; 
             const el = document.getElementById(id);
-            if (el && el.value !== val) {
+            if (el) {
+                localStorage.setItem(key, val);
                 el.value = val;
                 el.dispatchEvent(new Event('change'));
                 
@@ -395,7 +408,7 @@ function initApp() {
                     });
                 }
             }
-        }
+        });
     }
 
     const settingsBody = document.querySelector('.modal-settings-body');
@@ -416,11 +429,14 @@ function initApp() {
                 return;
             }
             const settingsPayload = {
-                theme: document.getElementById('layout-theme-select').value,
-                navPos: document.getElementById('layout-nav-select').value,
-                navSize: document.getElementById('layout-size-select').value
+                theme: document.getElementById('layout-theme-select')?.value,
+                navPos: document.getElementById('layout-nav-select')?.value,
+                navSize: document.getElementById('layout-size-select')?.value,
+                textVis: document.getElementById('layout-text-select')?.value
             };
             if (currentUser) {
+                currentUser.settings = settingsPayload;
+                localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
                 backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
             } else {
                 alert("Please log in to sync settings to your specific cloud account profile.");
@@ -437,7 +453,7 @@ function initApp() {
                 authBtn.textContent = 'Log Out';
                 authBtn.onclick = () => {
                     currentUser = null;
-                    localStorage.removeItem('kstuff_username'); // Clear local storage on logout
+                    localStorage.removeItem('kstuff_user'); 
                     if (backendPort) backendPort.postMessage({ type: 'logout' });
                     updateAuthUI(false);
                 };
@@ -447,6 +463,13 @@ function initApp() {
                 authBtn.onclick = () => openAuthModal();
             }
         }
+    }
+
+    if (currentUser) {
+        if (currentUser.settings) applyCloudSettings(currentUser.settings);
+        updateAuthUI(true);
+    } else {
+        updateAuthUI(false);
     }
 
     function applyCustomDropdown(selectEl) {
