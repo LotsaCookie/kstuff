@@ -33,20 +33,20 @@
     "id": "theme-ocean",
     "name": "Ocean",
     "variables": {
-      "--bg-color": "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
+      "--bg-color": "#13252f",
       "--text-color": "#ffffff",
-      "--nav-bg": "rgba(0, 0, 0, 0.4)",
-      "--card-bg": "rgba(255, 255, 255, 0.1)"
+      "--nav-bg": "#1c3645",
+      "--card-bg": "#264a5e"
     }
   },
   {
     "id": "theme-sunset",
     "name": "Sunset",
     "variables": {
-      "--bg-color": "linear-gradient(135deg, #41295a, #2f0743)",
+      "--bg-color": "#2c1536",
       "--text-color": "#ffffff",
-      "--nav-bg": "rgba(0, 0, 0, 0.4)",
-      "--card-bg": "rgba(255, 255, 255, 0.1)"
+      "--nav-bg": "#412150",
+      "--card-bg": "#572b6b"
     }
   },
   {
@@ -97,6 +97,206 @@
       "--text-color": "#fef3c7",
       "--nav-bg": "#292320",
       "--card-bg": "#3d3430"
+    }
+  },
+  {
+    "id": "theme-mocha",
+    "name": "Mocha",
+    "variables": {
+      "--bg-color": "#2a211f",
+      "--text-color": "#e6d5c3",
+      "--nav-bg": "#3e322f",
+      "--card-bg": "#4f403c"
+    }
+  },
+  {
+    "id": "theme-matcha",
+    "name": "Matcha",
+    "variables": {
+      "--bg-color": "#1f291c",
+      "--text-color": "#d4e8c1",
+      "--nav-bg": "#2d3b29",
+      "--card-bg": "#3b4d36"
+    }
+  },
+  {
+    "id": "theme-plum",
+    "name": "Plum",
+    "variables": {
+      "--bg-color": "#1c1221",
+      "--text-color": "#e3c5f5",
+      "--nav-bg": "#2b1d33",
+      "--card-bg": "#3a2845"
+    }
+  },
+  {
+    "id": "theme-peach",
+    "name": "Peach",
+    "variables": {
+      "--bg-color": "#2b1b19",
+      "--text-color": "#ffdac1",
+      "--nav-bg": "#422b27",
+      "--card-bg": "#593c37"
+    }
+  },
+  {
+    "id": "theme-mint",
+    "name": "Mint",
+    "variables": {
+      "--bg-color": "#152622",
+      "--text-color": "#c1ffea",
+      "--nav-bg": "#233d36",
+      "--card-bg": "#30544b"
+    }
+  },
+  {
+    "id": "theme-berry",
+    "name": "Berry",
+    "variables": {
+      "--bg-color": "#21131c",
+      "--text-color": "#ffcce6",
+      "--nav-bg": "#361e2d",
+      "--card-bg": "#4d2a40"
+    }
+  },
+  {
+    "id": "theme-honey",
+    "name": "Honey",
+    "variables": {
+      "--bg-color": "#292112",
+      "--text-color": "#ffe8a1",
+      "--nav-bg": "#40331d",
+      "--card-bg": "#594829"
+    }
+  },
+  {
+    "id": "theme-forest",
+    "name": "Forest",
+    "variables": {
+      "--bg-color": "#0f1a14",
+      "--text-color": "#a3e6be",
+      "--nav-bg": "#192e23",
+      "--card-bg": "#264534"
+    }
+  },
+  {
+    "id": "theme-sky",
+    "name": "Sky",
+    "variables": {
+      "--bg-color": "#0f1e2b",
+      "--text-color": "#badeff",
+      "--nav-bg": "#193147",
+      "--card-bg": "#254a69"
+    }
+  },
+  {
+    "id": "theme-sand",
+    "name": "Sand",
+    "variables": {
+      "--bg-color": "#2b2721",
+      "--text-color": "#f5e4c6",
+      "--nav-bg": "#423c34",
+      "--card-bg": "#595147"
+    }
+  },
+  {
+    "id": "theme-slate",
+    "name": "Slate",
+    "variables": {
+      "--bg-color": "#1c1e21",
+      "--text-color": "#d6d9e0",
+      "--nav-bg": "#2a2c30",
+      "--card-bg": "#383b42"
+    }
+  },
+  {
+    "id": "theme-coral",
+    "name": "Coral",
+    "variables": {
+      "--bg-color": "#261414",
+      "--text-color": "#ffbfa8",
+      "--nav-bg": "#3d2121",
+      "--card-bg": "#573030"
+    }
+  },
+  {
+    "id": "theme-amethyst",
+    "name": "Amethyst",
+    "variables": {
+      "--bg-color": "#1d1526",
+      "--text-color": "#d8bdf5",
+      "--nav-bg": "#2d223b",
+      "--card-bg": "#403152"
+    }
+  },
+  {
+    "id": "theme-sapphire",
+    "name": "Sapphire",
+    "variables": {
+      "--bg-color": "#0d1726",
+      "--text-color": "#b0d3ff",
+      "--nav-bg": "#16273d",
+      "--card-bg": "#203859"
+    }
+  },
+  {
+    "id": "theme-onyx",
+    "name": "Onyx",
+    "variables": {
+      "--bg-color": "#0a0a0a",
+      "--text-color": "#d4d4d4",
+      "--nav-bg": "#171717",
+      "--card-bg": "#262626"
+    }
+  },
+  {
+    "id": "theme-neon",
+    "name": "Neon",
+    "variables": {
+      "--bg-color": "#091009",
+      "--text-color": "#39ff14",
+      "--nav-bg": "#122112",
+      "--card-bg": "#1c331c"
+    }
+  },
+  {
+    "id": "theme-pastel",
+    "name": "Pastel",
+    "variables": {
+      "--bg-color": "#fdfbf7",
+      "--text-color": "#5c5c5c",
+      "--nav-bg": "#f5f0e6",
+      "--card-bg": "#ede5d5"
+    }
+  },
+  {
+    "id": "theme-dracula",
+    "name": "Dracula",
+    "variables": {
+      "--bg-color": "#282a36",
+      "--text-color": "#f8f8f2",
+      "--nav-bg": "#44475a",
+      "--card-bg": "#6272a4"
+    }
+  },
+  {
+    "id": "theme-nord",
+    "name": "Nord",
+    "variables": {
+      "--bg-color": "#2e3440",
+      "--text-color": "#eceff4",
+      "--nav-bg": "#3b4252",
+      "--card-bg": "#434c5e"
+    }
+  },
+  {
+    "id": "theme-solar",
+    "name": "Solar",
+    "variables": {
+      "--bg-color": "#002b36",
+      "--text-color": "#93a1a1",
+      "--nav-bg": "#073642",
+      "--card-bg": "#586e75"
     }
   }
 ]
