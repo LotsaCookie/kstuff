@@ -384,20 +384,40 @@ function initApp() {
         setTimeout(() => { btn.textContent = origT; btn.style.background = origBg; btn.style.color = origC; }, 2000);
     });
 
-    document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `.profile-avatar-container { width: 1.6em; height: 1.6em; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0; margin: 0 auto; } .profile-avatar-container img { width: 100%; height: 100%; object-fit: cover; }` }));
+    // Make the avatar an <i> tag so it correctly targets your CSS size classes
+    document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `i.profile-avatar-container { width: 1.2em; height: 1.2em; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; align-items: center; } i.profile-avatar-container img { width: 100%; height: 100%; object-fit: cover; }` }));
 
     const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 
     function updateAuthUI() {
         const navBtn = $('profile-nav-btn');
-        const tooltipHTML = navBtn ? (navBtn.querySelector('span')?.outerHTML || '<span class="tooltip">Profile</span>') : '';
         if (currentUser) {
             const userPic = currentUser.profilePicture || defaultPic;
             if ($('profile-modal-pic')) $('profile-modal-pic').src = userPic;
             if ($('profile-modal-username')) $('profile-modal-username').textContent = currentUser.username || "User";
             if ($('profile-modal-desc')) $('profile-modal-desc').textContent = currentUser.description || "No description provided.";
-            if (navBtn) navBtn.innerHTML = `<div class="profile-avatar-container"><img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'"></div>` + tooltipHTML;
-        } else if (navBtn) navBtn.innerHTML = '<i class="ph ph-user" id="profile-nav-icon"></i>' + tooltipHTML;
+            
+            if (navBtn) {
+                // We use replaceChild to safely target ONLY the icon, leaving the tooltip completely untouched
+                const oldIcon = navBtn.querySelector('i');
+                if (oldIcon && !oldIcon.classList.contains('profile-avatar-container')) {
+                    const newIcon = document.createElement('i');
+                    newIcon.className = 'ph profile-avatar-container';
+                    newIcon.innerHTML = `<img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'">`;
+                    navBtn.replaceChild(newIcon, oldIcon);
+                } else if (oldIcon) {
+                    oldIcon.querySelector('img').src = userPic;
+                }
+            }
+        } else if (navBtn) {
+            const oldIcon = navBtn.querySelector('i');
+            if (oldIcon && oldIcon.classList.contains('profile-avatar-container')) {
+                const newIcon = document.createElement('i');
+                newIcon.className = 'ph ph-user';
+                newIcon.id = 'profile-nav-icon';
+                navBtn.replaceChild(newIcon, oldIcon);
+            }
+        }
     }
 
     if (currentUser) { applyCloudSettings(currentUser.settings || { theme: currentUser.theme }); updateAuthUI(); } else updateAuthUI();
