@@ -1,4 +1,4 @@
-function initApp() {
+function initApp() { 
     const $ = id => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
     const tooltipEl = document.createElement('div');
