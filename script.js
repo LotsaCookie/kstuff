@@ -1,4 +1,7 @@
 function initApp() {
+    const $ = id => document.getElementById(id);
+    const $$ = sel => document.querySelectorAll(sel);
+
     async function getWorkingConfig(table) {
         if (!table?.length) return null;
         for (let i = 0; i < table.length; i += 5) {
@@ -6,30 +9,23 @@ function initApp() {
             const winner = await new Promise((resolve) => {
                 let resolved = false, failedCount = 0;
                 const activeImages = [];
-
-                const cleanup = () => {
-                    activeImages.forEach(im => {
-                        im.onload = im.onerror = null;
-                        im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-                    });
-                };
-
+                const cleanup = () => activeImages.forEach(im => {
+                    im.onload = im.onerror = null;
+                    im.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+                });
                 chunk.forEach(entry => {
                     const img = new Image();
                     activeImages.push(img);
                     const fullTestUrl = entry.url.replace(/\/+$/, '') + '/' + entry.img.replace(/^\/+/, '');
-                    
                     const done = (success) => {
                         if (resolved) return;
                         if (success) { resolved = true; cleanup(); resolve(entry); } 
                         else if (++failedCount === chunk.length) { resolved = true; cleanup(); resolve(null); }
                     };
-
                     img.onload = () => done(img.naturalWidth > 0);
                     img.onerror = () => done(false);
                     img.src = fullTestUrl + (fullTestUrl.includes('?') ? '&' : '?') + '_=' + Date.now();
                 });
-
                 setTimeout(() => { if (!resolved) { resolved = true; cleanup(); resolve(null); } }, 8000);
             });
             if (winner) return winner; 
@@ -38,24 +34,17 @@ function initApp() {
     }
 
     const body = document.body;
-    const navBar = document.getElementById('teachertouchbar');
-    const navBtns = document.querySelectorAll('.nav-btn');
-    const pages = document.querySelectorAll('.page');
+    const navBar = $('teachertouchbar');
+    const navBtns = $$('.nav-btn');
+    const pages = $$('.page');
     const loader = document.querySelector('.section-loader');
     
-    let backendPort = null;
-    let backendReady = false;
-    let syncInterval = null;
-    
-    let currentUser = null;
+    let backendPort = null, backendReady = false, syncInterval = null, currentUser = null;
+
     try {
         const cachedUser = localStorage.getItem('kstuff_user');
-        if (cachedUser) {
-            currentUser = JSON.parse(cachedUser);
-        }
-    } catch (e) {
-        localStorage.removeItem('kstuff_user');
-    }
+        if (cachedUser) currentUser = JSON.parse(cachedUser);
+    } catch { localStorage.removeItem('kstuff_user'); }
 
     const toggleLoader = (show) => {
         if (!loader) return;
@@ -64,10 +53,7 @@ function initApp() {
     };
     toggleLoader(false);
 
-    const modalOverlay = document.getElementById('resource-modal');
-    const modalIframe = document.getElementById('resource-modal-iframe');
-    const modalTitle = document.getElementById('resource-modal-title');
-    
+    const modalOverlay = $('resource-modal'), modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title');
     let savedWindowScrollY = 0, savedPageScrollTop = 0, cachedCommitHash = null;
     let indicator = navBar?.querySelector('.nav-indicator') || (() => {
         const ind = document.createElement('div');
@@ -79,9 +65,7 @@ function initApp() {
     function updateIndicator(activeBtn) {
         if (!activeBtn || !indicator || !navBar) return;
         const isVertical = body.classList.contains('nav-left') || body.classList.contains('nav-right');
-        const navRect = navBar.getBoundingClientRect();
-        const btnRect = activeBtn.getBoundingClientRect();
-        
+        const navRect = navBar.getBoundingClientRect(), btnRect = activeBtn.getBoundingClientRect();
         indicator.style.cssText = `
             width: ${isVertical ? '3px' : `${btnRect.width}px`};
             height: ${isVertical ? `${btnRect.height}px` : '3px'};
@@ -119,89 +103,44 @@ function initApp() {
     function initBackendBridge(workingConfig) {
         if (!workingConfig) return;
         const hiddenFrame = document.createElement('iframe');
+        hiddenFrame.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;opacity:0;pointer-events:none;border:none;z-index:999999;`;
         
-        hiddenFrame.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            opacity: 0;
-            pointer-events: none;
-            border: none;
-            z-index: 999999;
-        `;
-        
-        const baseUrl = (workingConfig.url || '').replace(/\/+$/, '');
-        const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
-        const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
-        
+        const proxyPrefix = (workingConfig.url || '').replace(/\/+$/, '') + (workingConfig.final ? '/' + workingConfig.final.replace(/^\/+/, '') : '');
         const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?jsxx';
-        
-        let backendTargetUrl;
-        if (proxyPrefix.includes('embed.html#')) {
-            backendTargetUrl = proxyPrefix + rawBackendUrl;
-        } else {
-            backendTargetUrl = proxyPrefix.replace(/\/+$/, '') + '/embed.html#' + rawBackendUrl;
-        }
-        
-        hiddenFrame.src = backendTargetUrl;
+        hiddenFrame.src = proxyPrefix.includes('embed.html#') ? proxyPrefix + rawBackendUrl : proxyPrefix.replace(/\/+$/, '') + '/embed.html#' + rawBackendUrl;
         (document.body || document.documentElement).appendChild(hiddenFrame);
 
         const cableInterval = setInterval(() => {
             if (!backendReady && hiddenFrame.contentWindow) {
                 const channel = new MessageChannel();
                 channel.port1.onmessage = (e) => handleBackendMessage(e.data, channel.port1);
-                try {
-                    hiddenFrame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
-                } catch (err) {}
+                try { hiddenFrame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]); } catch {}
             }
         }, 1500);
 
         function handleBackendMessage(data, activePort) {
             if (!data) return;
-            
             if (data.type === 'ready') {
-                backendReady = true;
-                backendPort = activePort;
+                backendReady = true; backendPort = activePort;
                 clearInterval(cableInterval);
                 if (currentUser) {
-                    const attemptSync = () => {
-                        backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); 
-                    };
-                    attemptSync();
-                    syncInterval = setInterval(attemptSync, 5000);
+                    const attemptSync = () => backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); 
+                    attemptSync(); syncInterval = setInterval(attemptSync, 5000);
                 }
-            } else if (data.type === 'login' || data.type === 'auto-login' || data.type === 'signup') {
-                if (data.type === 'auto-login' && syncInterval) {
-                    clearInterval(syncInterval);
-                    syncInterval = null;
-                }
-
+            } else if (['login', 'auto-login', 'signup'].includes(data.type)) {
+                if (data.type === 'auto-login' && syncInterval) { clearInterval(syncInterval); syncInterval = null; }
                 if (data.success) {
                     const incomingUser = data.payload;
-                    if (currentUser?.settings?.lastUpdated) {
-                        const localTime = currentUser.settings.lastUpdated;
-                        const cloudTime = incomingUser.settings?.lastUpdated || 0;
-                        if (localTime > cloudTime) {
-                            incomingUser.settings = currentUser.settings; 
-                        }
+                    if (currentUser?.settings?.lastUpdated && currentUser.settings.lastUpdated > (incomingUser.settings?.lastUpdated || 0)) {
+                        incomingUser.settings = currentUser.settings; 
                     }
-
                     currentUser = incomingUser;
                     localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
-                    
-                    const settingsToApply = currentUser.settings || { theme: currentUser.theme };
-                    applyCloudSettings(settingsToApply);
-                    
-                    updateAuthUI(true);
-                    document.getElementById('auth-modal-overlay')?.classList.remove('active');
-                } else {
-                    if (data.type === 'auto-login') {
-                        currentUser = null;
-                        localStorage.removeItem('kstuff_user'); 
-                        updateAuthUI(false);
-                    }
+                    applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
+                    updateAuthUI();
+                    $('auth-modal-overlay')?.classList.remove('active');
+                } else if (data.type === 'auto-login') {
+                    currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
                 }
             }
         }
@@ -209,46 +148,29 @@ function initApp() {
 
     async function loadDynamicThemes() {
         try {
-            const res = await (typeof fetchWithProxy === 'function' 
-                ? fetchWithProxy('Json/themes.json') 
-                : fetch('Json/themes.json').then(r => r.json()));
-            const themes = res;
-            let cssString = '';
-            let optionsHTML = '';
+            const themes = await (typeof fetchWithProxy === 'function' ? fetchWithProxy('Json/themes.json') : fetch('Json/themes.json').then(r => r.json()));
+            let cssString = '', optionsHTML = '';
             themes.forEach(theme => {
-                cssString += `.${theme.id} {\n`;
-                for (const [prop, val] of Object.entries(theme.variables)) {
-                    cssString += `    ${prop}: ${val};\n`;
-                }
-                cssString += `}\n\n`;
+                cssString += `.${theme.id} {\n${Object.entries(theme.variables).map(([p, v]) => `    ${p}: ${v};`).join('\n')}\n}\n\n`;
                 optionsHTML += `<option value="${theme.id}">${theme.name}</option>`;
             });
             const styleTag = document.createElement('style');
-            styleTag.id = 'dynamic-themes-style';
-            styleTag.textContent = cssString;
+            styleTag.id = 'dynamic-themes-style'; styleTag.textContent = cssString;
             document.head.appendChild(styleTag);
-            const selectEl = document.getElementById('layout-theme-select');
+            
+            const selectEl = $('layout-theme-select');
             if (selectEl) {
                 const currentVal = localStorage.getItem('kstuff_theme') || themes[0].id;
                 if (selectEl.dataset.customized) {
-                    const wrapper = selectEl.nextElementSibling;
-                    if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
-                        wrapper.remove();
-                    }
-                    delete selectEl.dataset.customized;
-                    selectEl.style.display = ''; 
+                    selectEl.nextElementSibling?.classList.contains('custom-select-wrapper') && selectEl.nextElementSibling.remove();
+                    delete selectEl.dataset.customized; selectEl.style.display = ''; 
                 }
-                selectEl.innerHTML = optionsHTML;
-                selectEl.value = currentVal;
+                selectEl.innerHTML = optionsHTML; selectEl.value = currentVal;
                 document.body.className = document.body.className.replace(/\btheme-\S+/g, '').trim();
                 document.body.classList.add(currentVal);
-                if (typeof applyCustomDropdown === 'function') {
-                    applyCustomDropdown(selectEl);
-                }
+                if (typeof applyCustomDropdown === 'function') applyCustomDropdown(selectEl);
             }
-        } catch (error) {
-            console.error("Failed to load themes from Json/themes.json:", error);
-        }
+        } catch {}
     }
     loadDynamicThemes();
 
@@ -259,37 +181,20 @@ function initApp() {
     };
 
     async function loadIframePage(iframeId, path) {
-        const iframe = document.getElementById(iframeId);
-        if (!iframe) {
-            toggleLoader(false);
-            return;
-        }
-        
-        if (iframe.dataset.loadedPath === path && iframe.srcdoc) {
-            toggleLoader(false);
-            return;
-        }
-
+        const iframe = $(iframeId);
+        if (!iframe || (iframe.dataset.loadedPath === path && iframe.srcdoc)) return toggleLoader(false);
         toggleLoader(true);
-        
         try {
             const htmlContent = await fetchWithProxy(path, true);
-            
-            iframe.onload = () => {
-                toggleLoader(false);
-            };
-            
-            iframe.dataset.loadedPath = path;
-            iframe.srcdoc = htmlContent;
-
-        } catch (error) {
-            console.error("Failed to load page content:", error);
+            iframe.onload = () => toggleLoader(false);
+            iframe.dataset.loadedPath = path; iframe.srcdoc = htmlContent;
+        } catch {
             iframe.onload = () => toggleLoader(false);
             iframe.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white); font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;"><h2>Failed to load page content. Please try again.</h2></body></html>`;
         }
     }
 
-    const initGrid = (id) => ({ data: [], pool: [], gridEl: document.getElementById(`${id}-grid`), pageEl: document.getElementById(`${id}-pagination`), category: "All", search: "", page: 1 });
+    const initGrid = (id) => ({ data: [], pool: [], gridEl: $(`${id}-grid`), pageEl: $(`${id}-pagination`), category: "All", search: "", page: 1 });
     const grids = { readingcorner: initGrid('readingcorner'), sciencequiz: initGrid('sciencequiz') };
     const itemsPerPage = 32;
 
@@ -315,75 +220,25 @@ function initApp() {
 
     Object.keys(grids).forEach(type => {
         let timeout;
-        document.getElementById(`${type}-search`)?.addEventListener('input', (e) => {
-            clearTimeout(timeout);
-            toggleLoader(true);
-            timeout = setTimeout(() => {
-                grids[type].search = e.target.value.toLowerCase().trim();
-                grids[type].page = 1;
-                renderGrid(type, true);
-            }, 150);
+        $(`${type}-search`)?.addEventListener('input', (e) => {
+            clearTimeout(timeout); toggleLoader(true);
+            timeout = setTimeout(() => { grids[type].search = e.target.value.toLowerCase().trim(); grids[type].page = 1; renderGrid(type, true); }, 150);
         });
     });
-
-    function populateCardPool(cardPool, paginatedData) {
-        cardPool.forEach((poolItem, index) => {
-            const item = paginatedData[index];
-            if (item) {
-                poolItem.element.style.display = 'block';
-                const targetImg = item.image || '';
-                if (poolItem.imgEl.dataset.src !== targetImg) {
-                    poolItem.imgEl.dataset.src = targetImg;
-                    poolItem.imgEl.src = targetImg;
-                    poolItem.imgEl.style.display = targetImg ? 'block' : 'none';
-                    if (!targetImg) poolItem.imgEl.removeAttribute('src');
-                }
-                if (poolItem.titleEl.textContent !== item.title) poolItem.titleEl.textContent = item.title;
-                if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
-                if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
-
-                poolItem.element.onclick = () => {
-                    savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
-                    const activePage = document.querySelector('.page.active');
-                    if (activePage) savedPageScrollTop = activePage.scrollTop;
-                    if (modalTitle) modalTitle.textContent = item.title;
-                    if (modalOverlay) modalOverlay.classList.add('active');
-                    if (modalIframe) modalIframe.src = item.url;
-                    setTimeout(() => Object.keys(grids).forEach(destroyPool), 50);
-                };
-            } else {
-                poolItem.element.style.display = 'none';
-                if (poolItem.imgEl.dataset.src !== '') {
-                    poolItem.imgEl.dataset.src = '';
-                    poolItem.imgEl.removeAttribute('src');
-                    poolItem.imgEl.style.display = 'none';
-                }
-                if (poolItem.catEl) poolItem.catEl.textContent = '';
-                poolItem.element.onclick = null;
-            }
-        });
-    }
 
     function renderPagination(type, totalPages) {
         const grid = grids[type];
         if (!grid.pageEl) return;
         grid.pageEl.innerHTML = '';
-        
         if (totalPages > 1) {
             const addBtn = (icon, isNext) => {
                 const btn = document.createElement('button');
-                btn.className = 'page-btn';
-                btn.innerHTML = `<i class="ph ph-caret-${icon}"></i>`;
-                const canClick = (isNext && grid.page < totalPages) || (!isNext && grid.page > 1);
-                if (canClick) {
+                btn.className = 'page-btn'; btn.innerHTML = `<i class="ph ph-caret-${icon}"></i>`;
+                if ((isNext && grid.page < totalPages) || (!isNext && grid.page > 1)) {
                     btn.addEventListener('click', () => { toggleLoader(true); grid.page += isNext ? 1 : -1; renderGrid(type, true); });
-                } else {
-                    btn.style.opacity = '0.4';
-                    btn.style.cursor = 'not-allowed';
-                }
+                } else { btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
                 grid.pageEl.appendChild(btn);
             };
-            
             addBtn('left', false);
             const pageInfo = document.createElement('span');
             pageInfo.style.cssText = 'font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;';
@@ -397,36 +252,46 @@ function initApp() {
         window.requestAnimationFrame(() => {
             const grid = grids[type];
             if (!grid.gridEl) return;
-
             const filtered = grid.data.filter(item => (grid.category === "All" || item.category === grid.category) && item.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             if (grid.page > totalPages) grid.page = 1;
-
-            const start = (grid.page - 1) * itemsPerPage;
-            const paginated = filtered.slice(start, start + itemsPerPage);
-
+            const paginated = filtered.slice((grid.page - 1) * itemsPerPage, (grid.page - 1) * itemsPerPage + itemsPerPage);
+            
             const exec = () => {
-                populateCardPool(grid.pool, paginated);
-                renderPagination(type, totalPages);
-                
-                Promise.all(grid.pool.map((pItem, idx) => {
-                    const item = paginated[idx];
-                    if (item?.image && pItem.imgEl) {
-                        return new Promise(res => {
-                            const img = pItem.imgEl;
-                            if (img.complete && img.naturalWidth > 0) return res();
-                            const done = () => { img.onload = img.onerror = null; res(); };
-                            img.onload = img.onerror = done;
-                            setTimeout(done, 3000); 
-                        });
+                grid.pool.forEach((poolItem, index) => {
+                    const item = paginated[index];
+                    poolItem.element.style.display = item ? 'block' : 'none';
+                    if (item) {
+                        const targetImg = item.image || '';
+                        if (poolItem.imgEl.dataset.src !== targetImg) {
+                            poolItem.imgEl.dataset.src = targetImg; poolItem.imgEl.src = targetImg;
+                            poolItem.imgEl.style.display = targetImg ? 'block' : 'none';
+                            if (!targetImg) poolItem.imgEl.removeAttribute('src');
+                        }
+                        if (poolItem.titleEl.textContent !== item.title) poolItem.titleEl.textContent = item.title;
+                        if (poolItem.descEl.textContent !== (item.description || '')) poolItem.descEl.textContent = item.description || '';
+                        if (poolItem.catEl && poolItem.catEl.textContent !== (item.category || 'All')) poolItem.catEl.textContent = item.category || 'All';
+                        poolItem.element.onclick = () => {
+                            savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
+                            savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
+                            if (modalTitle) modalTitle.textContent = item.title;
+                            if (modalOverlay) modalOverlay.classList.add('active');
+                            if (modalIframe) modalIframe.src = item.url;
+                            setTimeout(() => Object.keys(grids).forEach(destroyPool), 50);
+                        };
+                    } else {
+                        if (poolItem.imgEl.dataset.src !== '') { poolItem.imgEl.dataset.src = ''; poolItem.imgEl.removeAttribute('src'); poolItem.imgEl.style.display = 'none'; }
+                        if (poolItem.catEl) poolItem.catEl.textContent = ''; poolItem.element.onclick = null;
                     }
-                })).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
+                });
+                renderPagination(type, totalPages);
+                Promise.all(grid.pool.map((p, i) => paginated[i]?.image && p.imgEl ? new Promise(res => {
+                    if (p.imgEl.complete && p.imgEl.naturalWidth > 0) return res();
+                    const done = () => { p.imgEl.onload = p.imgEl.onerror = null; res(); };
+                    p.imgEl.onload = p.imgEl.onerror = done; setTimeout(done, 3000); 
+                }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
             };
-
-            if (withPreload) {
-                grid.gridEl.style.opacity = '0';
-                setTimeout(exec, 250);
-            } else exec();
+            if (withPreload) { grid.gridEl.style.opacity = '0'; setTimeout(exec, 250); } else exec();
         });
     }
 
@@ -438,19 +303,16 @@ function initApp() {
         });
     }
 
-    function setupSetting(id, storageKey, classPrefix, classFn) {
-        const el = document.getElementById(id);
+    const setupSetting = (id, storageKey, classPrefix, classFn) => {
+        const el = $(id);
         if (!el) return;
         const saved = localStorage.getItem(storageKey) || el.value;
-        el.value = saved;
-        classFn(saved);
+        el.value = saved; classFn(saved);
         el.addEventListener('change', (e) => {
             if (classPrefix) body.className = body.className.replace(new RegExp(`\\b${classPrefix}-\\S+`, 'g'), '').trim();
-            classFn(e.target.value);
-            localStorage.setItem(storageKey, e.target.value);
-            animateIndicatorUpdate(); 
+            classFn(e.target.value); localStorage.setItem(storageKey, e.target.value); animateIndicatorUpdate(); 
         });
-    }
+    };
 
     setupSetting('layout-theme-select', 'kstuff_theme', 'theme', v => body.classList.add(v));
     setupSetting('layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v));
@@ -459,154 +321,89 @@ function initApp() {
 
     function applyCloudSettings(settings) {
         if (!settings) return;
-        const updates = [
+        [
             { id: 'layout-theme-select', val: settings.theme, key: 'kstuff_theme' },
             { id: 'layout-nav-select', val: settings.navPos, key: 'kstuff_nav_pos' },
             { id: 'layout-size-select', val: settings.navSize, key: 'kstuff_nav_size' },
             { id: 'layout-text-select', val: settings.textVis, key: 'kstuff_text_vis' }
-        ];
-        updates.forEach(({ id, val, key }) => {
-            if (!val) return; 
-            const el = document.getElementById(id);
-            if (el) {
-                localStorage.setItem(key, val);
-                el.value = val;
-                el.dispatchEvent(new Event('change'));
+        ].forEach(({ id, val, key }) => {
+            const el = $(id);
+            if (val && el) {
+                localStorage.setItem(key, val); el.value = val; el.dispatchEvent(new Event('change'));
                 const wrapper = el.nextElementSibling;
-                if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
-                    const triggerSpan = wrapper.querySelector('.custom-select-trigger span');
-                    if (triggerSpan) triggerSpan.textContent = el.options[el.selectedIndex]?.text || '';
-                    const options = wrapper.querySelectorAll('.custom-select-option');
-                    options.forEach((opt, idx) => {
-                        if (idx === el.selectedIndex) opt.classList.add('selected');
-                        else opt.classList.remove('selected');
-                    });
+                if (wrapper?.classList.contains('custom-select-wrapper')) {
+                    const span = wrapper.querySelector('.custom-select-trigger span');
+                    if (span) span.textContent = el.options[el.selectedIndex]?.text || '';
+                    wrapper.querySelectorAll('.custom-select-option').forEach((opt, idx) => opt.classList.toggle('selected', idx === el.selectedIndex));
                 }
             }
         });
     }
 
     function applyCustomDropdown(selectEl) {
-        if (!selectEl || selectEl.dataset.customized) {
-            if (selectEl?.dataset.customized) selectEl.nextElementSibling?.classList.contains('custom-select-wrapper') && selectEl.nextElementSibling.remove();
-            else return;
-        }
+        if (!selectEl || (selectEl.dataset.customized && !selectEl.nextElementSibling?.classList.contains('custom-select-wrapper'))) return;
+        if (selectEl.dataset.customized) selectEl.nextElementSibling.remove();
+        selectEl.style.display = 'none'; selectEl.dataset.customized = 'true';
         
-        selectEl.style.display = 'none';
-        selectEl.dataset.customized = 'true';
-        
-        const wrapper = document.createElement('div');
-        wrapper.className = 'custom-select-wrapper';
-        
-        const trigger = document.createElement('div');
-        trigger.className = 'custom-select-trigger';
+        const wrapper = document.createElement('div'), trigger = document.createElement('div'), optionsContainer = document.createElement('div');
+        wrapper.className = 'custom-select-wrapper'; trigger.className = 'custom-select-trigger'; optionsContainer.className = 'custom-select-options';
         trigger.innerHTML = `<span>${selectEl.options[selectEl.selectedIndex]?.text || ''}</span> <i class="ph ph-caret-down"></i>`;
-        
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'custom-select-options';
         
         Array.from(selectEl.options).forEach((opt, idx) => {
             const optionEl = document.createElement('div');
             optionEl.className = `custom-select-option ${idx === selectEl.selectedIndex ? 'selected' : ''}`;
             optionEl.textContent = opt.text;
-            
             optionEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                selectEl.value = opt.value;
-                trigger.querySelector('span').textContent = opt.text;
+                e.stopPropagation(); selectEl.value = opt.value; trigger.querySelector('span').textContent = opt.text;
                 optionsContainer.querySelectorAll('.custom-select-option').forEach(el => el.classList.remove('selected'));
-                optionEl.classList.add('selected');
-                optionsContainer.classList.remove('open');
+                optionEl.classList.add('selected'); optionsContainer.classList.remove('open');
                 selectEl.dispatchEvent(new Event('change'));
             });
             optionsContainer.appendChild(optionEl);
         });
         
         trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.custom-select-options.open').forEach(el => el !== optionsContainer && el.classList.remove('open'));
+            e.stopPropagation(); $$('.custom-select-options.open').forEach(el => el !== optionsContainer && el.classList.remove('open'));
             optionsContainer.classList.toggle('open');
         });
-        
-        wrapper.append(trigger, optionsContainer);
-        selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+        wrapper.append(trigger, optionsContainer); selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
     }
 
-    document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
-    document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
+    document.addEventListener('click', () => $$('.custom-select-options.open').forEach(el => el.classList.remove('open')));
+    $$('.setting-group select').forEach(applyCustomDropdown);
 
-    document.getElementById('save-settings-btn')?.addEventListener('click', (e) => {
-        const btn = e.target;
-        const originalText = btn.textContent;
-        const originalBg = btn.style.background;
-        const originalColor = btn.style.color;
-        
-        const settingsPayload = {
-            theme: document.getElementById('layout-theme-select')?.value,
-            navPos: document.getElementById('layout-nav-select')?.value,
-            navSize: document.getElementById('layout-size-select')?.value,
-            textVis: document.getElementById('layout-text-select')?.value,
-            lastUpdated: Date.now() 
-        };
-        
+    $('save-settings-btn')?.addEventListener('click', (e) => {
+        const btn = e.target, origT = btn.textContent, origBg = btn.style.background, origC = btn.style.color;
+        const payload = { theme: $('layout-theme-select')?.value, navPos: $('layout-nav-select')?.value, navSize: $('layout-size-select')?.value, textVis: $('layout-text-select')?.value, lastUpdated: Date.now() };
         if (currentUser && backendReady && backendPort) {
-            currentUser.settings = settingsPayload;
-            localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
-            applyCloudSettings(settingsPayload); 
-            backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
+            currentUser.settings = payload; localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
+            applyCloudSettings(payload); backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: payload });
             btn.textContent = "Saved to Cloud!";
-        } else {
-            btn.textContent = "Saved Locally!";
-        }
-
-        btn.style.background = "#4CAF50"; 
-        btn.style.color = "#fff";
-        setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = originalBg;
-            btn.style.color = originalColor;
-        }, 2000);
+        } else btn.textContent = "Saved Locally!";
+        btn.style.background = "#4CAF50"; btn.style.color = "#fff";
+        setTimeout(() => { btn.textContent = origT; btn.style.background = origBg; btn.style.color = origC; }, 2000);
     });
 
-    function updateProfileModal() {
-        if (!currentUser) return;
-        const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
-        
-        const pic = document.getElementById('profile-modal-pic');
-        const name = document.getElementById('profile-modal-username');
-        const desc = document.getElementById('profile-modal-desc');
-        const navBtn = document.getElementById('profile-nav-btn');
-        
-        const userPic = currentUser.profilePicture || defaultPic;
-        
-        if (pic) pic.src = userPic;
-        if (name) name.textContent = currentUser.username || "User";
-        if (desc) desc.textContent = currentUser.description || "No description provided.";
-        
-        if (navBtn) {
-            navBtn.innerHTML = `<div class="profile-avatar-container"><img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'"></div>`;
-        }
+    document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `.profile-avatar-container { width: 1.6em; height: 1.6em; border-radius: 50%; overflow: hidden; display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0; margin: 0 auto; } .profile-avatar-container img { width: 100%; height: 100%; object-fit: cover; }` }));
+
+    const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
+
+    function updateAuthUI() {
+        const navBtn = $('profile-nav-btn');
+        const tooltipHTML = navBtn ? (navBtn.querySelector('span')?.outerHTML || '<span class="tooltip">Profile</span>') : '';
+        if (currentUser) {
+            const userPic = currentUser.profilePicture || defaultPic;
+            if ($('profile-modal-pic')) $('profile-modal-pic').src = userPic;
+            if ($('profile-modal-username')) $('profile-modal-username').textContent = currentUser.username || "User";
+            if ($('profile-modal-desc')) $('profile-modal-desc').textContent = currentUser.description || "No description provided.";
+            if (navBtn) navBtn.innerHTML = `<div class="profile-avatar-container"><img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'"></div>` + tooltipHTML;
+        } else if (navBtn) navBtn.innerHTML = '<i class="ph ph-user" id="profile-nav-icon"></i>' + tooltipHTML;
     }
 
-    function updateAuthUI(isLoggedIn) {
-        const navBtn = document.getElementById('profile-nav-btn');
-        if (isLoggedIn && currentUser) {
-            updateProfileModal();
-        } else {
-            if (navBtn) navBtn.innerHTML = '<i class="ph ph-user" id="profile-nav-icon"></i>';
-        }
-    }
-
-    if (currentUser) {
-        const initialSettings = currentUser.settings || { theme: currentUser.theme };
-        applyCloudSettings(initialSettings);
-        updateAuthUI(true);
-    } else {
-        updateAuthUI(false);
-    }
+    if (currentUser) { applyCloudSettings(currentUser.settings || { theme: currentUser.theme }); updateAuthUI(); } else updateAuthUI();
 
     const bindModal = (id, btnId) => {
-        const m = document.getElementById(id), b = document.getElementById(btnId);
+        const m = $(id), b = $(btnId);
         b?.addEventListener('click', () => m?.classList.remove('active'));
         m?.addEventListener('click', (e) => e.target === m && m.classList.remove('active'));
         return m;
@@ -617,270 +414,163 @@ function initApp() {
     const authModal = bindModal('auth-modal-overlay', 'auth-close-btn');
     const profileModal = bindModal('profile-modal-overlay', 'profile-close-btn');
 
-    document.getElementById('do-login-btn')?.addEventListener('click', () => {
-        const u = document.getElementById('auth-user')?.value.trim();
-        const p = document.getElementById('auth-pass')?.value.trim();
-        
-        if (u && p && backendReady && backendPort) {
-            backendPort.postMessage({ type: 'login', username: u, password: p });
-        }
-    });
+    const handleAuth = (type) => () => {
+        const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim();
+        if (u && p && backendReady && backendPort) backendPort.postMessage({ type, username: u, password: p });
+    };
+    $('do-login-btn')?.addEventListener('click', handleAuth('login'));
+    $('do-signup-btn')?.addEventListener('click', handleAuth('signup'));
 
-    document.getElementById('do-signup-btn')?.addEventListener('click', () => {
-        const u = document.getElementById('auth-user')?.value.trim();
-        const p = document.getElementById('auth-pass')?.value.trim();
-        
-        if (u && p && backendReady && backendPort) {
-            backendPort.postMessage({ type: 'signup', username: u, password: p });
-        }
-    });
-
-    document.getElementById('do-logout-btn')?.addEventListener('click', () => {
-        currentUser = null;
-        localStorage.removeItem('kstuff_user'); 
+    $('do-logout-btn')?.addEventListener('click', () => {
+        currentUser = null; localStorage.removeItem('kstuff_user'); 
         if (backendPort) backendPort.postMessage({ type: 'logout' });
-        updateAuthUI(false);
-        profileModal?.classList.remove('active');
+        updateAuthUI(); profileModal?.classList.remove('active');
     });
 
-    const editProfileBtn = document.getElementById('edit-profile-btn');
-    const profileEditContainer = document.getElementById('profile-edit-container');
-    const profileEditPicUrl = document.getElementById('profile-edit-pic-url');
-    const profileEditDesc = document.getElementById('profile-edit-desc');
-    const saveProfileChangesBtn = document.getElementById('save-profile-changes-btn');
+    const profileEditContainer = $('profile-edit-container'), profileEditPicUrl = $('profile-edit-pic-url'), profileEditDesc = $('profile-edit-desc'), saveProfileChangesBtn = $('save-profile-changes-btn');
 
-    editProfileBtn?.addEventListener('click', () => {
+    const toggleProfileEdit = (show) => {
+        if (show) { profileEditContainer.style.display = 'flex'; setTimeout(() => profileEditContainer.style.opacity = '1', 10); } 
+        else { profileEditContainer.style.opacity = '0'; setTimeout(() => profileEditContainer.style.display = 'none', 300); }
+    };
+
+    $('edit-profile-btn')?.addEventListener('click', () => {
         if (!currentUser) return;
-        const isHidden = profileEditContainer.style.display === 'none';
-        
-        if (isHidden) {
-            profileEditPicUrl.value = currentUser.profilePicture || "";
-            profileEditDesc.value = currentUser.description || "";
-            profileEditContainer.style.display = 'flex';
-            setTimeout(() => profileEditContainer.style.opacity = '1', 10);
-        } else {
-            profileEditContainer.style.opacity = '0';
-            setTimeout(() => profileEditContainer.style.display = 'none', 300);
-        }
+        if (profileEditContainer.style.display === 'none') {
+            profileEditPicUrl.value = currentUser.profilePicture || ""; profileEditDesc.value = currentUser.description || "";
+            toggleProfileEdit(true);
+        } else toggleProfileEdit(false);
     });
 
     saveProfileChangesBtn?.addEventListener('click', () => {
         if (!currentUser || !backendReady || !backendPort) return;
-        
-        const originalText = saveProfileChangesBtn.textContent;
-        saveProfileChangesBtn.textContent = "Saving to Cloud...";
-        
-        const newPic = profileEditPicUrl.value.trim();
-        const newDesc = profileEditDesc.value.trim();
-        
-        currentUser.profilePicture = newPic || "https://kstuff.neocities.org/assets/default-profile.png";
-        currentUser.description = newDesc || "No bio provided yet.";
-        
+        const originalText = saveProfileChangesBtn.textContent; saveProfileChangesBtn.textContent = "Saving to Cloud...";
+        currentUser.profilePicture = profileEditPicUrl.value.trim() || "https://kstuff.neocities.org/assets/default-profile.png";
+        currentUser.description = profileEditDesc.value.trim() || "No bio provided yet.";
         localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
-        
-        updateProfileModal();
-        
-        backendPort.postMessage({ 
-            type: 'update-settings', 
-            username: currentUser.username, 
-            settings: { 
-                profilePicture: currentUser.profilePicture, 
-                description: currentUser.description 
-            } 
-        });
-
-        setTimeout(() => {
-            saveProfileChangesBtn.textContent = originalText;
-            profileEditContainer.style.opacity = '0';
-            setTimeout(() => profileEditContainer.style.display = 'none', 300);
-        }, 600);
+        updateAuthUI();
+        backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: { profilePicture: currentUser.profilePicture, description: currentUser.description } });
+        setTimeout(() => { saveProfileChangesBtn.textContent = originalText; toggleProfileEdit(false); }, 600);
     });
+
+    const loadContent = (targetId) => {
+        const targetPage = $(targetId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            Object.keys(grids).forEach(k => k !== targetId && destroyPool(k));
+            if (grids[targetId]) { buildPool(targetId); setTimeout(() => renderGrid(targetId, false), 50); } 
+            else if (iframePages[targetId]) loadIframePage(iframePages[targetId].id, iframePages[targetId].path);
+            else toggleLoader(false);
+        } else toggleLoader(false);
+    };
 
     navBtns.forEach(btn => {
         btn.style.position = 'relative';
-        
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
-            if (targetId === 'profile') {
-                if (!currentUser) {
-                    authModal?.classList.add('active');
-                } else {
-                    updateProfileModal();
-                    profileModal?.classList.add('active');
-                }
-                return;
-            }
-            
+            if (targetId === 'profile') return !currentUser ? authModal?.classList.add('active') : (updateAuthUI(), profileModal?.classList.add('active'));
             if (targetId === 'homeworkhelper') return settingsModal?.classList.add('active');
             if (targetId === 'changelog') return changelogModal?.classList.add('active');
 
             toggleLoader(true);
             const activeBtn = document.querySelector('.nav-btn.active');
-            
-            if (activeBtn) {
-                const currentId = activeBtn.dataset.target;
-                if (currentId !== targetId && iframePages[currentId]) {
-                    const frame = document.getElementById(iframePages[currentId].id);
-                    if (frame) {
-                        frame.srcdoc = ''; 
-                        frame.removeAttribute('srcdoc'); 
-                        delete frame.dataset.loadedPath;
-                    }
-                }
+            if (activeBtn && activeBtn.dataset.target !== targetId && iframePages[activeBtn.dataset.target]) {
+                const frame = $(iframePages[activeBtn.dataset.target].id);
+                if (frame) { frame.srcdoc = ''; frame.removeAttribute('srcdoc'); delete frame.dataset.loadedPath; }
             }
-
             navBtns.forEach(b => !['homeworkhelper', 'changelog', 'profile'].includes(b.dataset.target) && b.classList.remove('active'));
             pages.forEach(p => p.classList.remove('active'));
-
-            btn.classList.add('active');
-            updateIndicator(btn);
-
-            const targetPage = document.getElementById(targetId);
-            if (targetPage) {
-                targetPage.classList.add('active');
-                Object.keys(grids).forEach(k => k !== targetId && destroyPool(k));
-                
-                if (grids[targetId]) {
-                    buildPool(targetId);
-                    setTimeout(() => renderGrid(targetId, false), 50);
-                } else if (iframePages[targetId]) {
-                    loadIframePage(iframePages[targetId].id, iframePages[targetId].path);
-                } else {
-                    toggleLoader(false);
-                }
-            } else {
-                toggleLoader(false);
-            }
+            btn.classList.add('active'); updateIndicator(btn); loadContent(targetId);
         });
     });
 
     if (navBar?.querySelector('.nav-btn.active') || navBtns[0]) {
-        animateIndicatorUpdate(600);
-        window.addEventListener('load', () => updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]));
+        animateIndicatorUpdate(600); window.addEventListener('load', () => updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]));
     }
     
     let resizeTimer;
     window.addEventListener('resize', () => {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => updateIndicator(navBar?.querySelector('.nav-btn.active')), 100);
+        clearTimeout(resizeTimer); resizeTimer = setTimeout(() => updateIndicator(navBar?.querySelector('.nav-btn.active')), 100);
     });
 
     function closeResourceModal() {
-        modalOverlay?.classList.remove('active');
-        if (modalIframe) modalIframe.src = 'about:blank';
-        
+        modalOverlay?.classList.remove('active'); if (modalIframe) modalIframe.src = 'about:blank';
         const activePage = document.querySelector('.page.active');
-        if (activePage && grids[activePage.id]) {
-            buildPool(activePage.id);
-            renderGrid(activePage.id, false);
-        }
-
-        setTimeout(() => {
-            window.scrollTo(0, savedWindowScrollY);
-            if (activePage) activePage.scrollTop = savedPageScrollTop;
-        }, 50);
+        if (activePage && grids[activePage.id]) { buildPool(activePage.id); renderGrid(activePage.id, false); }
+        setTimeout(() => { window.scrollTo(0, savedWindowScrollY); if (activePage) activePage.scrollTop = savedPageScrollTop; }, 50);
     }
 
-    document.getElementById('resource-close-btn')?.addEventListener('click', closeResourceModal);
+    $('resource-close-btn')?.addEventListener('click', closeResourceModal);
     modalOverlay?.addEventListener('click', (e) => e.target === modalOverlay && closeResourceModal());
-    document.getElementById('resource-fullscreen-btn')?.addEventListener('click', () => !document.fullscreenElement ? modalIframe?.requestFullscreen().catch(()=>{}) : document.exitFullscreen());
+    $('resource-fullscreen-btn')?.addEventListener('click', () => !document.fullscreenElement ? modalIframe?.requestFullscreen().catch(()=>{}) : document.exitFullscreen());
 
     fetchWithProxy('Json/categories.json').then(cats => {
         const setupCatSelect = (id, options, type) => {
-            const select = document.getElementById(id);
-            if (!select) return;
+            const select = $(id); if (!select) return;
             select.innerHTML = (options || []).map(c => `<option value="${c}">${c}</option>`).join('');
             applyCustomDropdown(select);
-            select.addEventListener('change', (e) => {
-                toggleLoader(true);
-                grids[type].category = e.target.value;
-                grids[type].page = 1;
-                renderGrid(type, true);
-            });
+            select.addEventListener('change', (e) => { toggleLoader(true); grids[type].category = e.target.value; grids[type].page = 1; renderGrid(type, true); });
         };
         setupCatSelect('readingcorner-category-select', cats.Games, 'readingcorner');
         setupCatSelect('sciencequiz-category-select', cats.Apps, 'sciencequiz');
     }).catch(()=>{});
 
     fetchWithProxy('Json/change-log.json').then(log => {
-        const contentEl = document.getElementById('changelog-content'), tsEl = document.getElementById('changelog-timestamp');
+        const contentEl = $('changelog-content'), tsEl = $('changelog-timestamp');
         if (log) {
             if (tsEl) tsEl.textContent = log.timestamp || "Unknown";
-            if (contentEl) contentEl.innerHTML = log.changes?.length ? `<ul style="padding-left: 1.5rem; margin: 0;">${log.changes.map(c => `<li style="margin-bottom: 0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
+            if (contentEl) contentEl.innerHTML = log.changes?.length ? `<ul style="padding-left:1.5rem;margin:0;">${log.changes.map(c => `<li style="margin-bottom:0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
         }
     }).catch(() => {
-        const contentEl = document.getElementById('changelog-content');
-        if (contentEl) contentEl.innerHTML = "Failed to load update log.";
-        const tsEl = document.getElementById('changelog-timestamp');
-        if (tsEl) tsEl.textContent = "Unknown";
+        if ($('changelog-content')) $('changelog-content').innerHTML = "Failed to load update log.";
+        if ($('changelog-timestamp')) $('changelog-timestamp').textContent = "Unknown";
     });
 
     const fetchCfg = (url) => fetchWithProxy(url).catch(() => []).then(getWorkingConfig);
     const staticDataPromise = fetchWithProxy('Json/urls/static.json').catch(() => []);
     
     Promise.all([
-        fetchWithProxy('Json/g.json').catch(() => []),
-        fetchWithProxy('Json/a.json').catch(() => []),
-        fetchWithProxy('Json/truffled.json').catch(() => null),
-        fetchCfg('Json/urls/scram.json'),
-        staticDataPromise.then(getWorkingConfig),
-        fetchCfg('Json/urls/uv.json'),
-        fetchCfg('Json/urls/truffled.json'),
+        fetchWithProxy('Json/g.json').catch(() => []), fetchWithProxy('Json/a.json').catch(() => []), fetchWithProxy('Json/truffled.json').catch(() => null),
+        fetchCfg('Json/urls/scram.json'), staticDataPromise.then(getWorkingConfig), fetchCfg('Json/urls/uv.json'), fetchCfg('Json/urls/truffled.json'),
         staticDataPromise.then(data => getWorkingConfig(data.map(item => ({ url: item.url, img: item.img, final: "" }))))
     ]).then(([gData, aData, truffledData, scram, stat, uv, truffled, frogiee]) => {
+        if (stat) initBackendBridge(stat);
         
-        if (stat) {
-            initBackendBridge(stat);
-        }
+        const replacements = {
+            'scram': scram ? scram.url.replace(/\/+$/, '') + scram.final : '',
+            'static': stat ? stat.url.replace(/\/+$/, '') + stat.final : '',
+            'uv': uv ? uv.url.replace(/\/+$/, '') + uv.final : '',
+            'frogiee': frogiee ? frogiee.url.replace(/\/+$/, '') : '',
+            'truffled': truffled ? truffled.url.replace(/\/+$/, '') : 'https://boat.strongson.com'
+        };
 
-        function applyBases(str) {
+        const applyBases = (str) => {
             if (!str || typeof str !== 'string') return str;
-            const replacements = {
-                'scram': scram ? scram.url.replace(/\/+$/, '') + scram.final : '',
-                'static': stat ? stat.url.replace(/\/+$/, '') + stat.final : '',
-                'uv': uv ? uv.url.replace(/\/+$/, '') + uv.final : '',
-                'frogiee': frogiee ? frogiee.url.replace(/\/+$/, '') : '',
-                'truffled': truffled ? truffled.url.replace(/\/+$/, '') : 'https://boat.strongson.com'
-            };
             for (const [key, val] of Object.entries(replacements)) str = str.split(`\${${key}}`).join(val);
             return str.replace(/([^:]\/)\/+/g, '$1');
-        }
+        };
 
         const truffledMap = new Map();
         truffledData?.games?.forEach(g => truffledMap.set(g.name.toLowerCase().trim(), g));
-
+        
         const processItems = (dataArr) => dataArr.map(item => {
             let processed = { ...item };
             if (processed.url?.includes('${truffled}')) {
                 const match = truffledMap.get((processed.title || "").toLowerCase().trim());
                 if (match) {
-                    processed.title = match.name;
-                    processed.url = '${truffled}/' + match.url.replace(/^\/+/, '');
-                    processed.image = '${truffled}/' + match.thumbnail.replace(/^\/+/, '');
-                    processed.description = '';
+                    processed.title = match.name; processed.url = '${truffled}/' + match.url.replace(/^\/+/, '');
+                    processed.image = '${truffled}/' + match.thumbnail.replace(/^\/+/, ''); processed.description = '';
                     processed.category = processed.category || 'Truffled';
                 }
             }
-            processed.url = applyBases(processed.url);
-            processed.image = applyBases(processed.image);
+            processed.url = applyBases(processed.url); processed.image = applyBases(processed.image);
             return processed;
         }).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
 
-        grids.readingcorner.data = processItems(gData);
-        grids.sciencequiz.data = processItems(aData);
-
-        const activePage = document.querySelector('.page.active');
-        if (activePage) {
-            if (grids[activePage.id]) {
-                buildPool(activePage.id);
-                renderGrid(activePage.id, false);
-            } else if (iframePages[activePage.id]) {
-                loadIframePage(iframePages[activePage.id].id, iframePages[activePage.id].path);
-            } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
-        } else { Object.keys(grids).forEach(destroyPool); toggleLoader(false); }
+        grids.readingcorner.data = processItems(gData); grids.sciencequiz.data = processItems(aData);
+        loadContent(document.querySelector('.page.active')?.id);
 
     }).catch(() => toggleLoader(false));
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initApp);
-else initApp();
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initApp); else initApp();
