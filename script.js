@@ -47,7 +47,6 @@ function initApp() {
     let backendReady = false;
     let syncInterval = null;
     
-    // 1. INSTANT LOAD: Grab the entire user profile from local storage immediately
     let currentUser = null;
     try {
         const cachedUser = localStorage.getItem('kstuff_user');
@@ -137,7 +136,7 @@ function initApp() {
         const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
         const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
         
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?z';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
         
         let backendTargetUrl;
         if (proxyPrefix.includes('embed.html#')) {
@@ -181,7 +180,6 @@ function initApp() {
 
                 if (data.success) {
                     const incomingUser = data.payload;
-                    
                     if (currentUser?.settings?.lastUpdated) {
                         const localTime = currentUser.settings.lastUpdated;
                         const cloudTime = incomingUser.settings?.lastUpdated || 0;
@@ -207,7 +205,6 @@ function initApp() {
                         alert("Authentication action failed: " + (data.reason || 'unknown'));
                     }
                 }
-            } else if (data.type === 'settings-saved') {
             }
         }
     }
@@ -388,14 +385,12 @@ function initApp() {
 
     function applyCloudSettings(settings) {
         if (!settings) return;
-        
         const updates = [
             { id: 'layout-theme-select', val: settings.theme, key: 'kstuff_theme' },
             { id: 'layout-nav-select', val: settings.navPos, key: 'kstuff_nav_pos' },
             { id: 'layout-size-select', val: settings.navSize, key: 'kstuff_nav_size' },
             { id: 'layout-text-select', val: settings.textVis, key: 'kstuff_text_vis' }
         ];
-        
         updates.forEach(({ id, val, key }) => {
             if (!val) return; 
             const el = document.getElementById(id);
@@ -403,12 +398,10 @@ function initApp() {
                 localStorage.setItem(key, val);
                 el.value = val;
                 el.dispatchEvent(new Event('change'));
-                
                 const wrapper = el.nextElementSibling;
                 if (wrapper && wrapper.classList.contains('custom-select-wrapper')) {
                     const triggerSpan = wrapper.querySelector('.custom-select-trigger span');
                     if (triggerSpan) triggerSpan.textContent = el.options[el.selectedIndex]?.text || '';
-                    
                     const options = wrapper.querySelectorAll('.custom-select-option');
                     options.forEach((opt, idx) => {
                         if (idx === el.selectedIndex) opt.classList.add('selected');
@@ -465,74 +458,67 @@ function initApp() {
         selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
     }
 
-    // Initialize custom dropdowns BEFORE applying cloud settings so UI syncs properly on load
     document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
 
-    const settingsBody = document.querySelector('.modal-settings-body');
-    if (settingsBody && !document.getElementById('save-settings-btn')) {
-        const authActionCard = document.createElement('div');
-        authActionCard.className = 'setting-group';
-        authActionCard.style.cssText = 'flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;';
-        authActionCard.innerHTML = `
-            <div id="auth-status-display" style="font-size: 0.9rem; opacity: 0.8;">Not logged in.</div>
-            <button id="open-auth-modal-btn" class="page-btn" style="width: 100%; justify-content: center; background: var(--text-color); color: var(--bg-color);">Log In / Sign Up</button>
-            <button id="save-settings-btn" class="page-btn" style="width: 100%; justify-content: center; background: #00ffcc; color: #000; transition: background 0.3s;">Save Changes to Cloud</button>
-        `;
-        settingsBody.appendChild(authActionCard);
+    document.getElementById('save-settings-btn')?.addEventListener('click', (e) => {
+        const btn = e.target;
+        const originalText = btn.textContent;
+        const originalBg = btn.style.background;
+        const originalColor = btn.style.color;
+        
+        const settingsPayload = {
+            theme: document.getElementById('layout-theme-select')?.value,
+            navPos: document.getElementById('layout-nav-select')?.value,
+            navSize: document.getElementById('layout-size-select')?.value,
+            textVis: document.getElementById('layout-text-select')?.value,
+            lastUpdated: Date.now() 
+        };
+        
+        if (currentUser && backendReady && backendPort) {
+            currentUser.settings = settingsPayload;
+            localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
+            applyCloudSettings(settingsPayload); 
+            backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
+            btn.textContent = "Saved to Cloud!";
+        } else {
+            btn.textContent = "Saved Locally!";
+        }
 
-        document.getElementById('save-settings-btn').addEventListener('click', (e) => {
-            if (!backendReady || !backendPort) {
-                alert("Backend cable not yet established.");
-                return;
-            }
-            const settingsPayload = {
-                theme: document.getElementById('layout-theme-select')?.value,
-                navPos: document.getElementById('layout-nav-select')?.value,
-                navSize: document.getElementById('layout-size-select')?.value,
-                textVis: document.getElementById('layout-text-select')?.value,
-                lastUpdated: Date.now() 
-            };
-            
-            if (currentUser) {
-                currentUser.settings = settingsPayload;
-                localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
-                applyCloudSettings(settingsPayload); 
-                
-                backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
-                
-                const btn = e.target;
-                const originalText = btn.textContent;
-                btn.textContent = "Saved!";
-                btn.style.background = "#4CAF50"; 
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = "#00ffcc";
-                }, 2000);
-            } else {
-                alert("Please log in to sync settings to your specific cloud account profile.");
-            }
-        });
+        btn.style.background = "#4CAF50"; 
+        btn.style.color = "#fff";
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = originalBg;
+            btn.style.color = originalColor;
+        }, 2000);
+    });
+
+    function updateProfileModal() {
+        if (!currentUser) return;
+        const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
+        
+        const pic = document.getElementById('profile-modal-pic');
+        const name = document.getElementById('profile-modal-username');
+        const desc = document.getElementById('profile-modal-desc');
+        const navBtn = document.getElementById('profile-nav-btn');
+        
+        const userPic = currentUser.profilePicture || defaultPic;
+        
+        if (pic) pic.src = userPic;
+        if (name) name.textContent = currentUser.username || "User";
+        if (desc) desc.textContent = currentUser.description || "No description provided.";
+                if (navBtn) {
+            navBtn.innerHTML = `<div class="profile-avatar-container"><img src="${userPic}" alt="Profile" onerror="this.src='${defaultPic}'"></div>`;
+        }
     }
 
     function updateAuthUI(isLoggedIn) {
-        const statusEl = document.getElementById('auth-status-display');
-        const authBtn = document.getElementById('open-auth-modal-btn');
-        if (statusEl && authBtn) {
-            if (isLoggedIn && currentUser) {
-                statusEl.textContent = `Logged in as: ${currentUser.username}`;
-                authBtn.textContent = 'Log Out';
-                authBtn.onclick = () => {
-                    currentUser = null;
-                    localStorage.removeItem('kstuff_user'); 
-                    if (backendPort) backendPort.postMessage({ type: 'logout' });
-                    updateAuthUI(false);
-                };
-            } else {
-                statusEl.textContent = 'Not logged in.';
-                authBtn.textContent = 'Log In / Sign Up';
-                authBtn.onclick = () => openAuthModal();
-            }
+        const navBtn = document.getElementById('profile-nav-btn');
+        if (isLoggedIn && currentUser) {
+            updateProfileModal();
+        } else {
+            if (navBtn) navBtn.innerHTML = '<i class="ph ph-user" id="profile-nav-icon"></i>';
         }
     }
 
@@ -554,10 +540,7 @@ function initApp() {
     const settingsModal = bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn');
     const changelogModal = bindModal('changelog-modal', 'changelog-close-btn');
     const authModal = bindModal('auth-modal-overlay', 'auth-close-btn');
-
-    function openAuthModal() {
-        authModal?.classList.add('active');
-    }
+    const profileModal = bindModal('profile-modal-overlay', 'profile-close-btn');
 
     document.getElementById('do-login-btn')?.addEventListener('click', () => {
         const u = document.getElementById('auth-user')?.value.trim();
@@ -579,6 +562,14 @@ function initApp() {
         } else {
             alert("Missing credentials or backend port not connected!");
         }
+    });
+
+    document.getElementById('do-logout-btn')?.addEventListener('click', () => {
+        currentUser = null;
+        localStorage.removeItem('kstuff_user'); 
+        if (backendPort) backendPort.postMessage({ type: 'logout' });
+        updateAuthUI(false);
+        profileModal?.classList.remove('active');
     });
 
     const navTitles = {
@@ -611,9 +602,10 @@ function initApp() {
             const targetId = btn.dataset.target;
             if (targetId === 'profile') {
                 if (!currentUser) {
-                    openAuthModal();
+                    authModal?.classList.add('active');
                 } else {
-                    settingsModal?.classList.add('active');
+                    updateProfileModal();
+                    profileModal?.classList.add('active');
                 }
                 return;
             }
