@@ -137,7 +137,7 @@ function initApp() {
         const finalPath = (workingConfig.final || '').replace(/^\/+/, '');
         const proxyPrefix = baseUrl + (finalPath ? '/' + finalPath : '');
         
-        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html';
+        const rawBackendUrl = 'https://lotsacookie.github.io/Dnekcabtset/backend.html?z';
         
         let backendTargetUrl;
         if (proxyPrefix.includes('embed.html#')) {
@@ -168,7 +168,7 @@ function initApp() {
                 clearInterval(cableInterval);
                 if (currentUser) {
                     const attemptSync = () => {
-                        backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); // Assuming auto-login validates the session
+                        backendPort.postMessage({ type: 'auto-login', username: currentUser.username }); 
                     };
                     attemptSync();
                     syncInterval = setInterval(attemptSync, 5000);
@@ -180,12 +180,21 @@ function initApp() {
                 }
 
                 if (data.success) {
-                    currentUser = data.payload;
+                    const incomingUser = data.payload;
+                    
+                    if (currentUser?.settings?.lastUpdated) {
+                        const localTime = currentUser.settings.lastUpdated;
+                        const cloudTime = incomingUser.settings?.lastUpdated || 0;
+                        if (localTime > cloudTime) {
+                            incomingUser.settings = currentUser.settings; 
+                        }
+                    }
+
+                    currentUser = incomingUser;
                     localStorage.setItem('kstuff_user', JSON.stringify(currentUser)); 
                     
-                    if (currentUser.settings) {
-                        applyCloudSettings(currentUser.settings);
-                    }
+                    const settingsToApply = currentUser.settings || { theme: currentUser.theme };
+                    applyCloudSettings(settingsToApply);
                     
                     updateAuthUI(true);
                     document.getElementById('auth-modal-overlay')?.classList.remove('active');
@@ -199,7 +208,6 @@ function initApp() {
                     }
                 }
             } else if (data.type === 'settings-saved') {
-                alert("Settings successfully saved to cloud storage!");
             }
         }
     }
@@ -411,67 +419,6 @@ function initApp() {
         });
     }
 
-    const settingsBody = document.querySelector('.modal-settings-body');
-    if (settingsBody && !document.getElementById('save-settings-btn')) {
-        const authActionCard = document.createElement('div');
-        authActionCard.className = 'setting-group';
-        authActionCard.style.cssText = 'flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;';
-        authActionCard.innerHTML = `
-            <div id="auth-status-display" style="font-size: 0.9rem; opacity: 0.8;">Not logged in.</div>
-            <button id="open-auth-modal-btn" class="page-btn" style="width: 100%; justify-content: center; background: var(--text-color); color: var(--bg-color);">Log In / Sign Up</button>
-            <button id="save-settings-btn" class="page-btn" style="width: 100%; justify-content: center; background: #00ffcc; color: #000;">Save Changes to Cloud</button>
-        `;
-        settingsBody.appendChild(authActionCard);
-
-        document.getElementById('save-settings-btn').addEventListener('click', () => {
-            if (!backendReady || !backendPort) {
-                alert("Backend cable not yet established.");
-                return;
-            }
-            const settingsPayload = {
-                theme: document.getElementById('layout-theme-select')?.value,
-                navPos: document.getElementById('layout-nav-select')?.value,
-                navSize: document.getElementById('layout-size-select')?.value,
-                textVis: document.getElementById('layout-text-select')?.value
-            };
-            if (currentUser) {
-                currentUser.settings = settingsPayload;
-                localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
-                backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
-            } else {
-                alert("Please log in to sync settings to your specific cloud account profile.");
-            }
-        });
-    }
-
-    function updateAuthUI(isLoggedIn) {
-        const statusEl = document.getElementById('auth-status-display');
-        const authBtn = document.getElementById('open-auth-modal-btn');
-        if (statusEl && authBtn) {
-            if (isLoggedIn && currentUser) {
-                statusEl.textContent = `Logged in as: ${currentUser.username}`;
-                authBtn.textContent = 'Log Out';
-                authBtn.onclick = () => {
-                    currentUser = null;
-                    localStorage.removeItem('kstuff_user'); 
-                    if (backendPort) backendPort.postMessage({ type: 'logout' });
-                    updateAuthUI(false);
-                };
-            } else {
-                statusEl.textContent = 'Not logged in.';
-                authBtn.textContent = 'Log In / Sign Up';
-                authBtn.onclick = () => openAuthModal();
-            }
-        }
-    }
-
-    if (currentUser) {
-        if (currentUser.settings) applyCloudSettings(currentUser.settings);
-        updateAuthUI(true);
-    } else {
-        updateAuthUI(false);
-    }
-
     function applyCustomDropdown(selectEl) {
         if (!selectEl || selectEl.dataset.customized) {
             if (selectEl?.dataset.customized) selectEl.nextElementSibling?.classList.contains('custom-select-wrapper') && selectEl.nextElementSibling.remove();
@@ -518,8 +465,84 @@ function initApp() {
         selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
     }
 
+    // Initialize custom dropdowns BEFORE applying cloud settings so UI syncs properly on load
     document.addEventListener('click', () => document.querySelectorAll('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     document.querySelectorAll('.setting-group select').forEach(applyCustomDropdown);
+
+    const settingsBody = document.querySelector('.modal-settings-body');
+    if (settingsBody && !document.getElementById('save-settings-btn')) {
+        const authActionCard = document.createElement('div');
+        authActionCard.className = 'setting-group';
+        authActionCard.style.cssText = 'flex-direction: column; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-top: 15px;';
+        authActionCard.innerHTML = `
+            <div id="auth-status-display" style="font-size: 0.9rem; opacity: 0.8;">Not logged in.</div>
+            <button id="open-auth-modal-btn" class="page-btn" style="width: 100%; justify-content: center; background: var(--text-color); color: var(--bg-color);">Log In / Sign Up</button>
+            <button id="save-settings-btn" class="page-btn" style="width: 100%; justify-content: center; background: #00ffcc; color: #000; transition: background 0.3s;">Save Changes to Cloud</button>
+        `;
+        settingsBody.appendChild(authActionCard);
+
+        document.getElementById('save-settings-btn').addEventListener('click', (e) => {
+            if (!backendReady || !backendPort) {
+                alert("Backend cable not yet established.");
+                return;
+            }
+            const settingsPayload = {
+                theme: document.getElementById('layout-theme-select')?.value,
+                navPos: document.getElementById('layout-nav-select')?.value,
+                navSize: document.getElementById('layout-size-select')?.value,
+                textVis: document.getElementById('layout-text-select')?.value,
+                lastUpdated: Date.now() 
+            };
+            
+            if (currentUser) {
+                currentUser.settings = settingsPayload;
+                localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
+                applyCloudSettings(settingsPayload); 
+                
+                backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: settingsPayload });
+                
+                const btn = e.target;
+                const originalText = btn.textContent;
+                btn.textContent = "Saved!";
+                btn.style.background = "#4CAF50"; 
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = "#00ffcc";
+                }, 2000);
+            } else {
+                alert("Please log in to sync settings to your specific cloud account profile.");
+            }
+        });
+    }
+
+    function updateAuthUI(isLoggedIn) {
+        const statusEl = document.getElementById('auth-status-display');
+        const authBtn = document.getElementById('open-auth-modal-btn');
+        if (statusEl && authBtn) {
+            if (isLoggedIn && currentUser) {
+                statusEl.textContent = `Logged in as: ${currentUser.username}`;
+                authBtn.textContent = 'Log Out';
+                authBtn.onclick = () => {
+                    currentUser = null;
+                    localStorage.removeItem('kstuff_user'); 
+                    if (backendPort) backendPort.postMessage({ type: 'logout' });
+                    updateAuthUI(false);
+                };
+            } else {
+                statusEl.textContent = 'Not logged in.';
+                authBtn.textContent = 'Log In / Sign Up';
+                authBtn.onclick = () => openAuthModal();
+            }
+        }
+    }
+
+    if (currentUser) {
+        const initialSettings = currentUser.settings || { theme: currentUser.theme };
+        applyCloudSettings(initialSettings);
+        updateAuthUI(true);
+    } else {
+        updateAuthUI(false);
+    }
 
     const bindModal = (id, btnId) => {
         const m = document.getElementById(id), b = document.getElementById(btnId);
