@@ -13,6 +13,10 @@ function initApp() {
         }
     } catch { localStorage.removeItem('kstuff_user'); }
 
+    if (!localStorage.getItem('kstuff_theme')) {
+        localStorage.setItem('kstuff_theme', 'theme-sakura');
+    }
+
     const toggleLoader = show => loader && (loader.style.opacity = show ? '1' : '0', loader.classList.toggle('hidden', !show));
     toggleLoader(false);
 
@@ -144,10 +148,14 @@ function initApp() {
     document.addEventListener('click', () => $$('.custom-select-options.open').forEach(el => el.classList.remove('open')));
     $$('.setting-group select').forEach(applyCustomDropdown);
 
-    fetchWithProxy('Json/themes.json').then(themes => {
+    const handleThemesLoaded = (themes) => {
         let css = '', html = '';
         themes.forEach(t => { css += `.${t.id} { ${Object.entries(t.variables).map(([k,v]) => `${k}:${v};`).join('')} }\n`; html += `<option value="${t.id}">${t.name}</option>`; });
-        document.head.appendChild(Object.assign(document.createElement('style'), { id: 'dynamic-themes-style', textContent: css }));
+        if (!$('dynamic-themes-style')) {
+            document.head.appendChild(Object.assign(document.createElement('style'), { id: 'dynamic-themes-style', textContent: css }));
+        } else {
+            $('dynamic-themes-style').textContent = css;
+        }
         const sel = $('layout-theme-select');
         if (sel) {
             sel.innerHTML = html; 
@@ -159,6 +167,16 @@ function initApp() {
             body.classList.add(sel.value); 
             applyCustomDropdown(sel);
         }
+    };
+
+    try {
+        const cachedThemes = localStorage.getItem('kstuff_themes_cache');
+        if (cachedThemes) handleThemesLoaded(JSON.parse(cachedThemes));
+    } catch(e) {}
+
+    fetchWithProxy('Json/themes.json').then(themes => {
+        localStorage.setItem('kstuff_themes_cache', JSON.stringify(themes));
+        handleThemesLoaded(themes);
     }).catch(()=>{});
 
     const setupSetting = (id, key, prefix, fn) => {
@@ -166,11 +184,16 @@ function initApp() {
         const saved = localStorage.getItem(key) || el.value; el.value = saved; fn(saved);
         el.addEventListener('change', e => {
             if (prefix) body.className = body.className.replace(new RegExp(`\\b${prefix}-\\S+`, 'g'), '').trim();
-            fn(e.target.value); localStorage.setItem(key, e.target.value); updateIndicator(navBar?.querySelector('.nav-btn.active'));
+            fn(e.target.value); 
+            localStorage.setItem(key, e.target.value); 
+            updateIndicator(navBar?.querySelector('.nav-btn.active'));
             Object.values(iframePages).forEach(p => $(p.id)?.contentWindow?.postMessage('theme-updated', '*'));
         });
     };
-    setupSetting('layout-theme-select', 'kstuff_theme', 'theme', v => body.classList.add(v));
+    setupSetting('layout-theme-select', 'kstuff_theme', 'theme', v => {
+        body.classList.add(v);
+        localStorage.setItem('kstuff_theme', v);
+    });
     setupSetting('layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v));
     setupSetting('layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v));
     setupSetting('layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
@@ -193,9 +216,9 @@ function initApp() {
 
     $('save-settings-btn')?.addEventListener('click', e => {
         const b = e.target, p = { theme: $('layout-theme-select')?.value, navPos: $('layout-nav-select')?.value, navSize: $('layout-size-select')?.value, textVis: $('layout-text-select')?.value, lastUpdated: Date.now() };
+        if (p.theme) localStorage.setItem('kstuff_theme', p.theme);
         if (currentUser && backendReady && backendPort) {
             currentUser.settings = p; localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
-            if (p.theme) localStorage.setItem('kstuff_theme', p.theme);
             applyCloudSettings(p); backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: p });
             b.textContent = "Saved to Cloud!";
         } else b.textContent = "Saved Locally!";
@@ -285,7 +308,7 @@ function initApp() {
     });
 
     document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `i.profile-avatar-container { width:1.2em;height:1.2em;border-radius:50%;overflow:hidden;display:inline-flex;justify-content:center;align-items:center; } i.profile-avatar-container img { width:100%;height:100%;object-fit:cover; }` }));
-    const defaultPic = "https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg";
+    const defaultPic = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 
     const updateAuthUI = () => {
         const btn = $('profile-nav-btn'); if (!btn) return;
