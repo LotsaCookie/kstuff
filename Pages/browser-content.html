@@ -22,7 +22,7 @@
     --text-muted: #a1a1aa;
     --accent-color: #ffffff;
     --accent-hover: #e4e4e7;
-    --border-color: rgba(255,255,255,0.2);
+    --border-color: transparent;
 }
 
 * {
@@ -32,6 +32,7 @@
     font-family: "Quicksand", sans-serif !important;
     font-weight: bold !important;
     -webkit-tap-highlight-color: transparent;
+    outline: none !important;
 }
 
 html, body {
@@ -51,7 +52,7 @@ html, body {
     -webkit-backdrop-filter: blur(12px);
     padding: 6px 8px 0 8px;
     gap: 6px;
-    border-bottom: 1px solid var(--border-color);
+    border: none;
     overflow-x: auto;
     flex-shrink: 0;
     will-change: transform;
@@ -62,8 +63,7 @@ html, body {
     align-items: center;
     gap: 8px;
     background-color: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-bottom: none;
+    border: none;
     padding: 8px 12px;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
@@ -81,8 +81,7 @@ html, body {
 .math-worksheet.active {
     background-color: rgba(0, 0, 0, 0.1);
     color: var(--text-color);
-    border-color: var(--border-color);
-    border-bottom: 1px solid transparent;
+    border: none;
     transform: translateY(0);
     opacity: 1;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
@@ -112,7 +111,7 @@ html, body {
 
 .worksheet-close {
     background: var(--surface-color);
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-muted);
     width: 20px;
     height: 20px;
@@ -128,13 +127,12 @@ html, body {
 
 .worksheet-close:hover {
     background-color: rgba(239, 68, 68, 0.25);
-    border-color: rgba(239, 68, 68, 0.5);
     color: #ef4444;
 }
 
 .new-worksheet-btn {
     background: var(--surface-color);
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-muted);
     width: 30px;
     height: 30px;
@@ -153,7 +151,6 @@ html, body {
 .new-worksheet-btn:hover {
     background-color: var(--surface-hover);
     color: var(--text-color);
-    border-color: var(--text-color);
 }
 
 .learning-header {
@@ -170,7 +167,7 @@ html, body {
 
 .study-nav-btn {
     background: transparent; 
-    border: 1px solid var(--border-color); 
+    border: none; 
     color: var(--text-muted);
     cursor: pointer;
     padding: 7px;
@@ -187,13 +184,11 @@ html, body {
 .study-nav-btn:hover:not(:disabled) {
     background-color: var(--surface-hover); 
     color: var(--text-color);
-    border-color: var(--text-color);
 }
 
 .study-nav-btn:disabled {
     opacity: 0.3;
     cursor: not-allowed;
-    border-color: rgba(255, 255, 255, 0.05);
 }
 
 .study-nav-btn svg {
@@ -210,15 +205,14 @@ html, body {
     background-color: var(--card-bg, rgba(0,0,0,0.1));
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--border-color); 
+    border: none; 
     border-radius: 10px;
     padding: 4px 6px 4px 14px;
     transition: all 0.2s ease;
 }
 
 .textbook-bar-container:focus-within {
-    border-color: var(--text-color); 
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+    box-shadow: none;
 }
 
 .textbook-input {
@@ -239,7 +233,7 @@ html, body {
 
 .subject-action-btn, .study-action-btn {
     background: transparent; 
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-muted);
     cursor: pointer;
     width: 28px;
@@ -258,7 +252,6 @@ html, body {
 .subject-action-btn:hover, .study-action-btn:hover {
     background-color: var(--surface-hover);
     color: var(--text-color);
-    border-color: var(--text-color); 
 }
 
 .subject-action-btn svg, .study-action-btn svg {
@@ -369,7 +362,7 @@ html, body {
     background-color: var(--card-bg, rgba(255, 255, 255, 0.1));
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -386,7 +379,6 @@ html, body {
 
 .flashcard-card:hover .flashcard-icon {
     background-color: var(--surface-hover);
-    border-color: var(--text-color);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -395,7 +387,7 @@ html, body {
     top: -5px;
     right: 3px;
     background: var(--nav-bg, #27272a);
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-muted);
     width: 20px;
     height: 20px;
@@ -418,7 +410,6 @@ html, body {
 .remove-flashcard-btn:hover {
     background-color: #ef4444;
     color: #ffffff;
-    border-color: #ef4444;
 }
 
 .flashcard-name {
@@ -436,7 +427,7 @@ html, body {
     background-color: var(--surface-color);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px dashed var(--border-color);
+    border: none;
     color: var(--text-color);
     padding: 10px 20px;
     border-radius: 10px;
@@ -451,7 +442,6 @@ html, body {
 
 .add-flashcard-btn:hover {
     background-color: var(--surface-hover);
-    border-color: var(--text-color);
 }
 
 .study-iframe {
@@ -488,7 +478,7 @@ html, body {
     background: var(--nav-bg, rgba(24, 24, 27, 0.95));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--border-color);
+    border: none;
     padding: 24px;
     border-radius: 12px;
     width: 340px;
@@ -524,7 +514,7 @@ html, body {
 
 .exam-input {
     background: var(--card-bg, rgba(0,0,0,0.2));
-    border: 1px solid var(--border-color);
+    border: none;
     color: var(--text-color);
     padding: 10px;
     border-radius: 8px;
@@ -535,7 +525,6 @@ html, body {
 }
 
 .exam-input:focus {
-    border-color: var(--text-color);
     background: rgba(0, 0, 0, 0.3);
 }
 
@@ -549,7 +538,7 @@ html, body {
 .exam-btn {
     padding: 8px 16px;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: none;
     cursor: pointer;
     font-weight: 900 !important;
     font-size: 0.85rem;
@@ -564,19 +553,17 @@ html, body {
 .exam-btn-cancel:hover {
     color: var(--text-color);
     background: var(--surface-hover);
-    border-color: var(--border-color);
 }
 
 .exam-btn-save {
     background: var(--text-color);
     color: var(--bg-color, #000000);
-    border-color: var(--text-color);
 }
 
 .exam-btn-save:hover {
     opacity: 0.9;
     transform: translateY(-1px);
-    }
+}
     </style>
 </head>
 <body>
