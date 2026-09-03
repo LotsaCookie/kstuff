@@ -1890,17 +1890,10 @@
     "image": ""
   },
   {
-    "title": "Geometry Dash Lite",
-    "description": "",
-    "category": "Rhythm",
-    "url": "${frogiee}stuff/selfhosted/gdlite/",
-    "image": "https://static.wikia.nocookie.net/logopedia/images/4/41/Geometry_Dash_Icon.svg"
-  },
-  {
     "title": "Geometry Dash, Webport",
     "description": "",
     "category": "Rhythm",
-    "url": "${truffled}/gamefile/gd.html",
+    "url": "${static}https://webdashers.dev",
     "image": ""
   },
   {
