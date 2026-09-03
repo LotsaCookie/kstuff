@@ -43,16 +43,32 @@
             cloudTheme = u?.settings?.theme || u?.theme;
         } catch(e) {}
 
-        const t = cloudTheme || localStorage.getItem('kstuff_theme') || 'theme-sakura';
+        const chosenTheme = cloudTheme || localStorage.getItem('kstuff_theme') || 'theme-sakura';
         const n = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
         const v = localStorage.getItem('kstuff_text_vis') || 'text-hide';
         const s = localStorage.getItem('kstuff_nav_size') || 'size-small';
         
-        document.body.className = `${t} ${n} ${v} ${s}`;
+        document.body.className = `${chosenTheme} ${n} ${v} ${s}`;
         
-        const c = {'theme-sakura':{bg:'#1a1216',text:'#ffb8d9'},'theme-dark':{bg:'#121212',text:'#ffffff'},'theme-light':{bg:'#f4f5f7',text:'#1a1a1a'},'theme-ocean':{bg:'#203a43',text:'#ffffff'},'theme-sunset':{bg:'#41295a',text:'#ffffff'},'theme-emerald':{bg:'#0b1712',text:'#d1fae5'},'theme-midnight':{bg:'#0b0c16',text:'#e2e8f0'},'theme-cyber':{bg:'#0d0c1d',text:'#00ffcc'},'theme-ruby':{bg:'#1c0d10',text:'#ffe4e6'},'theme-latte':{bg:'#1a1614',text:'#fef3c7'}}[t]||{'bg':'#1a1216','text':'#ffb8d9'};
-        document.body.style.setProperty('--bg-color', c.bg);
-        document.body.style.setProperty('--text-color', c.text);
+        try {
+            const cachedThemes = localStorage.getItem('kstuff_themes_cache');
+            if (cachedThemes) {
+                const themes = JSON.parse(cachedThemes);
+                
+                let css = '';
+                themes.forEach(t => { 
+                    css += `.${t.id} { ${Object.entries(t.variables).map(([k,val]) => `${k}:${val};`).join('')} }\n`; 
+                });
+                
+                const style = document.createElement('style');
+                style.id = 'dynamic-themes-style';
+                style.textContent = css;
+                document.head.appendChild(style);
+            } else {
+                document.body.style.setProperty('--bg-color', '#1a1216');
+                document.body.style.setProperty('--text-color', '#ffb8d9');
+            }
+        } catch(e) {}
     })();
     </script>
     
