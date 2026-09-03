@@ -5,7 +5,13 @@ function initApp() {
     let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
     let savedWindowScrollY = 0, savedPageScrollTop = 0;
 
-    try { currentUser = JSON.parse(localStorage.getItem('kstuff_user')); } catch { localStorage.removeItem('kstuff_user'); }
+    try { 
+        currentUser = JSON.parse(localStorage.getItem('kstuff_user')); 
+        if (currentUser) {
+            const userTheme = currentUser.settings?.theme || currentUser.theme;
+            if (userTheme) localStorage.setItem('kstuff_theme', userTheme);
+        }
+    } catch { localStorage.removeItem('kstuff_user'); }
 
     const toggleLoader = show => loader && (loader.style.opacity = show ? '1' : '0', loader.classList.toggle('hidden', !show));
     toggleLoader(false);
@@ -96,7 +102,10 @@ function initApp() {
             const errEl = $('auth-error-msg');
             if (data.success) {
                 if (currentUser?.settings?.lastUpdated > (data.payload.settings?.lastUpdated || 0)) data.payload.settings = currentUser.settings;
-                localStorage.setItem('kstuff_user', JSON.stringify(currentUser = data.payload));
+                currentUser = data.payload;
+                const cloudTheme = currentUser.settings?.theme || currentUser.theme;
+                if (cloudTheme) localStorage.setItem('kstuff_theme', cloudTheme);
+                localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
                 applyCloudSettings(currentUser.settings || { theme: currentUser.theme }); updateAuthUI();
                 if (errEl) errEl.style.display = 'none'; $('auth-modal-overlay')?.classList.remove('active');
             } else if (data.type === 'auto-login') {
@@ -141,8 +150,14 @@ function initApp() {
         document.head.appendChild(Object.assign(document.createElement('style'), { id: 'dynamic-themes-style', textContent: css }));
         const sel = $('layout-theme-select');
         if (sel) {
-            sel.innerHTML = html; sel.value = localStorage.getItem('kstuff_theme') || themes[0].id;
-            body.className = body.className.replace(/\btheme-\S+/g, '').trim(); body.classList.add(sel.value); applyCustomDropdown(sel);
+            sel.innerHTML = html; 
+            const userTheme = currentUser?.settings?.theme || currentUser?.theme;
+            const chosenTheme = userTheme || localStorage.getItem('kstuff_theme') || themes[0].id;
+            sel.value = chosenTheme;
+            localStorage.setItem('kstuff_theme', chosenTheme);
+            body.className = body.className.replace(/\btheme-\S+/g, '').trim(); 
+            body.classList.add(sel.value); 
+            applyCustomDropdown(sel);
         }
     }).catch(()=>{});
 
@@ -162,6 +177,7 @@ function initApp() {
 
     function applyCloudSettings(settings) {
         if (!settings) return;
+        if (settings.theme) localStorage.setItem('kstuff_theme', settings.theme);
         [{ i: 'layout-theme-select', k: 'kstuff_theme', v: settings.theme }, { i: 'layout-nav-select', k: 'kstuff_nav_pos', v: settings.navPos }, { i: 'layout-size-select', k: 'kstuff_nav_size', v: settings.navSize }, { i: 'layout-text-select', k: 'kstuff_text_vis', v: settings.textVis }].forEach(({ i, k, v }) => {
             const el = $(i);
             if (v && el) {
@@ -179,6 +195,7 @@ function initApp() {
         const b = e.target, p = { theme: $('layout-theme-select')?.value, navPos: $('layout-nav-select')?.value, navSize: $('layout-size-select')?.value, textVis: $('layout-text-select')?.value, lastUpdated: Date.now() };
         if (currentUser && backendReady && backendPort) {
             currentUser.settings = p; localStorage.setItem('kstuff_user', JSON.stringify(currentUser));
+            if (p.theme) localStorage.setItem('kstuff_theme', p.theme);
             applyCloudSettings(p); backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: p });
             b.textContent = "Saved to Cloud!";
         } else b.textContent = "Saved Locally!";
