@@ -14,495 +14,569 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: transparent;
-            --surface-color: rgba(0,0,0,0.05);
-            --surface-hover: rgba(0,0,0,0.05);
-            --text-color: #ffffff;
-            --text-muted: #a1a1aa;
-            --accent-color: #ffffff;
-            --accent-hover: #e4e4e7;
-            --border-color: rgba(255,255,255,0.2);
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: "Quicksand", sans-serif !important;
-            -webkit-tap-highlight-color: transparent;
-        }
-        html, body {
-            background-color: transparent;
-            color: var(--text-color);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .reading-corner {
-            display: flex;
-            align-items: center;
-            background-color: rgba(0,0,0,0.2);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            padding: 6px 8px 0 8px;
-            gap: 6px;
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-            flex-shrink: 0;
-            will-change: transform;
-        }
-        .math-worksheet {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            border-bottom: none;
-            padding: 8px 12px;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-            font-size: 13px;
-            color: var(--text-muted);
-            cursor: pointer;
-            max-width: 180px;
-            min-width: 130px;
-            transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
-            position: relative;
-            transform: translateY(2px);
-            opacity: 0.8;
-        }
-        .math-worksheet.active {
-            background-color: rgba(0,0,0,0.1);
-            color: var(--text-color);
-            border-color: var(--border-color);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            transform: translateY(0);
-            opacity: 1;
-            box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
-        }
-        .math-worksheet:hover:not(.active) {
-            background-color: rgba(0,0,0,0.08);
-            color: var(--text-color);
-            opacity: 1;
-        }
-        .worksheet-icon {
-            width: 16px;
-            height: 16px;
-            object-fit: contain;
-            flex-shrink: 0;
-            border-radius: 2px;
-        }
-        .worksheet-label {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .worksheet-close {
-            background: rgba(0,0,0,0.05);
-            border: none;
-            color: var(--text-muted);
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background 0.2s, color 0.2s;
-        }
-        .worksheet-close:hover {
-            background-color: rgba(239,68,68,0.2);
-            color: #ef4444;
-        }
-        .new-worksheet-btn {
-            background: rgba(0,0,0,0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            margin-left: 4px;
-        }
-        .new-worksheet-btn:hover {
-            background-color: rgba(0,0,0,0.1);
-            color: var(--text-color);
-            border-color: rgba(255,255,255,0.3);
-        }
+:root {
+    --bg-color: transparent;
+    --surface-color: rgba(0,0,0,0.05);
+    --surface-hover: rgba(0,0,0,0.05);
+    --text-color: #ffffff;
+    --text-muted: #a1a1aa;
+    --accent-color: #ffffff;
+    --accent-hover: #e4e4e7;
+    --border-color: rgba(255,255,255,0.2);
+}
 
-        .learning-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 16px;
-            background-color: transparent;
-            border: none;
-            box-shadow: none;
-            z-index: 10;
-            flex-shrink: 0;
-        }
-        .study-nav-btn {
-            background: transparent; 
-            border: 1px solid var(--border-color); 
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s, border-color 0.2s;
-            flex-shrink: 0;
-        }
-        .study-nav-btn:hover:not(:disabled) {
-            background-color: transparent; 
-            color: var(--text-color);
-            border-color: rgba(255,255,255,0.5);
-        }
-        .study-nav-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            border-color: rgba(255,255,255,0.05);
-        }
-        .study-nav-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
-        .textbook-bar-container {
-            flex: 1;
-            min-width: 120px;
-            display: flex;
-            align-items: center;
-            background-color: transparent;
-            border: 1px solid var(--border-color); 
-            border-radius: 24px;
-            padding: 4px 6px 4px 16px;
-            transition: border-color 0.2s;
-        }
-        .textbook-bar-container:focus-within {
-            background-color: transparent; 
-            border-color: rgba(255,255,255,0.5); 
-        }
-        .textbook-input {
-            flex: 1;
-            min-width: 0;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            font-size: 14px;
-            outline: none;
-        }
-        .textbook-input::placeholder {
-            color: var(--text-muted);
-        }
-        .subject-action-btn, .study-action-btn {
-            background: transparent; 
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 6px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s, border-color 0.2s;
-            flex-shrink: 0;
-        }
-        .subject-action-btn { margin-right: 4px; }
-        .study-action-btn { margin-left: 4px; color: var(--text-color); }
-        .subject-action-btn:hover, .study-action-btn:hover {
-            background-color: transparent;
-            color: var(--text-color);
-            border-color: rgba(255,255,255,0.5); 
-        }
-        .subject-action-btn svg, .study-action-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: bold !important;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        .campus-viewport {
-            flex: 1;
-            position: relative;
-            background-color: transparent;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .campus-view {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-            opacity: 0;
-            transition: opacity 0.15s ease-in-out;
-        }
-        .campus-view.active {
-            display: flex;
-            opacity: 1;
-            z-index: 2;
-        }
-        .library-home-page {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: transparent;
-        }
-        .library-home-title {
-            font-size: 3.5rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            color: #ffffff;
-            margin-bottom: 8px;
-            text-align: center;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-        }
-        .library-home-quote {
-            font-size: 1rem;
-            font-weight: 400;
-            font-style: italic;
-            color: var(--text-muted);
-            margin-bottom: 35px;
-            text-align: center;
-            max-width: 500px;
-            min-height: 24px;
-            text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-        }
-        .flashcards-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 24px;
-            width: 100%;
-            max-width: 600px;
-            margin-bottom: 30px;
-            max-height: 250px;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        .flashcard-card {
-            width: 80px;
-            background: transparent;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            text-align: center;
-        }
-        .flashcard-card:hover {
-            transform: translateY(-4px);
-        }
-        .flashcard-icon-wrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-        .flashcard-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background-color: rgba(255,255,255,0.1);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            transition: background-color 0.2s, box-shadow 0.2s;
-        }
-        .flashcard-icon img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-        .flashcard-card:hover .flashcard-icon {
-            background-color: rgba(255,255,255,0.15);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .remove-flashcard-btn {
-            position: absolute;
-            top: -4px;
-            right: 4px;
-            background: #27272a;
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s, background 0.2s, color 0.2s;
-            z-index: 2;
-        }
-        .flashcard-card:hover .remove-flashcard-btn {
-            opacity: 1;
-        }
-        .remove-flashcard-btn:hover {
-            background-color: #ef4444;
-            color: #ffffff;
-            border-color: #ef4444;
-        }
-        .flashcard-name {
-            font-size: 12px;
-            color: var(--text-color);
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            width: 100%;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        .add-flashcard-btn {
-            background-color: rgba(0,0,0,0.2);
-            backdrop-filter: blur(8px);
-            border: 1px dashed rgba(255,255,255,0.2);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s, border-color 0.2s;
-        }
-        .add-flashcard-btn:hover {
-            background-color: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.3);
-        }
-        .study-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background-color: transparent;
-            display: none;
-        }
-        .exam-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
-        .exam-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .exam-modal-content {
-            background: rgba(24, 24, 27, 0.9);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--border-color);
-            padding: 24px;
-            border-radius: 16px;
-            width: 320px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            transform: scale(0.9);
-            transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .exam-modal-overlay.active .exam-modal-content {
-            transform: scale(1);
-        }
-        .exam-modal-header {
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-        }
-        .exam-input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .exam-input-group label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        .exam-input {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border-color);
-            color: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s, background 0.2s;
-        }
-        .exam-input:focus {
-            border-color: rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.3);
-        }
-        .exam-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .exam-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        .exam-btn-cancel {
-            background: rgba(0,0,0,0.05);
-            color: var(--text-muted);
-        }
-        .exam-btn-cancel:hover {
-            color: #fff;
-            background: rgba(0,0,0,0.1);
-            border-color: rgba(255,255,255,0.15);
-        }
-        .exam-btn-save {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-            border-color: rgba(255,255,255,0.2);
-        }
-        .exam-btn-save:hover {
-            background: rgba(255,255,255,0.25);
-            border-color: rgba(255,255,255,0.3);
-        }
+html, body {
+    background-color: transparent;
+    color: var(--text-color);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.reading-corner {
+    display: flex;
+    align-items: center;
+    background-color: var(--nav-bg, rgba(0,0,0,0.2));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 8px 0 8px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    flex-shrink: 0;
+    will-change: transform;
+}
+
+.math-worksheet {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-bottom: none;
+    padding: 8px 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    max-width: 180px;
+    min-width: 130px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    transform: translateY(2px);
+    opacity: 0.8;
+}
+
+.math-worksheet.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    border-bottom: 1px solid transparent;
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.math-worksheet:hover:not(.active) {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.worksheet-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.worksheet-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 900 !important;
+}
+
+.worksheet-close {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
+}
+
+.worksheet-close:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #ef4444;
+}
+
+.new-worksheet-btn {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+.new-worksheet-btn:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+    border-color: var(--text-color);
+}
+
+.learning-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.study-nav-btn {
+    background: transparent; 
+    border: 1px solid var(--border-color); 
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 7px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.study-nav-btn:hover:not(:disabled) {
+    background-color: var(--surface-hover); 
+    color: var(--text-color);
+    border-color: var(--text-color);
+}
+
+.study-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.study-nav-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.textbook-bar-container {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg, rgba(0,0,0,0.1));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--border-color); 
+    border-radius: 10px;
+    padding: 4px 6px 4px 14px;
+    transition: all 0.2s ease;
+}
+
+.textbook-bar-container:focus-within {
+    border-color: var(--text-color); 
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.textbook-input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: bold;
+    outline: none;
+}
+
+.textbook-input::placeholder {
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+.subject-action-btn, .study-action-btn {
+    background: transparent; 
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.subject-action-btn { margin-right: 4px; }
+.study-action-btn { margin-left: 4px; color: var(--text-color); }
+
+.subject-action-btn:hover, .study-action-btn:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+    border-color: var(--text-color); 
+}
+
+.subject-action-btn svg, .study-action-btn svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.campus-viewport {
+    flex: 1;
+    position: relative;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.campus-view {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.campus-view.active {
+    display: flex;
+    opacity: 1;
+    z-index: 2;
+}
+
+.library-home-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: transparent;
+}
+
+.library-home-title {
+    font-size: 3.5rem;
+    font-weight: 900 !important;
+    letter-spacing: -0.01em;
+    color: var(--text-color);
+    margin-bottom: 8px;
+    text-align: center;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.library-home-quote {
+    font-size: 1.05rem;
+    font-weight: bold;
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+    text-align: center;
+    max-width: 500px;
+    min-height: 24px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.flashcards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 650px;
+    margin-bottom: 30px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.flashcard-card {
+    width: 80px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.flashcard-card:hover {
+    transform: translateY(-4px);
+}
+
+.flashcard-icon-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.flashcard-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background-color: var(--card-bg, rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flashcard-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.flashcard-card:hover .flashcard-icon {
+    background-color: var(--surface-hover);
+    border-color: var(--text-color);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.remove-flashcard-btn {
+    position: absolute;
+    top: -5px;
+    right: 3px;
+    background: var(--nav-bg, #27272a);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.flashcard-card:hover .remove-flashcard-btn {
+    opacity: 1;
+}
+
+.remove-flashcard-btn:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+.flashcard-name {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    font-weight: 900 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.add-flashcard-btn {
+    background-color: var(--surface-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px dashed var(--border-color);
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.add-flashcard-btn:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--text-color);
+}
+
+.study-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: transparent;
+    display: none;
+}
+
+.exam-modal-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.exam-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.exam-modal-content {
+    background: var(--nav-bg, rgba(24, 24, 27, 0.95));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    border-radius: 12px;
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    transform: scale(0.9);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.exam-modal-overlay.active .exam-modal-content {
+    transform: scale(1);
+}
+
+.exam-modal-header {
+    font-size: 1.05rem;
+    font-weight: 900 !important;
+    color: var(--text-color);
+}
+
+.exam-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.exam-input-group label {
+    font-size: 0.75rem;
+    font-weight: 900 !important;
+    color: var(--text-muted);
+}
+
+.exam-input {
+    background: var(--card-bg, rgba(0,0,0,0.2));
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 10px;
+    border-radius: 8px;
+    outline: none;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.exam-input:focus {
+    border-color: var(--text-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.exam-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.exam-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-weight: 900 !important;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.exam-btn-cancel {
+    background: var(--surface-color);
+    color: var(--text-muted);
+}
+
+.exam-btn-cancel:hover {
+    color: var(--text-color);
+    background: var(--surface-hover);
+    border-color: var(--border-color);
+}
+
+.exam-btn-save {
+    background: var(--text-color);
+    color: var(--bg-color, #000000);
+    border-color: var(--text-color);
+}
+
+.exam-btn-save:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    }
     </style>
 </head>
 <body>
