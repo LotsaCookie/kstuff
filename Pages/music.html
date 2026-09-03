@@ -7,8 +7,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #1a1216;
+            --text: #ffb8d9;
+            --card: rgba(255, 255, 255, 0.06);
+            --nav: rgba(26, 18, 22, 0.85);
+        }
         * {
             font-family: "Quicksand", sans-serif !important;
+            color: var(--text);
         }
         .coming-soon-overlay {
             position: fixed;
@@ -22,7 +29,7 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;           
-            color: #ffffff;
+            color: var(--text);
         }
 
         .coming-soon-content {
@@ -35,12 +42,13 @@
             margin: 0 0 10px 0;
             letter-spacing: 2px;
             font-weight: 600;
+            color: var(--text);
         }
 
         .coming-soon-content p {
             font-size: 1.1rem;
             margin: 0;
-            color: #d1d5db;
+            color: var(--text);
         }
 
 
