@@ -268,7 +268,7 @@ function initApp() {
     });
 
     document.head.appendChild(Object.assign(document.createElement('style'), { textContent: `i.profile-avatar-container { width:1.2em;height:1.2em;border-radius:50%;overflow:hidden;display:inline-flex;justify-content:center;align-items:center; } i.profile-avatar-container img { width:100%;height:100%;object-fit:cover; }` }));
-    const defaultPic = "https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg?s=170667a&w=0&k=20&c=m-F9Doa2ecNYEEjeplkFCmZBlc5tm1pl1F7cBCh9ZzM=";
+    const defaultPic = "https://media.istockphoto.com/id/1223671392/vector/default-profile-picture-avatar-photo-placeholder-vector-illustration.jpg";
 
     const updateAuthUI = () => {
         const btn = $('profile-nav-btn'); if (!btn) return;
