@@ -26,7 +26,7 @@ function initApp() {
 
     let indicator = navBar?.querySelector('.nav-indicator') || Object.assign(document.createElement('div'), { className: 'nav-indicator' });
     if (!indicator.parentNode) navBar?.prepend(indicator);
-    indicator.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)'; // Replaces JS animation loop
+    indicator.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
 
     const updateIndicator = (activeBtn) => {
         if (!activeBtn || !indicator || !navBar) return;
@@ -204,7 +204,7 @@ function initApp() {
         toggleTooltip({target: null}, false);
         savedWindowScrollY = window.scrollY || document.documentElement.scrollTop; savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
         if (modalTitle) modalTitle.textContent = item.title; if (modalOverlay) modalOverlay.classList.add('active'); if (modalIframe) modalIframe.src = item.url;
-        setTimeout(() => Object.values(grids).forEach(g => { if(g.gridEl) g.gridEl.innerHTML = ''; g.pool = []; }), 50); // Destroy pools on open
+        setTimeout(() => Object.values(grids).forEach(g => { if(g.gridEl) g.gridEl.innerHTML = ''; g.pool = []; }), 50);
     };
 
     const buildPool = type => {
@@ -289,7 +289,14 @@ function initApp() {
     const authMod = bindModal('auth-modal-overlay', 'auth-close-btn'), profMod = bindModal('profile-modal-overlay', 'profile-close-btn');
     bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn'); bindModal('changelog-modal', 'changelog-close-btn');
 
-    const handleAuth = t => () => { const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim(); if (u && p && backendPort) backendPort.postMessage({ type: t, username: u, password: p }); };
+    const handleAuth = t => () => { 
+        const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim(); 
+        if (u && p && backendPort) { 
+            const payload = { type: t, username: u, password: p };
+            if (t === 'signup') payload.profilePicture = defaultPic;
+            backendPort.postMessage(payload); 
+        } 
+    };
     $('do-login-btn')?.addEventListener('click', handleAuth('login')); $('do-signup-btn')?.addEventListener('click', handleAuth('signup'));
     ['auth-user', 'auth-pass'].forEach(id => $(id)?.addEventListener('input', () => $('auth-error-msg') && ($('auth-error-msg').style.display = 'none')));
 
