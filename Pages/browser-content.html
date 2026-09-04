@@ -585,6 +585,447 @@ html, body {
     gap: 8px;
     transition: all 0.2s ease;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Portal</title>
+    <meta property="og:title" content="Study.com | K-12 Online Learning and Worksheet Portal" />
+    <meta property="og:site_name" content="Study.com Learning" />
+    <meta name="msapplication-TileColor" content="#00ffa6" />
+    <meta property="og:image" content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" />
+    <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-color: transparent;
+    --surface-color: rgba(0,0,0,0.05);
+    --surface-hover: rgba(0,0,0,0.05);
+    --text-color: #ffffff;
+    --text-muted: #a1a1aa;
+    --accent-color: #ffffff;
+    --accent-hover: #e4e4e7;
+    --border-color: transparent;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: bold !important;
+    -webkit-tap-highlight-color: transparent;
+    outline: none !important;
+}
+
+html, body {
+    background-color: transparent;
+    color: var(--text-color);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.reading-corner {
+    display: flex;
+    align-items: center;
+    background-color: var(--nav-bg, rgba(0,0,0,0.2));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 8px 0 8px;
+    gap: 6px;
+    border: none;
+    overflow-x: auto;
+    flex-shrink: 0;
+    will-change: transform;
+}
+
+.math-worksheet {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-color);
+    border: none;
+    padding: 8px 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    max-width: 180px;
+    min-width: 130px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    transform: translateY(2px);
+    opacity: 0.8;
+}
+
+.math-worksheet.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    border: none;
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.math-worksheet:hover:not(.active) {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.worksheet-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.worksheet-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 900 !important;
+}
+
+.worksheet-close {
+    background: var(--surface-color);
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
+}
+
+.worksheet-close:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.new-worksheet-btn {
+    background: var(--surface-color);
+    border: none;
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+.new-worksheet-btn:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+}
+
+.learning-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.study-nav-btn {
+    background: rgba(0, 0, 0, 0.15); 
+    border: none; 
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 7px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.study-nav-btn:hover:not(:disabled) {
+    background-color: rgba(0, 0, 0, 0.25); 
+    color: var(--text-color);
+}
+
+.study-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.study-nav-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+}
+
+.textbook-bar-container {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg, rgba(0,0,0,0.1));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: none; 
+    border-radius: 10px;
+    padding: 4px 6px 4px 14px;
+    transition: all 0.2s ease;
+}
+
+.textbook-bar-container:focus-within {
+    box-shadow: none;
+}
+
+.textbook-input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    font-weight: bold;
+    outline: none;
+}
+
+.textbook-input::placeholder {
+    color: var(--text-muted);
+    font-weight: normal;
+}
+
+.subject-action-btn, .study-action-btn {
+    background: rgba(0, 0, 0, 0.15); 
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.subject-action-btn { margin-right: 4px; }
+.study-action-btn { margin-left: 4px; color: var(--text-color); }
+
+.subject-action-btn:hover, .study-action-btn:hover {
+    background-color: rgba(0, 0, 0, 0.25);
+    color: var(--text-color);
+}
+
+.subject-action-btn svg, .study-action-btn svg {
+    width: 15px;
+    height: 15px;
+    fill: currentColor;
+}
+
+.campus-viewport {
+    flex: 1;
+    position: relative;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.campus-view {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.campus-view.active {
+    display: flex;
+    opacity: 1;
+    z-index: 2;
+}
+
+.library-home-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: transparent;
+}
+
+.library-home-title {
+    font-size: 3.5rem;
+    font-weight: 900 !important;
+    letter-spacing: -0.01em;
+    color: var(--text-color);
+    margin-bottom: 8px;
+    text-align: center;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.library-home-quote {
+    font-size: 1.05rem;
+    font-weight: bold;
+    font-style: italic;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+    text-align: center;
+    max-width: 500px;
+    min-height: 24px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.flashcards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 650px;
+    margin-bottom: 30px;
+    max-height: 260px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.flashcard-card {
+    width: 80px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.flashcard-card:hover {
+    transform: translateY(-4px);
+}
+
+.flashcard-icon-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.flashcard-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background-color: var(--card-bg, rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flashcard-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.flashcard-card:hover .flashcard-icon {
+    background-color: var(--surface-hover);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.remove-flashcard-btn {
+    position: absolute;
+    top: -5px;
+    right: 3px;
+    background: var(--nav-bg, #27272a);
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.flashcard-card:hover .remove-flashcard-btn {
+    opacity: 1;
+}
+
+.remove-flashcard-btn:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+.flashcard-name {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    font-weight: 900 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.add-flashcard-btn {
+    background-color: var(--surface-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: none;
+    color: var(--text-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
 
 .add-flashcard-btn:hover {
     background-color: var(--surface-hover);
