@@ -245,7 +245,9 @@ function initApp() {
     const iframePages = { 
         mathworksheets: { id: 'mathworksheets-iframe', path: 'Pages/browser.html' }, 
         gradebook: { id: 'gradebook-iframe', path: 'Pages/music.html' }, 
-        lessonplanner: { id: 'lessonplanner-iframe', path: 'Pages/ai.html' } 
+        lessonplanner: { id: 'lessonplanner-iframe', path: 'Pages/ai.html' },
+        studyhall: { id: 'studyhall-iframe', path: 'Pages/music.html' },
+        vms: { id: 'vms-iframe', path: 'Pages/music.html' }
     };
 
     async function loadIframePage(id, path) {
