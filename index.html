@@ -35,67 +35,20 @@
     </style>
 </head>
 <body class="theme-sakura nav-left text-hide size-small">
-    <script>
-    (()=>{
-        let cloudTheme = null;
-        try {
-            const u = JSON.parse(localStorage.getItem('kstuff_user'));
-            cloudTheme = u?.settings?.theme || u?.theme;
-        } catch(e) {}
-
-        const chosenTheme = cloudTheme || localStorage.getItem('kstuff_theme') || 'theme-sakura';
-        const n = localStorage.getItem('kstuff_nav_pos') || 'nav-left';
-        const v = localStorage.getItem('kstuff_text_vis') || 'text-hide';
-        const s = localStorage.getItem('kstuff_nav_size') || 'size-small';
-        
-        document.body.className = `${chosenTheme} ${n} ${v} ${s}`;
-        
-        try {
-            const cachedThemes = localStorage.getItem('kstuff_themes_cache');
-            if (cachedThemes) {
-                const themes = JSON.parse(cachedThemes);
-                
-                let css = '';
-                themes.forEach(t => { 
-                    css += `.${t.id} { ${Object.entries(t.variables).map(([k,val]) => `${k}:${val};`).join('')} }\n`; 
-                });
-                
-                const style = document.createElement('style');
-                style.id = 'dynamic-themes-style';
-                style.textContent = css;
-                document.head.appendChild(style);
-            } else {
-                document.body.style.setProperty('--bg-color', '#1a1216');
-                document.body.style.setProperty('--text-color', '#ffb8d9');
-            }
-        } catch(e) {}
-    })();
-    </script>
+    <script>(()=>{let cloudTheme=null;try{const u=JSON.parse(localStorage.getItem('kstuff_user'));cloudTheme=u?.settings?.theme||u?.theme;}catch(e){}const chosenTheme=cloudTheme||localStorage.getItem('kstuff_theme')||'theme-sakura';const n=localStorage.getItem('kstuff_nav_pos')||'nav-left';const v=localStorage.getItem('kstuff_text_vis')||'text-hide';const s=localStorage.getItem('kstuff_nav_size')||'size-small';document.body.className=`${chosenTheme} ${n} ${v} ${s}`;try{const cachedThemes=localStorage.getItem('kstuff_themes_cache');if(cachedThemes){const themes=JSON.parse(cachedThemes);let css='';themes.forEach(t=>{css+=`.${t.id} { ${Object.entries(t.variables).map(([k,val])=>`${k}:${val};`).join('')} }\n`;});const style=document.createElement('style');style.id='dynamic-themes-style';style.textContent=css;document.head.appendChild(style);}else{document.body.style.setProperty('--bg-color','#1a1216');document.body.style.setProperty('--text-color','#ffb8d9');}}catch(e){}})();</script>
     
     <div id="loading-screen"><div class="spinner"></div><div class="loading-text">Loading</div></div>
     
-    <script>
-        window.addEventListener('load', async () => {
-            if (window.kAssets) await window.kAssets;
-            if (document.fonts && document.fonts.ready) {
-                await document.fonts.ready;
-            }
-            await new Promise(res => setTimeout(res, 1000));
-            
-            const l = document.getElementById('loading-screen');
-            if (l) {
-                l.classList.add('loaded');
-                setTimeout(() => {
-                    l.classList.add('hidden');
-                    setTimeout(() => {
-                        document.body.style.removeProperty('--bg-color');
-                        document.body.style.removeProperty('--text-color');
-                    }, 600);
-                }, 800);
-            }
-        });
-    </script>
+    <script>window.addEventListener('load',async()=>{if(window.kAssets)await window.kAssets;if(document.fonts&&document.fonts.ready){await document.fonts.ready;}await new Promise(res=>setTimeout(res,1000));const l=document.getElementById('loading-screen');if(l){l.classList.add('loaded');setTimeout(()=>{l.classList.add('hidden');setTimeout(()=>{document.body.style.removeProperty('--bg-color');document.body.style.removeProperty('--text-color');},600);},800);}});</script>
 
+    <div style="display:none;" aria-hidden="true">
+        <h1>Educational Resources and Online Learning Platform</h1><p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
+        <section><h2>Academic Subjects</h2><p>Mathematics, Science, English, History, Literature, Writing, Reading, Social Studies, Geography, Biology, Chemistry, Physics, Algebra, Geometry, Calculus, Statistics, Computer Science, Programming, Foreign Languages, Art, Music</p></section>
+        <section><h2>Educational Services</h2><p>Online courses, college credit, exam preparation, test prep, tutoring, homework help, study guides, practice tests, educational videos, interactive lessons, learning resources, curriculum development, academic support, student success, teacher resources, educational technology, e-learning, distance education, virtual classroom, online tutoring, academic coaching</p></section>
+        <section><h2>Student Levels</h2><p>K-12 education, elementary school, middle school, high school, college, university, graduate school, continuing education, adult learning, professional development, certification programs, degree programs, homeschool education</p></section>
+        <section><h2>Test Preparation</h2><p>SAT prep, ACT prep, GRE prep, GMAT prep, LSAT prep, MCAT prep, AP courses, Advanced Placement, standardized tests, college entrance exams, professional certification exams, state assessments, final exams, midterms</p></section>
+        <section><h3>Learning Methods</h3><p>Interactive learning, video lessons, practice quizzes, flashcards, study notes, educational games, adaptive learning, personalized education, self-paced learning, collaborative learning, project-based learning, STEM education, critical thinking, problem solving</p></section>
+    </div>
     <div style="display:none;" aria-hidden="true">
         <h1>Educational Resources and Online Learning Platform</h1><p>Comprehensive education platform for students, teachers, and lifelong learners. Access online courses, study materials, exam preparation resources, and interactive learning tools.</p>
         <section><h2>Academic Subjects</h2><p>Mathematics, Science, English, History, Literature, Writing, Reading, Social Studies, Geography, Biology, Chemistry, Physics, Algebra, Geometry, Calculus, Statistics, Computer Science, Programming, Foreign Languages, Art, Music</p></section>
@@ -113,6 +66,7 @@
             <button class="nav-btn" data-target="sciencequiz"><i class="ph ph-app-window"></i><span class="label-data"><div>s</div><div>p</div><div>p</div><div>A</div></span></button>
             <button class="nav-btn" data-target="gradebook"><i class="ph ph-music-notes"></i><span class="label-data"><div>c</div><div>i</div><div>s</div><div>u</div><div>M</div></span></button>
             <button class="nav-btn" data-target="lessonplanner"><i class="ph ph-robot"></i><span class="label-data"><div>I</div><div>A</div></span></button>
+            <button class="nav-btn" data-target="studyhall"><i class="ph ph-chats"></i><span class="label-data"><div>t</div><div>a</div><div>h</div><div>C</div></span></button>
             <div class="nav-divider"></div>
             <button class="nav-btn" data-target="changelog" id="changelog-btn"><i class="ph ph-list-bullets"></i><span class="label-data"><div>g</div><div>o</div><div>L</div><div> </div><div>e</div><div>g</div><div>n</div><div>a</div><div>h</div><div>C</div></span></button>
             <button class="nav-btn" data-target="homeworkhelper"><i class="ph ph-gear"></i><span class="label-data"><div>s</div><div>g</div><div>n</div><div>i</div><div>t</div><div>t</div><div>e</div><div>S</div></span></button>
@@ -159,6 +113,7 @@
             </section>
             <section id="gradebook" class="page"><iframe id="gradebook-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
             <section id="lessonplanner" class="page"><iframe id="lessonplanner-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
+            <section id="studyhall" class="page"><iframe id="studyhall-iframe" class="full-page-iframe" allowfullscreen></iframe></section>
         </main>
     </div>
     
@@ -168,60 +123,8 @@
     
     <div id="changelog-modal" class="modal-overlay"><div class="modal-content settings-modal-content"><div class="modal-header"><span id="changelog-title-header"><i class="ph ph-clipboard-text"></i> Change Log</span><div class="modal-actions"><button id="changelog-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; max-height: 100%; overflow-y: auto;"><h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;"><i class="ph ph-sparkle"></i> Changes:</h3><div id="changelog-content" style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 2rem; opacity: 0.9;">Loading updates...</div><div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid rgba(128, 128, 128, 0.2); text-align: right; font-size: 0.8rem; opacity: 0.7;"><i class="ph ph-clock"></i> Last Updated: <span id="changelog-timestamp">Fetching...</span></div></div></div></div>
     
-    <div id="profile-modal-overlay" class="modal-overlay">
-        <div class="modal-content settings-modal-content" style="max-width: 400px; text-align: center;">
-            <div class="modal-header">
-                <span id="profile-modal-title"><i class="ph ph-user"></i> Profile</span>
-                <div class="modal-actions">
-                    <button id="edit-profile-btn" style="background: none; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; margin-right: 5px; transition: 0.2s;"><i class="ph ph-pencil-simple"></i></button>
-                    <button id="profile-close-btn"><i class="ph ph-x"></i></button>
-                </div>
-            </div>
-            <div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;">
-                <img id="profile-modal-pic" src="" alt="Profile Picture">
-                <h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2>
-                <p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p>
-                
-                <div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;">
-                    <div style="text-align: left;">
-                        <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label>
-                        <input type="text" id="profile-edit-pic-url" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; outline: none;">
-                    </div>
-                    <div style="text-align: left;">
-                        <label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-text-align-left"></i> Description</label>
-                        <textarea id="profile-edit-desc" rows="3" placeholder="Tell us about yourself..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; resize: none; outline: none; font-family: inherit;"></textarea>
-                    </div>
-                    <button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button>
-                </div>
-                <button id="do-logout-btn">Log Out</button>
-            </div>
-        </div>
-    </div>
+    <div id="profile-modal-overlay" class="modal-overlay"><div class="modal-content settings-modal-content" style="max-width: 400px; text-align: center;"><div class="modal-header"><span id="profile-modal-title"><i class="ph ph-user"></i> Profile</span><div class="modal-actions"><button id="edit-profile-btn" style="background: none; border: none; color: var(--text-color); font-size: 1.2rem; cursor: pointer; margin-right: 5px; transition: 0.2s;"><i class="ph ph-pencil-simple"></i></button><button id="profile-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding-bottom: 2rem;"><img id="profile-modal-pic" src="" alt="Profile Picture"><h2 id="profile-modal-username" style="margin: 0; font-size: 1.5rem;">Username</h2><p id="profile-modal-desc" style="margin: 0; opacity: 0.8; font-size: 0.95rem; line-height: 1.4; padding: 0 10px;">Description goes here.</p><div id="profile-edit-container" style="display: none; flex-direction: column; width: 100%; gap: 10px; margin-top: 10px; opacity: 0; transition: opacity 0.3s ease;"><div style="text-align: left;"><label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-image"></i> Profile Picture URL</label><input type="text" id="profile-edit-pic-url" placeholder="https://..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; outline: none;"></div><div style="text-align: left;"><label style="font-size: 0.85rem; opacity: 0.8;"><i class="ph ph-text-align-left"></i> Description</label><textarea id="profile-edit-desc" rows="3" placeholder="Tell us about yourself..." style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid rgba(128,128,128,0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); margin-top: 4px; box-sizing: border-box; resize: none; outline: none; font-family: inherit;"></textarea></div><button id="save-profile-changes-btn" style="width: 100%; padding: 10px; background: var(--text-color); color: var(--bg-color); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; transition: 0.2s;">Save Profile</button></div><button id="do-logout-btn">Log Out</button></div></div></div>
     
-    <div id="auth-modal-overlay" class="modal-overlay">
-        <div class="modal-content settings-modal-content" style="max-width: 425px;">
-            <div class="modal-header">
-                <span id="auth-modal-title"><i class="ph ph-user-circle"></i> Account Portal</span>
-                <div class="modal-actions"><button id="auth-close-btn"><i class="ph ph-x"></i></button></div>
-            </div>
-            <div class="settings-card modal-settings-body" id="auth-modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
-                <div class="setting-group" style="margin-bottom: 0;">
-                    <label for="auth-user"><i class="ph ph-user"></i> Username</label>
-                    <input type="text" id="auth-user" placeholder="Enter username" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); outline: none;">
-                </div>
-                <div class="setting-group" style="margin-bottom: 0.5rem;">
-                    <label for="auth-pass"><i class="ph ph-lock"></i> Password</label>
-                    <input type="password" id="auth-pass" placeholder="Enter password" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); outline: none;">
-                </div>
-                
-                <div id="auth-error-msg" style="color: #ff4d4d; font-size: 0.9rem; text-align: center; display: none; font-weight: bold; margin-top: -0.5rem;"></div>
-                
-                <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
-                    <button id="do-login-btn">Log In</button>
-                    <button id="do-signup-btn">Sign Up</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="auth-modal-overlay" class="modal-overlay"><div class="modal-content settings-modal-content" style="max-width: 425px;"><div class="modal-header"><span id="auth-modal-title"><i class="ph ph-user-circle"></i> Account Portal</span><div class="modal-actions"><button id="auth-close-btn"><i class="ph ph-x"></i></button></div></div><div class="settings-card modal-settings-body" id="auth-modal-body" style="display: flex; flex-direction: column; gap: 1rem;"><div class="setting-group" style="margin-bottom: 0;"><label for="auth-user"><i class="ph ph-user"></i> Username</label><input type="text" id="auth-user" placeholder="Enter username" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); outline: none;"></div><div class="setting-group" style="margin-bottom: 0.5rem;"><label for="auth-pass"><i class="ph ph-lock"></i> Password</label><input type="password" id="auth-pass" placeholder="Enter password" style="width: 100%; padding: 0.75rem; font-size: 1rem; font-weight: bold; border-radius: 8px; border: 1px solid rgba(128, 128, 128, 0.3); background: var(--card-bg, rgba(0,0,0,0.1)); color: var(--text-color); outline: none;"></div><div id="auth-error-msg" style="color: #ff4d4d; font-size: 0.9rem; text-align: center; display: none; font-weight: bold; margin-top: -0.5rem;"></div><div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;"><button id="do-login-btn">Log In</button><button id="do-signup-btn">Sign Up</button></div></div></div></div>
 </body>
 </html>
