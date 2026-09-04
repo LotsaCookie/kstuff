@@ -144,6 +144,152 @@ html, body {
     font-size: 15px;
     font-weight: 900 !important;
     transition: all 0.2s ease;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Portal</title>
+    <meta property="og:title" content="Study.com | K-12 Online Learning and Worksheet Portal" />
+    <meta property="og:site_name" content="Study.com Learning" />
+    <meta name="msapplication-TileColor" content="#00ffa6" />
+    <meta property="og:image" content="https://www.ixl.com/dv3/powZqMuTE7du4asFrVyNGxxoqkw/yui3/opengraph/assets/general_us.png" />
+    <meta name="description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <meta property="og:description" content="Study.com is a trusted educational resource for K–12 students. Providing interactive worksheets, practice questions, and study guides." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-color: transparent;
+    --surface-color: rgba(0,0,0,0.05);
+    --surface-hover: rgba(0,0,0,0.15);
+    --text-color: #ffffff;
+    --text-muted: #a1a1aa;
+    --accent-color: #ffffff;
+    --accent-hover: #e4e4e7;
+    --border-color: transparent;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: "Quicksand", sans-serif !important;
+    font-weight: bold !important;
+    -webkit-tap-highlight-color: transparent;
+    outline: none !important;
+}
+
+html, body {
+    background-color: transparent;
+    color: var(--text-color);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.reading-corner {
+    display: flex;
+    align-items: center;
+    background-color: var(--nav-bg, rgba(0,0,0,0.2));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 8px 0 8px;
+    gap: 6px;
+    border: none;
+    overflow-x: auto;
+    flex-shrink: 0;
+    will-change: transform;
+}
+
+.math-worksheet {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--surface-color);
+    border: none;
+    padding: 8px 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    max-width: 180px;
+    min-width: 130px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    transform: translateY(2px);
+    opacity: 0.8;
+}
+
+.math-worksheet.active {
+    background-color: rgba(0, 0, 0, 0.1);
+    color: var(--text-color);
+    border: none;
+    transform: translateY(0);
+    opacity: 1;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.math-worksheet:hover:not(.active) {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+    opacity: 1;
+}
+
+.worksheet-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.worksheet-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 900 !important;
+}
+
+.worksheet-close {
+    background: var(--surface-color);
+    border: none;
+    color: var(--text-muted);
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
+}
+
+.worksheet-close:hover {
+    background-color: rgba(239, 68, 68, 0.25);
+    color: #ef4444;
+}
+
+.new-worksheet-btn {
+    background: var(--surface-color);
+    border: none;
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 900 !important;
+    transition: all 0.2s ease;
     flex-shrink: 0;
     margin-left: 4px;
 }
@@ -166,7 +312,7 @@ html, body {
 }
 
 .study-nav-btn {
-    background: transparent; 
+    background: rgba(0, 0, 0, 0.15); 
     border: none; 
     color: var(--text-muted);
     cursor: pointer;
@@ -232,7 +378,7 @@ html, body {
 }
 
 .subject-action-btn, .study-action-btn {
-    background: transparent; 
+    background: rgba(0, 0, 0, 0.15); 
     border: none;
     color: var(--text-muted);
     cursor: pointer;
