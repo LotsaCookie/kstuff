@@ -56,8 +56,12 @@ function initApp() {
     }
 
     async function fetchWithProxy(path, asText = false) {
+        const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
         for (const p of await getProxyList()) {
-            try { const r = await fetch(p + path + (p ? "" : "?_=" + Date.now())); if (r.ok) return asText ? await r.text() : await r.json(); } catch {}
+            try { 
+                const r = await fetch(p + path + cb, { cache: 'no-store' }); 
+                if (r.ok) return asText ? await r.text() : await r.json(); 
+            } catch {}
         }
         throw new Error("Proxies failed: " + path);
     }
@@ -245,12 +249,13 @@ function initApp() {
     };
 
     async function loadIframePage(id, path) {
-        const f = $(id); if (!f || (f.dataset.loadedPath === path && f.srcdoc)) return toggleLoader(false);
+        const f = $(id); if (!f) return toggleLoader(false);
         toggleLoader(true);
+        f.removeAttribute('srcdoc');
         try {
             let html = await fetchWithProxy(path, true);
             const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-            f.onload = () => toggleLoader(false); f.dataset.loadedPath = path;
+            f.onload = () => toggleLoader(false);
             f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
         } catch {
             f.onload = () => toggleLoader(false);
@@ -289,8 +294,9 @@ function initApp() {
     };
 
     const renderGrid = (type, preload = false) => {
+        const grid = grids[type]; if (!grid.gridEl) return;
+        toggleLoader(true);
         requestAnimationFrame(() => {
-            const grid = grids[type]; if (!grid.gridEl) return;
             const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             grid.page = grid.page > totalPages ? 1 : grid.page;
@@ -314,15 +320,15 @@ function initApp() {
                 if (grid.pageEl) {
                     grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
                     if (totalPages > 1) {
-                        $(`${type}-prev`).onclick = () => { if (grid.page > 1) { toggleLoader(true); grid.page--; renderGrid(type, true); } };
-                        $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { toggleLoader(true); grid.page++; renderGrid(type, true); } };
+                        $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
+                        $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
                     }
                 }
 
                 Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
                     if (p.img.complete && p.img.naturalWidth > 0) return res();
                     p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
-                    setTimeout(res, 2000);
+                    setTimeout(res, 4000);
                 }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
             };
 
@@ -431,11 +437,6 @@ function initApp() {
             if (tId === 'changelog') return $('changelog-modal')?.classList.add('active');
 
             toggleLoader(true);
-            const act = document.querySelector('.nav-btn.active');
-            if (act && act.dataset.target !== tId && iframePages[act.dataset.target]) {
-                const f = $(iframePages[act.dataset.target].id);
-                if (f) { f.removeAttribute('srcdoc'); delete f.dataset.loadedPath; }
-            }
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
             pages.forEach(p => p.classList.remove('active'));
             btn.classList.add('active'); updateIndicator(btn); loadContent(tId);
