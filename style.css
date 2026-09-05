@@ -506,11 +506,19 @@ body.text-hide .nav-right .nav-divider {
     flex-wrap: wrap;
     margin-bottom: 2rem;
     position: sticky;
-    top: 0;
+    top: 15px;
     z-index: 100;
-    background: transparent;
-    padding: 15px 0;
-    pointer-events: none;
+    background: var(--nav-bg);
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    pointer-events: auto;
 }
 
 .modern-select-wrapper {
@@ -729,14 +737,22 @@ body.text-hide .nav-right .nav-divider {
 .pagination-bar {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 0.5rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
     position: sticky;
-    bottom: 0;
-    padding: 1rem 0;
+    bottom: 15px;
+    margin: 1.5rem auto;
+    width: fit-content;
+    background: var(--nav-bg);
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     z-index: 100;
-    pointer-events: none;
+    pointer-events: auto;
+    flex-wrap: wrap;
 }
 
 .page-btn {
@@ -1194,4 +1210,4 @@ body.text-hide .nav-right .nav-divider {
 #do-logout-btn:active {
     transform: translateY(0);
     box-shadow: none;
-    }
+}
