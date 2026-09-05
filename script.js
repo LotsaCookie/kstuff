@@ -339,6 +339,8 @@ function initApp() {
             grid.page = grid.page > totalPages ? 1 : grid.page;
             grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
+            const imageLoadPromises = []; 
+
             for (let idx = 0; idx < grid.pool.length; idx++) {
                 const p = grid.pool[idx];
                 const item = grid.paginatedData[idx];
@@ -354,9 +356,16 @@ function initApp() {
                         p.img.dataset.src = item.image || ''; 
                         p.img.onload = p.img.onerror = null;
                         if (p.img.src) p.img.src = '';
+                        
                         if (item.image) {
-                            p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; };
-                            p.img.src = item.image;
+                            const imgPromise = new Promise(imgResolve => {
+                                p.img.onload = p.img.onerror = () => { 
+                                    p.img.onload = p.img.onerror = null; 
+                                    imgResolve(); 
+                                };
+                                p.img.src = item.image;
+                            });
+                            imageLoadPromises.push(imgPromise);
                             p.img.style.display = 'block';
                         } else {
                             p.img.removeAttribute('src'); 
@@ -391,8 +400,12 @@ function initApp() {
                 }
             }
 
-            toggleLoader(false);
-            resolve();
+            Promise.all(imageLoadPromises).then(() => {
+                if (grid.renderId === myRenderId) {
+                    toggleLoader(false);
+                    resolve();
+                }
+            });
         });
     };
 
