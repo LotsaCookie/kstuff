@@ -256,11 +256,13 @@ function initApp() {
     async function loadIframePage(id, path) {
         const f = $(id); if (!f) return toggleLoader(false);
         toggleLoader(true);
+        await new Promise(res => setTimeout(res, 20));
         f.removeAttribute('srcdoc');
         try {
             let html = await fetchWithProxy(path, true);
             const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
             f.onload = () => toggleLoader(false);
+            await new Promise(res => setTimeout(res, 20));
             f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
         } catch {
             f.onload = () => toggleLoader(false);
@@ -298,47 +300,52 @@ function initApp() {
         grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
     };
 
-    const renderGrid = (type, preload = false) => {
+    const renderGrid = async (type, preload = false) => {
         const grid = grids[type]; if (!grid.gridEl) return;
         toggleLoader(true);
-        requestAnimationFrame(() => {
-            const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
-            const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-            grid.page = grid.page > totalPages ? 1 : grid.page;
-            grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-            const exec = () => {
-                grid.pool.forEach((p, i) => {
-                    const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
-                    if (item) {
-                        if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
-                        if (p.t.textContent !== item.title) p.t.textContent = item.title;
-                        if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
-                        if (p.c) p.c.textContent = item.category || 'All';
-                        p.el.dataset.tooltip = item.title;
-                    } else {
-                        p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
-                        if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
-                    }
-                });
+        const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+        grid.page = grid.page > totalPages ? 1 : grid.page;
+        grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
-                if (grid.pageEl) {
-                    grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
-                    if (totalPages > 1) {
-                        $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
-                        $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
-                    }
+        const exec = () => {
+            grid.pool.forEach((p, i) => {
+                const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
+                if (item) {
+                    if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
+                    if (p.t.textContent !== item.title) p.t.textContent = item.title;
+                    if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
+                    if (p.c) p.c.textContent = item.category || 'All';
+                    p.el.dataset.tooltip = item.title;
+                } else {
+                    p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
+                    if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
                 }
+            });
 
-                Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
-                    if (p.img.complete && p.img.naturalWidth > 0) return res();
-                    p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
-                    setTimeout(res, 4000);
-                }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
-            };
+            if (grid.pageEl) {
+                grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
+                if (totalPages > 1) {
+                    $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
+                    $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
+                }
+            }
 
-            if (preload) { grid.gridEl.style.opacity = '0'; setTimeout(exec, 250); } else exec();
-        });
+            Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
+                if (p.img.complete && p.img.naturalWidth > 0) return res();
+                p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
+                setTimeout(res, 4000);
+            }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
+        };
+
+        if (preload) { 
+            grid.gridEl.style.opacity = '0'; 
+            setTimeout(exec, 250); 
+        } else {
+            setTimeout(exec, 20);
+        }
     };
 
     Object.keys(grids).forEach(type => {
@@ -456,7 +463,7 @@ function initApp() {
         const lDivs = btn.querySelectorAll('.label-data div');
         btn.dataset.tooltip = lDivs.length ? Array.from(lDivs).map(d => d.textContent).reverse().join('') : (btn.title || btn.dataset.target);
 
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             toggleTooltip(null, false);
             const tId = btn.dataset.target;
             if (tId === 'profile') return !currentUser ? authMod?.classList.add('active') : (updateAuthUI(), profMod?.classList.add('active'));
@@ -466,7 +473,10 @@ function initApp() {
             toggleLoader(true);
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
             pages.forEach(p => p.classList.remove('active'));
-            btn.classList.add('active'); updateIndicator(btn); loadContent(tId);
+            btn.classList.add('active'); updateIndicator(btn);
+            
+            await new Promise(resolve => setTimeout(resolve, 30));
+            loadContent(tId);
         });
     });
 
