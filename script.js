@@ -61,13 +61,16 @@ function initApp() {
 
     async function fetchWithProxy(path, asText = false) {
         const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
-        for (const p of await getProxyList()) {
-            try { 
-                const r = await fetch(p + path + cb, { cache: 'no-store' }); 
-                if (r.ok) return asText ? await r.text() : await r.json(); 
-            } catch {}
+        const proxies = await getProxyList();
+        try {
+            return await Promise.any(proxies.map(async p => {
+                const r = await fetch(p + path + cb, { cache: 'no-store' });
+                if (!r.ok) throw new Error();
+                return asText ? await r.text() : await r.json();
+            }));
+        } catch {
+            throw new Error("Proxies failed: " + path);
         }
-        throw new Error("Proxies failed: " + path);
     }
 
     async function getWorkingConfig(table) {
@@ -196,7 +199,12 @@ function initApp() {
     try { handleThemesLoaded(JSON.parse(getStorage('kstuff_themes_cache'))); } catch {}
     fetchWithProxy('Json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(()=>{});
 
-    const setupSetting = (id, key, prefix, fn) => {
+    [
+        ['layout-theme-select', 'kstuff_theme', 'theme', v => { body.classList.add(v); setStorage('kstuff_theme', v); }],
+        ['layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v)],
+        ['layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v)],
+        ['layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide')]
+    ].forEach(([id, key, prefix, fn]) => {
         const select = $(id); if (!select) return;
         const val = getStorage(key) || select.value; select.value = val; fn(val);
         select.addEventListener('change', e => {
@@ -205,12 +213,7 @@ function initApp() {
             updateIndicator(navBar?.querySelector('.nav-btn.active'));
             Object.values(iframePages).forEach(p => $(p.id)?.contentWindow?.postMessage('theme-updated', '*'));
         });
-    };
-
-    setupSetting('layout-theme-select', 'kstuff_theme', 'theme', v => { body.classList.add(v); setStorage('kstuff_theme', v); });
-    setupSetting('layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v));
-    setupSetting('layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v));
-    setupSetting('layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide'));
+    });
 
     function applyCloudSettings(s) {
         if (!s) return;
@@ -264,7 +267,6 @@ function initApp() {
         f.removeAttribute('srcdoc');
         f.src = 'about:blank';
         
-        await new Promise(res => setTimeout(res, 10));
         if (loadId !== activeIframeLoadId) return;
 
         try {
@@ -279,7 +281,6 @@ function initApp() {
                 }
             };
             
-            await new Promise(res => setTimeout(res, 20));
             if (loadId !== activeIframeLoadId) return;
             f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
         } catch {
@@ -323,17 +324,16 @@ function initApp() {
         grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
     };
 
-    const renderGrid = async (type, preload = false) => {
+    const renderGrid = (type, preload = false) => {
         const grid = grids[type]; if (!grid.gridEl) return;
         toggleLoader(true);
-        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-        const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
-        const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-        grid.page = grid.page > totalPages ? 1 : grid.page;
-        grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
+        requestAnimationFrame(() => {
+            const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+            const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+            grid.page = grid.page > totalPages ? 1 : grid.page;
+            grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
-        const exec = () => {
             requestAnimationFrame(() => {
                 grid.pool.forEach((p, i) => {
                     const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
@@ -350,27 +350,25 @@ function initApp() {
                 });
 
                 if (grid.pageEl) {
-                    grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
-                    if (totalPages > 1) {
-                        $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
-                        $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
+                    grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" data-action="prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" data-action="next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
+                    if (totalPages > 1 && !grid.pageEl.dataset.bound) {
+                        grid.pageEl.dataset.bound = 'true';
+                        grid.pageEl.onclick = e => {
+                            const btn = e.target.closest('.page-btn');
+                            if (!btn) return;
+                            const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+                            const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
+                            const act = btn.dataset.action;
+                            if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
+                            else if (act === 'next' && grid.page < tp) { grid.page++; renderGrid(type, true); }
+                        };
                     }
                 }
 
-                Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
-                    if (p.img.complete && p.img.naturalWidth > 0) return res();
-                    p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
-                    setTimeout(res, 4000);
-                }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
+                grid.gridEl.style.opacity = '1'; 
+                toggleLoader(false);
             });
-        };
-
-        if (preload) { 
-            grid.gridEl.style.opacity = '0'; 
-            setTimeout(exec, 100); 
-        } else {
-            exec();
-        }
+        });
     };
 
     Object.keys(grids).forEach(type => {
@@ -425,15 +423,14 @@ function initApp() {
     updateAuthUI();
     if (currentUser) applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
 
-    const bindModal = (id, bId) => {
-        const m = $(id);
-        $(bId)?.addEventListener('click', () => m?.classList.remove('active'));
-        m?.addEventListener('click', e => e.target === m && m.classList.remove('active'));
-        return m;
-    };
+    [['auth-modal-overlay', 'auth-close-btn'], ['profile-modal-overlay', 'profile-close-btn'], ['homeworkhelper-modal', 'homeworkhelper-close-btn'], ['changelog-modal', 'changelog-close-btn']]
+        .forEach(([mId, bId]) => {
+            const m = $(mId);
+            $(bId)?.addEventListener('click', () => m?.classList.remove('active'));
+            m?.addEventListener('click', e => e.target === m && m.classList.remove('active'));
+        });
 
-    const authMod = bindModal('auth-modal-overlay', 'auth-close-btn'), profMod = bindModal('profile-modal-overlay', 'profile-close-btn');
-    bindModal('homeworkhelper-modal', 'homeworkhelper-close-btn'); bindModal('changelog-modal', 'changelog-close-btn');
+    const authMod = $('auth-modal-overlay'), profMod = $('profile-modal-overlay');
 
     const handleAuth = t => () => {
         const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim();
@@ -497,19 +494,34 @@ function initApp() {
     });
 
     const loadContent = tId => {
-        if (!$(tId)) return toggleLoader(false);
-        $(tId).classList.add('active');
-        Object.keys(grids).forEach(k => k !== tId && ($(`${k}-grid`).innerHTML = '', grids[k].pool = []));
-        if (grids[tId]) { buildPool(tId); setTimeout(() => renderGrid(tId, false), 50); }
-        else if (iframePages[tId]) loadIframePage(iframePages[tId].id, iframePages[tId].path);
-        else toggleLoader(false);
+        const targetPage = $(tId);
+        if (!targetPage) return toggleLoader(false);
+
+        pages.forEach(p => p.classList.remove('active'));
+        targetPage.classList.add('active');
+
+        Object.keys(grids).forEach(k => {
+            if (k !== tId && grids[k].gridEl) {
+                grids[k].gridEl.innerHTML = ''; 
+                grids[k].pool = [];
+            }
+        });
+
+        if (grids[tId]) { 
+            buildPool(tId); 
+            renderGrid(tId, false); 
+        } else if (iframePages[tId]) {
+            loadIframePage(iframePages[tId].id, iframePages[tId].path);
+        } else {
+            toggleLoader(false);
+        }
     };
 
     navBtns.forEach(btn => {
         const lDivs = btn.querySelectorAll('.label-data div');
         btn.dataset.tooltip = lDivs.length ? Array.from(lDivs).map(d => d.textContent).reverse().join('') : (btn.title || btn.dataset.target);
 
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
             toggleTooltip(null, false);
             const tId = btn.dataset.target;
             if (tId === 'profile') return !currentUser ? authMod?.classList.add('active') : (updateAuthUI(), profMod?.classList.add('active'));
@@ -518,10 +530,9 @@ function initApp() {
 
             toggleLoader(true);
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
-            pages.forEach(p => p.classList.remove('active'));
-            btn.classList.add('active'); updateIndicator(btn);
+            btn.classList.add('active'); 
+            updateIndicator(btn);
             
-            await new Promise(resolve => setTimeout(resolve, 30));
             loadContent(tId);
         });
     });
