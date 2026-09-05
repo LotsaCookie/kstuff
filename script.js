@@ -19,7 +19,6 @@ function initApp() {
     let activeIframeLoadId = 0;
 
     pages.forEach(p => {
-        p.style.transition = 'opacity 0.2s ease-in-out';
         p.style.opacity = p.classList.contains('active') ? '1' : '0';
         if (!p.classList.contains('active')) p.style.display = 'none';
     });
@@ -36,7 +35,7 @@ function initApp() {
     toggleLoader(false);
 
     const tooltipEl = body.appendChild(el('div', { className: 'js-custom-tooltip' }));
-    tooltipEl.style.cssText = `position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;transition:opacity 0.15s ease;`;
+    tooltipEl.style.cssText = `position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;`;
 
     const toggleTooltip = (e, show) => {
         const t = e?.target?.closest?.('[data-tooltip]');
@@ -47,7 +46,6 @@ function initApp() {
     ['mouseover', 'mousemove', 'mouseout'].forEach(evt => document.addEventListener(evt, e => toggleTooltip(e, evt !== 'mouseout')));
 
     let indicator = navBar?.querySelector('.nav-indicator') || navBar?.prepend(el('div', { className: 'nav-indicator' })) || navBar?.querySelector('.nav-indicator');
-    if (indicator) indicator.style.transition = 'all 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
 
     const updateIndicator = btn => {
         if (!btn || !indicator || !navBar) return;
@@ -244,7 +242,7 @@ function initApp() {
 
     $('save-settings-btn')?.addEventListener('click', e => {
         const btn = e.target;
-        const p = { theme: $('layout-theme-select')?.value, navPos: $('layout-nav-select')?.value, navSize: $('layout-size-select')?.value, textVis: $('layout-text-select')?.value, lastUpdated: Date.now() };
+        const p = { theme: $('layout-theme-select')?.value, navPos: $('layout-nav-select')?.value, navSize: $('layout-nav-select')?.value, textVis: $('layout-text-select')?.value, lastUpdated: Date.now() };
         if (p.theme) setStorage('kstuff_theme', p.theme);
         if (currentUser && backendReady && backendPort) {
             currentUser.settings = p; setStorage('kstuff_user', JSON.stringify(currentUser));
@@ -328,98 +326,73 @@ function initApp() {
     };
 
     const renderGrid = (type, preload = false) => {
-        return new Promise(async resolve => {
+        return new Promise(resolve => {
             const grid = grids[type]; if (!grid.gridEl) return resolve();
             
             grid.renderId = (grid.renderId || 0) + 1;
             const myRenderId = grid.renderId;
 
             toggleLoader(true);
-            grid.gridEl.style.transition = 'opacity 0.2s ease-in-out';
-            grid.gridEl.style.opacity = '0';
             
-            await new Promise(r => setTimeout(r, 200));
-            if (grid.renderId !== myRenderId) return resolve();
-
             const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             grid.page = grid.page > totalPages ? 1 : grid.page;
             grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
-            const CHUNK_SIZE = 12;
-            let idx = 0;
-            let imagePromises = [];
-
-            const processChunk = () => {
-                if (grid.renderId !== myRenderId) return resolve();
-                const end = Math.min(idx + CHUNK_SIZE, grid.pool.length);
+            for (let idx = 0; idx < grid.pool.length; idx++) {
+                const p = grid.pool[idx];
+                const item = grid.paginatedData[idx];
+                p.el.style.display = item ? 'block' : 'none';
                 
-                for (; idx < end; idx++) {
-                    const p = grid.pool[idx];
-                    const item = grid.paginatedData[idx];
-                    p.el.style.display = item ? 'block' : 'none';
-                    
-                    if (item) {
-                        if (p.t.textContent !== item.title) p.t.textContent = item.title;
-                        if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
-                        if (p.c) p.c.textContent = item.category || 'All';
-                        p.el.dataset.tooltip = item.title;
+                if (item) {
+                    if (p.t.textContent !== item.title) p.t.textContent = item.title;
+                    if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
+                    if (p.c) p.c.textContent = item.category || 'All';
+                    p.el.dataset.tooltip = item.title;
 
-                        if (p.img.dataset.src !== (item.image || '')) { 
-                            p.img.dataset.src = item.image || ''; 
-                            p.img.onload = p.img.onerror = null;
-                            if (p.img.src) p.img.src = '';
-                            if (item.image) {
-                                imagePromises.push(new Promise(imgRes => {
-                                    p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; imgRes(); };
-                                    p.img.src = item.image;
-                                }));
-                                p.img.style.display = 'block';
-                            } else {
-                                p.img.removeAttribute('src'); 
-                                p.img.style.display = 'none';
-                            }
-                        } else if (item.image) {
-                            p.img.style.display = 'block'; 
-                        }
-                    } else {
-                        p.img.dataset.src = ''; 
+                    if (p.img.dataset.src !== (item.image || '')) { 
+                        p.img.dataset.src = item.image || ''; 
                         p.img.onload = p.img.onerror = null;
                         if (p.img.src) p.img.src = '';
-                        p.img.removeAttribute('src'); 
-                        p.img.style.display = 'none';
-                        if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
-                    }
-                }
-
-                if (idx < grid.pool.length) {
-                    requestAnimationFrame(processChunk);
-                } else {
-                    if (grid.pageEl) {
-                        grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" data-action="prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" data-action="next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
-                        if (totalPages > 1 && !grid.pageEl.dataset.bound) {
-                            grid.pageEl.dataset.bound = 'true';
-                            grid.pageEl.onclick = e => {
-                                const btn = e.target.closest('.page-btn');
-                                if (!btn) return;
-                                const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
-                                const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
-                                const act = btn.dataset.action;
-                                if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
-                                else if (act === 'next' && grid.page < tp) { grid.page++; renderGrid(type, true); }
-                            };
+                        if (item.image) {
+                            p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; };
+                            p.img.src = item.image;
+                            p.img.style.display = 'block';
+                        } else {
+                            p.img.removeAttribute('src'); 
+                            p.img.style.display = 'none';
                         }
+                    } else if (item.image) {
+                        p.img.style.display = 'block'; 
                     }
-                    
-                    Promise.all(imagePromises).then(() => {
-                        if (grid.renderId !== myRenderId) return resolve();
-                        grid.gridEl.style.opacity = '1'; 
-                        toggleLoader(false);
-                        resolve();
-                    });
+                } else {
+                    p.img.dataset.src = ''; 
+                    p.img.onload = p.img.onerror = null;
+                    if (p.img.src) p.img.src = '';
+                    p.img.removeAttribute('src'); 
+                    p.img.style.display = 'none';
+                    if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
                 }
-            };
-            requestAnimationFrame(processChunk);
+            }
+
+            if (grid.pageEl) {
+                grid.pageEl.innerHTML = `<button class="page-btn" data-action="prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" data-action="next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>`;
+                if (!grid.pageEl.dataset.bound) {
+                    grid.pageEl.dataset.bound = 'true';
+                    grid.pageEl.onclick = e => {
+                        const btn = e.target.closest('.page-btn');
+                        if (!btn) return;
+                        const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+                        const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
+                        const act = btn.dataset.action;
+                        if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
+                        else if (act === 'next' && grid.page < tp) { grid.page++; renderGrid(type, true); }
+                    };
+                }
+            }
+
+            toggleLoader(false);
+            resolve();
         });
     };
 
@@ -427,12 +400,12 @@ function initApp() {
         let timer;
         $(`${type}-search`)?.addEventListener('input', e => {
             const clr = $(`${type}-search-clear`); if (clr) clr.style.display = e.target.value ? 'block' : 'none';
-            clearTimeout(timer); toggleLoader(true);
-            timer = setTimeout(() => { grids[type].search = e.target.value.toLowerCase().trim(); grids[type].page = 1; renderGrid(type, true); }, 150);
+            clearTimeout(timer);
+            timer = setTimeout(() => { grids[type].search = e.target.value.toLowerCase().trim(); grids[type].page = 1; renderGrid(type, true); }, 100);
         });
         $(`${type}-search-clear`)?.addEventListener('click', () => {
             $(`${type}-search`).value = ''; $(`${type}-search-clear`).style.display = 'none';
-            grids[type].search = ''; grids[type].page = 1; toggleLoader(true); renderGrid(type, true);
+            grids[type].search = ''; grids[type].page = 1; renderGrid(type, true);
         });
     });
 
@@ -531,8 +504,6 @@ function initApp() {
         toggleLoader(true);
 
         if (currentActive) {
-            currentActive.style.opacity = '0';
-            await new Promise(r => setTimeout(r, 200)); 
             currentActive.classList.remove('active');
             currentActive.style.display = 'none'; 
         }
@@ -546,7 +517,7 @@ function initApp() {
         });
 
         targetPage.style.display = 'block';
-        targetPage.style.opacity = '0';
+        targetPage.style.opacity = '1';
         targetPage.classList.add('active');
 
         if (grids[tId]) { 
@@ -560,9 +531,6 @@ function initApp() {
         }
 
         toggleLoader(false);
-        requestAnimationFrame(() => {
-            targetPage.style.opacity = '1';
-        });
     };
 
     navBtns.forEach(btn => {
@@ -608,7 +576,7 @@ function initApp() {
         const setC = (id, opts, type) => {
             const s = $(id); if (!s) return;
             s.innerHTML = (opts||[]).map(o => `<option value="${o}">${o}</option>`).join(''); applyCustomDropdown(s);
-            s.addEventListener('change', e => { toggleLoader(true); grids[type].category = e.target.value; grids[type].page = 1; renderGrid(type, true); });
+            s.addEventListener('change', e => { grids[type].category = e.target.value; grids[type].page = 1; renderGrid(type, true); });
         };
         setC('readingcorner-category-select', c.Games, 'readingcorner'); setC('sciencequiz-category-select', c.Apps, 'sciencequiz');
     }).catch(()=>{});
