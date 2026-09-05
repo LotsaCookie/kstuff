@@ -18,6 +18,13 @@ function initApp() {
     let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
     let activeIframeLoadId = 0;
 
+    // Initialize page transition styles
+    pages.forEach(p => {
+        p.style.transition = 'opacity 0.2s ease-in-out';
+        p.style.opacity = p.classList.contains('active') ? '1' : '0';
+        if (!p.classList.contains('active')) p.style.display = 'none';
+    });
+
     try { 
         currentUser = JSON.parse(getStorage('kstuff_user')); 
         const uTheme = currentUser?.settings?.theme || currentUser?.theme;
@@ -257,41 +264,31 @@ function initApp() {
         vms: { id: 'vms-iframe', path: 'Pages/music.html' }
     };
 
-    async function loadIframePage(id, path) {
-        const loadId = ++activeIframeLoadId;
-        const f = $(id); 
-        if (!f) return toggleLoader(false);
-        
-        f.style.display = 'none';
-        toggleLoader(true);
-        f.removeAttribute('srcdoc');
-        f.src = 'about:blank';
-        
-        if (loadId !== activeIframeLoadId) return;
+    function loadIframePage(id, path) {
+        return new Promise(async resolve => {
+            const loadId = ++activeIframeLoadId;
+            const f = $(id); 
+            if (!f) return resolve();
+            
+            f.removeAttribute('srcdoc');
+            f.src = 'about:blank';
+            
+            if (loadId !== activeIframeLoadId) return resolve();
 
-        try {
-            let html = await fetchWithProxy(path, true);
-            if (loadId !== activeIframeLoadId) return;
-            const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-            
-            f.onload = () => { 
+            try {
+                let html = await fetchWithProxy(path, true);
+                if (loadId !== activeIframeLoadId) return resolve();
+                const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
+                
+                f.onload = () => resolve();
+                f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
+            } catch {
                 if (loadId === activeIframeLoadId) {
-                    f.style.display = 'block';
-                    toggleLoader(false); 
-                }
-            };
-            
-            if (loadId !== activeIframeLoadId) return;
-            f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
-        } catch {
-            if (loadId === activeIframeLoadId) {
-                f.onload = () => {
-                    f.style.display = 'block';
-                    toggleLoader(false);
-                };
-                f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
+                    f.onload = () => resolve();
+                    f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
+                } else resolve();
             }
-        }
+        });
     }
 
     const grids = {
@@ -325,18 +322,24 @@ function initApp() {
     };
 
     const renderGrid = (type, preload = false) => {
-        const grid = grids[type]; if (!grid.gridEl) return;
-        toggleLoader(true);
+        return new Promise(resolve => {
+            const grid = grids[type]; if (!grid.gridEl) return resolve();
+            if (preload) toggleLoader(true);
 
-        requestAnimationFrame(() => {
             const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             grid.page = grid.page > totalPages ? 1 : grid.page;
             grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
-            requestAnimationFrame(() => {
-                grid.pool.forEach((p, i) => {
-                    const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
+            const CHUNK_SIZE = 12; // Process 12 buttons per frame to prevent freezing
+            let idx = 0;
+
+            const processChunk = () => {
+                const end = Math.min(idx + CHUNK_SIZE, grid.pool.length);
+                for (; idx < end; idx++) {
+                    const p = grid.pool[idx];
+                    const item = grid.paginatedData[idx];
+                    p.el.style.display = item ? 'block' : 'none';
                     if (item) {
                         if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
                         if (p.t.textContent !== item.title) p.t.textContent = item.title;
@@ -347,27 +350,32 @@ function initApp() {
                         p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
                         if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
                     }
-                });
-
-                if (grid.pageEl) {
-                    grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" data-action="prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" data-action="next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
-                    if (totalPages > 1 && !grid.pageEl.dataset.bound) {
-                        grid.pageEl.dataset.bound = 'true';
-                        grid.pageEl.onclick = e => {
-                            const btn = e.target.closest('.page-btn');
-                            if (!btn) return;
-                            const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
-                            const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
-                            const act = btn.dataset.action;
-                            if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
-                            else if (act === 'next' && grid.page < tp) { grid.page++; renderGrid(type, true); }
-                        };
-                    }
                 }
 
-                grid.gridEl.style.opacity = '1'; 
-                toggleLoader(false);
-            });
+                if (idx < grid.pool.length) {
+                    requestAnimationFrame(processChunk);
+                } else {
+                    if (grid.pageEl) {
+                        grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" data-action="prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" data-action="next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
+                        if (totalPages > 1 && !grid.pageEl.dataset.bound) {
+                            grid.pageEl.dataset.bound = 'true';
+                            grid.pageEl.onclick = e => {
+                                const btn = e.target.closest('.page-btn');
+                                if (!btn) return;
+                                const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+                                const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
+                                const act = btn.dataset.action;
+                                if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
+                                else if (act === 'next' && grid.page < tp) { grid.page++; renderGrid(type, true); }
+                            };
+                        }
+                    }
+                    grid.gridEl.style.opacity = '1'; 
+                    if (preload) toggleLoader(false);
+                    resolve();
+                }
+            };
+            requestAnimationFrame(processChunk);
         });
     };
 
@@ -393,15 +401,8 @@ function initApp() {
             const grid = grids[type];
             const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
-            if (e.key === 'ArrowLeft' && grid.page > 1) {
-                e.preventDefault();
-                grid.page--;
-                renderGrid(type, true);
-            } else if (e.key === 'ArrowRight' && grid.page < totalPages) {
-                e.preventDefault();
-                grid.page++;
-                renderGrid(type, true);
-            }
+            if (e.key === 'ArrowLeft' && grid.page > 1) { e.preventDefault(); grid.page--; renderGrid(type, true); } 
+            else if (e.key === 'ArrowRight' && grid.page < totalPages) { e.preventDefault(); grid.page++; renderGrid(type, true); }
         }
     });
 
@@ -435,28 +436,13 @@ function initApp() {
     const handleAuth = t => () => {
         const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim();
         const errEl = $('auth-error-msg');
-
         if (t === 'signup') {
-            if (u.length > MAX_USERNAME_LENGTH) {
-                if (errEl) { errEl.textContent = "Username cannot exceed 20 characters."; errEl.style.display = 'block'; }
-                return;
-            }
-            if (!/^[a-zA-Z0-9_]+$/.test(u)) {
-                if (errEl) { errEl.textContent = "Username can only contain letters, numbers, and underscores."; errEl.style.display = 'block'; }
-                return;
-            }
-            const underscoreCount = (u.match(/_/g) || []).length;
-            if (underscoreCount > MAX_UNDERSCORES) {
-                if (errEl) { errEl.textContent = `Username can only contain up to ${MAX_UNDERSCORES} underscores.`; errEl.style.display = 'block'; }
-                return;
-            }
+            if (u.length > MAX_USERNAME_LENGTH) return errEl && (errEl.textContent = "Username cannot exceed 20 characters.", errEl.style.display = 'block');
+            if (!/^[a-zA-Z0-9_]+$/.test(u)) return errEl && (errEl.textContent = "Username can only contain letters, numbers, and underscores.", errEl.style.display = 'block');
+            if ((u.match(/_/g) || []).length > MAX_UNDERSCORES) return errEl && (errEl.textContent = `Username can only contain up to ${MAX_UNDERSCORES} underscores.`, errEl.style.display = 'block');
         }
-
-        if (u && p && backendPort) {
-            backendPort.postMessage({ type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) });
-        } else if (!u || !p) {
-            if (errEl) { errEl.textContent = "Fill out all fields."; errEl.style.display = 'block'; }
-        }
+        if (u && p && backendPort) backendPort.postMessage({ type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) });
+        else if (!u || !p) errEl && (errEl.textContent = "Fill out all fields.", errEl.style.display = 'block');
     };
 
     $('do-login-btn')?.addEventListener('click', handleAuth('login'));
@@ -493,12 +479,19 @@ function initApp() {
         setTimeout(() => { btn.textContent = oT; toggleProfEdit(false); }, 600);
     });
 
-    const loadContent = tId => {
+    const loadContent = async tId => {
         const targetPage = $(tId);
-        if (!targetPage) return toggleLoader(false);
+        if (!targetPage || targetPage.classList.contains('active')) return toggleLoader(false);
 
-        pages.forEach(p => p.classList.remove('active'));
-        targetPage.classList.add('active');
+        const currentActive = document.querySelector('.page.active');
+        toggleLoader(true);
+
+        if (currentActive) {
+            currentActive.style.opacity = '0';
+            await new Promise(r => setTimeout(r, 200)); 
+            currentActive.classList.remove('active');
+            currentActive.style.display = 'none'; 
+        }
 
         Object.keys(grids).forEach(k => {
             if (k !== tId && grids[k].gridEl) {
@@ -507,14 +500,24 @@ function initApp() {
             }
         });
 
+        targetPage.style.display = 'block';
+        targetPage.style.opacity = '0';
+        targetPage.classList.add('active');
+
         if (grids[tId]) { 
             buildPool(tId); 
-            renderGrid(tId, false); 
+            await renderGrid(tId, false); 
         } else if (iframePages[tId]) {
-            loadIframePage(iframePages[tId].id, iframePages[tId].path);
-        } else {
-            toggleLoader(false);
+            const iframeData = iframePages[tId];
+            if ($(iframeData.id)) $(iframeData.id).style.display = 'none';
+            await loadIframePage(iframeData.id, iframeData.path); // Waits for iframe fetch/load
+            if ($(iframeData.id)) $(iframeData.id).style.display = 'block';
         }
+
+        toggleLoader(false);
+        requestAnimationFrame(() => {
+            targetPage.style.opacity = '1';
+        });
     };
 
     navBtns.forEach(btn => {
@@ -528,7 +531,6 @@ function initApp() {
             if (tId === 'homeworkhelper') return $('homeworkhelper-modal')?.classList.add('active');
             if (tId === 'changelog') return $('changelog-modal')?.classList.add('active');
 
-            toggleLoader(true);
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
             btn.classList.add('active'); 
             updateIndicator(btn);
@@ -590,7 +592,7 @@ function initApp() {
         toggleLoader(true);
         try {
             const n = await fetchWithProxy(p).catch(()=>[]);
-            if (n?.length) { grids[t].data = proc(n); grids[t].page = 1; renderGrid(t, true); } else toggleLoader(false);
+            if (n?.length) { grids[t].data = proc(n); grids[t].page = 1; await renderGrid(t, true); } else toggleLoader(false);
         } catch { toggleLoader(false); }
     };
 
@@ -604,7 +606,7 @@ function initApp() {
         fetchWithProxy('Json/g.json').catch(()=>[]), fetchWithProxy('Json/a.json').catch(()=>[]), fetchWithProxy('Json/truffled.json').catch(()=>null),
         fCfg('Json/urls/scram.json'), sDP.then(getWorkingConfig), fCfg('Json/urls/uv.json'), fCfg('Json/urls/truffled.json'),
         sDP.then(d => getWorkingConfig(d.map(i => ({ url: i.url, img: i.img, final: "" }))))
-    ]).then(([g, a, tr, sc, st, uv, trCfg, fr]) => {
+    ]).then(async ([g, a, tr, sc, st, uv, trCfg, fr]) => {
         if (st) initBackendBridge(st);
         gRep = {
             scram: sc ? cleanUrl(sc.url) + sc.final : '',
@@ -615,7 +617,11 @@ function initApp() {
         };
         gTruf.clear(); tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
         grids.readingcorner.data = proc(g); grids.sciencequiz.data = proc(a);
-        loadContent(document.querySelector('.page.active')?.id);
+        
+        const activePg = document.querySelector('.page.active');
+        if (activePg) await loadContent(activePg.id);
+        else toggleLoader(false);
+
     }).catch(() => toggleLoader(false));
 }
 
