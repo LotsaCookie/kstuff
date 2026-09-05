@@ -385,7 +385,9 @@ body.text-hide .nav-right .nav-divider {
 
 #mathworksheets.page.active, 
 #gradebook.page.active,
-#lessonplanner.page.active {
+#lessonplanner.page.active,
+#studyhall.page.active,
+#vms.page.active {
     display: flex;
     flex-direction: column;
     height: 100%;
