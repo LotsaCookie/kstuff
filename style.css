@@ -505,6 +505,11 @@ body.text-hide .nav-right .nav-divider {
     gap: 15px;
     flex-wrap: wrap;
     margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-color); /* Matches page bg so scrolled text is hidden behind it */
+    padding: 15px 0;
 }
 
 .modern-select-wrapper {
@@ -520,6 +525,11 @@ body.text-hide .nav-right .nav-divider {
 
 .modern-select-wrapper.search-wrapper {
     width: 260px;
+    transition: opacity 0.3s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.modern-select-wrapper.search-wrapper.dimmed {
+    opacity: 0.8;
 }
 
 .refresh-btn {
