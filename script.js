@@ -18,7 +18,6 @@ function initApp() {
     let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
     let activeIframeLoadId = 0;
 
-    // Initialize page transition styles
     pages.forEach(p => {
         p.style.transition = 'opacity 0.2s ease-in-out';
         p.style.opacity = p.classList.contains('active') ? '1' : '0';
