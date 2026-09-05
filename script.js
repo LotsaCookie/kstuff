@@ -291,8 +291,8 @@ function initApp() {
     }
 
     const grids = {
-        readingcorner: { data: [], pool: [], gridEl: $('readingcorner-grid'), pageEl: $('readingcorner-pagination'), category: "All", search: "", page: 1, id: 'readingcorner' },
-        sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz' }
+        readingcorner: { data: [], pool: [], gridEl: $('readingcorner-grid'), pageEl: $('readingcorner-pagination'), category: "All", search: "", page: 1, id: 'readingcorner', renderId: 0 },
+        sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz', renderId: 0 }
     };
 
     const openResource = item => {
@@ -303,11 +303,18 @@ function initApp() {
         if (modalTitle) modalTitle.textContent = item.title;
         if (modalOverlay) modalOverlay.classList.add('active');
         if (modalIframe) modalIframe.src = item.url;
-        setTimeout(() => Object.values(grids).forEach(g => { if(g.gridEl) g.gridEl.innerHTML = ''; g.pool = []; }), 50);
+        setTimeout(() => Object.values(grids).forEach(g => {
+            if(g.gridEl) {
+                if (g.pool) g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
+                g.gridEl.innerHTML = '';
+                g.pool = [];
+            }
+        }), 50);
     };
 
     const buildPool = type => {
         const grid = grids[type]; if (!grid.gridEl) return;
+        if (grid.pool) grid.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
         grid.gridEl.innerHTML = ''; grid.pool = [];
         const frag = document.createDocumentFragment();
         for (let i = 0; i < ITEMS_PER_PAGE; i++) {
@@ -321,32 +328,66 @@ function initApp() {
     };
 
     const renderGrid = (type, preload = false) => {
-        return new Promise(resolve => {
+        return new Promise(async resolve => {
             const grid = grids[type]; if (!grid.gridEl) return resolve();
-            if (preload) toggleLoader(true);
+            
+            grid.renderId = (grid.renderId || 0) + 1;
+            const myRenderId = grid.renderId;
+
+            toggleLoader(true);
+            grid.gridEl.style.transition = 'opacity 0.2s ease-in-out';
+            grid.gridEl.style.opacity = '0';
+            
+            await new Promise(r => setTimeout(r, 200));
+            if (grid.renderId !== myRenderId) return resolve();
 
             const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             grid.page = grid.page > totalPages ? 1 : grid.page;
             grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
-            const CHUNK_SIZE = 12; // Process 12 buttons per frame to prevent freezing
+            const CHUNK_SIZE = 12;
             let idx = 0;
+            let imagePromises = [];
 
             const processChunk = () => {
+                if (grid.renderId !== myRenderId) return resolve();
                 const end = Math.min(idx + CHUNK_SIZE, grid.pool.length);
+                
                 for (; idx < end; idx++) {
                     const p = grid.pool[idx];
                     const item = grid.paginatedData[idx];
                     p.el.style.display = item ? 'block' : 'none';
+                    
                     if (item) {
-                        if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
                         if (p.t.textContent !== item.title) p.t.textContent = item.title;
                         if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
                         if (p.c) p.c.textContent = item.category || 'All';
                         p.el.dataset.tooltip = item.title;
+
+                        if (p.img.dataset.src !== (item.image || '')) { 
+                            p.img.dataset.src = item.image || ''; 
+                            p.img.onload = p.img.onerror = null;
+                            if (p.img.src) p.img.src = '';
+                            if (item.image) {
+                                imagePromises.push(new Promise(imgRes => {
+                                    p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; imgRes(); };
+                                    p.img.src = item.image;
+                                }));
+                                p.img.style.display = 'block';
+                            } else {
+                                p.img.removeAttribute('src'); 
+                                p.img.style.display = 'none';
+                            }
+                        } else if (item.image) {
+                            p.img.style.display = 'block'; 
+                        }
                     } else {
-                        p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
+                        p.img.dataset.src = ''; 
+                        p.img.onload = p.img.onerror = null;
+                        if (p.img.src) p.img.src = '';
+                        p.img.removeAttribute('src'); 
+                        p.img.style.display = 'none';
                         if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
                     }
                 }
@@ -369,9 +410,13 @@ function initApp() {
                             };
                         }
                     }
-                    grid.gridEl.style.opacity = '1'; 
-                    if (preload) toggleLoader(false);
-                    resolve();
+                    
+                    Promise.all(imagePromises).then(() => {
+                        if (grid.renderId !== myRenderId) return resolve();
+                        grid.gridEl.style.opacity = '1'; 
+                        toggleLoader(false);
+                        resolve();
+                    });
                 }
             };
             requestAnimationFrame(processChunk);
@@ -494,6 +539,7 @@ function initApp() {
 
         Object.keys(grids).forEach(k => {
             if (k !== tId && grids[k].gridEl) {
+                if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
                 grids[k].gridEl.innerHTML = ''; 
                 grids[k].pool = [];
             }
@@ -509,7 +555,7 @@ function initApp() {
         } else if (iframePages[tId]) {
             const iframeData = iframePages[tId];
             if ($(iframeData.id)) $(iframeData.id).style.display = 'none';
-            await loadIframePage(iframeData.id, iframeData.path); // Waits for iframe fetch/load
+            await loadIframePage(iframeData.id, iframeData.path); 
             if ($(iframeData.id)) $(iframeData.id).style.display = 'block';
         }
 
