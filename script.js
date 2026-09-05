@@ -8,7 +8,7 @@ function initApp() {
     const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
     const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
 
-    const ITEMS_PER_PAGE = 64;
+    const ITEMS_PER_PAGE = 48;
     const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 
     const MAX_UNDERSCORES = 2;
@@ -256,24 +256,38 @@ function initApp() {
 
     async function loadIframePage(id, path) {
         const loadId = ++activeIframeLoadId;
-        const f = $(id); if (!f) return toggleLoader(false);
+        const f = $(id); 
+        if (!f) return toggleLoader(false);
+        
+        f.style.display = 'none';
         toggleLoader(true);
         f.removeAttribute('srcdoc');
         f.src = 'about:blank';
-        await new Promise(res => setTimeout(res, 20));
+        
+        await new Promise(res => setTimeout(res, 10));
         if (loadId !== activeIframeLoadId) return;
 
         try {
             let html = await fetchWithProxy(path, true);
             if (loadId !== activeIframeLoadId) return;
             const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-            f.onload = () => { if (loadId === activeIframeLoadId) toggleLoader(false); };
+            
+            f.onload = () => { 
+                if (loadId === activeIframeLoadId) {
+                    f.style.display = 'block';
+                    toggleLoader(false); 
+                }
+            };
+            
             await new Promise(res => setTimeout(res, 20));
             if (loadId !== activeIframeLoadId) return;
             f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
         } catch {
             if (loadId === activeIframeLoadId) {
-                f.onload = () => toggleLoader(false);
+                f.onload = () => {
+                    f.style.display = 'block';
+                    toggleLoader(false);
+                };
                 f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
             }
         }
@@ -320,40 +334,42 @@ function initApp() {
         grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
 
         const exec = () => {
-            grid.pool.forEach((p, i) => {
-                const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
-                if (item) {
-                    if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
-                    if (p.t.textContent !== item.title) p.t.textContent = item.title;
-                    if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
-                    if (p.c) p.c.textContent = item.category || 'All';
-                    p.el.dataset.tooltip = item.title;
-                } else {
-                    p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
-                    if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
+            requestAnimationFrame(() => {
+                grid.pool.forEach((p, i) => {
+                    const item = grid.paginatedData[i]; p.el.style.display = item ? 'block' : 'none';
+                    if (item) {
+                        if (p.img.dataset.src !== (item.image || '')) { p.img.dataset.src = p.img.src = item.image || ''; p.img.style.display = item.image ? 'block' : 'none'; }
+                        if (p.t.textContent !== item.title) p.t.textContent = item.title;
+                        if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
+                        if (p.c) p.c.textContent = item.category || 'All';
+                        p.el.dataset.tooltip = item.title;
+                    } else {
+                        p.img.dataset.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none';
+                        if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
+                    }
+                });
+
+                if (grid.pageEl) {
+                    grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
+                    if (totalPages > 1) {
+                        $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
+                        $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
+                    }
                 }
+
+                Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
+                    if (p.img.complete && p.img.naturalWidth > 0) return res();
+                    p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
+                    setTimeout(res, 4000);
+                }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
             });
-
-            if (grid.pageEl) {
-                grid.pageEl.innerHTML = totalPages > 1 ? `<button class="page-btn" id="${type}-prev" ${grid.page===1?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-left"></i></button><span style="font-weight:700;font-size:1.1rem;min-width:80px;text-align:center;user-select:none;">${grid.page} / ${totalPages}</span><button class="page-btn" id="${type}-next" ${grid.page===totalPages?'style="opacity:0.4;cursor:not-allowed;"':''}><i class="ph ph-caret-right"></i></button>` : '';
-                if (totalPages > 1) {
-                    $(`${type}-prev`).onclick = () => { if (grid.page > 1) { grid.page--; renderGrid(type, true); } };
-                    $(`${type}-next`).onclick = () => { if (grid.page < totalPages) { grid.page++; renderGrid(type, true); } };
-                }
-            }
-
-            Promise.all(grid.pool.map((p, i) => grid.paginatedData[i]?.image && p.img ? new Promise(res => {
-                if (p.img.complete && p.img.naturalWidth > 0) return res();
-                p.img.onload = p.img.onerror = () => { p.img.onload = p.img.onerror = null; res(); };
-                setTimeout(res, 4000);
-            }) : null)).then(() => { grid.gridEl.style.opacity = '1'; toggleLoader(false); });
         };
 
         if (preload) { 
             grid.gridEl.style.opacity = '0'; 
-            setTimeout(exec, 250); 
+            setTimeout(exec, 100); 
         } else {
-            setTimeout(exec, 20);
+            exec();
         }
     };
 
