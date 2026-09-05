@@ -508,8 +508,9 @@ body.text-hide .nav-right .nav-divider {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: var(--bg-color); /* Matches page bg so scrolled text is hidden behind it */
+    background: transparent;
     padding: 15px 0;
+    pointer-events: none;
 }
 
 .modern-select-wrapper {
@@ -521,6 +522,7 @@ body.text-hide .nav-right .nav-divider {
     padding: 0.5rem 1rem;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     width: 220px;
+    pointer-events: auto;
 }
 
 .modern-select-wrapper.search-wrapper {
@@ -545,6 +547,7 @@ body.text-hide .nav-right .nav-divider {
     cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     outline: none;
+    pointer-events: auto;
 }
 
 .refresh-btn:focus, 
@@ -729,6 +732,11 @@ body.text-hide .nav-right .nav-divider {
     gap: 0.5rem;
     margin-top: 1rem;
     flex-wrap: wrap;
+    position: sticky;
+    bottom: 0;
+    padding: 1rem 0;
+    z-index: 100;
+    pointer-events: none;
 }
 
 .page-btn {
@@ -740,6 +748,7 @@ body.text-hide .nav-right .nav-divider {
     font-weight: 900 !important;
     cursor: pointer;
     transition: all 0.2s ease;
+    pointer-events: auto;
 }
 
 .page-btn:hover, 
@@ -1185,4 +1194,4 @@ body.text-hide .nav-right .nav-divider {
 #do-logout-btn:active {
     transform: translateY(0);
     box-shadow: none;
-}
+    }
