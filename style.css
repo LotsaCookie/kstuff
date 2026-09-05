@@ -740,7 +740,7 @@ body.text-hide .nav-right .nav-divider {
     align-items: center;
     gap: 0.5rem;
     position: sticky;
-    bottom: 15px;
+    bottom: 5px;
     margin: 1.5rem auto;
     width: fit-content;
     background: var(--nav-bg);
