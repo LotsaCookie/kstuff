@@ -16,6 +16,7 @@ function initApp() {
 
     let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
     let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
+    let activeIframeLoadId = 0;
 
     try { 
         currentUser = JSON.parse(getStorage('kstuff_user')); 
@@ -254,19 +255,27 @@ function initApp() {
     };
 
     async function loadIframePage(id, path) {
+        const loadId = ++activeIframeLoadId;
         const f = $(id); if (!f) return toggleLoader(false);
         toggleLoader(true);
-        await new Promise(res => setTimeout(res, 20));
         f.removeAttribute('srcdoc');
+        f.src = 'about:blank';
+        await new Promise(res => setTimeout(res, 20));
+        if (loadId !== activeIframeLoadId) return;
+
         try {
             let html = await fetchWithProxy(path, true);
+            if (loadId !== activeIframeLoadId) return;
             const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-            f.onload = () => toggleLoader(false);
+            f.onload = () => { if (loadId === activeIframeLoadId) toggleLoader(false); };
             await new Promise(res => setTimeout(res, 20));
+            if (loadId !== activeIframeLoadId) return;
             f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
         } catch {
-            f.onload = () => toggleLoader(false);
-            f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
+            if (loadId === activeIframeLoadId) {
+                f.onload = () => toggleLoader(false);
+                f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
+            }
         }
     }
 
@@ -359,6 +368,27 @@ function initApp() {
             $(`${type}-search`).value = ''; $(`${type}-search-clear`).style.display = 'none';
             grids[type].search = ''; grids[type].page = 1; toggleLoader(true); renderGrid(type, true);
         });
+    });
+
+    document.addEventListener('keydown', e => {
+        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+        const activePage = document.querySelector('.page.active');
+        if (!activePage) return;
+        const type = activePage.id;
+        if (grids[type]) {
+            const grid = grids[type];
+            const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+            const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+            if (e.key === 'ArrowLeft' && grid.page > 1) {
+                e.preventDefault();
+                grid.page--;
+                renderGrid(type, true);
+            } else if (e.key === 'ArrowRight' && grid.page < totalPages) {
+                e.preventDefault();
+                grid.page++;
+                renderGrid(type, true);
+            }
+        }
     });
 
     document.head.appendChild(el('style', { textContent: `i.profile-avatar-container{width:1.2em;height:1.2em;border-radius:50%;overflow:hidden;display:inline-flex;justify-content:center;align-items:center;}i.profile-avatar-container img{width:100%;height:100%;object-fit:cover;}` }));
