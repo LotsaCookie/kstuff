@@ -504,9 +504,10 @@ body.text-hide .nav-right .nav-divider {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
-    margin-bottom: 2rem;
-    position: sticky;
-    top: 5px;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 100;
     background: var(--nav-bg);
     border: 1px solid rgba(128, 128, 128, 0.25);
@@ -516,8 +517,6 @@ body.text-hide .nav-right .nav-divider {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
     pointer-events: auto;
 }
 
