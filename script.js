@@ -519,6 +519,14 @@ function initApp() {
         if (currentActive) {
             currentActive.classList.remove('active');
             currentActive.style.display = 'none'; 
+            
+            if (iframePages[currentActive.id]) {
+                const oldIframe = $(iframePages[currentActive.id].id);
+                if (oldIframe) {
+                    oldIframe.removeAttribute('srcdoc');
+                    oldIframe.src = 'about:blank';
+                }
+            }
         }
 
         Object.keys(grids).forEach(k => {
