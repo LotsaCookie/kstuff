@@ -504,7 +504,7 @@ body.text-hide .nav-right .nav-divider {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
-    position: fixed;
+    position: absolute;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
@@ -738,7 +738,7 @@ body.text-hide .nav-right .nav-divider {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    position: fixed;
+    position: absolute;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
