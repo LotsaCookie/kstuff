@@ -739,9 +739,10 @@ body.text-hide .nav-right .nav-divider {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    position: sticky;
-    bottom: 10px;
-    margin: 0 auto;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     width: fit-content;
     background: var(--nav-bg);
     border: 1px solid rgba(128, 128, 128, 0.25);
