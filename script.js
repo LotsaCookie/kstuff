@@ -32,7 +32,7 @@ function initApp() {
     if (!getStorage('kstuff_theme')) setStorage('kstuff_theme', 'theme-sakura');
 
     const toggleLoader = show => loader && (loader.style.opacity = show ? '1' : '0', loader.classList.toggle('hidden', !show));
-    toggleLoader(true);
+    toggleLoader(false);
 
     const tooltipEl = body.appendChild(el('div', { className: 'js-custom-tooltip' }));
     tooltipEl.style.cssText = `position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;`;
@@ -509,25 +509,16 @@ function initApp() {
         setTimeout(() => { btn.textContent = oT; toggleProfEdit(false); }, 600);
     });
 
-    const loadContent = async (tId, forceReload = false) => {
+    const loadContent = async tId => {
         const targetPage = $(tId);
-        
-        if (!targetPage || (!forceReload && targetPage.classList.contains('active'))) return toggleLoader(false);
+        if (!targetPage || targetPage.classList.contains('active')) return toggleLoader(false);
 
         const currentActive = document.querySelector('.page.active');
         toggleLoader(true);
 
-        if (currentActive && currentActive.id !== tId) {
+        if (currentActive) {
             currentActive.classList.remove('active');
             currentActive.style.display = 'none'; 
-            
-            if (iframePages[currentActive.id]) {
-                const f = $(iframePages[currentActive.id].id);
-                if (f) {
-                    f.removeAttribute('srcdoc');
-                    f.src = 'about:blank';
-                }
-            }
         }
 
         Object.keys(grids).forEach(k => {
@@ -654,7 +645,7 @@ function initApp() {
         grids.readingcorner.data = proc(g); grids.sciencequiz.data = proc(a);
         
         const activePg = document.querySelector('.page.active');
-        if (activePg) await loadContent(activePg.id, true);
+        if (activePg) await loadContent(activePg.id);
         else toggleLoader(false);
 
     }).catch(() => toggleLoader(false));
