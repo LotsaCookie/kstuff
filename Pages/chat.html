@@ -511,7 +511,7 @@
                 
                 for (let proxyUrl of proxies) {
                     try {
-                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}urls/static.json` : "urls/static.json";
+                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}Json/urls/static.json` : "urls/static.json";
                         const res = await fetch(reqUrl);
                         if (res.ok) {
                             staticJsonData = await res.json();
