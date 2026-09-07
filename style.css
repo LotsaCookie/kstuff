@@ -500,10 +500,11 @@ body.text-hide .nav-right .nav-divider {
 
 .filter-bar {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
     gap: 15px;
-    flex-wrap: wrap;
     position: absolute;
     top: 20px;
     left: 50%;
