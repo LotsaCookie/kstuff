@@ -257,7 +257,7 @@ function initApp() {
         mathworksheets: { id: 'mathworksheets-iframe', path: 'Pages/browser.html' }, 
         gradebook: { id: 'gradebook-iframe', path: 'Pages/music.html' }, 
         lessonplanner: { id: 'lessonplanner-iframe', path: 'Pages/ai.html' },
-        studyhall: { id: 'studyhall-iframe', path: 'Pages/music.html' },
+        studyhall: { id: 'studyhall-iframe', path: 'Pages/chat.html' },
         vms: { id: 'vms-iframe', path: 'Pages/music.html' }
     };
 
