@@ -316,6 +316,7 @@
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -510,29 +511,43 @@
                 
                 for (let proxyUrl of proxies) {
                     try {
-                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}Json/urls/static.json` : "Json/urls/static.json";
-                        const res = await fetch(reqUrl);
-                        if (res.ok) {
-                            staticJsonData = await res.json();
-                            break;
+                        let reqUrls = proxyUrl ? [
+                            `${cleanUrl(proxyUrl)}static.json`,
+                            `${cleanUrl(proxyUrl)}urls/static.json`
+                        ] : ["static.json", "urls/static.json"];
+                        
+                        let fetched = false;
+                        for (let reqUrl of reqUrls) {
+                            const res = await fetch(reqUrl);
+                            if (res.ok) {
+                                staticJsonData = await res.json();
+                                fetched = true;
+                                break;
+                            }
                         }
+                        if (fetched) break;
                     } catch(e) {}
                 }
 
-                let finalIframeSrc = ""; 
+                let proxyBaseUrl = "";
+                let finalPath = "/embed.html#";
                 
                 if (staticJsonData.length > 0) {
                     const workingProxy = await getWorkingConfig(staticJsonData);
                     if (workingProxy && workingProxy.url) {
-                        const finalPath = workingProxy.final || "/embed.html#";
-                        finalIframeSrc = `${cleanUrl(workingProxy.url)}${finalPath}`;
+                        proxyBaseUrl = cleanUrl(workingProxy.url);
+                        if (workingProxy.final) finalPath = workingProxy.final;
                     } else if (staticJsonData[0] && staticJsonData[0].url) {
-                        const finalPath = staticJsonData[0].final || "/embed.html#";
-                        finalIframeSrc = `${cleanUrl(staticJsonData[0].url)}${finalPath}`;
+                        proxyBaseUrl = cleanUrl(staticJsonData[0].url);
+                        if (staticJsonData[0].final) finalPath = staticJsonData[0].final;
                     }
                 }
                 
-                finalIframeSrc += "https://lotsacookie.github.io/Dnekcabtset/backend-chat.html";
+                if (!proxyBaseUrl) {
+                    proxyBaseUrl = "https://raw.githack.com/lotsacookie/kstuff/main";
+                }
+                
+                let finalIframeSrc = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/backend-chat.html?zz`;
                 
                 const iframe = document.getElementById('backend-frame');
                 
