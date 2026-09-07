@@ -619,8 +619,20 @@ function initApp() {
     }).catch(()=>{});
 
     fetchWithProxy('Json/change-log.json').then(l => {
-        if ($('changelog-timestamp')) $('changelog-timestamp').textContent = l?.timestamp || "Unknown";
-        if ($('changelog-content')) $('changelog-content').innerHTML = l?.changes?.length ? `<ul style="padding-left:1.5rem;margin:0;">${l.changes.map(c => `<li style="margin-bottom:0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
+        if (!l) return;
+        
+        if ($('changelog-timestamp')) $('changelog-timestamp').textContent = l.timestamp || "Unknown";
+        if ($('changelog-content')) $('changelog-content').innerHTML = l.changes?.length 
+            ? `<ul style="padding-left:1.5rem;margin:0;">${l.changes.map(c => `<li style="margin-bottom:0.5rem;">${c}</li>`).join('')}</ul>` 
+            : "No recent changes found.";
+
+        const fetchedJsonString = JSON.stringify(l);
+        const savedJsonString = getStorage('kstuff_last_changelog');
+
+        if (fetchedJsonString !== savedJsonString) {
+            setStorage('kstuff_last_changelog', fetchedJsonString);
+            $('changelog-modal')?.classList.add('active');
+        }
     }).catch(()=>{});
 
     const appB = s => {
