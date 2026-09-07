@@ -58,6 +58,10 @@ function initApp() {
         const activeBtn = document.querySelector('.nav-btn.active');
         if (activeBtn) updateIndicator(activeBtn);
     };
+
+    // Continuously set the indicator during the first few seconds on initial load
+    const indicatorInterval = setInterval(forceUpdateIndicator, 100);
+    setTimeout(() => clearInterval(indicatorInterval), 3000);
     [50, 100, 200, 400, 700, 1000, 1500, 2000, 3000].forEach(ms => setTimeout(forceUpdateIndicator, ms));
 
     async function getProxyList() {
@@ -520,7 +524,7 @@ function initApp() {
         setTimeout(() => { btn.textContent = oT; toggleProfEdit(false); }, 600);
     });
 
-    const loadContent = async tId => {
+    const loadContent = async (tId, forceReload = false) => {
         if (tId === 'studyhall' && !currentUser) {
             authMod?.classList.add('active');
             toggleLoader(false);
@@ -528,9 +532,15 @@ function initApp() {
         }
 
         const targetPage = $(tId);
-        if (!targetPage || targetPage.classList.contains('active')) return toggleLoader(false);
+        if (!targetPage) return toggleLoader(false);
+        if (targetPage.classList.contains('active') && !forceReload) {
+            if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) {
+            } else {
+                return toggleLoader(false);
+            }
+        }
 
-        const currentActive = document.querySelector('.page.active');
+        const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
         toggleLoader(true);
 
         if (currentActive) {
@@ -713,7 +723,7 @@ function initApp() {
             }
         }
         
-        if (activePg) await loadContent(activePg.id);
+        if (activePg) await loadContent(activePg.id, true);
         else toggleLoader(false);
 
     }).catch(() => toggleLoader(false));
