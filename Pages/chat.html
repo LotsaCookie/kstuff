@@ -453,10 +453,6 @@
             return url.replace(/\/+$/, '');
         }
 
-        function trimSlash(str) {
-            return str.replace(/^\/+/, '');
-        }
-
         async function getProxyList() {
             if (!cachedCommitHash) {
                 try { 
@@ -485,7 +481,7 @@
 
                     chunk.forEach(entry => {
                         const img = new Image(); imgs.push(img);
-                        const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
+                        const testUrl = entry.url + entry.img;
                         const handle = ok => {
                             if (done) return;
                             if (ok || ++fail === chunk.length) { 
@@ -497,7 +493,7 @@
                         };
                         img.onload = () => handle(img.naturalWidth > 0);
                         img.onerror = () => handle(false);
-                        img.src = `${url}${url.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
+                        img.src = `${testUrl}${testUrl.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
                     });
                 });
                 if (winner) return winner;
@@ -512,7 +508,7 @@
                 
                 for (let proxyUrl of proxies) {
                     try {
-                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}Json/urls/static.json` : "Json/urls/static.json";
+                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}/Json/urls/static.json` : "Json/urls/static.json";
                         const res = await fetch(reqUrl);
                         if (res.ok) {
                             staticJsonData = await res.json();
@@ -539,7 +535,7 @@
                     proxyBaseUrl = "https://raw.githack.com/lotsacookie/kstuff/main";
                 }
                 
-                let finalIframeSrc = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/backend-chat.html?zz`;
+                let finalIframeSrc = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?zz`;
                 
                 const iframe = document.getElementById('backend-frame');
                 
@@ -581,6 +577,7 @@
             }
         }
 
+        // Listens for external parent assigning the user
         window.addEventListener("message", (event) => {
             if (event.data && event.data.type === 'set_user' && event.data.username) {
                 currentUser = event.data.username;
@@ -594,8 +591,22 @@
         function handleBackendMessage(data) {
             if (data.type === 'ready') {
                 backendReady = true;
+                
+                // Fallback for standalone testing if no wrapper sent 'set_user'
+                setTimeout(() => {
+                    if(!currentUser) {
+                        const testUser = prompt("Test Mode: Enter your username to test the chat:");
+                        if(testUser) {
+                            currentUser = testUser.trim();
+                            requestUserProfileDirectory();
+                            fetchConversations();
+                        }
+                    }
+                }, 1000);
+
                 requestUserProfileDirectory();
                 if (currentUser) fetchConversations();
+
             } else if (data.type === 'get-users' && data.success) {
                 cachedUsersList = data.payload || [];
                 if (Array.isArray(cachedUsersList)) {
@@ -649,7 +660,7 @@
 
             const myConversations = activeConversations.filter(rawId => {
                 const parts = rawId.split('-');
-                return parts.includes(currentUser);
+                return parts.includes(currentUser.toLowerCase());
             });
 
             if (myConversations.length === 0) {
@@ -659,8 +670,11 @@
 
             myConversations.forEach(rawId => {
                 let participants = rawId.split('-');
-                let peer = participants.find(p => p !== currentUser) || participants[0];
-                let peerAvatar = userProfileMap[peer] || fallbackAvatar;
+                let peer = participants.find(p => p !== currentUser.toLowerCase()) || participants[0];
+                
+                let peerAvatar = fallbackAvatar;
+                const matchKey = Object.keys(userProfileMap).find(k => k.toLowerCase() === peer);
+                if (matchKey) peerAvatar = userProfileMap[matchKey];
 
                 let item = document.createElement('div');
                 item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''}`;
@@ -712,8 +726,11 @@
             }
 
             messages.forEach(m => {
-                let isMe = m.sender === currentUser;
-                let senderAvatar = userProfileMap[m.sender] || fallbackAvatar;
+                let isMe = m.sender.toLowerCase() === currentUser.toLowerCase();
+                
+                let senderAvatar = fallbackAvatar;
+                const matchKey = Object.keys(userProfileMap).find(k => k.toLowerCase() === m.sender.toLowerCase());
+                if (matchKey) senderAvatar = userProfileMap[matchKey];
 
                 let rowDiv = document.createElement('div');
                 rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'}`;
@@ -770,7 +787,7 @@
             backendPort.postMessage({
                 type: 'send-message',
                 id: currentActiveRawId,
-                sender: currentUser,
+                sender: currentUser.toLowerCase(),
                 message: text
             });
         }
@@ -804,7 +821,7 @@
             }
 
             users.forEach(u => {
-                if (u.username === currentUser) return; 
+                if (u.username.toLowerCase() === currentUser.toLowerCase()) return; 
 
                 let item = document.createElement('div');
                 item.className = 'user-list-item';
@@ -827,12 +844,12 @@
         function startConversationWith(targetUser, targetAvatar) {
             modal.classList.remove('active');
 
-            let rawId = [currentUser, targetUser].sort().join('-');
+            let rawId = [currentUser.toLowerCase(), targetUser.toLowerCase()].sort().join('-');
 
             backendPort.postMessage({
                 type: 'create-conv',
-                u1: currentUser,
-                u2: targetUser
+                u1: currentUser.toLowerCase(),
+                u2: targetUser.toLowerCase()
             });
             
             currentActiveRawId = rawId;
