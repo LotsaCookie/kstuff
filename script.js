@@ -592,24 +592,20 @@ function initApp() {
     window.addEventListener('message', (event) => {
         if (typeof event.data === 'string' && event.data.startsWith('nav: ')) {
             const pageName = event.data.replace('nav: ', '').trim().toLowerCase();
+            const targetMap = {
+                'home': 'mathworksheets',
+                'games': 'readingcorner',
+                'apps': 'sciencequiz',
+                'music': 'gradebook',
+                'ai': 'lessonplanner',
+                'vms': 'vms',
+                'chat': 'studyhall'
+            };
+            const targetId = targetMap[pageName] || pageName;
+            const targetBtn = Array.from(navBtns).find(btn => btn.dataset.target === targetId);
             
-            const targetBtn = Array.from(navBtns).find(btn => {
-                const target = (btn.dataset.target || '').toLowerCase();
-                const tooltip = (btn.dataset.tooltip || '').toLowerCase();
-                const text = (btn.textContent || '').toLowerCase();
-                
-                return target === pageName || 
-                       tooltip === pageName || 
-                       text.includes(pageName) ||
-                       (pageName === 'games' && target === 'readingcorner') ||
-                       (pageName === 'apps' && target === 'sciencequiz');
-            });
-
             if (targetBtn) {
-                console.log("Navigating to page:", pageName);
                 targetBtn.click();
-            } else {
-                console.warn("Requested navigation target not found for:", pageName);
             }
         }
     });
