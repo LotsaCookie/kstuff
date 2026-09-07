@@ -322,7 +322,6 @@ function initApp() {
         const frag = document.createDocumentFragment();
         for (let i = 0; i < ITEMS_PER_PAGE; i++) {
             const card = el('div', { className: 'round-btn' }); card.dataset.index = i;
-            // FIXED: Removed loading="lazy" to prevent Intervention warnings
             card.innerHTML = `<img alt="" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
             grid.pool.push({ el: card, img: card.querySelector('img'), t: card.querySelector('h3'), d: card.querySelector('p'), c: card.querySelector('.category-label') });
             frag.appendChild(card);
@@ -590,11 +589,30 @@ function initApp() {
         });
     });
 
-    const activeNavBtn = navBar?.querySelector('.nav-btn.active') || navBtns[0];
-    if (activeNavBtn) {
-        updateIndicator(activeNavBtn);
-        window.addEventListener('load', () => updateIndicator(navBar.querySelector('.nav-btn.active') || navBtns[0]));
-    }
+    window.addEventListener('message', (event) => {
+        if (typeof event.data === 'string' && event.data.startsWith('nav: ')) {
+            const pageName = event.data.replace('nav: ', '').trim().toLowerCase();
+            
+            const targetBtn = Array.from(navBtns).find(btn => {
+                const target = (btn.dataset.target || '').toLowerCase();
+                const tooltip = (btn.dataset.tooltip || '').toLowerCase();
+                const text = (btn.textContent || '').toLowerCase();
+                
+                return target === pageName || 
+                       tooltip === pageName || 
+                       text.includes(pageName) ||
+                       (pageName === 'games' && target === 'readingcorner') ||
+                       (pageName === 'apps' && target === 'sciencequiz');
+            });
+
+            if (targetBtn) {
+                console.log("Navigating to page:", pageName);
+                targetBtn.click();
+            } else {
+                console.warn("Requested navigation target not found for:", pageName);
+            }
+        }
+    });
 
     let rsTimer;
     window.addEventListener('resize', () => { clearTimeout(rsTimer); rsTimer = setTimeout(() => updateIndicator(document.querySelector('.nav-btn.active')), 100); });
@@ -682,7 +700,17 @@ function initApp() {
         gTruf.clear(); tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
         grids.readingcorner.data = proc(g); grids.sciencequiz.data = proc(a);
         
-        const activePg = document.querySelector('.page.active');
+        let activePg = document.querySelector('.page.active');
+        if (!activePg) {
+            const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
+            if (defaultHomeBtn) {
+                navBtns.forEach(b => b.classList.remove('active'));
+                defaultHomeBtn.classList.add('active');
+                updateIndicator(defaultHomeBtn);
+                activePg = { id: 'mathworksheets' };
+            }
+        }
+        
         if (activePg) await loadContent(activePg.id);
         else toggleLoader(false);
 
