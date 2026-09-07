@@ -680,7 +680,7 @@ function updateNavButtons() {
 function renderFlashcards() {
     flashcardsContainer.innerHTML = '';
     
-    // Render default unremovable shortcuts: postMessage ONLY, no browser/iframe navigation
+    // Render default unremovable shortcuts: posts simple string message ONLY
     defaultShortcuts.forEach((fc) => {
         const card = document.createElement('div');
         card.className = 'flashcard-card';
@@ -693,13 +693,7 @@ function renderFlashcards() {
             <span class="flashcard-name" title="${fc.name}">${fc.name}</span>
         `;
         card.addEventListener('click', () => {
-            const navData = {
-                type: 'KSTUFF_NAVIGATE',
-                name: fc.name,
-                url: fc.url,
-                timestamp: Date.now()
-            };
-            window.parent.postMessage(navData, '*');
+            window.parent.postMessage(`nav: ${fc.name}`, '*');
         });
         flashcardsContainer.appendChild(card);
     });
