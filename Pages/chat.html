@@ -511,7 +511,7 @@
                 
                 for (let proxyUrl of proxies) {
                     try {
-                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}Json/urls/static.json` : "urls/static.json";
+                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}urls/static.json` : "urls/static.json";
                         const res = await fetch(reqUrl);
                         if (res.ok) {
                             staticJsonData = await res.json();
@@ -520,17 +520,20 @@
                     } catch(e) {}
                 }
 
-                let finalIframeSrc = "https://frogiesarcade.win/embed.html#"; 
+                let finalIframeSrc = ""; 
                 
                 if (staticJsonData.length > 0) {
                     const workingProxy = await getWorkingConfig(staticJsonData);
                     if (workingProxy && workingProxy.url) {
                         const finalPath = workingProxy.final || "/embed.html#";
                         finalIframeSrc = `${cleanUrl(workingProxy.url)}${finalPath}`;
+                    } else if (staticJsonData[0] && staticJsonData[0].url) {
+                        const finalPath = staticJsonData[0].final || "/embed.html#";
+                        finalIframeSrc = `${cleanUrl(staticJsonData[0].url)}${finalPath}`;
                     }
                 }
                 
-                finalIframeSrc += "https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?s1fo";
+                finalIframeSrc += "https://lotsacookie.github.io/Dnekcabtset/backend-chat.html";
                 
                 const iframe = document.getElementById('backend-frame');
                 
