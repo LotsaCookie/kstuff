@@ -446,6 +446,7 @@
     <iframe id="backend-frame" style="display:none;"></iframe>
 
     <script>
+        // --- Proxy Fetching Logic ---
         let cachedCommitHash = null;
 
         function cleanUrl(url) {
@@ -547,7 +548,9 @@
         }
         
         initBackendIframe();
+        // -----------------------------
 
+        // --- Chat Logic ---
         function xorDecode(str, key = 42) {
             return str.split('').map(c => String.fromCharCode(c.charCodeAt(0) ^ key)).join("");
         }
@@ -558,36 +561,43 @@
         let backendPort = null;
         let activeConversations = [];
         let userProfileMap = {};
+        let cachedUsersList = [];
         let lastMessageDataString = "";
-        let recentRecreations = {};
         const fallbackAvatar = "https://kstuff.neocities.org/assets/default-profile.png";
 
-        async function loadProfileDirectory() {
-            try {
-                const res = await fetch("https://kstuff.neocities.org/users.json", { cache: "no-store" });
-                const users = await res.json();
-                if (Array.isArray(users)) {
-                    users.forEach(u => {
-                        userProfileMap[u.username] = u.profilePicture || fallbackAvatar;
-                    });
-                }
-            } catch(e) {}
-            renderSidebarList();
+        function requestUserProfileDirectory() {
+            if (backendPort) {
+                backendPort.postMessage({ type: 'get-users' });
+            }
         }
-
-        loadProfileDirectory();
 
         window.addEventListener("message", (event) => {
             if (event.data && event.data.type === 'set_user' && event.data.username) {
                 currentUser = event.data.username;
-                if (backendReady) fetchConversations();
+                if (backendReady) {
+                    requestUserProfileDirectory();
+                    fetchConversations();
+                }
             }
         });
 
         function handleBackendMessage(data) {
             if (data.type === 'ready') {
                 backendReady = true;
+                requestUserProfileDirectory();
                 if (currentUser) fetchConversations();
+            } else if (data.type === 'get-users' && data.success) {
+                cachedUsersList = data.payload || [];
+                if (Array.isArray(cachedUsersList)) {
+                    cachedUsersList.forEach(u => {
+                        userProfileMap[u.username] = u.profilePicture || fallbackAvatar;
+                    });
+                }
+                renderSidebarList();
+                
+                if (document.getElementById('modal-overlay').classList.contains('active')) {
+                    populateUserDirectoryModal(cachedUsersList);
+                }
             } else if (data.type === 'get-convs' && data.success) {
                 syncAndRenderConvs(data.payload);
             } else if (data.type === 'create-conv' && data.success) {
@@ -598,12 +608,6 @@
                 if (data.success) {
                     renderMessages(data.payload);
                 } else {
-                    if (currentActiveRawId) {
-                        let parts = currentActiveRawId.split('-');
-                        if (parts.length === 2) {
-                            forceRecreateConversation(parts[0], parts[1], currentActiveRawId);
-                        }
-                    }
                     renderMessages([]); 
                 }
             } else if (data.type === 'send-message' && data.success) {
@@ -619,49 +623,9 @@
             }
         }
 
-        function forceRecreateConversation(u1, u2, rawId) {
-            const now = Date.now();
-            if (!recentRecreations[rawId] || now - recentRecreations[rawId] > 30000) {
-                if (backendPort) {
-                    backendPort.postMessage({ type: 'create-conv', u1, u2 });
-                    recentRecreations[rawId] = now;
-                }
-            }
-        }
-
         function syncAndRenderConvs(encodedList) {
-            const serverConvs = encodedList.map(encoded => xorDecode(encoded));
-            activeConversations = [...serverConvs];
-            
-            let localCache = JSON.parse(localStorage.getItem("local_known_convs") || "[]");
-            let localHasMissing = false;
-
-            localCache.forEach(localRaw => {
-                if (!serverConvs.includes(localRaw)) {
-                    let parts = localRaw.split('-');
-                    if (parts.length === 2) {
-                        forceRecreateConversation(parts[0], parts[1], localRaw);
-                        localHasMissing = true;
-                    }
-                    
-                    if (!activeConversations.includes(localRaw)) {
-                        activeConversations.push(localRaw);
-                    }
-                }
-            });
-
-            serverConvs.forEach(serverRaw => {
-                if (!localCache.includes(serverRaw)) {
-                    localCache.push(serverRaw);
-                }
-            });
-            localStorage.setItem("local_known_convs", JSON.stringify(localCache));
-
+            activeConversations = encodedList.map(encoded => xorDecode(encoded));
             renderSidebarList();
-            
-            if (localHasMissing) {
-                setTimeout(fetchConversations, 3000); 
-            }
         }
 
         function renderSidebarList() {
@@ -810,59 +774,50 @@
                 return;
             }
             modal.classList.add('active');
-            loadUsersDirectory();
+            
+            if (cachedUsersList.length > 0) {
+                populateUserDirectoryModal(cachedUsersList);
+            } else {
+                userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
+                requestUserProfileDirectory();
+            }
         };
         
         document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
         
-        async function loadUsersDirectory() {
-            userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
+        function populateUserDirectoryModal(users) {
+            userContainer.innerHTML = '';
             
-            try {
-                const res = await fetch("https://kstuff.neocities.org/users.json", { cache: "no-store" });
-                const users = await res.json();
-                
-                userContainer.innerHTML = '';
-                
-                if(!users || users.length === 0) {
-                    userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
-                    return;
-                }
-
-                users.forEach(u => {
-                    if (u.username === currentUser) return; 
-
-                    let item = document.createElement('div');
-                    item.className = 'user-list-item';
-                    let avatar = u.profilePicture || fallbackAvatar;
-                    
-                    item.innerHTML = `
-                        <img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
-                        <div class="user-list-info">
-                            <span class="user-list-name">${escapeHtml(u.username)}</span>
-                            <span class="user-list-desc">${escapeHtml(u.description || "No bio provided.")}</span>
-                        </div>
-                        <button class="modal-btn primary">Chat</button>
-                    `;
-                    
-                    item.querySelector('button').onclick = () => startConversationWith(u.username, avatar);
-                    userContainer.appendChild(item);
-                });
-            } catch (err) {
-                userContainer.innerHTML = '<div style="text-align:center; color: #ff5555; padding: 20px;">Error loading user list.</div>';
+            if(!users || users.length === 0) {
+                userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
+                return;
             }
+
+            users.forEach(u => {
+                if (u.username === currentUser) return; 
+
+                let item = document.createElement('div');
+                item.className = 'user-list-item';
+                let avatar = u.profilePicture || fallbackAvatar;
+                
+                item.innerHTML = `
+                    <img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
+                    <div class="user-list-info">
+                        <span class="user-list-name">${escapeHtml(u.username)}</span>
+                        <span class="user-list-desc">${escapeHtml(u.description || "No bio provided.")}</span>
+                    </div>
+                    <button class="modal-btn primary">Chat</button>
+                `;
+                
+                item.querySelector('button').onclick = () => startConversationWith(u.username, avatar);
+                userContainer.appendChild(item);
+            });
         }
 
         function startConversationWith(targetUser, targetAvatar) {
             modal.classList.remove('active');
 
             let rawId = [currentUser, targetUser].sort().join('-');
-            
-            let localCache = JSON.parse(localStorage.getItem("local_known_convs") || "[]");
-            if (!localCache.includes(rawId)) {
-                localCache.push(rawId);
-                localStorage.setItem("local_known_convs", JSON.stringify(localCache));
-            }
 
             backendPort.postMessage({
                 type: 'create-conv',
