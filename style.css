@@ -504,8 +504,10 @@ body.text-hide .nav-right .nav-divider {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
-    position: relative;
-    margin: 20px auto 15px auto;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 100;
     background: var(--nav-bg);
     border: 1px solid rgba(128, 128, 128, 0.25);
