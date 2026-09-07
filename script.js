@@ -204,10 +204,10 @@ function initApp() {
     fetchWithProxy('Json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(()=>{});
 
     [
-        ['layout-theme-select', 'kstuff_theme', 'theme', v => { body.classList.add(v); setStorage('kstuff_theme', v); }],
-        ['layout-nav-select', 'kstuff_nav_pos', 'nav', v => body.classList.add(v)],
-        ['layout-size-select', 'kstuff_nav_size', 'size', v => body.classList.add(v)],
-        ['layout-text-select', 'kstuff_text_vis', '', v => body.classList.toggle('text-hide', v === 'text-hide')]
+        ['layout-theme-select', 'kstuff_theme', 'theme', v => { if(v) { body.classList.add(v); setStorage('kstuff_theme', v); } }],
+        ['layout-nav-select', 'kstuff_nav_pos', 'nav', v => { if(v) body.classList.add(v); }],
+        ['layout-size-select', 'kstuff_nav_size', 'size', v => { if(v) body.classList.add(v); }],
+        ['layout-text-select', 'kstuff_text_vis', '', v => { if(v) body.classList.toggle('text-hide', v === 'text-hide'); }]
     ].forEach(([id, key, prefix, fn]) => {
         const select = $(id); if (!select) return;
         const val = getStorage(key) || select.value; select.value = val; fn(val);
@@ -322,7 +322,8 @@ function initApp() {
         const frag = document.createDocumentFragment();
         for (let i = 0; i < ITEMS_PER_PAGE; i++) {
             const card = el('div', { className: 'round-btn' }); card.dataset.index = i;
-            card.innerHTML = `<img alt="" loading="lazy" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
+            // FIXED: Removed loading="lazy" to prevent Intervention warnings
+            card.innerHTML = `<img alt="" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
             grid.pool.push({ el: card, img: card.querySelector('img'), t: card.querySelector('h3'), d: card.querySelector('p'), c: card.querySelector('.category-label') });
             frag.appendChild(card);
         }
@@ -638,7 +639,8 @@ function initApp() {
     const appB = s => {
         if (typeof s !== 'string') return s;
         for (const [k,v] of Object.entries(gRep)) s = s.split(`\${${k}}`).join(v);
-        return s.replace(/([^:]\/)\/+/g, '$1');
+        let parsed = s.replace(/([^:]\/)\/+/g, '$1');
+        return parsed.replace(/^http:\/\//i, 'https://'); 
     };
 
     const proc = arr => arr.map(i => {
