@@ -592,18 +592,6 @@
         function handleBackendMessage(data) {
             if (data.type === 'ready') {
                 backendReady = true;
-                
-                setTimeout(() => {
-                    if(!currentUser) {
-                        const testUser = prompt("Test Mode: Enter your username to test the chat:");
-                        if(testUser) {
-                            currentUser = testUser.trim().toLowerCase();
-                            requestUserProfileDirectory();
-                            fetchConversations();
-                        }
-                    }
-                }, 1000);
-
                 requestUserProfileDirectory();
                 if (currentUser) fetchConversations();
 
@@ -788,7 +776,6 @@
             if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
 
             input.value = '';
-
             appendSingleMessageToDOM(currentUser, text);
 
             backendPort.postMessage({
