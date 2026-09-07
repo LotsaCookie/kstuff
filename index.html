@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
     <script>window.addEventListener("beforeunload",e=>{e.preventDefault();e.returnValue=""});</script>
     <script>(async function(){let c='main';try{const r=await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');if(r.ok){const d=await r.json();c=d.sha}}catch(e){}const p=["https://raw.githack.com/lotsacookie/kstuff/main/", `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${c}/`,"https://cdn.statically.io/gh/lotsacookie/kstuff/main/",""];window.kAssets=Promise.all(['style.css','script.js'].map((f,idx)=>new Promise(res=>{let s=idx===1,i=0,cb="?i_="+Date.now();function t(){let e=document.createElement(s?'script':'link'),cp=p[i],u=cp?(cp+f+(cp.includes('jsdelivr')?'':cb)):(f+cb);if(s)e.src=u;else{e.rel='stylesheet';e.href=u}e.onload=res;e.onerror=()=>{e.remove();i++;i<p.length?t():res()};document.head.appendChild(e)}t()})))})();</script>
     <style>
