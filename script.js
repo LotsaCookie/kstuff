@@ -277,7 +277,12 @@ function initApp() {
                 if (loadId !== activeIframeLoadId) return resolve();
                 const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
                 
-                f.onload = () => resolve();
+                f.onload = () => {
+                    resolve();
+                    if (id === 'studyhall-iframe' && currentUser) {
+                        f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
+                    }
+                };
                 f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
             } catch {
                 if (loadId === activeIframeLoadId) {
@@ -510,6 +515,12 @@ function initApp() {
     });
 
     const loadContent = async tId => {
+        if (tId === 'studyhall' && !currentUser) {
+            authMod?.classList.add('active');
+            toggleLoader(false);
+            return;
+        }
+
         const targetPage = $(tId);
         if (!targetPage || targetPage.classList.contains('active')) return toggleLoader(false);
 
@@ -564,6 +575,11 @@ function initApp() {
             if (tId === 'profile') return !currentUser ? authMod?.classList.add('active') : (updateAuthUI(), profMod?.classList.add('active'));
             if (tId === 'homeworkhelper') return $('homeworkhelper-modal')?.classList.add('active');
             if (tId === 'changelog') return $('changelog-modal')?.classList.add('active');
+
+            if (tId === 'studyhall' && !currentUser) {
+                authMod?.classList.add('active');
+                return;
+            }
 
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
             btn.classList.add('active'); 
