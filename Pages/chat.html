@@ -511,7 +511,7 @@
                 
                 for (let proxyUrl of proxies) {
                     try {
-                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}/urls/static.json` : "urls/static.json";
+                        let reqUrl = proxyUrl ? `${cleanUrl(proxyUrl)}urls/static.json` : "urls/static.json";
                         const res = await fetch(reqUrl);
                         if (res.ok) {
                             staticJsonData = await res.json();
@@ -524,8 +524,9 @@
                 
                 if (staticJsonData.length > 0) {
                     const workingProxy = await getWorkingConfig(staticJsonData);
-                    if (workingProxy && workingProxy.url && workingProxy.final) {
-                        finalIframeSrc = `${cleanUrl(workingProxy.url)}${workingProxy.final}`;
+                    if (workingProxy && workingProxy.url) {
+                        const finalPath = workingProxy.final || "/embed.html#";
+                        finalIframeSrc = `${cleanUrl(workingProxy.url)}${finalPath}`;
                     }
                 }
                 
@@ -740,7 +741,7 @@
         }, 10000);
 
         function isImageURL(str) {
-            return typeof str === 'string' && (str.match(/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i) || str.startsWith('data:image/'));
+            return typeof str === 'string' && (str.match(/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i));
         }
 
         function escapeHtml(text) {
