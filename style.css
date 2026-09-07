@@ -616,8 +616,8 @@ body.text-hide .nav-right .nav-divider {
     gap: 0.4rem;
     justify-items: center;
     width: 100%;
-    margin-top: 55px;
-    padding-bottom: 85px;
+    padding-top: 65px;
+    padding-bottom: 65px;
 }
 
 .round-btn {
