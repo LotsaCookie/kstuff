@@ -504,10 +504,8 @@ body.text-hide .nav-right .nav-divider {
     align-items: center;
     gap: 15px;
     flex-wrap: wrap;
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    margin: 20px auto 15px auto;
     z-index: 100;
     background: var(--nav-bg);
     border: 1px solid rgba(128, 128, 128, 0.25);
@@ -616,6 +614,7 @@ body.text-hide .nav-right .nav-divider {
     gap: 0.4rem;
     justify-items: center;
     width: 100%;
+    padding-bottom: 85px;
 }
 
 .round-btn {
@@ -742,7 +741,7 @@ body.text-hide .nav-right .nav-divider {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: fit-content;
+    width: max-content;
     background: var(--nav-bg);
     border: 1px solid rgba(128, 128, 128, 0.25);
     border-radius: 16px;
@@ -752,7 +751,7 @@ body.text-hide .nav-right .nav-divider {
     -webkit-backdrop-filter: none;
     z-index: 100;
     pointer-events: auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .page-btn {
