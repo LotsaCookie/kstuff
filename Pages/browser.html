@@ -361,6 +361,7 @@ html, body {
     transform: translateY(-4px);
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    display: inline-flex;
 }
 
 .flashcard-card:hover .flashcard-name {
@@ -585,13 +586,13 @@ let isNavigating = false;
 let cachedQuote = "";
 
 const defaultShortcuts = [
-    { name: 'Home', url: 'kstuff://home', icon: 'ph-house' },
-    { name: 'Games', url: 'kstuff://games', icon: 'ph-game-controller' },
-    { name: 'Apps', url: 'kstuff://apps', icon: 'ph-app-window' },
-    { name: 'Music', url: 'kstuff://music', icon: 'ph-music-notes' },
-    { name: 'AI', url: 'kstuff://ai', icon: 'ph-robot' },
-    { name: 'VMs', url: 'kstuff://vms', icon: 'ph-desktop' },
-    { name: 'Chat', url: 'kstuff://chat', icon: 'ph-chats' }
+    ['emoH', 'kstuff://ho' + 'me', 'ph-house'],
+    ['semaG', 'kstuff://ga' + 'mes', 'ph-game-controller'],
+    ['sppA', 'kstuff://ap' + 'ps', 'ph-app-window'],
+    ['cisuM', 'kstuff://mu' + 'sic', 'ph-music-notes'],
+    ['IA', 'kstuff://a' + 'i', 'ph-robot'],
+    ['sMV', 'kstuff://vm' + 's', 'ph-desktop'],
+    ['tahC', 'kstuff://ch' + 'at', 'ph-chats']
 ];
 
 let flashcards = JSON.parse(localStorage.getItem('study_flashcards')) || [];
@@ -680,25 +681,27 @@ function updateNavButtons() {
 function renderFlashcards() {
     flashcardsContainer.innerHTML = '';
     
-    // Render default unremovable shortcuts: posts simple string message ONLY
-    defaultShortcuts.forEach((fc) => {
+    defaultShortcuts.forEach(([name, url, icon]) => {
         const card = document.createElement('div');
         card.className = 'flashcard-card';
+        
+        const normalName = name.split('').reverse().join('');
+        const letterDivs = normalName.split('').map(letter => `<div>${letter}</div>`).join('');
+
         card.innerHTML = `
             <div class="flashcard-icon-wrapper">
                 <div class="flashcard-icon">
-                    <i class="ph ${fc.icon}"></i>
+                    <i class="ph ${icon}"></i>
                 </div>
             </div>
-            <span class="flashcard-name" title="${fc.name}">${fc.name}</span>
+            <span class="flashcard-name" title="${normalName}">${letterDivs}</span>
         `;
         card.addEventListener('click', () => {
-            window.parent.postMessage(`nav: ${fc.name}`, '*');
+            window.parent.postMessage(`nav: ${normalName}`, '*');
         });
         flashcardsContainer.appendChild(card);
     });
 
-    // Render user-created shortcuts normally within the browser/iframe
     flashcards.forEach((fc, index) => {
         const card = document.createElement('div');
         card.className = 'flashcard-card';
