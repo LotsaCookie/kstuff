@@ -32,7 +32,7 @@ function initApp() {
     if (!getStorage('kstuff_theme')) setStorage('kstuff_theme', 'theme-sakura');
 
     const toggleLoader = show => loader && (loader.style.opacity = show ? '1' : '0', loader.classList.toggle('hidden', !show));
-    toggleLoader(false);
+    toggleLoader(true);
 
     const tooltipEl = body.appendChild(el('div', { className: 'js-custom-tooltip' }));
     tooltipEl.style.cssText = `position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;`;
@@ -53,6 +53,12 @@ function initApp() {
         const nR = navBar.getBoundingClientRect(), bR = btn.getBoundingClientRect();
         indicator.style.cssText += `width:${isVert ? '3px' : bR.width + 'px'};height:${isVert ? bR.height + 'px' : '3px'};transform:${isVert ? `translateY(${bR.top - nR.top}px)` : `translateX(${bR.left - nR.left}px)`};`;
     };
+
+    const forceUpdateIndicator = () => {
+        const activeBtn = document.querySelector('.nav-btn.active');
+        if (activeBtn) updateIndicator(activeBtn);
+    };
+    [50, 100, 200, 400, 700, 1000, 1500, 2000, 3000].forEach(ms => setTimeout(forceUpdateIndicator, ms));
 
     async function getProxyList() {
         if (!cachedCommitHash) {
