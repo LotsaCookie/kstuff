@@ -52,5 +52,23 @@
   "url":"${truffled}/games/a-dance-of-fire-and-ice/index.html",
   "img":"",
   "category":"Rhythm"
+},
+{
+  "title":"Minecraft 1.8.8",
+  "url":"${truffled}/games/eglar/EaglercraftX_1dot8_Web/index.html",
+  "img":"",
+  "category":"Adventure"
+},
+{
+  "title":"Minecraft 1.12.2",
+  "url":"${truffled}/games/eglar/1dot12dot2/index.html",
+  "img":"",
+  "category":"Adventure"
+},
+{
+  "title":"Monkey Mart",
+  "url":"${frogiee}/stuff/selfhosted/monkey-mart",
+  "img":"",
+  "category":"Simulation"
 }
 ]
