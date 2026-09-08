@@ -65,17 +65,13 @@
             0% { opacity: 0; transform: translateY(5px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-        .fade-in {
-            animation: fadeInSmooth 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
+        .fade-in { animation: fadeInSmooth 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
         @keyframes slideInMessage {
             0% { opacity: 0; transform: translateY(15px) scale(0.98); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .slide-in {
-            animation: slideInMessage 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
+        .slide-in { animation: slideInMessage 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
         /* Messages & Wrapping Fixes */
         .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 75%; min-width: 0; }
@@ -295,9 +291,18 @@
                 const chatId = data.id;
                 if (!chatId || chatId !== currentActiveRawId) return;
                 
-                const newMessages = data.payload || [];
-                localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
-                renderMessages(newMessages, chatId);
+                const remoteMessages = data.payload || [];
+                
+                // Safety guard: Don't let an empty/stale server response wipe out messages we have locally
+                let localMsgs = [];
+                try { localMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e){}
+                
+                if (remoteMessages.length === 0 && localMsgs.length > 0) {
+                    return; // Ignore empty server response if we have local content
+                }
+
+                localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
+                renderMessages(remoteMessages, chatId);
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
@@ -493,6 +498,13 @@
             
             appendSingleMessageToDOM(currentUser, text, currentTimestamp, true);
             
+            try {
+                let cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
+                cached.push({ sender: currentUser, message: text, timestamp: currentTimestamp });
+                localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
+                lastMessageDataString = JSON.stringify(cached);
+            } catch(e) {}
+
             messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
             processMessageQueue();
         }
