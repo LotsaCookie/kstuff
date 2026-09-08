@@ -22,5 +22,11 @@
   "url":"${truffled}/games/minusbog/index.html",
   "img":"",
   "category":"Horror"
+},
+{
+  "title":"30",
+  "url":"${truffled}/games/30dolar/index.html",
+  "img":"",
+  "category":"Puzzle"
 }
 ]
