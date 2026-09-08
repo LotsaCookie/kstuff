@@ -317,7 +317,36 @@ function initApp() {
         
         if (modalIframe) {
             modalIframe.removeAttribute('srcdoc');
-            modalIframe.src = item.url || 'about:blank';
+            modalIframe.src = 'about:blank';
+
+            if (item.url) {
+                const isProxyUrl = 
+                    item.url.includes(gRep.static) || 
+                    item.url.includes(gRep.scram) || 
+                    item.url.includes(gRep.uv) || 
+                    item.url.includes(gRep.truffled) ||
+                    item.category === 'Apps' ||
+                    (!item.url.includes('raw.githubusercontent.com') && 
+                     !item.url.includes('cdn.jsdelivr.net') && 
+                     !item.url.includes('raw.githack.com') && 
+                     !item.url.includes('cdn.statically.io'));
+
+                if (isProxyUrl) {
+                    modalIframe.src = item.url;
+                } else {
+                    try {
+                        const res = await fetch(item.url, { cache: 'no-store' });
+                        if (res.ok) {
+                            const htmlText = await res.text();
+                            modalIframe.srcdoc = htmlText;
+                        } else {
+                            modalIframe.src = item.url;
+                        }
+                    } catch {
+                        modalIframe.src = item.url;
+                    }
+                }
+            }
         }
 
         setTimeout(() => Object.values(grids).forEach(g => {
