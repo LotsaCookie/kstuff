@@ -3,6 +3,7 @@ function initApp() {
     const el = (tag, props) => Object.assign(document.createElement(tag), props);
     const getStorage = k => localStorage.getItem(k), setStorage = (k, v) => localStorage.setItem(k, v);
     const cleanUrl = u => u ? u.replace(/\/+$/, '') : '', trimSlash = u => u ? u.replace(/^\/+/, '') : '';
+    const cleanGameTitle = t => (t || '').toLowerCase().replace(/,\s*webport/gi, '').trim();
 
     const body = document.body, navBar = $('teachertouchbar'), navBtns = $$('.nav-btn'), pages = $$('.page');
     const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
@@ -320,6 +321,7 @@ function initApp() {
             modalIframe.src = 'about:blank';
 
             if (item.url) {
+                // Determine whether this item needs proxy navigation (src) or raw HTML injection (srcdoc)
                 const isProxyUrl = 
                     item.url.includes(gRep.static) || 
                     item.url.includes(gRep.scram) || 
@@ -334,6 +336,7 @@ function initApp() {
                 if (isProxyUrl) {
                     modalIframe.src = item.url;
                 } else {
+                    // Static HTML file (zones.json / Github asset) -> fetch and render via srcdoc
                     try {
                         const res = await fetch(item.url, { cache: 'no-store' });
                         if (res.ok) {
@@ -712,9 +715,15 @@ function initApp() {
 
     const proc = arr => arr.map(i => {
         let p = { ...i };
-        if (p.url?.includes('${truffled}')) {
-            const m = gTruf.get((p.title||"").toLowerCase().trim());
-            if (m) { p.title = m.name; p.url = '${truffled}/' + trimSlash(m.url); p.image = '${truffled}/' + trimSlash(m.thumbnail); p.description = ''; p.category = p.category || 'Truffled'; }
+        if (p.url?.includes('${truffled}') || !p.image || p.category === 'Truffled') {
+            const m = gTruf.get(cleanGameTitle(p.title));
+            if (m) { 
+                p.title = m.name; 
+                p.url = '${truffled}/' + trimSlash(m.url); 
+                p.image = '${truffled}/' + trimSlash(m.thumbnail); 
+                p.description = ''; 
+                p.category = p.category || 'Truffled'; 
+            }
         }
         p.url = appB(p.url); p.image = appB(p.image); return p;
     }).sort((a, b) => (a.title||"").localeCompare(b.title||"", undefined, { sensitivity: 'base' }));
@@ -872,7 +881,7 @@ function initApp() {
         };
         
         gTruf.clear(); 
-        tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
+        tr?.games?.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
         
         grids.readingcorner.data = proc(gResult.data); 
         grids.sciencequiz.data = proc(a);
