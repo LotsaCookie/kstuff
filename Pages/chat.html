@@ -29,7 +29,6 @@
         .chat-item:hover, .chat-item.active { background-color: var(--card); }
         .chat-item.active { border-left: 4px solid var(--text); }
         
-        /* Avatar & Unread Indicator Styles */
         .avatar-wrapper { position: relative; width: 40px; height: 40px; margin-right: 12px; flex-shrink: 0; }
         .chat-avatar { width: 100%; height: 100%; }
         .chat-avatar, .header-avatar, .user-list-avatar { border-radius: 50%; background-color: var(--card); border: 1px solid rgba(128,128,128,0.3); object-fit: cover; }
@@ -52,7 +51,6 @@
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
 
-        /* Loader */
         .section-loader { position: absolute; inset: 0; width: 100%; height: 100%; background: color-mix(in srgb, var(--bg) 85%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 1000; opacity: 1; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .section-loader.hidden { opacity: 0; visibility: hidden; }
         .spinner { width: 48px; height: 48px; border: 4px solid var(--bg); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1.5rem; }
@@ -60,20 +58,12 @@
         @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
         @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
 
-        /* Animation Keyframes */
-        @keyframes fadeInSmooth {
-            0% { opacity: 0; transform: translateY(5px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        .fade-in { animation: fadeInSmooth 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-
         @keyframes slideInMessage {
             0% { opacity: 0; transform: translateY(15px) scale(0.98); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         .slide-in { animation: slideInMessage 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
-        /* Messages & Wrapping Fixes */
         .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 75%; min-width: 0; }
         .message-row.user-row { align-self: flex-end; flex-direction: row-reverse; }
         .message-row.friend-row { align-self: flex-start; }
@@ -95,7 +85,6 @@
         button#send-btn { background-color: var(--text); color: var(--bg); border: none; padding: 15px 25px; border-radius: 25px; font-weight: 900 !important; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button#send-btn:hover { opacity: 0.9; }
 
-        /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
@@ -298,12 +287,25 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 if (currentActiveRawId) fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                const chatId = currentActiveRawId;
-                if (!chatId) return;
+                let chatId = data.id; 
                 
+                if (!chatId && data.payload && data.payload.length > 0) {
+                    const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
+                    if (peerMsg) {
+                        chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
+                    }
+                }
+                
+                if (!chatId) chatId = currentActiveRawId; 
+                if (!chatId) return;
+
                 const remoteMessages = data.payload || [];
+                
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
-                renderMessages(remoteMessages, chatId);
+                
+                if (chatId === currentActiveRawId) {
+                    renderMessages(remoteMessages, chatId);
+                }
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
@@ -407,6 +409,8 @@
         }
 
         function renderMessages(messages, chatId) {
+            if (chatId !== currentActiveRawId) return;
+
             document.getElementById('section-loader').classList.add('hidden');
             const container = document.getElementById('chat-container');
 
@@ -425,10 +429,22 @@
                 return; 
             }
 
+            let needsFullRender = false;
+            if (currentCount > 0 && messages.length >= currentCount) {
+                try {
+                    let lastRenderedArray = JSON.parse(lastMessageDataString || "[]");
+                    if (lastRenderedArray.length > 0 && messages.length > 0) {
+                        if (lastRenderedArray[0].message !== messages[0].message || lastRenderedArray[0].timestamp !== messages[0].timestamp) {
+                            needsFullRender = true;
+                        }
+                    }
+                } catch(e) {}
+            }
+
             lastMessageDataString = newMessageString;
 
             if (!messages || messages.length === 0) {
-                if (container.children.length === 0) {
+                if (container.children.length === 0 || needsFullRender) {
                     container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
                 }
                 return;
@@ -438,8 +454,8 @@
                 container.innerHTML = '';
             }
 
-            if (currentCount === 0) {
-                container.innerHTML = '';
+            if (currentCount === 0 || needsFullRender) {
+                container.innerHTML = ''; 
                 messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
             } else if (messages.length > currentCount) {
                 const newMsgs = messages.slice(currentCount);
