@@ -375,11 +375,14 @@
                 chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div>';
                 return;
             }
-            const myConvs = activeConversations.filter(rawId => rawId.split('-').includes(currentUser));
+            
+            const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
+            
             if (myConvs.length === 0) {
                 chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
                 return;
             }
+            
             myConvs.forEach(rawId => {
                 let parts = rawId.split('-');
                 let peer = parts.find(p => p !== currentUser) || parts[0];
@@ -430,8 +433,7 @@
             if (currentCount === 0 || currentCount > messages.length) {
                 container.innerHTML = '';
                 messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
-            } 
-            else if (messages.length > currentCount) {
+            } else if (messages.length > currentCount) {
                 const newMsgs = messages.slice(currentCount);
                 newMsgs.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true));
             }
@@ -473,11 +475,12 @@
         setInterval(() => {
             if (backendReady && currentUser) {
                 backendPort.postMessage({ type: 'get-convs' });
-                activeConversations.forEach(rawId => {
+                const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
+                myConvs.forEach(rawId => {
                     fetchMessages(rawId);
                 });
             }
-        }, 1000);
+        }, 1500);
 
         function sendMessage() {
             let input = document.getElementById('user-input');
