@@ -158,6 +158,7 @@
     <script>
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
+        let lastSidebarState = "";
         
         let messageQueue = [];
         let isSendingMessage = false;
@@ -370,7 +371,6 @@
 
         function renderSidebarList() {
             const chatList = document.getElementById('chat-list');
-            chatList.innerHTML = '';
             if (!currentUser) {
                 chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div>';
                 return;
@@ -378,6 +378,11 @@
             
             const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
             
+            const currentState = JSON.stringify({ myConvs, unreadChats, currentActiveRawId });
+            if (currentState === lastSidebarState) return;
+            lastSidebarState = currentState;
+
+            chatList.innerHTML = '';
             if (myConvs.length === 0) {
                 chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
                 return;
@@ -420,7 +425,9 @@
             const container = document.getElementById('chat-container');
 
             if (!messages || messages.length === 0) {
-                container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
+                if (container.children.length === 0) {
+                    container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
+                }
                 return;
             }
 
