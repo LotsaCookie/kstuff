@@ -135,11 +135,33 @@
     <script>
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
+        
+        let messageQueue = [];
+        let isSendingMessage = false;
+        
         const fallbackAvatar = "https://kstuff.neocities.org/assets/default-profile.png";
 
         const cleanUrl = url => url.replace(/\/+$/, '');
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
         const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
+
+        function loadLocalData() {
+            try {
+                const localUsers = JSON.parse(localStorage.getItem('chat_users_list'));
+                if (localUsers) {
+                    cachedUsersList = localUsers;
+                    cachedUsersList.forEach(u => userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar);
+                }
+                
+                if (currentUser) {
+                    const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
+                    if (localConvs) {
+                        activeConversations = localConvs.map(encoded => xorDecode(encoded));
+                        renderSidebarList();
+                    }
+                }
+            } catch (e) { console.error("Error loading local storage:", e); }
+        }
 
         async function getProxyList() {
             if (!cachedCommitHash) {
@@ -210,36 +232,53 @@
         window.addEventListener("message", e => {
             if (e.data?.type === 'set_user' && e.data.username) {
                 currentUser = e.data.username.trim().toLowerCase();
+                loadLocalData(); // Load cached data instantly
                 if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
             }
         });
+
+        function processMessageQueue() {
+            if (isSendingMessage || messageQueue.length === 0 || !backendReady) return;
+            isSendingMessage = true;
+            backendPort.postMessage(messageQueue.shift());
+        }
 
         function handleBackendMessage(data) {
             if (data.type === 'ready') {
                 backendReady = true;
                 backendPort.postMessage({ type: 'get-users' });
                 if (currentUser) backendPort.postMessage({ type: 'get-convs' });
+                processMessageQueue(); // Start processing queue if backend just became ready
             } else if (data.type === 'get-users' && data.success) {
+                localStorage.setItem('chat_users_list', JSON.stringify(data.payload));
                 cachedUsersList = data.payload || [];
                 cachedUsersList.forEach(u => userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar);
                 renderSidebarList();
                 if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
             } else if (data.type === 'get-convs' && data.success) {
+                localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(data.payload));
                 activeConversations = data.payload.map(encoded => xorDecode(encoded));
                 renderSidebarList();
             } else if (data.type === 'create-conv' && data.success) {
                 backendPort.postMessage({ type: 'get-convs' });
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                renderMessages(data.payload);
+                const chatId = data.id || currentActiveRawId;
+                if (chatId) localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(data.payload));
+                
+                if (!data.id || data.id === currentActiveRawId) {
+                    renderMessages(data.payload);
+                }
             } else if (data.type === 'send-message' && data.success) {
+                isSendingMessage = false;
+                processMessageQueue(); 
+                
                 fetchMessages(currentActiveRawId);
                 backendPort.postMessage({ type: 'get-convs' });
             }
         }
 
         function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
-            document.getElementById('section-loader').classList.remove('hidden');
             currentActiveRawId = rawId;
             document.getElementById('header-username').innerText = peerName;
             
@@ -254,6 +293,18 @@
             if (chatItemEl) chatItemEl.classList.add('active');
 
             lastMessageDataString = ""; 
+            
+            try {
+                const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
+                if (cachedMsgs && cachedMsgs.length > 0) {
+                    renderMessages(cachedMsgs);
+                } else {
+                    document.getElementById('section-loader').classList.remove('hidden');
+                }
+            } catch (e) {
+                document.getElementById('section-loader').classList.remove('hidden');
+            }
+
             fetchMessages(rawId);
         }
 
@@ -350,9 +401,13 @@
             if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
             input.value = '';
             let currentTimestamp = new Date().toISOString();
+            
             appendSingleMessageToDOM(currentUser, text, currentTimestamp);
-            backendPort.postMessage({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
+            
+            messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
+            processMessageQueue();
         }
+        
         document.getElementById('send-btn').onclick = sendMessage;
         document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
 
@@ -396,4 +451,4 @@
         }
     </script>
 </body>
-</html>.
+</html>
