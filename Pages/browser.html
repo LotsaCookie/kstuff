@@ -842,7 +842,7 @@ function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
     studyIframe.classList.add('active');
 
     if (workingstaticurl) {
-        const wrapperUrl = `https://lotsacookie.github.io/Pages/browser-content.html?site=${targetUrl}`;
+        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Pages/browser-content.html?site=${targetUrl}`;
         const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
         studyIframe.src = proxiedUrl;
     } else {
