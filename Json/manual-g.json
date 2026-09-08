@@ -12,6 +12,12 @@
   "category":"Action"
 },
 {
+  "title":"20 Minutes Till Dawn",
+  "url":"${truffled}/games/20minutesbog/index.html",
+  "img":"",
+  "category":"Action"
+},
+{
   "title":"-3",
   "url":"${truffled}/games/minus3/index.html",
   "img":"",
@@ -26,6 +32,12 @@
 {
   "title":"30",
   "url":"${truffled}/games/30dolar/index.html",
+  "img":"",
+  "category":"Puzzle"
+},
+{
+  "title":"2048",
+  "url":"${truffled}/games/2048/index.html",
   "img":"",
   "category":"Puzzle"
 }
