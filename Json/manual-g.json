@@ -342,12 +342,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTGWZozIdCtkaeHj2Sumbv-_Q4EjnUQvr5DcSp-i5L9-qpxRb98txgz5dJUc8fRhjpIoE&usqp=CAU"
   },
   {
-    "title": "Basket Bros",
-    "url": "${truffled}/gamefile/basket.html",
-    "category": "Sports",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJRfJ4hVTL4Gk_DP28TT2ybA5VX9xwxm0DSA&s"
-  },
-  {
     "title": "Basket Random",
     "url": "${truffled}/games/basket-random/index.html",
     "category": "Sports",
