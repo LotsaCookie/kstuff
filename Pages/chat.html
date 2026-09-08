@@ -51,6 +51,12 @@
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
 
+        @keyframes containerFadeIn {
+            0% { opacity: 0; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .container-fade { animation: containerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
         .section-loader { position: absolute; inset: 0; width: 100%; height: 100%; background: color-mix(in srgb, var(--bg) 85%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 1000; opacity: 1; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .section-loader.hidden { opacity: 0; visibility: hidden; }
         .spinner { width: 48px; height: 48px; border: 4px solid var(--bg); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1.5rem; }
@@ -288,19 +294,16 @@
                 if (currentActiveRawId) fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
                 let chatId = data.id; 
-                
                 if (!chatId && data.payload && data.payload.length > 0) {
                     const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
                     if (peerMsg) {
                         chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
                     }
                 }
-                
                 if (!chatId) chatId = currentActiveRawId; 
                 if (!chatId) return;
 
                 const remoteMessages = data.payload || [];
-                
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
                 
                 if (chatId === currentActiveRawId) {
@@ -342,6 +345,11 @@
             lastMessageDataString = ""; 
             chatContainer.innerHTML = '';
             
+            // Re-trigger the smooth fade-in animation instantly without delaying code logic
+            chatContainer.classList.remove('container-fade');
+            void chatContainer.offsetWidth; // Force CSS reflow cleanly
+            chatContainer.classList.add('container-fade');
+
             try {
                 const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
                 if (cachedMsgs && cachedMsgs.length > 0) {
