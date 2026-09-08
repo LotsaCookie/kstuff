@@ -219,6 +219,12 @@
             background-color: var(--card);
         }
 
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 100%;
+        }
+
         .message {
             padding: 12px 18px;
             border-radius: 20px;
@@ -246,6 +252,21 @@
             border-radius: 12px;
             display: block;
             margin-top: 4px;
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .user-row .timestamp {
+            align-self: flex-end;
+        }
+
+        .friend-row .timestamp {
+            align-self: flex-start;
         }
 
         #input-container {
@@ -547,7 +568,7 @@
                 iframe.src = finalIframeSrc;
 
             } catch (err) {
-                console.error("Failed to initialize backend iframe:", err);
+                console.error(err);
             }
         }
         
@@ -709,11 +730,11 @@
             }
 
             messages.forEach(m => {
-                appendSingleMessageToDOM(m.sender, m.message);
+                appendSingleMessageToDOM(m.sender, m.message, m.timestamp);
             });
         }
 
-        function appendSingleMessageToDOM(sender, text) {
+        function appendSingleMessageToDOM(sender, text, timestamp) {
             const container = document.getElementById('chat-container');
 
             if (container.children.length === 1 && container.children[0].innerText.includes("No messages sent yet")) {
@@ -731,6 +752,9 @@
             avatarImg.src = senderAvatar;
             avatarImg.onerror = () => { avatarImg.src = fallbackAvatar; };
 
+            let msgWrapper = document.createElement('div');
+            msgWrapper.className = 'message-wrapper';
+
             let msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
 
@@ -740,9 +764,28 @@
             }
 
             msgDiv.innerHTML = contentHTML;
-            
+            msgWrapper.appendChild(msgDiv);
+
+            if (timestamp) {
+                let timeDiv = document.createElement('span');
+                timeDiv.className = 'timestamp';
+                
+                let dateObj = new Date(timestamp);
+                let formattedTime = dateObj.toLocaleString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric', 
+                    hour: 'numeric', 
+                    minute: '2-digit', 
+                    hour12: true 
+                });
+                
+                timeDiv.innerText = formattedTime;
+                msgWrapper.appendChild(timeDiv);
+            }
+
             rowDiv.appendChild(avatarImg);
-            rowDiv.appendChild(msgDiv);
+            rowDiv.appendChild(msgWrapper);
             container.appendChild(rowDiv);
             container.scrollTop = container.scrollHeight;
         }
@@ -775,13 +818,16 @@
             if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
 
             input.value = '';
-            appendSingleMessageToDOM(currentUser, text);
+            let currentTimestamp = new Date().toISOString();
+            
+            appendSingleMessageToDOM(currentUser, text, currentTimestamp);
 
             backendPort.postMessage({
                 type: 'send-message',
                 id: currentActiveRawId,
                 sender: currentUser,
-                message: text
+                message: text,
+                timestamp: currentTimestamp
             });
         }
 
