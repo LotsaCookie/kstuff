@@ -167,6 +167,7 @@
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
         const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
 
+
         function loadLocalData() {
             try {
                 const unreadData = localStorage.getItem('chat_unread');
@@ -298,8 +299,8 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 if (currentActiveRawId) fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                const chatId = data.id;
-                if (!chatId || chatId !== currentActiveRawId) return;
+                const chatId = currentActiveRawId;
+                if (!chatId) return;
                 
                 const remoteMessages = data.payload || [];
                 
