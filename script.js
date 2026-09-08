@@ -722,6 +722,16 @@ function initApp() {
             return `https://raw.githubusercontent.com/freebuisness/${repo}/main/${path}`;
         };
 
+        const manualRes = await fetchWithProxy('Json/manual-g.json').catch(() => []);
+        const manualMap = new Map();
+        if (Array.isArray(manualRes)) {
+            manualRes.forEach(item => {
+                if (item && item.title) {
+                    manualMap.set(item.title.toLowerCase().trim(), item);
+                }
+            });
+        }
+
         for (const pt of pTypes) {
             try {
                 const zUrl = getUrl('assets', 'zones.json', pt) + `?_=${Date.now()}`;
@@ -732,19 +742,55 @@ function initApp() {
                 const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
                 const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
                 
-                const mappedData = json.map(item => ({
-                    title: item.name,
-                    image: (item.cover || '').replace('{COVER_URL}', coverBase + '/'),
-                    url: (item.url || '').replace('{HTML_URL}', htmlBase + '/'),
-                    category: 'All',
-                    description: ''
-                })).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
-                
-                return { data: mappedData, isNewRepo: true };
+                const mappedData = json.map(item => {
+                    const titleLower = (item.name || '').toLowerCase().trim();
+                    const manualMatch = manualMap.get(titleLower);
+
+                    let finalUrl = item.url;
+                    let finalCover = item.cover;
+                    let finalTitle = item.name;
+
+                    if (manualMatch) {
+                        if (manualMatch.url) finalUrl = manualMatch.url;
+                        manualMap.delete(titleLower); // Mark as consumed
+                    }
+
+                    return {
+                        title: finalTitle,
+                        image: (finalCover || '').replace('{COVER_URL}', coverBase + '/'),
+                        url: (finalUrl || '').replace('{HTML_URL}', htmlBase + '/'),
+                        category: 'All',
+                        description: ''
+                    };
+                });
+
+                manualMap.forEach((manualItem) => {
+                    mappedData.push({
+                        title: manualItem.title,
+                        image: manualItem.img || '',
+                        url: manualItem.url || '',
+                        category: 'Manual',
+                        description: ''
+                    });
+                });
+
+                return { data: mappedData };
             } catch (e) {}
         }
         
-        return { data: await fetchWithProxy('Json/g.json').catch(()=>[]), isNewRepo: false };
+        const fallbackJson = await fetchWithProxy('Json/g.json').catch(()=>[]);
+        const fallbackMapped = fallbackJson.map(item => {
+            const titleLower = (item.title || '').toLowerCase().trim();
+            const manualMatch = manualMap.get(titleLower);
+            if (manualMatch) {
+                return {
+                    ...item,
+                    url: manualMatch.url || item.url
+                };
+            }
+            return item;
+        });
+        return { data: fallbackMapped };
     };
 
     $('readingcorner-refresh-btn')?.addEventListener('click', async () => {
@@ -752,7 +798,7 @@ function initApp() {
         try {
             const result = await fetchReadingCornerRaw();
             if (result.data?.length) {
-                grids.readingcorner.data = result.isNewRepo ? result.data : proc(result.data);
+                grids.readingcorner.data = proc(result.data);
                 grids.readingcorner.page = 1;
                 await renderGrid('readingcorner', true);
             }
@@ -789,7 +835,7 @@ function initApp() {
         gTruf.clear(); 
         tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
         
-        grids.readingcorner.data = gResult.isNewRepo ? gResult.data : proc(gResult.data); 
+        grids.readingcorner.data = proc(gResult.data); 
         grids.sciencequiz.data = proc(a);
         
         let activePg = document.querySelector('.page.active');
