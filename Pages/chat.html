@@ -159,6 +159,7 @@
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
         let lastSidebarState = "";
+        let lastRenderedChatId = null;
         
         let messageQueue = [];
         let isSendingMessage = false;
@@ -291,13 +292,12 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                // STRICT CHECK: Discard responses missing an ID or whose ID does not strictly match the active chat
                 const chatId = data.id;
                 if (!chatId || chatId !== currentActiveRawId) return;
                 
                 const newMessages = data.payload || [];
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
-                renderMessages(newMessages);
+                renderMessages(newMessages, chatId);
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
@@ -339,12 +339,14 @@
                 if (chatItemEl) chatItemEl.classList.add('active');
             }
 
+            lastRenderedChatId = rawId;
             lastMessageDataString = ""; 
+            chatContainer.innerHTML = '';
             
             try {
                 const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
                 if (cachedMsgs && cachedMsgs.length > 0) {
-                    renderMessages(cachedMsgs);
+                    renderMessages(cachedMsgs, rawId);
                 } else {
                     document.getElementById('section-loader').classList.remove('hidden');
                 }
@@ -404,13 +406,19 @@
             }
         }
 
-        function renderMessages(messages) {
+        function renderMessages(messages, chatId) {
             document.getElementById('section-loader').classList.add('hidden');
+            const container = document.getElementById('chat-container');
+
+            if (chatId !== lastRenderedChatId) {
+                lastRenderedChatId = chatId;
+                lastMessageDataString = "";
+                container.innerHTML = '';
+            }
+
             const newMessageString = JSON.stringify(messages || []);
             if (newMessageString === lastMessageDataString) return; 
             lastMessageDataString = newMessageString;
-
-            const container = document.getElementById('chat-container');
 
             if (!messages || messages.length === 0) {
                 if (container.children.length === 0) {
