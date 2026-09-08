@@ -10,5 +10,17 @@
   "url":"${truffled}/games/10minutestilldawn/index.html",
   "img":"",
   "category":"Action"
+},
+{
+  "title":"-3",
+  "url":"${truffled}/games/minus3/index.html",
+  "img":"",
+  "category":"Horror"
+},
+{
+  "title":"-b",
+  "url":"${truffled}/games/minusbog/index.html",
+  "img":"",
+  "category":"Horror"
 }
 ]
