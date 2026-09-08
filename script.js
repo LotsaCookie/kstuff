@@ -317,21 +317,7 @@ function initApp() {
         
         if (modalIframe) {
             modalIframe.removeAttribute('srcdoc');
-            modalIframe.src = 'about:blank';
-
-            if (item.url) {
-                try {
-                    const res = await fetch(item.url, { cache: 'no-store' });
-                    if (res.ok) {
-                        const htmlText = await res.text();
-                        modalIframe.srcdoc = htmlText;
-                    } else {
-                        modalIframe.src = item.url;
-                    }
-                } catch {
-                    modalIframe.src = item.url;
-                }
-            }
+            modalIframe.src = item.url || 'about:blank';
         }
 
         setTimeout(() => Object.values(grids).forEach(g => {
@@ -757,7 +743,7 @@ function initApp() {
                         if (manualMatch.url) finalUrl = manualMatch.url;
                         if (manualMatch.category) finalCategory = manualMatch.category;
                         if (manualMatch.image || manualMatch.img) finalCover = manualMatch.image || manualMatch.img;
-                        manualMap.delete(titleLower); // Mark as consumed
+                        manualMap.delete(titleLower);
                     }
 
                     if (finalTitle && finalTitle.includes('[!]')) return;
