@@ -60,7 +60,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPtt27aNc80dh2QxgSxqQnt2L8gs20AVVxrQ&s"
   },
   {
-    "title": "60 Seconds, Webport",
+    "title": "60 Seconds",
     "url": "${truffled}/games/60/index.html",
     "category": "Strategy",
     "image": ""
@@ -72,7 +72,7 @@
     "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/9e/a1/56/9ea1561f-0ac4-21f0-89e9-137bde7af256/PlayerIcon.png/1200x600bf.png"
   },
   {
-    "title": "A Difficult Game About Climbing, Webport",
+    "title": "A Difficult Game About Climbing",
     "url": "${truffled}/gamefile/adgac.html",
     "category": "Platformer",
     "image": ""
@@ -90,7 +90,7 @@
     "image": "https://play-lh.googleusercontent.com/lvW5OtTJihsNXMEg-SwNoad5XKe955irRJ4n0jxf9BDHCosrYBJ7ES-XnR2z4GIbIr0=w240-h480-rw"
   },
   {
-    "title": "Academytale, Webport",
+    "title": "Academytale",
     "url": "${truffled}/games/academytale/index.html",
     "category": "RPG",
     "image": ""
@@ -124,6 +124,12 @@
     "url": "${uv}https://agar.io",
     "category": "Multiplayer",
     "image": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Agar.io_App_Store.png"
+  },
+  {
+    "title": "Age Of Conflict",
+    "url": "",
+    "category": "Strategy",
+    "image": "https://img.itch.zone/aW1nLzk4MzM5ODkucG5n/original/cwAxxR.png"
   },
   {
     "title": "Alien Hominid",
@@ -162,7 +168,7 @@
     "image": ""
   },
   {
-    "title": "Angry Birds Epic, Webport",
+    "title": "Angry Birds Epic",
     "url": "${truffled}/games/Epic/index.html",
     "category": "RPG",
     "image": ""
@@ -174,7 +180,7 @@
     "image": ""
   },
   {
-    "title": "Animal Crossing Population: Growing!, Webport",
+    "title": "Animal Crossing Population: Growing!",
     "url": "${truffled}/games/slider/index.html",
     "category": "Simulation",
     "image": ""
@@ -198,7 +204,7 @@
     "image": ""
   },
   {
-    "title": "Antonblast 64, Webport",
+    "title": "Antonblast 64",
     "url": "${truffled}/games/antonblast64/index.html",
     "category": "Platformer",
     "image": ""
@@ -216,7 +222,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ931GCtIBiWcI53KOhLlmfIinkJbdkBOl3tg&s"
   },
   {
-    "title": "Arthur's Nightmare, Webport",
+    "title": "Arthur's Nightmare",
     "url": "${truffled}/gamefile/arthur.html",
     "category": "Horror",
     "image": ""
@@ -282,7 +288,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS63YgK5AFm3MZJTuBdcYV4dx0dM9wm2_rqTw&s"
   },
   {
-    "title": "Balatro Modded, Webport",
+    "title": "Balatro Modded",
     "url": "${truffled}/games/balatromodded/",
     "category": "Cards",
     "image": ""
@@ -294,19 +300,19 @@
     "image": "https://is2-ssl.mzstatic.com/image/thumb/Purple123/v4/9a/2c/dc/9a2cdc52-a3ce-35f7-67cd-93f97546a3dd/source/512x512bb.jpg"
   },
   {
-    "title": "Baldi's Basics Birthday Bash, Webport",
+    "title": "Baldi's Basics Birthday Bash",
     "url": "${truffled}/games/bday/index.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Baldi's Basics Classic Remastered, Webport",
+    "title": "Baldi's Basics Classic Remastered",
     "url": "${truffled}/games/BBCR/index.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Baldi's Basics Plus, Webport",
+    "title": "Baldi's Basics Plus",
     "url": "${truffled}/gamefile/bbp.html",
     "category": "Horror",
     "image": ""
@@ -372,7 +378,7 @@
     "image": ""
   },
   {
-    "title": "Beatblock, Webport",
+    "title": "Beatblock",
     "url": "${truffled}/games/beatblock/index.html",
     "category": "Rhythm",
     "image": ""
@@ -390,7 +396,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1wjFuS4ZWhKwCZYYoT0_BBqwLx2xs6ZS3q2uFvAF3aumfcJMO6BBLoHgHzTkU-tCArJfIuyLQa5VTYgMRZxHVwQjjV4IDw35B2Xtylw"
   },
   {
-    "title": "Bergentruck, Webport",
+    "title": "Bergentruck",
     "url": "${truffled}/games/bergentruck/index.html",
     "category": "Driving",
     "image": ""
@@ -528,7 +534,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxDd9JNo6lF_D7C5O8ayNlhPGcUjtI6tx0aA&s"
   },
   {
-    "title": "Brotato Paws And Claws, Webport",
+    "title": "Brotato Paws And Claws",
     "url": "${truffled}/games/brotato2/index.html",
     "category": "Action",
     "image": ""
@@ -570,7 +576,7 @@
     "image": "https://tse3.mm.bing.net/th/id/OIP.wJ-5mmeqZ7Thia3KAk1m3AHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Capuchin, Webport",
+    "title": "Capuchin",
     "url": "${truffled}/games/CapuchinBog/index.html",
     "category": "Action",
     "image": ""
@@ -582,7 +588,7 @@
     "image": "https://play-lh.googleusercontent.com/qPhicF9zFY_Ya0xQm9RsTcCIKnjTb2gW5lAvzow6WgiodIOBMKyeAHaS4bh2WZN9BCU"
   },
   {
-    "title": "CaseOhs Basics in Eating and Fast Food, Webport",
+    "title": "CaseOhs Basics in Eating and Fast Food",
     "url": "${truffled}/gamefile/caseoh.html",
     "category": "Horror",
     "image": ""
@@ -606,13 +612,13 @@
     "image": "https://m.media-amazon.com/images/M/MV5BMTM4NDAxOTQtN2QyNC00ZDljLTkwMzEtNDM3NzljZTA1NjMxXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
   },
   {
-    "title": "Celeste 64, Webport",
+    "title": "Celeste 64",
     "url": "${truffled}/games/celeste64/index.html",
     "category": "Platformer",
     "image": ""
   },
   {
-    "title": "Cheese Rolling, Webport",
+    "title": "Cheese Rolling",
     "url": "${truffled}/gamefile/cheese.html",
     "category": "Arcade",
     "image": ""
@@ -624,7 +630,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSH--GY3wEACsRlvhlBN1ILZrt9hqxa1JfKmA&s"
   },
   {
-    "title": "Christmas Massacre, Webport",
+    "title": "Christmas Massacre",
     "url": "${truffled}/gamefile/christmas.html",
     "category": "Horror",
     "image": ""
@@ -648,20 +654,14 @@
     "image": "https://e.snmc.io/lk/o/x/f32f7845aadd79ec99c22ece60bb2b88/11265542"
   },
   {
-    "title": "Class Of 09 Flipside, Webport",
+    "title": "Class Of 09 Flipside",
     "url": "${truffled}/games/C09FS/index.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Class Of 09 Re-Up, Webport",
+    "title": "Class Of 09 Re-Up",
     "url": "${truffled}/games/C09RU/index.html",
-    "category": "Adventure",
-    "image": ""
-  },
-  {
-    "title": "Class Of 09, Webport",
-    "url": "${truffled}/games/C09/index.html",
     "category": "Adventure",
     "image": ""
   },
@@ -768,7 +768,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTXCxSZ4w1b0wLZbQ1m6eIfEbaQT9Vrk8vQAQ&s"
   },
   {
-    "title": "CrazyCattle3D, Webport",
+    "title": "CrazyCattle3D",
     "url": "${truffled}/games/cattle3d/index.html",
     "category": "Action",
     "image": ""
@@ -780,7 +780,7 @@
     "image": "https://cdn.jim-nielsen.com/ios/512/crossy-road-endless-arcade-2014-12-02.png?rf=1024"
   },
   {
-    "title": "Cruelty Squad, Webport",
+    "title": "Cruelty Squad",
     "url": "${truffled}/games/cruelty/index.html",
     "category": "FPS",
     "image": ""
@@ -798,7 +798,7 @@
     "image": ""
   },
   {
-    "title": "Cuphead, Webport",
+    "title": "Cuphead",
     "url": "${truffled}/games/Cuphead/index.html",
     "category": "Platformer",
     "image": ""
@@ -864,7 +864,7 @@
     "image": ""
   },
   {
-    "title": "DEAD PLATE, Webport",
+    "title": "DEAD PLATE",
     "url": "${truffled}/gamefile/dead.html",
     "category": "Horror",
     "image": ""
@@ -876,7 +876,7 @@
     "image": ""
   },
   {
-    "title": "Deadseat, Webport",
+    "title": "Deadseat",
     "url": "${truffled}/games/deadseat/index.html",
     "category": "Horror",
     "image": ""
@@ -918,7 +918,7 @@
     "image": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTFbJ6zpawFpZAAUO1UHfgoLBb6liCKV12_mVb4MVio7wIVeQ1k9gSemC9Ar7PYsiFtdYzf_w"
   },
   {
-    "title": "Deltatraveler, Webport",
+    "title": "Deltatraveler",
     "url": "${truffled}/gamefile/deltatr.html",
     "category": "RPG",
     "image": ""
@@ -930,7 +930,7 @@
     "image": ""
   },
   {
-    "title": "Dice A Million, Webport",
+    "title": "Dice A Million",
     "url": "${truffled}/gamefile/diceamillion.html",
     "category": "Puzzle",
     "image": ""
@@ -948,7 +948,7 @@
     "image": ""
   },
   {
-    "title": "Do Not Take This Cat Home, Webport",
+    "title": "Do Not Take This Cat Home",
     "url": "${truffled}/games/donottakethiscathome/index.html",
     "category": "Horror",
     "image": ""
@@ -972,7 +972,7 @@
     "image": "https://upload.wikimedia.org/wikipedia/en/7/7c/Doki_Doki_Literature_Club_Cover.jpg"
   },
   {
-    "title": "Dome Keeper, Webport",
+    "title": "Dome Keeper",
     "url": "${truffled}/games/domekeeper/index.html",
     "category": "Action",
     "image": ""
@@ -1080,7 +1080,7 @@
     "image": ""
   },
   {
-    "title": "Duck Life 8, Webport",
+    "title": "Duck Life 8",
     "url": "${truffled}/games/ducklifeadv/",
     "category": "Sports",
     "image": ""
@@ -1164,7 +1164,7 @@
     "image": "https://upload.wikimedia.org/wikipedia/en/a/af/Fallout.jpg"
   },
   {
-    "title": "Fallout 2, Webport",
+    "title": "Fallout 2",
     "url": "${truffled}/games/fo2/index.html",
     "category": "RPG",
     "image": ""
@@ -1194,7 +1194,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRxTwJ0iANOdzD7Z3JmN99hnw0u_YvGiyFfA&s"
   },
   {
-    "title": "FEZ, Webport",
+    "title": "FEZ",
     "url": "${truffled}/games/FEZ/index.html",
     "category": "Platformer",
     "image": ""
@@ -1248,7 +1248,7 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.cyh-xipu9yF7dQptldkfmgHaHa?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "FISH, Webport",
+    "title": "FISH",
     "url": "${truffled}/gamefile/fish.html",
     "category": "Arcade",
     "image": ""
@@ -1332,13 +1332,13 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ4aXQb7ab14NFxtfCOjHT2SutBR5R1Hd8lA&s"
   },
   {
-    "title": "Five Nights At Frickbears 3, Webport",
+    "title": "Five Nights At Frickbears 3",
     "url": "${truffled}/games/fb3/index.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Five Nights At Last Breath, Webport",
+    "title": "Five Nights At Last Breath",
     "url": "${truffled}/gamefile/breath.html",
     "category": "Horror",
     "image": ""
@@ -1350,7 +1350,7 @@
     "image": ""
   },
   {
-    "title": "Flying Gorilla, Webport",
+    "title": "Flying Gorilla",
     "url": "${truffled}/gamefile/gorilla.html",
     "category": "Arcade",
     "image": ""
@@ -1596,7 +1596,7 @@
     "image": ""
   },
   {
-    "title": "Gabriel's Awesome Schoolhouse, Webport",
+    "title": "Gabriel's Awesome Schoolhouse",
     "url": "${truffled}/gamefile/gash.html",
     "category": "Horror",
     "image": ""
@@ -1632,7 +1632,7 @@
     "image": "https://img.tapimg.net/market/images/832bbcf504d743688514bf880199a3a7.png?imageView2/0/w/1080/h/608/format/jpg/interlace/1/ignore-error/1&t=1"
   },
   {
-    "title": "Getting Over It, Webport",
+    "title": "Getting Over It",
     "url": "${truffled}/gamefile/goi.html",
     "category": "Action",
     "image": ""
@@ -1806,7 +1806,7 @@
     "image": "https://play-lh.googleusercontent.com/SV8RsV5udSeeONjatT5SwleP6lzV6PjtNPs2VvyohJXWSG9fFLNOfslDEHbpDN337wQ"
   },
   {
-    "title": "Helltaker, Webport",
+    "title": "Helltaker",
     "url": "${truffled}/gamefile/helltaker.html",
     "category": "Puzzle",
     "image": ""
@@ -1890,7 +1890,7 @@
     "image": ""
   },
   {
-    "title": "Hollow Knight, Webport",
+    "title": "Hollow Knight",
     "url": "${truffled}/games/hollowknight/index.html",
     "category": "Platformer",
     "image": ""
@@ -1908,19 +1908,13 @@
     "image": "https://f4.bcbits.com/img/a0807578587_10.jpg"
   },
   {
-    "title": "Hotline Miami, Webport",
-    "url": "${truffled}/games/whores/index.html",
-    "category": "Action",
-    "image": ""
-  },
-  {
     "title": "House Of Hazards",
     "url": "${truffled}/games/houseofhazards/index.html",
     "category": "Arcade",
     "image": ""
   },
   {
-    "title": "HUMAN EXPENDITURE PROGRAM, Webport",
+    "title": "HUMAN EXPENDITURE PROGRAM",
     "url": "${truffled}/gamefile/human.html",
     "category": "Horror",
     "image": ""
@@ -1956,7 +1950,7 @@
     "image": "https://wordle-nyt.org/upload/cache/upload/imgs/infinite-wordle-game-m270x290.webp"
   },
   {
-    "title": "Iron Lung, Webport",
+    "title": "Iron Lung",
     "url": "${truffled}/games/ironlung/index.html",
     "category": "Horror",
     "image": ""
@@ -1974,7 +1968,7 @@
     "image": "${truffled}/png/games/jeb.web"
   },
   {
-    "title": "Jeffys Basics, Webport",
+    "title": "Jeffys Basics",
     "url": "${truffled}/games/JeffysBasicsBog/index.html",
     "category": "Horror",
     "image": ""
@@ -2010,13 +2004,13 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoZIWSvfN6kZa5GEl5WuDsan1nk2ya-eAybg&s"
   },
   {
-    "title": "Karlson, Webport",
+    "title": "Karlson",
     "url": "${truffled}/gamefile/Karlson.html",
     "category": "FPS",
     "image": ""
   },
   {
-    "title": "Karlson2D, Webport",
+    "title": "Karlson2D",
     "url": "${truffled}/games/karlson2d/truffledkarlson2d/index.html",
     "category": "Platformer",
     "image": ""
@@ -2028,7 +2022,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxlDVudWvLc6cESKiznW4oiTDCjIVE-UqB9xlZ-1GxlD5FuJgiwVjb6Hj8tuB4pJc9WKI&usqp=CAU"
   },
   {
-    "title": "Kick The Buddy, Webport",
+    "title": "Kick The Buddy",
     "url": "${truffled}/games/kickthebuddy/index.html",
     "category": "Arcade",
     "image": ""
@@ -2040,25 +2034,25 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAHarnNZTQfKXH5VFMhTyJjg1b5aMMso2o3w&s"
   },
   {
-    "title": "Kindergarten 2, Webport",
+    "title": "Kindergarten 2",
     "url": "${truffled}/games/kindergarten/2/index.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Kindergarten 3, Webport",
+    "title": "Kindergarten 3",
     "url": "${truffled}/games/Kindergarten3/index.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Kinito Pet, Webport",
+    "title": "Kinito Pet",
     "url": "${truffled}/games/kinitopet/index.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Kirby Soft And Wet, Webport",
+    "title": "Kirby Soft And Wet",
     "url": "${truffled}/gamefile/kirbysoftandwet.html",
     "category": "Platformer",
     "image": ""
@@ -2076,7 +2070,7 @@
     "image": ""
   },
   {
-    "title": "Lacey's Flash Games, Webport",
+    "title": "Lacey's Flash Games",
     "url": "${truffled}/gamefile/lacy.html",
     "category": "Horror",
     "image": ""
@@ -2154,7 +2148,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRnZB5RXBy4zwBWq9Iz3p5XRyDTLJZr4c0IpQ&s"
   },
   {
-    "title": "Lobotomy Corporation, Webport",
+    "title": "Lobotomy Corporation",
     "url": "${truffled}/games/lobcorp/index.html",
     "category": "Simulation",
     "image": ""
@@ -2310,7 +2304,7 @@
     "image": ""
   },
   {
-    "title": "Milkman karlson, Webport",
+    "title": "Milkman karlson",
     "url": "${truffled}/games/milk/index.html",
     "category": "Action",
     "image": ""
@@ -2346,13 +2340,13 @@
     "image": "https://tse4.mm.bing.net/th/id/OIP.VUEN2oO1Fh4JF916IkTNXAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Minecraft Legacy Console Edition, Webport",
+    "title": "Minecraft Legacy Console Edition",
     "url": "${truffled}/games/lce/index.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Minecraft Pocket Edition, Webport",
+    "title": "Minecraft Pocket Edition",
     "url": "${truffled}/games/mcpe/index.html",
     "category": "Adventure",
     "image": ""
@@ -2370,13 +2364,13 @@
     "image": ""
   },
   {
-    "title": "Minesweeper Plus, Webport",
+    "title": "Minesweeper Plus",
     "url": "${truffled}/gamefile/mineplus.html",
     "category": "Puzzle",
     "image": ""
   },
   {
-    "title": "Miside, Webport",
+    "title": "Miside",
     "url": "${truffled}/gamefile/miside.html",
     "category": "Horror",
     "image": ""
@@ -2430,7 +2424,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf51-6uDI2iCm8olmfHvvxYPSqDWXgHv72Zg&s"
   },
   {
-    "title": "Needy Streamer Overload, Webport",
+    "title": "Needy Streamer Overload",
     "url": "${truffled}/games/nso/index.html",
     "category": "Simulation",
     "image": ""
@@ -2448,13 +2442,13 @@
     "image": ""
   },
   {
-    "title": "Node Buster, Webport",
+    "title": "Node Buster",
     "url": "${truffled}/games/nodebuster/index.html",
     "category": "Action",
     "image": ""
   },
   {
-    "title": "Nubbys Number Factory, Webport",
+    "title": "Nubbys Number Factory",
     "url": "${truffled}/gamefile/nubby.html",
     "category": "Puzzle",
     "image": ""
@@ -2472,13 +2466,13 @@
     "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSoWYMETCPjUHGlMVjTYstDHDHRPvU8gYDJyerSl5-83dhsLW6gnCPWXnL92n9LVGp1bDp32H3hn2eV4OxHFvcxuoCN_DDWvkloJoz2OQ"
   },
   {
-    "title": "Oneshot World Machine Edition, Webport",
+    "title": "Oneshot World Machine Edition",
     "url": "${truffled}/games/worldmachine/index.html",
     "category": "Puzzle",
     "image": ""
   },
   {
-    "title": "Oneshot, Webport",
+    "title": "Oneshot",
     "url": "${truffled}/gamefile/oneshot.html",
     "category": "Puzzle",
     "image": ""
@@ -2514,7 +2508,7 @@
     "image": "https://hone.gg/images/character-osu-2.webp"
   },
   {
-    "title": "Overburden, Webport",
+    "title": "Overburden",
     "url": "${truffled}/gamefile/overburden.html",
     "category": "Puzzle",
     "image": ""
@@ -2682,7 +2676,7 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.B6czPoja4rnRWxKVgzKaQwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Peaks of Yore, Webport",
+    "title": "Peaks of Yore",
     "url": "${truffled}/gamefile/peaksofyore.html",
     "category": "Platformer",
     "image": ""
@@ -2694,13 +2688,13 @@
     "image": ""
   },
   {
-    "title": "People Playground, Webport",
+    "title": "People Playground",
     "url": "${truffled}/games/ppg/index.html",
     "category": "Simulation",
     "image": "https://thvnext.bing.com/th/id/OIP.dSrF6xgpKVDxfuHX3H4K2AAAAA?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Pikuniku, Webport",
+    "title": "Pikuniku",
     "url": "${truffled}/games/pikubog/index.html",
     "category": "Puzzle",
     "image": ""
@@ -2712,7 +2706,7 @@
     "image": ""
   },
   {
-    "title": "Pizza Tower, Webport",
+    "title": "Pizza Tower",
     "url": "${truffled}/games/NoiseUpdate/index.html",
     "category": "Platformer",
     "image": ""
@@ -2742,7 +2736,7 @@
     "image": ""
   },
   {
-    "title": "Plauge Inc, Webport",
+    "title": "Plauge Inc",
     "url": "${truffled}/games/PlagueInc/index.html",
     "category": "Strategy",
     "image": ""
@@ -2838,19 +2832,19 @@
     "image": ""
   },
   {
-    "title": "Postal, Webport",
+    "title": "Postal",
     "url": "${truffled}/gamefile/postal.html",
     "category": "Shooter",
     "image": ""
   },
   {
-    "title": "Potion Craft Alchemy Simulator, Webport",
+    "title": "Potion Craft Alchemy Simulator",
     "url": "${truffled}/games/pcraft/index.html",
     "category": "Simulation",
     "image": ""
   },
   {
-    "title": "Pretend its not there, Webport",
+    "title": "Pretend its not there",
     "url": "${truffled}/games/pretenditsnotthere/index.html",
     "category": "Horror",
     "image": ""
@@ -2952,7 +2946,7 @@
     "image": ""
   },
   {
-    "title": "RE:RUN, Webport",
+    "title": "RE:RUN",
     "url": "${truffled}/games/rerun/index.html",
     "category": "Platformer",
     "image": ""
@@ -3090,13 +3084,13 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSV5ui-eWyj4PU5ZICXnAjoxmtxl3-iJE8ZrQ&s"
   },
   {
-    "title": "Running Fred, Webport",
+    "title": "Running Fred",
     "url": "${truffled}/games/fred/index.html",
     "category": "Arcade",
     "image": ""
   },
   {
-    "title": "Saihate Station, Webport",
+    "title": "Saihate Station",
     "url": "${truffled}/gamefile/saihatestation.html",
     "category": "Horror",
     "image": ""
@@ -3108,7 +3102,7 @@
     "image": ""
   },
   {
-    "title": "Sanic Ball, Webport",
+    "title": "Sanic Ball",
     "url": "${truffled}/games/ball/index.html",
     "category": "Racing",
     "image": ""
@@ -3132,13 +3126,13 @@
     "image": ""
   },
   {
-    "title": "Schoolboy Runaway, Webport",
+    "title": "Schoolboy Runaway",
     "url": "${truffled}/gamefile/runaway.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Shift At Midnight, Webport",
+    "title": "Shift At Midnight",
     "url": "${truffled}/gamefile/shift.html",
     "category": "Horror",
     "image": ""
@@ -3150,7 +3144,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE1TI7mR1br7DgCFlxpztG43SIZ_MnPn6-vQ&s"
   },
   {
-    "title": "Silksong, Webport",
+    "title": "Silksong",
     "url": "${truffled}/games/silk/index.html",
     "category": "Platformer",
     "image": ""
@@ -3174,19 +3168,19 @@
     "image": "https://m.media-amazon.com/images/M/MV5BNGIwMDBiM2ItOTJkOC00YjdlLWI3ZTAtNDgzNzQ5M2Y1YWI3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
   },
   {
-    "title": "Slendytubbies I, Webport",
+    "title": "Slendytubbies I",
     "url": "${truffled}/gamefile/slendy1.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Slendytubbies II 2D, Webport",
+    "title": "Slendytubbies II 2D",
     "url": "${truffled}/games/slendy2d/index.html",
     "category": "Horror",
     "image": ""
   },
   {
-    "title": "Slendytubbies II, Webport",
+    "title": "Slendytubbies II",
     "url": "${truffled}/games/slendy/index.html",
     "category": "Horror",
     "image": ""
@@ -3198,13 +3192,13 @@
     "image": ""
   },
   {
-    "title": "Slime Ranchers, Webport",
+    "title": "Slime Ranchers",
     "url": "${truffled}/gamefile/slimeranchers.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Slither.io, Webport",
+    "title": "Slither.io",
     "url": "${truffled}/gamefile/sfge.html",
     "category": "Multiplayer",
     "image": ""
@@ -3330,7 +3324,7 @@
     "image": ""
   },
   {
-    "title": "Sonic Mania, Webport",
+    "title": "Sonic Mania",
     "url": "${truffled}/gamefile/sonic.html",
     "category": "Platformer",
     "image": ""
@@ -3378,7 +3372,7 @@
     "image": ""
   },
   {
-    "title": "Spaceflight Simulator, Webport",
+    "title": "Spaceflight Simulator",
     "url": "${truffled}/gamefile/spaceflight.html",
     "category": "Simulation",
     "image": ""
@@ -3408,13 +3402,13 @@
     "image": "https://static.wikia.nocookie.net/dragonball/images/6/64/Sparking%21_Zero_Cover_Art.jpeg"
   },
   {
-    "title": "Starbound, Webport",
+    "title": "Starbound",
     "url": "${truffled}/games/Starbound/index.html",
     "category": "Adventure",
     "image": ""
   },
   {
-    "title": "Stardew Valley, Webport",
+    "title": "Stardew Valley",
     "url": "${truffled}/games/stardew/index.html",
     "category": "Simulation",
     "image": ""
@@ -3438,7 +3432,7 @@
     "image": ""
   },
   {
-    "title": "Stick With It, Webport",
+    "title": "Stick With It",
     "url": "${truffled}/games/stick/index.html",
     "category": "Platformer",
     "image": ""
@@ -3552,7 +3546,7 @@
     "image": ""
   },
   {
-    "title": "Survivor.io, Webport",
+    "title": "Survivor.io",
     "url": "${truffled}/gamefile/survivor.html",
     "category": "Action",
     "image": ""
@@ -3600,7 +3594,7 @@
     "image": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSjNkLsBxPjXKpa8D6jTzir9wzxDrVboZhKgpMpmmbtQzJFDTKzn3sDfNfhmaQec2QX0V6b"
   },
   {
-    "title": "Tax Heaven 3000, Webport",
+    "title": "Tax Heaven 3000",
     "url": "${truffled}/games/th3000/index.html",
     "category": "Simulation",
     "image": ""
@@ -3628,12 +3622,6 @@
     "url": "${truffled}/gamefile/terraria48.html",
     "category": "Adventure",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrVNzn3aErkS59Ym_qhqbZYFd8laElFfxviQ&s"
-  },
-  {
-    "title": "Terraria, Webport",
-    "url": "${truffled}/games/terraria/terraria-wrapper.html",
-    "category": "Adventure",
-    "image": ""
   },
   {
     "title": "Tetris",
@@ -3672,7 +3660,7 @@
     "image": ""
   },
   {
-    "title": "The Binding Of Issac: Rebirth, Webport",
+    "title": "The Binding Of Issac: Rebirth",
     "url": "${truffled}/games/psp/tboir/index.html",
     "category": "Action",
     "image": ""
@@ -3750,7 +3738,7 @@
     "image": "https://tse3.mm.bing.net/th/id/OIP.MVj3QlDvvEk7IOIAeGRvKQAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "To The Core, Webport",
+    "title": "To The Core",
     "url": "${truffled}/games/tothecore/index.html",
     "category": "Action",
     "image": ""
@@ -3804,13 +3792,13 @@
     "image": ""
   },
   {
-    "title": "Touhou Mother, Webport",
+    "title": "Touhou Mother",
     "url": "${truffled}/games/touhoumother/index.html",
     "category": "RPG",
     "image": ""
   },
   {
-    "title": "Trombone Champ, Webport",
+    "title": "Trombone Champ",
     "url": "${truffled}/games/tchamp/index.html",
     "category": "Rhythm",
     "image": ""
@@ -3822,7 +3810,7 @@
     "image": ""
   },
   {
-    "title": "Tung Tung Basics, Webport",
+    "title": "Tung Tung Basics",
     "url": "${truffled}/games/tungtungbog/index.html",
     "category": "Horror",
     "image": ""
@@ -3840,13 +3828,13 @@
     "image": "https://thvnext.bing.com/th/id/OIP.r0EZIGOxcB0f-vzonhaiDAHaHa?cb=ucfimg2ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Ultrakill, Webport",
+    "title": "Ultrakill",
     "url": "${truffled}/games/ultrakill/ultrakill/index.html",
     "category": "FPS",
     "image": ""
   },
   {
-    "title": "Ultrapool, Webport",
+    "title": "Ultrapool",
     "url": "${truffled}/gamefile/ultrapool.html",
     "category": "Sports",
     "image": ""
@@ -3864,7 +3852,7 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.UXgvVSFfoYC_x14pjKuKOgHaLH?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Undertale 10th Anniversary, Webport",
+    "title": "Undertale 10th Anniversary",
     "url": "${truffled}/games/10th/index.html",
     "category": "RPG",
     "image": ""
@@ -3876,14 +3864,8 @@
     "image": ""
   },
   {
-    "title": "Undertale Yellow, Webport",
+    "title": "Undertale Yellow",
     "url": "${truffled}/games/uty/play.html",
-    "category": "RPG",
-    "image": ""
-  },
-  {
-    "title": "Undertale, Webport",
-    "url": "${truffled}/gamefile/undertale.html",
     "category": "RPG",
     "image": ""
   },
@@ -3894,7 +3876,7 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh6SA1Zbj57O73Ynwow04gRGK5BhoDVyyZ4NIbc2PEWejs8Q_d3KrMZgYL5Mw-afvSwUY&usqp=CAU"
   },
   {
-    "title": "Untitled Goose Game, Webport",
+    "title": "Untitled Goose Game",
     "url": "${truffled}/games/UntitledGooseGameBog/index.html",
     "category": "Puzzle",
     "image": ""
@@ -3960,7 +3942,7 @@
     "image": "https://tse1.mm.bing.net/th/id/OIP.4XqpeZFWXeioDa5bWaav0gHaHa?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
-    "title": "Vib-Ribbon, Webport",
+    "title": "Vib-Ribbon",
     "url": "${truffled}/gamefile/vib.html",
     "category": "Rhythm",
     "image": ""
@@ -3984,19 +3966,19 @@
     "image": "https://cdn-1.webcatalog.io/catalog/poki-we-become-what-we-behold/poki-we-become-what-we-behold-icon-filled-256.png"
   },
   {
-    "title": "Webfishing, Webport",
+    "title": "Webfishing",
     "url": "${truffled}/games/webfishing/",
     "category": "Simulation",
     "image": ""
   },
   {
-    "title": "Who's Your Daddy, Webport",
+    "title": "Who's Your Daddy",
     "url": "${truffled}/games/whoseyourdaddy/index.html",
     "category": "Multiplayer",
     "image": ""
   },
   {
-    "title": "Witch's Heart, Webport",
+    "title": "Witch's Heart",
     "url": "${truffled}/gamefile/witches.html",
     "category": "Adventure",
     "image": ""
@@ -4050,7 +4032,7 @@
     "image": ""
   },
   {
-    "title": "Your Only Move Is HUSTLE, YOMI Hustle, Webport",
+    "title": "Your Only Move Is HUSTLE, YOMI Hustle",
     "url": "${truffled}/games/YOMIHustle/index.html",
     "category": "Strategy",
     "image": ""
