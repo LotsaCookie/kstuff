@@ -291,25 +291,25 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                const chatId = data.id || currentActiveRawId;
+                const chatId = data.id;
+                if (!chatId) return; // Ignore background responses lacking an explicit chat ID to prevent cross-chat contamination
+                
                 const newMessages = data.payload || [];
                 
-                if (chatId) {
-                    const prevData = localStorage.getItem(`chat_msgs_${chatId}`);
-                    const cachedMsgs = prevData ? JSON.parse(prevData) : null;
+                const prevData = localStorage.getItem(`chat_msgs_${chatId}`);
+                const cachedMsgs = prevData ? JSON.parse(prevData) : null;
 
-                    if (cachedMsgs !== null && newMessages.length > cachedMsgs.length) {
-                        if (chatId !== currentActiveRawId && !unreadChats.includes(chatId)) {
-                            unreadChats.push(chatId);
-                            localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                            renderSidebarList(); 
-                        }
+                if (cachedMsgs !== null && newMessages.length > cachedMsgs.length) {
+                    if (chatId !== currentActiveRawId && !unreadChats.includes(chatId)) {
+                        unreadChats.push(chatId);
+                        localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+                        renderSidebarList(); 
                     }
-
-                    localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
                 }
+
+                localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
                 
-                if (!data.id || data.id === currentActiveRawId) {
+                if (chatId === currentActiveRawId) {
                     renderMessages(newMessages);
                 }
             } else if (data.type === 'send-message' && data.success) {
