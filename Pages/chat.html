@@ -159,7 +159,6 @@
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
         let lastSidebarState = "";
-        let activeRequestedChatId = null;
         
         let messageQueue = [];
         let isSendingMessage = false;
@@ -292,27 +291,13 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                const chatId = data.id || activeRequestedChatId;
-                if (!chatId) return;
+                // STRICT CHECK: Discard responses missing an ID or whose ID does not strictly match the active chat
+                const chatId = data.id;
+                if (!chatId || chatId !== currentActiveRawId) return;
                 
                 const newMessages = data.payload || [];
-                
-                const prevData = localStorage.getItem(`chat_msgs_${chatId}`);
-                const cachedMsgs = prevData ? JSON.parse(prevData) : null;
-
-                if (cachedMsgs !== null && newMessages.length > cachedMsgs.length) {
-                    if (chatId !== currentActiveRawId && !unreadChats.includes(chatId)) {
-                        unreadChats.push(chatId);
-                        localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                        renderSidebarList(); 
-                    }
-                }
-
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
-                
-                if (chatId === currentActiveRawId) {
-                    renderMessages(newMessages);
-                }
+                renderMessages(newMessages);
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
@@ -324,7 +309,6 @@
 
         function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
             currentActiveRawId = rawId;
-            activeRequestedChatId = rawId;
             document.getElementById('header-username').innerText = peerName;
             
             let headerAvatar = document.getElementById('header-avatar-icon');
@@ -416,7 +400,6 @@
 
         function fetchMessages(rawId) {
             if (backendPort && rawId) {
-                activeRequestedChatId = rawId;
                 backendPort.postMessage({ type: 'get-messages', id: rawId });
             }
         }
