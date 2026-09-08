@@ -29,8 +29,16 @@
         .chat-item:hover, .chat-item.active { background-color: var(--card); }
         .chat-item.active { border-left: 4px solid var(--text); }
         
+        /* Avatar & Unread Indicator Styles */
+        .avatar-wrapper { position: relative; width: 40px; height: 40px; margin-right: 12px; flex-shrink: 0; }
+        .chat-avatar { width: 100%; height: 100%; }
         .chat-avatar, .header-avatar, .user-list-avatar { border-radius: 50%; background-color: var(--card); border: 1px solid rgba(128,128,128,0.3); object-fit: cover; }
-        .chat-avatar { width: 40px; height: 40px; margin-right: 12px; }
+        .header-avatar, .user-list-avatar { width: 45px; height: 45px; }
+        .header-avatar { width: 36px; height: 36px; }
+        
+        .unread-indicator { position: absolute; top: -2px; right: -2px; width: 13px; height: 13px; background-color: #ff3333; border-radius: 50%; border: 2px solid var(--nav); display: none; }
+        .chat-item.unread .unread-indicator { display: block; }
+
         .chat-info, .user-list-info, .message-wrapper { display: flex; flex-direction: column; overflow: hidden; }
         .chat-info, .user-list-info { flex: 1; }
         .chat-title, .user-list-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 900 !important; }
@@ -39,7 +47,6 @@
         #main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; width: 100%; background: transparent; }
         header { background-color: var(--nav); padding: 15px 25px; border-bottom: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .header-user-info { display: flex; align-items: center; gap: 12px; }
-        .header-avatar { width: 36px; height: 36px; }
         .header-name { font-size: 1.1rem; font-weight: 900 !important; }
 
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -52,6 +59,23 @@
         .loading-text { font-size: 0.9rem; font-weight: 900 !important; letter-spacing: .25em; text-transform: uppercase; animation: pulse 1.5s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
         @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
+
+        /* Animation Keyframes */
+        @keyframes fadeInSmooth {
+            0% { opacity: 0; transform: translateY(5px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeInSmooth 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes slideInMessage {
+            0% { opacity: 0; transform: translateY(15px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .slide-in {
+            animation: slideInMessage 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
 
         /* Messages & Wrapping Fixes */
         .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 75%; min-width: 0; }
@@ -82,7 +106,6 @@
         .modal-box h3 { margin: 0; font-size: 1.1rem; }
         .user-list-container { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
         .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); }
-        .user-list-avatar { width: 45px; height: 45px; }
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .modal-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.3); background: var(--card); color: var(--text); font-weight: 900 !important; cursor: pointer; }
         .modal-btn.primary { background-color: var(--text); color: var(--bg); border: none; }
@@ -138,6 +161,7 @@
         
         let messageQueue = [];
         let isSendingMessage = false;
+        let unreadChats = []; 
         
         const fallbackAvatar = "https://kstuff.neocities.org/assets/default-profile.png";
 
@@ -147,6 +171,9 @@
 
         function loadLocalData() {
             try {
+                const unreadData = localStorage.getItem('chat_unread');
+                if (unreadData) unreadChats = JSON.parse(unreadData);
+
                 const localUsers = JSON.parse(localStorage.getItem('chat_users_list'));
                 if (localUsers) {
                     cachedUsersList = localUsers;
@@ -232,7 +259,7 @@
         window.addEventListener("message", e => {
             if (e.data?.type === 'set_user' && e.data.username) {
                 currentUser = e.data.username.trim().toLowerCase();
-                loadLocalData(); // Load cached data instantly
+                loadLocalData(); 
                 if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
             }
         });
@@ -248,7 +275,7 @@
                 backendReady = true;
                 backendPort.postMessage({ type: 'get-users' });
                 if (currentUser) backendPort.postMessage({ type: 'get-convs' });
-                processMessageQueue(); // Start processing queue if backend just became ready
+                processMessageQueue(); 
             } else if (data.type === 'get-users' && data.success) {
                 localStorage.setItem('chat_users_list', JSON.stringify(data.payload));
                 cachedUsersList = data.payload || [];
@@ -264,14 +291,29 @@
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
                 const chatId = data.id || currentActiveRawId;
-                if (chatId) localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(data.payload));
+                const newMessages = data.payload || [];
+                
+                if (chatId) {
+                    const prevData = localStorage.getItem(`chat_msgs_${chatId}`);
+                    const cachedMsgs = prevData ? JSON.parse(prevData) : null;
+
+                    if (cachedMsgs !== null && newMessages.length > cachedMsgs.length) {
+                        if (chatId !== currentActiveRawId && !unreadChats.includes(chatId)) {
+                            unreadChats.push(chatId);
+                            localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+                            renderSidebarList(); 
+                        }
+                    }
+
+                    localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(newMessages));
+                }
                 
                 if (!data.id || data.id === currentActiveRawId) {
-                    renderMessages(data.payload);
+                    renderMessages(newMessages);
                 }
             } else if (data.type === 'send-message' && data.success) {
-                isSendingMessage = false;
-                processMessageQueue(); 
+                isSendingMessage = false; 
+                processMessageQueue();    
                 
                 fetchMessages(currentActiveRawId);
                 backendPort.postMessage({ type: 'get-convs' });
@@ -289,8 +331,26 @@
             document.getElementById('user-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             
-            document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            if (chatItemEl) chatItemEl.classList.add('active');
+            const headerInfo = document.querySelector('.header-user-info');
+            const chatContainer = document.getElementById('chat-container');
+            
+            headerInfo.classList.remove('fade-in');
+            chatContainer.classList.remove('fade-in');
+            
+            void headerInfo.offsetWidth; 
+            void chatContainer.offsetWidth; 
+            
+            headerInfo.classList.add('fade-in');
+            chatContainer.classList.add('fade-in');
+
+            if (unreadChats.includes(rawId)) {
+                unreadChats = unreadChats.filter(id => id !== rawId);
+                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+                renderSidebarList(); 
+            } else {
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+                if (chatItemEl) chatItemEl.classList.add('active');
+            }
 
             lastMessageDataString = ""; 
             
@@ -324,11 +384,21 @@
                 let parts = rawId.split('-');
                 let peer = parts.find(p => p !== currentUser) || parts[0];
                 let peerAvatar = userProfileMap[peer] || fallbackAvatar;
+                let isUnread = unreadChats.includes(rawId);
 
                 let item = document.createElement('div');
-                item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''}`;
-                item.innerHTML = `<img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
-                    <div class="chat-info"><span class="chat-title">${escapeHtml(peer)}</span><span class="chat-preview">Open chat</span></div>`;
+                item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
+                
+                item.innerHTML = `
+                    <div class="avatar-wrapper">
+                        <img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
+                        <div class="unread-indicator"></div>
+                    </div>
+                    <div class="chat-info">
+                        <span class="chat-title">${escapeHtml(peer)}</span>
+                        <span class="chat-preview">Open chat</span>
+                    </div>`;
+                    
                 item.onclick = () => openChat(rawId, peer, peerAvatar, item);
                 chatList.appendChild(item);
             });
@@ -345,22 +415,34 @@
             lastMessageDataString = newMessageString;
 
             const container = document.getElementById('chat-container');
-            container.innerHTML = '';
 
             if (!messages || messages.length === 0) {
                 container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
                 return;
             }
-            messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp));
+
+            if (container.children.length === 1 && container.children[0].innerText.includes("No messages sent yet")) {
+                container.innerHTML = '';
+            }
+
+            const currentCount = container.querySelectorAll('.message-row').length;
+
+            if (currentCount === 0 || currentCount > messages.length) {
+                container.innerHTML = '';
+                messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
+            } 
+            else if (messages.length > currentCount) {
+                const newMsgs = messages.slice(currentCount);
+                newMsgs.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true));
+            }
         }
 
-        function appendSingleMessageToDOM(sender, text, timestamp) {
+        function appendSingleMessageToDOM(sender, text, timestamp, animate = false) {
             const container = document.getElementById('chat-container');
-            if (container.children.length === 1 && container.children[0].innerText.includes("No messages sent yet")) container.innerHTML = '';
-
+            
             let isMe = sender.toLowerCase() === currentUser;
             let rowDiv = document.createElement('div');
-            rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'}`;
+            rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'} ${animate ? 'slide-in' : ''}`;
 
             let avatarImg = document.createElement('img');
             avatarImg.className = 'msg-avatar';
@@ -391,7 +473,9 @@
         setInterval(() => {
             if (backendReady && currentUser) {
                 backendPort.postMessage({ type: 'get-convs' });
-                if (currentActiveRawId) fetchMessages(currentActiveRawId);
+                activeConversations.forEach(rawId => {
+                    fetchMessages(rawId);
+                });
             }
         }, 1000);
 
@@ -402,7 +486,7 @@
             input.value = '';
             let currentTimestamp = new Date().toISOString();
             
-            appendSingleMessageToDOM(currentUser, text, currentTimestamp);
+            appendSingleMessageToDOM(currentUser, text, currentTimestamp, true);
             
             messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
             processMessageQueue();
