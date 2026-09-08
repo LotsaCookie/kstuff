@@ -742,36 +742,44 @@ function initApp() {
                 const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
                 const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
                 
-                const mappedData = json.map(item => {
+                const mappedData = [];
+                
+                json.forEach(item => {
                     const titleLower = (item.name || '').toLowerCase().trim();
                     const manualMatch = manualMap.get(titleLower);
 
                     let finalUrl = item.url;
                     let finalCover = item.cover;
                     let finalTitle = item.name;
+                    let finalCategory = 'All';
 
                     if (manualMatch) {
                         if (manualMatch.url) finalUrl = manualMatch.url;
+                        if (manualMatch.category) finalCategory = manualMatch.category;
                         manualMap.delete(titleLower); // Mark as consumed
                     }
 
-                    return {
+                    if (finalTitle && finalTitle.includes('[!]')) return;
+
+                    mappedData.push({
                         title: finalTitle,
                         image: (finalCover || '').replace('{COVER_URL}', coverBase + '/'),
                         url: (finalUrl || '').replace('{HTML_URL}', htmlBase + '/'),
-                        category: 'All',
+                        category: finalCategory,
                         description: ''
-                    };
+                    });
                 });
 
                 manualMap.forEach((manualItem) => {
-                    mappedData.push({
-                        title: manualItem.title,
-                        image: manualItem.img || '',
-                        url: manualItem.url || '',
-                        category: 'Manual',
-                        description: ''
-                    });
+                    if (manualItem.title && !manualItem.title.includes('[!]')) {
+                        mappedData.push({
+                            title: manualItem.title,
+                            image: manualItem.img || '',
+                            url: manualItem.url || '',
+                            category: manualItem.category || 'Manual',
+                            description: ''
+                        });
+                    }
                 });
 
                 return { data: mappedData };
@@ -779,17 +787,29 @@ function initApp() {
         }
         
         const fallbackJson = await fetchWithProxy('Json/g.json').catch(()=>[]);
-        const fallbackMapped = fallbackJson.map(item => {
+        const fallbackMapped = [];
+        
+        fallbackJson.forEach(item => {
             const titleLower = (item.title || '').toLowerCase().trim();
             const manualMatch = manualMap.get(titleLower);
+            
+            let finalUrl = item.url;
+            let finalCategory = item.category || 'All';
+            
             if (manualMatch) {
-                return {
-                    ...item,
-                    url: manualMatch.url || item.url
-                };
+                if (manualMatch.url) finalUrl = manualMatch.url;
+                if (manualMatch.category) finalCategory = manualMatch.category;
             }
-            return item;
+
+            if (item.title && item.title.includes('[!]')) return;
+
+            fallbackMapped.push({
+                ...item,
+                url: finalUrl,
+                category: finalCategory
+            });
         });
+
         return { data: fallbackMapped };
     };
 
