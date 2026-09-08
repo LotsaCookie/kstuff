@@ -585,9 +585,24 @@ let historyIndex = 0;
 let isNavigating = false;
 let cachedQuote = "";
 let cachedCommitHash = "";
+let workingstaticurl = "";
+let activePort = null;
 
 const cleanUrl = u => u ? u.replace(/\/+$/, '') : '';
 const trimSlash = u => u ? u.replace(/^\/+/, '') : '';
+
+function encode(str) {
+    if (!str) return str;
+    return encodeURIComponent(
+        str
+            .toString()
+            .split('')
+            .map((char, ind) =>
+                ind % 2 ? String.fromCharCode(char.charCodeAt() ^ 2) : char
+            )
+            .join('')
+    );
+}
 
 async function getProxyList() {
     if (!cachedCommitHash) {
@@ -643,7 +658,7 @@ async function initProxyBackend() {
         const staticTable = await fetchWithProxy('Json/urls/static.json');
         const workingConfig = await getWorkingConfig(staticTable);
         if (workingConfig && workingConfig.url) {
-            const workingstaticurl = cleanUrl(workingConfig.url);
+            workingstaticurl = cleanUrl(workingConfig.url); // Set global URL
             const proxyIframe = document.createElement('iframe');
             proxyIframe.style.display = 'none';
             proxyIframe.src = `${workingstaticurl}/embed.html#https://example.com`;
@@ -823,13 +838,16 @@ function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
         historyIndex++;
     }
 
-    studyIframe.onload = () => {
-        isNavigating = false;
-    };
-
     libraryHome.classList.add('hidden');
     studyIframe.classList.add('active');
-    studyIframe.src = targetUrl;
+
+    if (workingstaticurl) {
+        const wrapperUrl = `https://lotsacookie.github.io/Pages/browser-content.html?site=${targetUrl}`;
+        const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
+        studyIframe.src = proxiedUrl;
+    } else {
+        studyIframe.src = targetUrl;
+    }
 
     if (updateInput) {
         textbookInput.value = targetUrl;
@@ -874,30 +892,42 @@ function navigateHistory(offset) {
 studyBackBtn.addEventListener('click', () => navigateHistory(-1));
 studyForwardBtn.addEventListener('click', () => navigateHistory(1));
 
-setInterval(() => {
-    if (mode !== 'iframe' || isNavigating) return;
+studyIframe.onload = () => {
+    isNavigating = false;
 
-    try {
-        const currentLoc = studyIframe.contentWindow?.location?.href;
-        
-        if (currentLoc && currentLoc !== 'about:blank') {
-            const getNorm = (u) => { try { return new URL(u).href; } catch(e) { return u; } };
+    if (mode === 'iframe') {
+        const channel = new MessageChannel();
+        activePort = channel.port1;
 
-            if (getNorm(currentLoc) !== getNorm(currentUrl)) {
-                currentUrl = currentLoc;
-                textbookInput.value = currentLoc;
-                librarySearchInput.value = currentLoc;
-                
-                if (getNorm(history[historyIndex]) !== getNorm(currentLoc)) {
-                    history = history.slice(0, historyIndex + 1);
-                    history.push(currentLoc);
-                    historyIndex++;
-                    updateNavButtons();
+        activePort.onmessage = (event) => {
+            if (event.data && event.data.type === 'tabData') {
+                const reportedUrl = event.data.url;
+                if (reportedUrl && reportedUrl !== currentUrl && reportedUrl !== 'about:blank') {
+                    currentUrl = reportedUrl;
+                    textbookInput.value = currentUrl;
+                    librarySearchInput.value = currentUrl;
+                    
+                    if (history[historyIndex] !== currentUrl) {
+                        history = history.slice(0, historyIndex + 1);
+                        history.push(currentUrl);
+                        historyIndex++;
+                        updateNavButtons();
+                    }
                 }
             }
+        };
+
+        if (studyIframe.contentWindow) {
+            studyIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
         }
-    } catch (e) {}
-}, 1000);
+    }
+};
+
+window.addEventListener('message', (event) => {
+    if (typeof event.data === 'string' && event.data.startsWith('nav: ')) {
+        loadUrl(event.data.substring(5));
+    }
+});
 
 studyEnterBtn.addEventListener('click', () => loadUrl(textbookInput.value));
 textbookInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadUrl(textbookInput.value); });
