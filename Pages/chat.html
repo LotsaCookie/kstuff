@@ -167,7 +167,6 @@
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
         const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
 
-
         function loadLocalData() {
             try {
                 const unreadData = localStorage.getItem('chat_unread');
@@ -303,26 +302,19 @@
                 if (!chatId) return;
                 
                 const remoteMessages = data.payload || [];
-                
-                let localMsgs = [];
-                try { localMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e){}
-                
-                if (remoteMessages.length === 0 && localMsgs.length > 0) {
-                    return; 
-                }
-
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
                 renderMessages(remoteMessages, chatId);
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
-                
                 fetchMessages(currentActiveRawId);
                 backendPort.postMessage({ type: 'get-convs' });
             }
         }
 
         function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
+            if (currentActiveRawId === rawId && document.getElementById('chat-container').children.length > 0) return;
+
             currentActiveRawId = rawId;
             document.getElementById('header-username').innerText = peerName;
             
@@ -333,17 +325,7 @@
             document.getElementById('user-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             
-            const headerInfo = document.querySelector('.header-user-info');
             const chatContainer = document.getElementById('chat-container');
-            
-            headerInfo.classList.remove('fade-in');
-            chatContainer.classList.remove('fade-in');
-            
-            void headerInfo.offsetWidth; 
-            void chatContainer.offsetWidth; 
-            
-            headerInfo.classList.add('fade-in');
-            chatContainer.classList.add('fade-in');
 
             if (unreadChats.includes(rawId)) {
                 unreadChats = unreadChats.filter(id => id !== rawId);
@@ -436,6 +418,13 @@
 
             const newMessageString = JSON.stringify(messages || []);
             if (newMessageString === lastMessageDataString) return; 
+            
+            const currentCount = container.querySelectorAll('.message-row').length;
+            
+            if (messages && currentCount > 0 && messages.length < currentCount) {
+                return; 
+            }
+
             lastMessageDataString = newMessageString;
 
             if (!messages || messages.length === 0) {
@@ -449,15 +438,13 @@
                 container.innerHTML = '';
             }
 
-            const currentCount = container.querySelectorAll('.message-row').length;
-
-            if (currentCount === 0 || currentCount > messages.length) {
+            if (currentCount === 0) {
                 container.innerHTML = '';
                 messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
             } else if (messages.length > currentCount) {
                 const newMsgs = messages.slice(currentCount);
                 newMsgs.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true));
-            }
+            } 
         }
 
         function appendSingleMessageToDOM(sender, text, timestamp, animate = false) {
