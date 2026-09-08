@@ -159,6 +159,7 @@
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
         let lastSidebarState = "";
+        let activeRequestedChatId = null;
         
         let messageQueue = [];
         let isSendingMessage = false;
@@ -291,8 +292,8 @@
                 backendPort.postMessage({ type: 'get-convs' });
                 fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
-                const chatId = data.id;
-                if (!chatId) return; // Ignore background responses lacking an explicit chat ID to prevent cross-chat contamination
+                const chatId = data.id || activeRequestedChatId;
+                if (!chatId) return;
                 
                 const newMessages = data.payload || [];
                 
@@ -323,6 +324,7 @@
 
         function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
             currentActiveRawId = rawId;
+            activeRequestedChatId = rawId;
             document.getElementById('header-username').innerText = peerName;
             
             let headerAvatar = document.getElementById('header-avatar-icon');
@@ -413,7 +415,10 @@
         }
 
         function fetchMessages(rawId) {
-            if (backendPort && rawId) backendPort.postMessage({ type: 'get-messages', id: rawId });
+            if (backendPort && rawId) {
+                activeRequestedChatId = rawId;
+                backendPort.postMessage({ type: 'get-messages', id: rawId });
+            }
         }
 
         function renderMessages(messages) {
@@ -482,10 +487,9 @@
         setInterval(() => {
             if (backendReady && currentUser) {
                 backendPort.postMessage({ type: 'get-convs' });
-                const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
-                myConvs.forEach(rawId => {
-                    fetchMessages(rawId);
-                });
+                if (currentActiveRawId) {
+                    fetchMessages(currentActiveRawId);
+                }
             }
         }, 1500);
 
