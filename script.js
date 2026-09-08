@@ -756,6 +756,7 @@ function initApp() {
                     if (manualMatch) {
                         if (manualMatch.url) finalUrl = manualMatch.url;
                         if (manualMatch.category) finalCategory = manualMatch.category;
+                        if (manualMatch.image || manualMatch.img) finalCover = manualMatch.image || manualMatch.img;
                         manualMap.delete(titleLower); // Mark as consumed
                     }
 
@@ -774,7 +775,7 @@ function initApp() {
                     if (manualItem.title && !manualItem.title.includes('[!]')) {
                         mappedData.push({
                             title: manualItem.title,
-                            image: manualItem.img || '',
+                            image: manualItem.image || manualItem.img || '',
                             url: manualItem.url || '',
                             category: manualItem.category || 'Manual',
                             description: ''
@@ -795,10 +796,12 @@ function initApp() {
             
             let finalUrl = item.url;
             let finalCategory = item.category || 'All';
+            let finalImage = item.image;
             
             if (manualMatch) {
                 if (manualMatch.url) finalUrl = manualMatch.url;
                 if (manualMatch.category) finalCategory = manualMatch.category;
+                if (manualMatch.image || manualMatch.img) finalImage = manualMatch.image || manualMatch.img;
             }
 
             if (item.title && item.title.includes('[!]')) return;
@@ -806,7 +809,8 @@ function initApp() {
             fallbackMapped.push({
                 ...item,
                 url: finalUrl,
-                category: finalCategory
+                category: finalCategory,
+                image: finalImage
             });
         });
 
