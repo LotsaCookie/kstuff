@@ -40,5 +40,11 @@
   "url":"${truffled}/games/2048/index.html",
   "img":"",
   "category":"Puzzle"
+},
+{
+  "title":"60 Seconds, Webport",
+  "url":"${truffled}/games/60/index.html",
+  "img":"",
+  "category":"Strategy"
 }
 ]
