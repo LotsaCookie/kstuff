@@ -126,12 +126,6 @@
     "image": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Agar.io_App_Store.png"
   },
   {
-    "title": "Age Of Conflict",
-    "url": "",
-    "category": "Strategy",
-    "image": "https://img.itch.zone/aW1nLzk4MzM5ODkucG5n/original/cwAxxR.png"
-  },
-  {
     "title": "Alien Hominid",
     "url": "${truffled}/games/alien/index.html",
     "category": "Action",
@@ -226,18 +220,6 @@
     "url": "${truffled}/gamefile/arthur.html",
     "category": "Horror",
     "image": ""
-  },
-  {
-    "title": "Awesome Tank 2",
-    "url": "${uv}https://www.coolmathgames.com/0-awesome-tanks-2/play",
-    "category": "Action",
-    "image": "https://tse2.mm.bing.net/th/id/OIP.yu4XM-c-b-5K6PmaCnwrCgAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Awesome Tanks",
-    "url": "${uv}https://www.coolmathgames.com/0-awesome-tanks/play",
-    "category": "Action",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.kdSY13tRZS3SYcallcNvuQAAAA?cb=12&rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Bacon May Die",
