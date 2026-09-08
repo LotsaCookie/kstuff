@@ -319,7 +319,6 @@ function initApp() {
             modalIframe.removeAttribute('srcdoc');
             modalIframe.src = 'about:blank';
 
-            // Fetch HTML content and run it via srcdoc so it interprets properly instead of showing raw code
             if (item.url) {
                 try {
                     const res = await fetch(item.url, { cache: 'no-store' });
@@ -649,7 +648,11 @@ function initApp() {
     window.addEventListener('resize', () => { clearTimeout(rsTimer); rsTimer = setTimeout(() => updateIndicator(document.querySelector('.nav-btn.active')), 100); });
 
     const closeRes = () => {
-        modalOverlay?.classList.remove('active'); if (modalIframe) modalIframe.src = 'about:blank';
+        modalOverlay?.classList.remove('active'); 
+        if (modalIframe) {
+            modalIframe.removeAttribute('srcdoc');
+            modalIframe.src = 'about:blank';
+        }
         const aPg = document.querySelector('.page.active');
         if (aPg && grids[aPg.id]) { buildPool(aPg.id); renderGrid(aPg.id, false); }
         setTimeout(() => { window.scrollTo(0, savedWindowScrollY); if (aPg) aPg.scrollTop = savedPageScrollTop; }, 50);
