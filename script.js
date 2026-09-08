@@ -307,14 +307,34 @@ function initApp() {
         sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz', renderId: 0 }
     };
 
-    const openResource = item => {
+    const openResource = async item => {
         if (!item) return;
         toggleTooltip(null, false);
         savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
         savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
         if (modalTitle) modalTitle.textContent = item.title;
         if (modalOverlay) modalOverlay.classList.add('active');
-        if (modalIframe) modalIframe.src = item.url;
+        
+        if (modalIframe) {
+            modalIframe.removeAttribute('srcdoc');
+            modalIframe.src = 'about:blank';
+
+            // Fetch HTML content and run it via srcdoc so it interprets properly instead of showing raw code
+            if (item.url) {
+                try {
+                    const res = await fetch(item.url, { cache: 'no-store' });
+                    if (res.ok) {
+                        const htmlText = await res.text();
+                        modalIframe.srcdoc = htmlText;
+                    } else {
+                        modalIframe.src = item.url;
+                    }
+                } catch {
+                    modalIframe.src = item.url;
+                }
+            }
+        }
+
         setTimeout(() => Object.values(grids).forEach(g => {
             if(g.gridEl) {
                 if (g.pool) g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
@@ -720,6 +740,7 @@ function initApp() {
                 return { data: mappedData, isNewRepo: true };
             } catch (e) {}
         }
+        
         return { data: await fetchWithProxy('Json/g.json').catch(()=>[]), isNewRepo: false };
     };
 
