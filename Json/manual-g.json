@@ -1,7 +1,8 @@
 [
 {
   "title":"People Playground",
-  "url":"https://example.com",
+  "url":"${truffled}/games/ppg/index.html",
+  "img":"",
   "category":"Simulation"
 }
 ]
