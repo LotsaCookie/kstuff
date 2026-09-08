@@ -1,74 +1,1027 @@
 [
-{
-  "title":"People Playground",
-  "url":"${truffled}/games/ppg/index.html",
-  "img":"",
-  "category":"Simulation"
-},
-{
-  "title":"10 Minutes Till Dawn",
-  "url":"${truffled}/games/10minutestilldawn/index.html",
-  "img":"",
-  "category":"Action"
-},
-{
-  "title":"20 Minutes Till Dawn",
-  "url":"${truffled}/games/20minutesbog/index.html",
-  "img":"",
-  "category":"Action"
-},
-{
-  "title":"-3",
-  "url":"${truffled}/games/minus3/index.html",
-  "img":"",
-  "category":"Horror"
-},
-{
-  "title":"-b",
-  "url":"${truffled}/games/minusbog/index.html",
-  "img":"",
-  "category":"Horror"
-},
-{
-  "title":"30",
-  "url":"${truffled}/games/30dolar/index.html",
-  "img":"",
-  "category":"Puzzle"
-},
-{
-  "title":"2048",
-  "url":"${truffled}/games/2048/index.html",
-  "img":"",
-  "category":"Puzzle"
-},
-{
-  "title":"60 Seconds, Webport",
-  "url":"${truffled}/games/60/index.html",
-  "img":"",
-  "category":"Strategy"
-},
-{
-  "title":"a dance of fire and ice",
-  "url":"${truffled}/games/a-dance-of-fire-and-ice/index.html",
-  "img":"",
-  "category":"Rhythm"
-},
-{
-  "title":"Minecraft 1.8.8",
-  "url":"${truffled}/games/eglar/EaglercraftX_1dot8_Web/index.html",
-  "img":"",
-  "category":"Adventure"
-},
-{
-  "title":"Minecraft 1.12.2",
-  "url":"${truffled}/games/eglar/1dot12dot2/index.html",
-  "img":"",
-  "category":"Adventure"
-},
-{
-  "title":"Monkey Mart",
-  "url":"${frogiee}/stuff/selfhosted/monkey-mart",
-  "img":"",
-  "category":"Simulation"
-}
+  {
+    "title": "-3",
+    "url": "${truffled}/games/minus3/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "-b",
+    "url": "${truffled}/games/minusbog/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "10 Minutes Till Dawn",
+    "url": "${truffled}/games/10minutestilldawn/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "20 Minutes Till Dawn",
+    "url": "${truffled}/games/20minutesbog/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "2048",
+    "url": "${truffled}/games/2048/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "3D Bowling",
+    "url": "${uv}https://3d-bowling.game-files.crazygames.com/3d-bowling/1/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "A Small World Cup",
+    "url": "${truffled}/gamefile/aswc.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Achievement Unlocked",
+    "url": "${truffled}/games/achieveunlocked/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Achievement Unlocked 2",
+    "url": "${truffled}/games/achivement2/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Achievement Unlocked 3",
+    "url": "${truffled}/games/achivement3/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Alien Hominid",
+    "url": "${truffled}/games/alien/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Amaze",
+    "url": "${truffled}/games/amaze/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Angry Birds",
+    "url": "${truffled}/gamefile/Angrybirds.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Antonblast",
+    "url": "${truffled}/games/antonblast/runner.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Awesome Tanks",
+    "url": "${uv}https://www.coolmathgames.com/0-awesome-tanks/play",
+    "category": "Action"
+  },
+  {
+    "title": "Bacon May Die",
+    "url": "https://games.poki.com/458768/5dd2c21a-015f-11ea-ad56-9cb6d0d995f7?tag=pg-ec27baacca540f0b87942f84b9a2cb7f78ef7b63&site_id=3&iso_lang=en&country=CA&poki_url=https://poki.com/en/g/bacon-may-die&hoist=yes&nonPersonalized=n&familyFriendly=n&categories=3,80,96,750,1143,1163,1197&experiment=test-959a0db8&special_condition=landing",
+    "category": "Action"
+  },
+  {
+    "title": "Bad Piggies",
+    "url": "${truffled}/gamefile/piggies.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Baldi's Basics",
+    "url": "${truffled}/games/baldis-basics/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Bart Bash",
+    "url": "${truffled}/gamefile/bartbash.html",
+    "category": "Action"
+  },
+  {
+    "title": "Bart Blast",
+    "url": "${truffled}/gamefile/bart.html",
+    "category": "Action"
+  },
+  {
+    "title": "Baseball Bros",
+    "url": "${truffled}/games/baseballbros/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Basket Bros",
+    "url": "${truffled}/gamefile/basket.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Basket Random",
+    "url": "${truffled}/games/basket-random/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Big Tower Tiny Square",
+    "url": "${truffled}/games/btts/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Block Blast",
+    "url": "${truffled}/games/block-blast/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "BLOODMONEY!",
+    "url": "${truffled}/games/bloodmoney/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Bloons TD",
+    "url": "${truffled}/games/bloonstd/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Bloons TD 2",
+    "url": "${truffled}/games/bloonstd2/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Bloons TD 3",
+    "url": "${truffled}/games/btd3/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Bloons TD 4",
+    "url": "${truffled}/gamefile/bloonstd4.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Bloons TD 5",
+    "url": "${truffled}/games/btd5/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Blumgi Rocket",
+    "url": "https://datacrafted.org/gamefiles/blumgirocket/",
+    "category": "Driving"
+  },
+  {
+    "title": "Boxing Random",
+    "url": "${truffled}/gamefile/boxing.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Brotato",
+    "url": "https://tdataserver.netlify.app/gdata/qnjvdgf0bw==/",
+    "category": "Action"
+  },
+  {
+    "title": "Buckshot Roulette",
+    "url": "${truffled}/games/buckshot/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Candy Crush",
+    "url": "${uv}https://q10games.com/Candy_Crush/candy-crush/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Celeste",
+    "url": "${truffled}/games/celeste/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Clover Pit",
+    "url": "${truffled}/gamefile/cloverpit.html",
+    "category": "Cards"
+  },
+  {
+    "title": "Cluster Rush",
+    "url": "${truffled}/games/cluster/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Cookie Clicker",
+    "url": "${truffled}/games/cookie-clicker/index.html",
+    "category": "Clicker"
+  },
+  {
+    "title": "Cooking Mama",
+    "url": "${truffled}/gamefile/cookingmama.html",
+    "category": "Cooking"
+  },
+  {
+    "title": "Cooking Mama 2",
+    "url": "${truffled}/gamefile/cookingmama2.html",
+    "category": "Cooking"
+  },
+  {
+    "title": "Cooking Mama 3",
+    "url": "${truffled}/gamefile/cookingmama3.html",
+    "category": "Cooking"
+  },
+  {
+    "title": "Crazy Cattle 3D",
+    "url": "${truffled}/games/cattle3dplus/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Crossy Road",
+    "url": "${truffled}/gamefile/crossy.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Dadish",
+    "url": "${truffled}/gamefile/dadish.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Dadish 2",
+    "url": "${truffled}/gamefile/dadish2.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Dadish 3",
+    "url": "${truffled}/gamefile/dadish3.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Death Run 3D",
+    "url": "${truffled}/games/death-run-3d/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Doge Miner",
+    "url": "${truffled}/gamefile/Doge Miner.html",
+    "category": "Clicker"
+  },
+  {
+    "title": "Doodle Jump",
+    "url": "${truffled}/gamefile/Doodle Jump.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Doom 2",
+    "url": "${truffled}/gamefile/doom2.html",
+    "category": "FPS"
+  },
+  {
+    "title": "Doom 3",
+    "url": "${truffled}/games/doom3/index.html",
+    "category": "FPS"
+  },
+  {
+    "title": "Dreadhead Parkour",
+    "url": "${truffled}/gamefile/dread.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Drift Boss",
+    "url": "${truffled}/games/drift-boss/index.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Drift Hunters",
+    "url": "${truffled}/gamefile/drift.html",
+    "category": "Racing"
+  },
+  {
+    "title": "Duck Life 2",
+    "url": "${truffled}/games/ducklife2/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Duck Life 3",
+    "url": "${truffled}/games/ducklife3/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Duck Life 4",
+    "url": "${truffled}/games/ducklife4/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Duck Life 5",
+    "url": "${truffled}/games/ducklife5/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Escape Road",
+    "url": "${truffled}/gamefile/escape.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Escape Road 2",
+    "url": "${truffled}/gamefile/road2.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Escape Road 3",
+    "url": "${truffled}/gamefile/escape3.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Escape Road City 2",
+    "url": "${truffled}/gamefile/roadcity2.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Final Fantasy VII",
+    "url": "${truffled}/gamefile/ffvii.html",
+    "category": "RPG"
+  },
+  {
+    "title": "Fireboy and Watergirl 2",
+    "url": "${truffled}/games/watergirl-2/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Fireboy and Watergirl 3",
+    "url": "${truffled}/games/watergirl-3/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Five Nights at Freddy's",
+    "url": "${truffled}/games/fnaf/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's 2",
+    "url": "${truffled}/games/2/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's 3",
+    "url": "${truffled}/games/3/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's 4",
+    "url": "${truffled}/games/fnaf4/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's 4: Halloween",
+    "url": "${truffled}/gamefile/ween.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's: Pizza Simulator",
+    "url": "https://irv77.github.io/hd_fnaf/ps/",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's: Sister Location",
+    "url": "${truffled}/gamefile/fnafs.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Five Nights at Freddy's: World",
+    "url": "${truffled}/gamefile/fnafw.html",
+    "category": "RPG"
+  },
+  {
+    "title": "Football Bros",
+    "url": "${truffled}/games/footballbros/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Fruit Ninja",
+    "url": "${truffled}/games/fruitninja/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Geometry Dash",
+    "url": "${static}https://webdashers.dev",
+    "category": "Rhythm"
+  },
+  {
+    "title": "Gladihoppers",
+    "url": "${truffled}/gamefile/Gladihoppers.html",
+    "category": "Action"
+  },
+  {
+    "title": "Godzilla Daikaiju Battle Royale",
+    "url": "${scram}https://play.quotesgames.com/03/Godzilla-Daikaiju/",
+    "category": "Action"
+  },
+  {
+    "title": "Google Baseball",
+    "url": "${truffled}/gamefile/gbase.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Gorilla Tag",
+    "url": "${truffled}/games/gtag/index.html",
+    "category": "Multiplayer"
+  },
+  {
+    "title": "Granny",
+    "url": "${truffled}/gamefile/granny.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Granny 2",
+    "url": "${truffled}/gamefile/Granny 2.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Granny 3",
+    "url": "${truffled}/games/granny3/index.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Growden.io",
+    "url": "${uv}http://growden.io/",
+    "category": "Multiplayer"
+  },
+  {
+    "title": "Gunspin",
+    "url": "${truffled}/games/gunspin/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Half Life",
+    "url": "${truffled}/games/hl-main/index.html",
+    "category": "FPS"
+  },
+  {
+    "title": "Happy Wheels",
+    "url": "${truffled}/games/happywheels/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 1",
+    "url": "${truffled}/gamefile/hobo1.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 2",
+    "url": "${truffled}/gamefile/hobo2.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 3",
+    "url": "${truffled}/gamefile/hobo3.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 4",
+    "url": "${truffled}/gamefile/hobo4.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 5",
+    "url": "${truffled}/gamefile/hobo5.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 6",
+    "url": "${truffled}/gamefile/hobo6.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hobo 7",
+    "url": "${truffled}/gamefile/hobo7.html",
+    "category": "Action"
+  },
+  {
+    "title": "Hotline Miami",
+    "url": "",
+    "category": "Action"
+  },
+  {
+    "title": "Idle Breakout",
+    "url": "${truffled}/games/idle-breakout/index.html",
+    "category": "Idle"
+  },
+  {
+    "title": "Idle Dice",
+    "url": "",
+    "category": "Idle"
+  },
+  {
+    "title": "Jeffrey Epstein Basics In Education And Kidnapping",
+    "url": "${truffled}/gamefile/jeb.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Jelly Drift",
+    "url": "${truffled}/gamefile/jelly.html",
+    "category": "Racing"
+  },
+  {
+    "title": "Jetpack Joyride",
+    "url": "${truffled}/games/jetpackjoyride/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Jumbo Mario",
+    "url": "${truffled}/games/JumboMario/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Kindergarten",
+    "url": "${truffled}/games/kindergarten/1/index.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Learn to Fly",
+    "url": "${truffled}/games/learntofly/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Learn to Fly 2",
+    "url": "${truffled}/games/learntofly2/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Learn to Fly 3",
+    "url": "${truffled}/games/ltf3/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Learn to Fly Idle",
+    "url": "${truffled}/games/learntoflyidle/index.html",
+    "category": "Idle"
+  },
+  {
+    "title": "Line Rider",
+    "url": "${truffled}/games/linerider/index.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Magic Tiles 3",
+    "url": "${scram}https://brainplay.com/static/games-open/magic-tiles3/",
+    "category": "Rhythm"
+  },
+  {
+    "title": "Melon Playground",
+    "url": "${truffled}/games/melon-playground/index.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Minecraft 1.12.2",
+    "url": "${truffled}/games/eglar/1dot12dot2/index.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Minecraft 1.8.8",
+    "url": "${truffled}/games/eglar/EaglercraftX_1dot8_Web/index.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Minesweeper Mania",
+    "url": "${truffled}/gamefile/minesweepermania.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Monster Tracks",
+    "url": "${truffled}/games/monster-tracks/index.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Moto X3M",
+    "url": "${truffled}/games/motox3m/index.html",
+    "category": "Racing"
+  },
+  {
+    "title": "Om Nom Run",
+    "url": "${truffled}/gamefile/omnomrun.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "OMORI",
+    "url": "${truffled}/gamefile/OMORI.html",
+    "category": "RPG"
+  },
+  {
+    "title": "Orange Roulette",
+    "url": "${truffled}/gamefile/orange.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "OvO",
+    "url": "${truffled}/games/ovo/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "OvO 2",
+    "url": "${truffled}/games/OvO2/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "OvO 3 Dimensions",
+    "url": "${truffled}/games/OvoDimensions/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Papa's Hot Doggeria",
+    "url": "${static}https://archive.org/embed/papashotdoggeria_v2",
+    "category": "Cooking"
+  },
+  {
+    "title": "Papa's Pancakeria",
+    "url": "${static}https://archive.org/embed/papassancakeria_v2",
+    "category": "Cooking"
+  },
+  {
+    "title": "Papa's Scooperia",
+    "url": "${static}https://archive.org/embed/papasscooperia_v102_202311",
+    "category": "Cooking"
+  },
+  {
+    "title": "Papa's Sushiria",
+    "url": "${static}https://archive.org/embed/papassushiria_101_202311",
+    "category": "Cooking"
+  },
+  {
+    "title": "Papa's Taco Mia",
+    "url": "${static}https://archive.org/embed/papastacomia_v2",
+    "category": "Cooking"
+  },
+  {
+    "title": "Papa's Wingeria",
+    "url": "${static}https://archive.org/embed/papaswingeria_v2_202311",
+    "category": "Cooking"
+  },
+  {
+    "title": "Paper.io 2",
+    "url": "${truffled}/games/paperio2/index.html",
+    "category": "Multiplayer"
+  },
+  {
+    "title": "Papers, Please",
+    "url": "${truffled}/gamefile/papers.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Parappa The Rapper",
+    "url": "${truffled}/games/paps/index.html",
+    "category": "Rhythm"
+  },
+  {
+    "title": "Peggle",
+    "url": "${truffled}/gamefile/Peggle.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Pizza Tower: Scoutdigo",
+    "url": "${truffled}/gamefile/pts.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Plinko",
+    "url": "${scram}https://plinko-web-game.netlify.app/",
+    "category": "Arcade"
+  },
+  {
+    "title": "Pokemon Emerald",
+    "url": "${truffled}/gamefile/em.html",
+    "category": "RPG"
+  },
+  {
+    "title": "Raft",
+    "url": "${truffled}/games/raft/index.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Raft Wars",
+    "url": "${truffled}/games/raft-wars/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Raft Wars 2",
+    "url": "${truffled}/games/raft-wars-2/index.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Ragdoll Archers",
+    "url": "${truffled}/games/ragdoll-archers/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Ragdoll Hit",
+    "url": "${truffled}/games/ragdoll/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Resident Evil 2",
+    "url": "${truffled}/gamefile/res2.html",
+    "category": "Horror"
+  },
+  {
+    "title": "Retro Bowl",
+    "url": "${truffled}/games/retro-bowl/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Retro Bowl College",
+    "url": "${truffled}/games/rbcollege/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Rhythm Heaven",
+    "url": "${truffled}/gamefile/rhythm.html",
+    "category": "Rhythm"
+  },
+  {
+    "title": "Riddle School",
+    "url": "${truffled}/games/riddleschool/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle School 2",
+    "url": "${truffled}/games/sriddleschool2/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle School 3",
+    "url": "${truffled}/games/riddleschool3/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle School 4",
+    "url": "${truffled}/games/riddleschool4/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle School 5",
+    "url": "${truffled}/games/riddleschool5/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle Transfer",
+    "url": "${truffled}/games/riddleschooltransfer/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Riddle Transfer 2",
+    "url": "${truffled}/games/riddleschooltransfer2/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Rooftop Snipers",
+    "url": "${truffled}/games/rooftop-snipers/index.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Rooftop Snipers 2",
+    "url": "${truffled}/games/rooftop-snipers-2/index.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Run 2",
+    "url": "${truffled}/gamefile/run2.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Run 3",
+    "url": "${truffled}/gamefile/run3.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Sandboxels",
+    "url": "${truffled}/gamefile/Sandboxels.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Slope",
+    "url": "${truffled}/games/slope/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Slope 2",
+    "url": "${scram}https://game.azgame.io/slope-2/",
+    "category": "Arcade"
+  },
+  {
+    "title": "Slowroads",
+    "url": "${truffled}/games/slowroads/index.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Smash Karts",
+    "url": "${truffled}/games/smashkarts/index.html",
+    "category": "Racing"
+  },
+  {
+    "title": "Snow Rider 3D",
+    "url": "${truffled}/games/snowrider3D-main/index.html",
+    "category": "Driving"
+  },
+  {
+    "title": "Soccer Random",
+    "url": "${truffled}/games/soccer-random/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Solar Smash",
+    "url": "${truffled}/gamefile/solar.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Sonic CD",
+    "url": "${truffled}/games/soniccd/soniccd.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Sonic Robo Blast 2",
+    "url": "${truffled}/games/srb2/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Space Waves",
+    "url": "${truffled}/gamefile/spacewaves.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Speed Stars",
+    "url": "${truffled}/games/speed-stars/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Spelunky Classic HD",
+    "url": "${truffled}/gamefile/spelunky.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Stick War: Legacy",
+    "url": "${truffled}/gamefile/stickwar.html",
+    "category": "Strategy"
+  },
+  {
+    "title": "Stickman Golf",
+    "url": "${static}https://games.thel1ama.com/projects/stickman-golf/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Stickman Hook",
+    "url": "${truffled}/games/stickman-hook/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Super Mario 64",
+    "url": "https://augustberchelmann.com/mario/",
+    "category": "Platformer"
+  },
+  {
+    "title": "Super Mario Bros",
+    "url": "${truffled}/gamefile/smb.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Super Smash Flash",
+    "url": "${truffled}/gamefile/ssf.html",
+    "category": "Action"
+  },
+  {
+    "title": "Tanuki Sunset",
+    "url": "${truffled}/games/tanukisunset/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Terraria",
+    "url": "${truffled}/gamefile/terraria48.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Tetris",
+    "url": "${truffled}/games/tetris/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "That's Not My Neighbor",
+    "url": "${truffled}/gamefile/thatsnot.html",
+    "category": "Horror"
+  },
+  {
+    "title": "The Impossible Quiz",
+    "url": "${truffled}/games/theimpossiblequiz/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "The Legend of Zelda Ocarina of Time",
+    "url": "${truffled}/gamefile/tloz.html",
+    "category": "Adventure"
+  },
+  {
+    "title": "Time Shooter 1",
+    "url": "${truffled}/gamefile/time1.html",
+    "category": "FPS"
+  },
+  {
+    "title": "Time Shooter 2",
+    "url": "${truffled}/games/timeshooter2/index.html",
+    "category": "FPS"
+  },
+  {
+    "title": "Tiny Fishing",
+    "url": "${truffled}/games/tiny-fishing/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "Tomodachi Collection",
+    "url": "${truffled}/gamefile/tomo.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Toss The Turtle",
+    "url": "${truffled}/games/tosstheturtle/index.html",
+    "category": "Arcade"
+  },
+  {
+    "title": "Touhou 1 Touhou-Reiiden",
+    "url": "${truffled}/gamefile/touhou.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Touhou 2 Touhou-Fuumaroku",
+    "url": "${truffled}/gamefile/touhou2.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Touhou 3 Touhou-Yumejikuu",
+    "url": "${truffled}/gamefile/touhou3.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Touhou 4 Touhou-Gensokyou",
+    "url": "${truffled}/gamefile/touhou4.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Touhou 5 Touhou-Kaikidan",
+    "url": "${truffled}/gamefile/touhou5.html",
+    "category": "Shooter"
+  },
+  {
+    "title": "Tube Jumpers",
+    "url": "${truffled}/gamefile/tube.html",
+    "category": "Action"
+  },
+  {
+    "title": "Um Jammer Lammy",
+    "url": "${truffled}/gamefile/jemmer.html",
+    "category": "Rhythm"
+  },
+  {
+    "title": "Vampire Survivors",
+    "url": "${truffled}/games/vampire/index.html",
+    "category": "Action"
+  },
+  {
+    "title": "Vex 2",
+    "url": "${truffled}/gamefile/vex2.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 3",
+    "url": "${truffled}/games/vex3/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 4",
+    "url": "${truffled}/games/vex4/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 5",
+    "url": "${truffled}/games/vex5/index.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 6",
+    "url": "${truffled}/gamefile/vex6.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 7",
+    "url": "${truffled}/gamefile/vex7.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Vex 8",
+    "url": "${truffled}/gamefile/vex8.html",
+    "category": "Platformer"
+  },
+  {
+    "title": "Volley Random",
+    "url": "${truffled}/games/volley-random/index.html",
+    "category": "Sports"
+  },
+  {
+    "title": "We Become What We Behold",
+    "url": "${truffled}/gamefile/wbwwb.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Wordle",
+    "url": "${truffled}/games/wordle-unlimited/index.html",
+    "category": "Puzzle"
+  },
+  {
+    "title": "Yandere Simulator",
+    "url": "${truffled}/gamefile/yandere.html",
+    "category": "Simulation"
+  },
+  {
+    "title": "Yume Nikki",
+    "url": "${truffled}/gamefile/yume.html",
+    "category": "Horror"
+  }
 ]
