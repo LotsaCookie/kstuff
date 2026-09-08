@@ -173,15 +173,19 @@
                 if (unreadData) unreadChats = JSON.parse(unreadData);
 
                 const localUsers = JSON.parse(localStorage.getItem('chat_users_list'));
-                if (localUsers) {
+                if (localUsers && Array.isArray(localUsers)) {
                     cachedUsersList = localUsers;
-                    cachedUsersList.forEach(u => userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar);
+                    cachedUsersList.forEach(u => {
+                        if (u && u.username) {
+                            userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
+                        }
+                    });
                 }
                 
                 if (currentUser) {
                     const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
-                    if (localConvs) {
-                        activeConversations = localConvs.map(encoded => xorDecode(encoded));
+                    if (localConvs && Array.isArray(localConvs)) {
+                        activeConversations = localConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
                         renderSidebarList();
                     }
                 }
@@ -275,30 +279,35 @@
                 if (currentUser) backendPort.postMessage({ type: 'get-convs' });
                 processMessageQueue(); 
             } else if (data.type === 'get-users' && data.success) {
-                localStorage.setItem('chat_users_list', JSON.stringify(data.payload));
-                cachedUsersList = data.payload || [];
-                cachedUsersList.forEach(u => userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar);
+                const safePayload = Array.isArray(data.payload) ? data.payload : [];
+                localStorage.setItem('chat_users_list', JSON.stringify(safePayload));
+                cachedUsersList = safePayload;
+                cachedUsersList.forEach(u => {
+                    if (u && u.username) {
+                        userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
+                    }
+                });
                 renderSidebarList();
                 if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
             } else if (data.type === 'get-convs' && data.success) {
-                localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(data.payload));
-                activeConversations = data.payload.map(encoded => xorDecode(encoded));
+                const safeConvs = Array.isArray(data.payload) ? data.payload : [];
+                localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
+                activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
                 renderSidebarList();
             } else if (data.type === 'create-conv' && data.success) {
                 backendPort.postMessage({ type: 'get-convs' });
-                fetchMessages(currentActiveRawId);
+                if (currentActiveRawId) fetchMessages(currentActiveRawId);
             } else if (data.type === 'get-messages' && data.success) {
                 const chatId = data.id;
                 if (!chatId || chatId !== currentActiveRawId) return;
                 
                 const remoteMessages = data.payload || [];
                 
-                // Safety guard: Don't let an empty/stale server response wipe out messages we have locally
                 let localMsgs = [];
                 try { localMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e){}
                 
                 if (remoteMessages.length === 0 && localMsgs.length > 0) {
-                    return; // Ignore empty server response if we have local content
+                    return; 
                 }
 
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
@@ -369,7 +378,10 @@
                 return;
             }
             
-            const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
+            const myConvs = activeConversations.filter(rawId => {
+                if (!rawId) return false;
+                return rawId.toLowerCase().split('-').includes(currentUser);
+            });
             
             const currentState = JSON.stringify({ myConvs, unreadChats, currentActiveRawId });
             if (currentState === lastSidebarState) return;
@@ -383,8 +395,8 @@
             
             myConvs.forEach(rawId => {
                 let parts = rawId.split('-');
-                let peer = parts.find(p => p !== currentUser) || parts[0];
-                let peerAvatar = userProfileMap[peer] || fallbackAvatar;
+                let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
+                let peerAvatar = userProfileMap[peer.toLowerCase()] || fallbackAvatar;
                 let isUnread = unreadChats.includes(rawId);
 
                 let item = document.createElement('div');
