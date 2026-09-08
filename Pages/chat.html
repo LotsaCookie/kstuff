@@ -184,6 +184,14 @@
             font-weight: 900 !important;
         }
 
+        #chat-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
         #chat-container {
             flex: 1;
             overflow-y: auto;
@@ -193,11 +201,50 @@
             gap: 15px;
         }
 
+        .section-loader {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: color-mix(in srgb, var(--bg) 85%, transparent);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .section-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--bg);
+            border-top-color: var(--text);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+        .loading-text {
+            font-size: 1.25rem;
+            font-weight: 900 !important;
+            letter-spacing: .25em;
+            text-transform: uppercase;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
+        @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
+
         .message-row {
             display: flex;
             align-items: flex-end;
             gap: 10px;
             max-width: 75%;
+            min-width: 0; 
         }
 
         .message-row.user-row {
@@ -223,15 +270,18 @@
             display: flex;
             flex-direction: column;
             max-width: 100%;
+            min-width: 0; 
         }
 
         .message {
             padding: 12px 18px;
             border-radius: 20px;
             line-height: 1.5;
-            word-wrap: break-word;
             font-size: 1rem;
             font-weight: bold;
+            word-break: break-word; 
+            overflow-wrap: break-word;
+            white-space: pre-wrap; 
         }
 
         .user-message {
@@ -448,7 +498,14 @@
             </div>
         </header>
 
-        <div id="chat-container"></div>
+        <div id="chat-wrapper">
+            <div id="chat-container"></div>
+            
+            <div id="section-loader" class="section-loader hidden">
+                <div class="spinner"></div>
+                <div class="loading-text" style="font-size:0.9rem;">Loading</div>
+            </div>
+        </div>
 
         <div id="input-container">
             <button id="attach-btn" title="Attach image URL" style="display: none;">
@@ -690,6 +747,8 @@
                     </div>
                 `;
                 item.onclick = () => {
+                    document.getElementById('section-loader').classList.remove('hidden');
+
                     currentActiveRawId = rawId;
                     document.getElementById('header-username').innerText = peer;
                     
@@ -717,6 +776,9 @@
         }
 
         function renderMessages(messages) {
+            const loader = document.getElementById('section-loader');
+            if(loader) loader.classList.add('hidden');
+
             const newMessageString = JSON.stringify(messages || []);
             if (newMessageString === lastMessageDataString) return; 
             lastMessageDataString = newMessageString;
@@ -882,6 +944,8 @@
 
         function startConversationWith(targetUser, targetAvatar) {
             modal.classList.remove('active');
+
+            document.getElementById('section-loader').classList.remove('hidden');
 
             let rawId = [currentUser, targetUser.toLowerCase()].sort().join('-');
 
