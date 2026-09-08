@@ -4,5 +4,11 @@
   "url":"${truffled}/games/ppg/index.html",
   "img":"",
   "category":"Simulation"
+},
+{
+  "title":"10 Minutes Till Dawn",
+  "url":"${truffled}/games/10minutestilldawn/index.html",
+  "img":"",
+  "category":"Action"
 }
 ]
