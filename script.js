@@ -59,7 +59,6 @@ function initApp() {
         if (activeBtn) updateIndicator(activeBtn);
     };
 
-    // Continuously set the indicator during the first few seconds on initial load
     const indicatorInterval = setInterval(forceUpdateIndicator, 100);
     setTimeout(() => clearInterval(indicatorInterval), 3000);
     [50, 100, 200, 400, 700, 1000, 1500, 2000, 3000].forEach(ms => setTimeout(forceUpdateIndicator, ms));
@@ -690,18 +689,71 @@ function initApp() {
         } catch { toggleLoader(false); }
     };
 
-    $('readingcorner-refresh-btn')?.addEventListener('click', () => rData('readingcorner', 'Json/g.json'));
+    const fetchReadingCornerRaw = async () => {
+        const pTypes = ['jsdelivr', 'githack', 'github', 'statically'];
+        
+        const getUrl = (repo, path, pt) => {
+            if (pt === 'jsdelivr') return `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
+            if (pt === 'githack') return `https://raw.githack.com/freebuisness/${repo}/main/${path}`;
+            if (pt === 'statically') return `https://cdn.statically.io/gh/freebuisness/${repo}/main/${path}`;
+            return `https://raw.githubusercontent.com/freebuisness/${repo}/main/${path}`;
+        };
+
+        for (const pt of pTypes) {
+            try {
+                const zUrl = getUrl('assets', 'zones.json', pt) + `?_=${Date.now()}`;
+                const res = await fetch(zUrl, { cache: 'no-store' });
+                if (!res.ok) continue;
+                
+                const json = await res.json();
+                const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
+                const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
+                
+                const mappedData = json.map(item => ({
+                    title: item.name,
+                    image: (item.cover || '').replace('{COVER_URL}', coverBase + '/'),
+                    url: (item.url || '').replace('{HTML_URL}', htmlBase + '/'),
+                    category: 'All',
+                    description: ''
+                })).sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: 'base' }));
+                
+                return { data: mappedData, isNewRepo: true };
+            } catch (e) {}
+        }
+        return { data: await fetchWithProxy('Json/g.json').catch(()=>[]), isNewRepo: false };
+    };
+
+    $('readingcorner-refresh-btn')?.addEventListener('click', async () => {
+        toggleLoader(true);
+        try {
+            const result = await fetchReadingCornerRaw();
+            if (result.data?.length) {
+                grids.readingcorner.data = result.isNewRepo ? result.data : proc(result.data);
+                grids.readingcorner.page = 1;
+                await renderGrid('readingcorner', true);
+            }
+        } finally {
+            toggleLoader(false);
+        }
+    });
+
     $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
     const fCfg = u => fetchWithProxy(u).catch(()=>[]).then(getWorkingConfig);
     const sDP = fetchWithProxy('Json/urls/static.json').catch(()=>[]);
 
     Promise.all([
-        fetchWithProxy('Json/g.json').catch(()=>[]), fetchWithProxy('Json/a.json').catch(()=>[]), fetchWithProxy('Json/truffled.json').catch(()=>null),
-        fCfg('Json/urls/scram.json'), sDP.then(getWorkingConfig), fCfg('Json/urls/uv.json'), fCfg('Json/urls/truffled.json'),
+        fetchReadingCornerRaw(), 
+        fetchWithProxy('Json/a.json').catch(()=>[]), 
+        fetchWithProxy('Json/truffled.json').catch(()=>null),
+        fCfg('Json/urls/scram.json'), 
+        sDP.then(getWorkingConfig), 
+        fCfg('Json/urls/uv.json'), 
+        fCfg('Json/urls/truffled.json'),
         sDP.then(d => getWorkingConfig(d.map(i => ({ url: i.url, img: i.img, final: "" }))))
-    ]).then(async ([g, a, tr, sc, st, uv, trCfg, fr]) => {
+    ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
         if (st) initBackendBridge(st);
+        
         gRep = {
             scram: sc ? cleanUrl(sc.url) + sc.final : '',
             static: st ? cleanUrl(st.url) + st.final : '',
@@ -709,8 +761,12 @@ function initApp() {
             frogiee: fr ? cleanUrl(fr.url) : '',
             truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
         };
-        gTruf.clear(); tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
-        grids.readingcorner.data = proc(g); grids.sciencequiz.data = proc(a);
+        
+        gTruf.clear(); 
+        tr?.games?.forEach(x => gTruf.set(x.name.toLowerCase().trim(), x));
+        
+        grids.readingcorner.data = gResult.isNewRepo ? gResult.data : proc(gResult.data); 
+        grids.sciencequiz.data = proc(a);
         
         let activePg = document.querySelector('.page.active');
         if (!activePg) {
