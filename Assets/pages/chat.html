@@ -254,12 +254,31 @@
         }
         initBackendIframe();
 
+
+        function xorEncode(str, key = 42) {
+            if (!str || typeof str !== 'string') return '';
+            let hexStr = '';
+            for (let i = 0; i < str.length; i++) {
+                let hex = (str.charCodeAt(i) ^ key).toString(16);
+                hexStr += (hex.length === 1 ? '0' + hex : hex);
+            }
+            return hexStr;
+        }
+
         function xorDecode(hexStr, key = 42) {
             if (!hexStr || typeof hexStr !== 'string') return '';
+            
+            if (!/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) {
+                return hexStr; 
+            }
+            
             let str = '';
-            for (let i = 0; i < hexStr.length; i += 2) str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
+            for (let i = 0; i < hexStr.length; i += 2) {
+                str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
+            }
             return str;
         }
+
 
         window.addEventListener("message", e => {
             if (e.data?.type === 'set_user' && e.data.username) {
@@ -540,7 +559,10 @@
 
             let msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
-            msgDiv.innerHTML = isImageURL(text) ? `<img src="${escapeHtml(text)}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">` : escapeHtml(text);
+            
+            let decodedText = xorDecode(text); 
+            
+            msgDiv.innerHTML = isImageURL(decodedText) ? `<img src="${escapeHtml(decodedText)}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">` : escapeHtml(decodedText);
             msgWrapper.appendChild(msgDiv);
 
             if (timestamp) {
@@ -572,18 +594,20 @@
             input.value = '';
             let currentTimestamp = new Date().toISOString();
             
+            let encodedText = xorEncode(text);
+
             let cached = [];
             try {
                 cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
             } catch(e) {}
 
-            const newMsgObj = { sender: currentUser, message: text, timestamp: currentTimestamp };
+            const newMsgObj = { sender: currentUser, message: encodedText, timestamp: currentTimestamp };
             cached.push(newMsgObj);
             
             localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
             renderMessages(cached, currentActiveRawId);
 
-            messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
+            messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: encodedText, timestamp: currentTimestamp });
             processMessageQueue();
         }
         
@@ -652,7 +676,7 @@
                 };
                 userContainer.appendChild(item);
             });
-        }
+         }
     </script>
 </body>
 </html>
