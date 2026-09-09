@@ -13,7 +13,6 @@
             --text: #ffb8d9;
             --card: rgba(255, 255, 255, 0.06);
             --nav: rgba(26, 18, 22, 0.85);
-            --danger: #ff4d4d;
         }
         * { font-family: "Quicksand", sans-serif !important; box-sizing: border-box; }
         body { background-color: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; font-weight: bold; }
@@ -22,9 +21,8 @@
         .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(128,128,128,0.2); display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h3 { margin: 0; font-size: 1.2rem; font-weight: 900 !important; }
         
-        .action-buttons { padding: 15px; display: flex; gap: 10px; }
-        .action-btn { background-color: var(--card); color: var(--text); border: 1px solid rgba(128,128,128,0.3); padding: 10px; border-radius: 12px; font-weight: 900 !important; cursor: pointer; font-size: 0.95rem; flex: 1; transition: opacity 0.2s, border-color 0.2s; text-align: center; }
-        .action-btn:hover { border-color: var(--text); opacity: 0.9; }
+        #new-chat-btn { background-color: var(--card); color: var(--text); border: 1px solid rgba(128,128,128,0.3); padding: 12px; border-radius: 12px; font-weight: 900 !important; cursor: pointer; font-size: 0.95rem; width: 100%; transition: opacity 0.2s, border-color 0.2s; margin-bottom: 10px; }
+        #new-chat-btn:hover { border-color: var(--text); opacity: 0.9; }
         
         #chat-list { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
         .chat-item { padding: 12px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; font-size: 1rem; color: var(--text); background: transparent; transition: background 0.2s; }
@@ -32,7 +30,10 @@
         .chat-item.active { border-left: 4px solid var(--text); }
         
         .avatar-wrapper { position: relative; width: 40px; height: 40px; margin-right: 12px; flex-shrink: 0; }
-        .chat-avatar { width: 100%; height: 100%; border-radius: 50%; background-color: var(--card); border: 1px solid rgba(128,128,128,0.3); object-fit: cover; }
+        .chat-avatar { width: 100%; height: 100%; }
+        .chat-avatar, .header-avatar, .user-list-avatar { border-radius: 50%; background-color: var(--card); border: 1px solid rgba(128,128,128,0.3); object-fit: cover; }
+        .header-avatar, .user-list-avatar { width: 45px; height: 45px; }
+        .header-avatar { width: 36px; height: 36px; }
         
         .unread-indicator { position: absolute; top: -2px; right: -2px; width: 13px; height: 13px; background-color: #ff3333; border-radius: 50%; border: 2px solid var(--nav); display: none; }
         .chat-item.unread .unread-indicator { display: block; }
@@ -43,23 +44,17 @@
         .chat-preview, .user-list-desc { font-size: 0.8rem; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px; }
 
         #main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; width: 100%; background: transparent; }
-        
-        /* Header styles merged with multi-avatars */
-        header { background-color: var(--nav); padding: 15px 25px; border-bottom: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; justify-content: space-between; height: 75px; }
+        header { background-color: var(--nav); padding: 15px 25px; border-bottom: 1px solid rgba(128,128,128,0.2); display: flex; align-items: center; justify-content: space-between; height: 70px; }
         .header-user-info { display: flex; align-items: center; gap: 12px; }
-        .header-avatars-container { display: flex; align-items: center; }
-        .stacked-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--nav); margin-left: -15px; object-fit: cover; position: relative; cursor: help; transition: transform 0.2s; background: var(--card); }
-        .stacked-avatar:first-child { margin-left: 0; }
-        .stacked-avatar:hover { transform: translateY(-4px); z-index: 50 !important; }
         .header-name { font-size: 1.1rem; font-weight: 900 !important; }
-        
-        #delete-chat-btn { background-color: rgba(255, 77, 77, 0.1); color: var(--danger); border: 1px solid var(--danger); padding: 8px 16px; border-radius: 8px; font-weight: 900 !important; cursor: pointer; transition: all 0.2s; display: none; }
-        #delete-chat-btn:hover { background-color: var(--danger); color: white; }
 
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
 
-        @keyframes containerFadeIn { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes containerFadeIn {
+            0% { opacity: 0; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
         .container-fade { animation: containerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         .section-loader { position: absolute; inset: 0; width: 100%; height: 100%; background: color-mix(in srgb, var(--bg) 85%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 1000; opacity: 1; transition: opacity 0.3s ease, visibility 0.3s ease; }
@@ -69,7 +64,10 @@
         @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
         @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
 
-        @keyframes slideInMessage { 0% { opacity: 0; transform: translateY(15px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes slideInMessage {
+            0% { opacity: 0; transform: translateY(15px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .slide-in { animation: slideInMessage 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
         .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 75%; min-width: 0; }
@@ -92,32 +90,24 @@
         input[type="text"]:focus { border-color: var(--text); }
         button#send-btn { background-color: var(--text); color: var(--bg); border: none; padding: 15px 25px; border-radius: 25px; font-weight: 900 !important; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button#send-btn:hover { opacity: 0.9; }
-        
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
         .modal-box h3 { margin: 0; font-size: 1.1rem; }
-        
         .user-list-container { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
         .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); }
-        .user-list-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .modal-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.3); background: var(--card); color: var(--text); font-weight: 900 !important; cursor: pointer; }
         .modal-btn.primary { background-color: var(--text); color: var(--bg); border: none; }
         .modal-btn:hover { opacity: 0.9; }
-
-        input.group-checkbox { width: 20px; height: 20px; accent-color: var(--text); cursor: pointer; }
-        #group-name-input { width: 100%; padding: 12px 15px; border-radius: 10px; background: var(--card); border: 1px solid rgba(128,128,128,0.3); color: var(--text); outline: none; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
         <div class="sidebar-header"><h3>Chat</h3></div>
-        <div class="action-buttons">
-            <button id="new-chat-btn" class="action-btn">+ Chat</button>
-            <button id="new-group-btn" class="action-btn">+ Group</button>
-        </div>
+        <div style="padding: 15px;"><button id="new-chat-btn">+ New Conversation</button></div>
         <div id="chat-list"><div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div></div>
     </div>
 
@@ -129,25 +119,12 @@
         </div>
     </div>
 
-    <div id="group-modal-overlay" class="modal-overlay">
-        <div class="modal-box">
-            <h3>Create Group (Max 7)</h3>
-            <input type="text" id="group-name-input" placeholder="Enter group name...">
-            <div id="group-user-list" class="user-list-container"></div>
-            <div class="modal-buttons">
-                <button id="group-modal-cancel" class="modal-btn">Cancel</button>
-                <button id="group-modal-create" class="modal-btn primary">Create</button>
-            </div>
-        </div>
-    </div>
-
     <div id="main-content">
         <header>
             <div class="header-user-info">
-                <div id="header-avatars" class="header-avatars-container"></div>
+                <img class="header-avatar" id="header-avatar-icon" src="" alt="Avatar" style="display:none;">
                 <span class="header-name" id="header-username">Select a chat</span>
             </div>
-            <button id="delete-chat-btn">Delete</button>
         </header>
 
         <div id="chat-wrapper">
@@ -159,7 +136,7 @@
         </div>
 
         <div id="input-container">
-            <button id="attach-btn" title="Attach image URL">
+            <button id="attach-btn" title="Attach image URL" style="display: none;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
             <input type="text" id="user-input" placeholder="Type a message or image URL..." disabled>
@@ -170,26 +147,20 @@
     <iframe id="backend-frame" style="display:none;"></iframe>
 
     <script>
-        let cachedCommitHash = null, currentUser = null, backendReady = false;
-        let backendPort = null, activeConversations = [], allGroups = [], userProfileMap = {};
-        let cachedUsersList = [], lastMessageDataString = "", lastRenderedChatId = null;
-        let messageQueue = [], isSendingMessage = false, unreadChats = []; 
-        let currentChatId = null, currentChatType = 'dm';
-        let selectedGroupMembers = [];
+        let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
+        let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
         let lastSidebarState = "";
+        let lastRenderedChatId = null;
+        
+        let messageQueue = [];
+        let isSendingMessage = false;
+        let unreadChats = []; 
         
         const fallbackAvatar = "https://kstuff.neocities.org/assets/default-profile.png";
 
         const cleanUrl = url => url.replace(/\/+$/, '');
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
         const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
-
-        function xorDecode(hexStr, key = 42) {
-            if (!hexStr || typeof hexStr !== 'string') return '';
-            let str = '';
-            for (let i = 0; i < hexStr.length; i += 2) str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
-            return str;
-        }
 
         function loadLocalData() {
             try {
@@ -270,29 +241,25 @@
                     backendPort.onmessage = e => handleBackendMessage(e.data);
                     iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
                 };
-                iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?cmz`;
+                iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?zz`;
             } catch (err) { console.error(err); }
         }
         initBackendIframe();
+
+        function xorDecode(hexStr, key = 42) {
+            if (!hexStr || typeof hexStr !== 'string') return '';
+            let str = '';
+            for (let i = 0; i < hexStr.length; i += 2) str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
+            return str;
+        }
 
         window.addEventListener("message", e => {
             if (e.data?.type === 'set_user' && e.data.username) {
                 currentUser = e.data.username.trim().toLowerCase();
                 loadLocalData(); 
-                if (backendReady) { 
-                    backendPort.postMessage({ type: 'get-users' }); 
-                    backendPort.postMessage({ type: 'get-convs' }); 
-                    fetchGroupsData();
-                }
+                if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
             }
         });
-
-        setTimeout(() => { 
-            if (!currentUser && window.parent === window) { 
-                currentUser = "testuser"; 
-                if(backendReady) { backendPort.postMessage({type:'get-users'}); backendPort.postMessage({type:'get-convs'}); } 
-            } 
-        }, 3000);
 
         function processMessageQueue() {
             if (isSendingMessage || messageQueue.length === 0 || !backendReady) return;
@@ -304,84 +271,97 @@
             if (data.type === 'ready') {
                 backendReady = true;
                 backendPort.postMessage({ type: 'get-users' });
-                if (currentUser) { backendPort.postMessage({ type: 'get-convs' }); fetchGroupsData(); }
+                if (currentUser) backendPort.postMessage({ type: 'get-convs' });
                 processMessageQueue(); 
-            } 
-            else if (data.type === 'get-users' && data.success) {
+            } else if (data.type === 'get-users' && data.success) {
                 const safePayload = Array.isArray(data.payload) ? data.payload : [];
                 localStorage.setItem('chat_users_list', JSON.stringify(safePayload));
                 cachedUsersList = safePayload;
                 cachedUsersList.forEach(u => {
-                    if (u && u.username) userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
+                    if (u && u.username) {
+                        userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
+                    }
                 });
                 renderSidebarList();
                 if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
-            } 
-            else if (data.type === 'get-convs' && data.success) {
+            } else if (data.type === 'get-convs' && data.success) {
                 const safeConvs = Array.isArray(data.payload) ? data.payload : [];
                 localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
                 activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
                 renderSidebarList();
-            } 
-            else if (data.type === 'create-conv' && data.success) {
+            } else if (data.type === 'create-conv' && data.success) {
                 backendPort.postMessage({ type: 'get-convs' });
-                if (currentChatId) fetchMessages(currentChatId);
-            } 
-            else if (data.type === 'get-messages' && data.success) {
-                let chatId = data.id || data.encodedKey; 
+                if (currentActiveRawId) fetchMessages(currentActiveRawId);
+            } else if (data.type === 'get-messages' && data.success) {
+                let chatId = data.id; 
                 if (!chatId && data.payload && data.payload.length > 0) {
                     const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
-                    if (peerMsg) chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
+                    if (peerMsg) {
+                        chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
+                    }
                 }
-                if (!chatId) chatId = currentChatId; 
+                if (!chatId) chatId = currentActiveRawId; 
                 if (!chatId) return;
 
                 const remoteMessages = data.payload || [];
                 localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
                 
-                if (chatId === currentChatId) renderMessages(remoteMessages, chatId);
-            } 
-            else if (data.type === 'send-message' && data.success) {
+                if (chatId === currentActiveRawId) {
+                    renderMessages(remoteMessages, chatId);
+                }
+            } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
                 processMessageQueue();    
-                fetchMessages(currentChatId);
+                fetchMessages(currentActiveRawId);
                 backendPort.postMessage({ type: 'get-convs' });
-            } 
-            else if (data.type === 'delete-conv' && data.success) {
-                if (data.id === currentChatId || data.encodedKey === currentChatId) {
-                    document.getElementById('chat-container').innerHTML = '';
-                    document.getElementById('header-username').innerText = 'Select a chat';
-                    document.getElementById('header-avatars').innerHTML = '';
-                    document.getElementById('delete-chat-btn').style.display = 'none';
-                    currentChatId = null;
-                }
-                backendPort.postMessage({ type: 'get-convs' });
-                fetchGroupsData();
-            } 
-            else if (data.type === 'create-group' && data.success) {
-                fetchGroupsData();
-            } 
-            else if (data.type === 'new-message') {
-                let eKey = data.id || data.encodedKey;
-                if(!eKey) return; 
-                if (eKey === currentChatId) {
-                    fetchMessages(eKey);
-                } else if (!unreadChats.includes(eKey)) {
-                    unreadChats.push(eKey);
-                    localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                    renderSidebarList();
-                }
             }
         }
 
-        async function fetchGroupsData() {
+        function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
+            if (currentActiveRawId === rawId && document.getElementById('chat-container').children.length > 0) return;
+
+            currentActiveRawId = rawId;
+            document.getElementById('header-username').innerText = peerName;
+            
+            let headerAvatar = document.getElementById('header-avatar-icon');
+            headerAvatar.src = peerAvatar;
+            headerAvatar.style.display = 'block';
+
+            document.getElementById('user-input').disabled = false;
+            document.getElementById('send-btn').disabled = false;
+            
+            const chatContainer = document.getElementById('chat-container');
+
+            if (unreadChats.includes(rawId)) {
+                unreadChats = unreadChats.filter(id => id !== rawId);
+                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+                renderSidebarList(); 
+            } else {
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+                if (chatItemEl) chatItemEl.classList.add('active');
+            }
+
+            lastRenderedChatId = rawId;
+            lastMessageDataString = ""; 
+            chatContainer.innerHTML = '';
+            
+            // Re-trigger the smooth fade-in animation instantly without delaying code logic
+            chatContainer.classList.remove('container-fade');
+            void chatContainer.offsetWidth; // Force CSS reflow cleanly
+            chatContainer.classList.add('container-fade');
+
             try {
-                let res = await fetch("https://kstuff.neocities.org/groups.json?t=" + Date.now());
-                if (res.ok) {
-                    allGroups = await res.json();
-                    renderSidebarList();
+                const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
+                if (cachedMsgs && cachedMsgs.length > 0) {
+                    renderMessages(cachedMsgs, rawId);
+                } else {
+                    document.getElementById('section-loader').classList.remove('hidden');
                 }
-            } catch(e) {}
+            } catch (e) {
+                document.getElementById('section-loader').classList.remove('hidden');
+            }
+
+            fetchMessages(rawId);
         }
 
         function renderSidebarList() {
@@ -391,130 +371,57 @@
                 return;
             }
             
-            let dmItems = activeConversations.map(rawId => {
-                let parts = rawId.split('-');
-                if (!parts.includes(currentUser)) return null;
-                let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
-                return { type: 'dm', id: rawId, name: peer, members: [currentUser, peer] };
-            }).filter(Boolean);
-
-            let groupItems = allGroups.map(group => {
-                if (!group.members.includes(currentUser.toLowerCase())) return null;
-                return { type: 'group', id: group.id, name: group.name, members: group.members };
-            }).filter(Boolean);
-
-            let combined = [...dmItems, ...groupItems];
-            const currentState = JSON.stringify({ combined, unreadChats, currentChatId });
+            const myConvs = activeConversations.filter(rawId => {
+                if (!rawId) return false;
+                return rawId.toLowerCase().split('-').includes(currentUser);
+            });
+            
+            const currentState = JSON.stringify({ myConvs, unreadChats, currentActiveRawId });
             if (currentState === lastSidebarState) return;
             lastSidebarState = currentState;
 
             chatList.innerHTML = '';
-            if (combined.length === 0) {
+            if (myConvs.length === 0) {
                 chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
                 return;
             }
             
-            combined.forEach(item => {
-                let isUnread = unreadChats.includes(item.id);
-                let el = document.createElement('div');
-                el.className = `chat-item ${currentChatId === item.id ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
+            myConvs.forEach(rawId => {
+                let parts = rawId.split('-');
+                let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
+                let peerAvatar = userProfileMap[peer.toLowerCase()] || fallbackAvatar;
+                let isUnread = unreadChats.includes(rawId);
+
+                let item = document.createElement('div');
+                item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
                 
-                let avatarHtml = '';
-                if (item.type === 'dm') {
-                    let peerAvatar = userProfileMap[item.name.toLowerCase()] || fallbackAvatar;
-                    avatarHtml = `<img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">`;
-                } else {
-                    let ownerAvatar = userProfileMap[item.members[0].toLowerCase()] || fallbackAvatar;
-                    avatarHtml = `<img class="chat-avatar" src="${escapeHtml(ownerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Group" style="border: 2px solid var(--text);">`;
-                }
-                
-                el.innerHTML = `
+                item.innerHTML = `
                     <div class="avatar-wrapper">
-                        ${avatarHtml}
+                        <img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
                         <div class="unread-indicator"></div>
                     </div>
                     <div class="chat-info">
-                        <span class="chat-title">${escapeHtml(item.name)}</span>
-                        <span class="chat-preview">${item.type === 'group' ? 'Group Chat' : 'Direct Message'}</span>
+                        <span class="chat-title">${escapeHtml(peer)}</span>
+                        <span class="chat-preview">Open chat</span>
                     </div>`;
                     
-                el.onclick = () => openChat(item.id, item.type, item.name, item.members, el);
-                chatList.appendChild(el);
+                item.onclick = () => openChat(rawId, peer, peerAvatar, item);
+                chatList.appendChild(item);
             });
         }
 
-        function openChat(id, type, name, membersArray, chatItemEl = null) {
-            if (currentChatId === id && document.getElementById('chat-container').children.length > 0) return;
-
-            currentChatId = id;
-            currentChatType = type;
-            document.getElementById('header-username').innerText = name;
-            
-            const avatarsContainer = document.getElementById('header-avatars');
-            avatarsContainer.innerHTML = '';
-            
-            membersArray.forEach((user, index) => {
-                if(type === 'dm' && user.toLowerCase() === currentUser && membersArray.length === 2) return; 
-                
-                let img = document.createElement('img');
-                img.src = userProfileMap[user.toLowerCase()] || fallbackAvatar;
-                img.className = 'stacked-avatar';
-                img.title = user; 
-                img.style.zIndex = membersArray.length - index; 
-                avatarsContainer.appendChild(img);
-            });
-
-            const delBtn = document.getElementById('delete-chat-btn');
-            delBtn.style.display = 'block';
-            if (type === 'group' && membersArray.length > 0) {
-                let owner = membersArray[0];
-                if (owner.toLowerCase() !== currentUser.toLowerCase()) delBtn.style.display = 'none';
-            }
-
-            document.getElementById('user-input').disabled = false;
-            document.getElementById('send-btn').disabled = false;
-            
-            const chatContainer = document.getElementById('chat-container');
-
-            if (unreadChats.includes(id)) {
-                unreadChats = unreadChats.filter(uId => uId !== id);
-                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                renderSidebarList(); 
-            } else {
-                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-                if (chatItemEl) chatItemEl.classList.add('active');
-            }
-
-            lastRenderedChatId = id;
-            lastMessageDataString = ""; 
-            chatContainer.innerHTML = '';
-            
-            chatContainer.classList.remove('container-fade');
-            void chatContainer.offsetWidth; 
-            chatContainer.classList.add('container-fade');
-
-            try {
-                const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${id}`));
-                if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, id);
-                else document.getElementById('section-loader').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('section-loader').classList.remove('hidden');
-            }
-
-            fetchMessages(id);
-        }
-
-        function fetchMessages(id) {
-            if (backendPort && id) {
-                backendPort.postMessage({ type: 'get-messages', id: id });
+        function fetchMessages(rawId) {
+            if (backendPort && rawId) {
+                backendPort.postMessage({ type: 'get-messages', id: rawId });
             }
         }
 
         function renderMessages(messages, chatId) {
-            if (chatId !== currentChatId) return;
+            if (chatId !== currentActiveRawId) return;
+
             document.getElementById('section-loader').classList.add('hidden');
-            
             const container = document.getElementById('chat-container');
+
             if (chatId !== lastRenderedChatId) {
                 lastRenderedChatId = chatId;
                 lastMessageDataString = "";
@@ -525,7 +432,10 @@
             if (newMessageString === lastMessageDataString) return; 
             
             const currentCount = container.querySelectorAll('.message-row').length;
-            if (messages && currentCount > 0 && messages.length < currentCount) return; 
+            
+            if (messages && currentCount > 0 && messages.length < currentCount) {
+                return; 
+            }
 
             let needsFullRender = false;
             if (currentCount > 0 && messages.length >= currentCount) {
@@ -563,6 +473,7 @@
 
         function appendSingleMessageToDOM(sender, text, timestamp, animate = false) {
             const container = document.getElementById('chat-container');
+            
             let isMe = sender.toLowerCase() === currentUser;
             let rowDiv = document.createElement('div');
             rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'} ${animate ? 'slide-in' : ''}`;
@@ -574,13 +485,6 @@
 
             let msgWrapper = document.createElement('div');
             msgWrapper.className = 'message-wrapper';
-
-            if (!isMe && currentChatType === 'group') {
-                let nameLabel = document.createElement('span');
-                nameLabel.innerText = sender;
-                nameLabel.style.cssText = "font-size: 0.75rem; opacity: 0.7; margin-bottom: 3px; margin-left: 2px;";
-                msgWrapper.appendChild(nameLabel);
-            }
 
             let msgDiv = document.createElement('div');
             msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
@@ -603,49 +507,34 @@
         setInterval(() => {
             if (backendReady && currentUser) {
                 backendPort.postMessage({ type: 'get-convs' });
-                fetchGroupsData();
-                if (currentChatId) fetchMessages(currentChatId);
+                if (currentActiveRawId) {
+                    fetchMessages(currentActiveRawId);
+                }
             }
         }, 1500);
 
         function sendMessage() {
             let input = document.getElementById('user-input');
             let text = input.value.trim();
-            if (!text || !currentChatId || !backendPort || !currentUser) return;
+            if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
             input.value = '';
             let currentTimestamp = new Date().toISOString();
             
             appendSingleMessageToDOM(currentUser, text, currentTimestamp, true);
             
             try {
-                let cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentChatId}`)) || [];
+                let cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
                 cached.push({ sender: currentUser, message: text, timestamp: currentTimestamp });
-                localStorage.setItem(`chat_msgs_${currentChatId}`, JSON.stringify(cached));
+                localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
                 lastMessageDataString = JSON.stringify(cached);
             } catch(e) {}
 
-            messageQueue.push({ type: 'send-message', id: currentChatId, sender: currentUser, message: text, timestamp: currentTimestamp });
+            messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
             processMessageQueue();
         }
         
         document.getElementById('send-btn').onclick = sendMessage;
         document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
-        
-        document.getElementById('attach-btn').onclick = () => {
-            let url = prompt("Enter Image URL:");
-            if(url && isImageURL(url)) {
-                let input = document.getElementById('user-input');
-                input.value = url;
-                sendMessage();
-            } else if(url) {
-                alert("Please enter a valid image URL (png, jpg, jpeg, gif, webp).");
-            }
-        };
-
-        document.getElementById('delete-chat-btn').onclick = () => {
-            if (!confirm(`Are you sure you want to delete this ${currentChatType === 'group' ? 'group' : 'conversation'}?`)) return;
-            backendPort.postMessage({ type: 'delete-conv', id: currentChatId });
-        };
 
         const modal = document.getElementById('modal-overlay');
         const userContainer = document.getElementById('user-list-container');
@@ -679,69 +568,12 @@
                     modal.classList.remove('active');
                     let rawId = [currentUser, u.username.toLowerCase()].sort().join('-');
                     backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: u.username.toLowerCase() });
-                    openChat(rawId, 'dm', u.username, [currentUser, u.username.toLowerCase()]);
+                    openChat(rawId, u.username, avatar);
                     backendPort.postMessage({ type: 'get-convs' });
                 };
                 userContainer.appendChild(item);
             });
         }
-
-        const groupModal = document.getElementById('group-modal-overlay');
-        document.getElementById('new-group-btn').onclick = () => {
-            if (!currentUser) return alert("Waiting for username authorization...");
-            document.getElementById('group-name-input').value = '';
-            groupModal.classList.add('active');
-            if (cachedUsersList.length > 0) populateGroupModal(cachedUsersList);
-            else {
-                document.getElementById('group-user-list').innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
-                backendPort.postMessage({ type: 'get-users' });
-            }
-        };
-        document.getElementById('group-modal-cancel').onclick = () => groupModal.classList.remove('active');
-        
-        function populateGroupModal(users) {
-            const container = document.getElementById('group-user-list');
-            container.innerHTML = '';
-            selectedGroupMembers = [currentUser]; 
-            
-            users.forEach(u => {
-                if (u.username.toLowerCase() === currentUser) return;
-                let item = document.createElement('div');
-                item.className = 'user-list-item';
-                let avatar = u.profilePicture || fallbackAvatar;
-                
-                item.innerHTML = `
-                    <img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'">
-                    <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span></div>
-                    <input type="checkbox" class="group-checkbox" value="${escapeHtml(u.username.toLowerCase())}">
-                `;
-                
-                let cb = item.querySelector('input');
-                cb.onchange = (e) => {
-                    if (e.target.checked) {
-                        if (selectedGroupMembers.length >= 7) {
-                            e.target.checked = false;
-                            alert("Maximum 7 members allowed (including you).");
-                        } else {
-                            selectedGroupMembers.push(e.target.value);
-                        }
-                    } else {
-                        selectedGroupMembers = selectedGroupMembers.filter(m => m !== e.target.value);
-                    }
-                };
-                container.appendChild(item);
-            });
-        }
-
-        document.getElementById('group-modal-create').onclick = () => {
-            let name = document.getElementById('group-name-input').value.trim();
-            if (!name) return alert("Please enter a group name.");
-            if (selectedGroupMembers.length < 2) return alert("Please select at least 1 other user.");
-            
-            backendPort.postMessage({ type: 'create-group', members: selectedGroupMembers, name: name });
-            groupModal.classList.remove('active');
-            setTimeout(fetchGroupsData, 500);
-        };
     </script>
 </body>
 </html>
