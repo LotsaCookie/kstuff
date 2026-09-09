@@ -1,8 +1,7 @@
 {
-  "timestamp": "September 8th, 2026",
+  "timestamp": "September 9th, 2026",
   "changes": [
-    "Chat Timestamps",
-    "Faster chat response",
-    "Faster chat initializing"
+    "Can Delete Chats* forgot to mention",
+    "(SOON) Fixed the chat to stop showing earlier messages."
   ]
 }
