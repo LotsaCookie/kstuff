@@ -2,8 +2,7 @@
   "timestamp": "September 8th, 2026",
   "changes": [
     "Chat Timestamps",
-    "Group Chat",
     "Faster chat response",
-    "Ability to delete Conversations"
+    "Faster chat initializing"
   ]
 }
