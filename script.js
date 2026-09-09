@@ -321,7 +321,6 @@ function initApp() {
             modalIframe.src = 'about:blank';
 
             if (item.url) {
-                // Determine whether this item needs proxy navigation (src) or raw HTML injection (srcdoc)
                 const isProxyUrl = 
                     item.url.includes(gRep.static) || 
                     item.url.includes(gRep.scram) || 
@@ -336,7 +335,6 @@ function initApp() {
                 if (isProxyUrl) {
                     modalIframe.src = item.url;
                 } else {
-                    // Static HTML file (zones.json / Github asset) -> fetch and render via srcdoc
                     try {
                         const res = await fetch(item.url, { cache: 'no-store' });
                         if (res.ok) {
@@ -689,7 +687,7 @@ function initApp() {
         setC('readingcorner-category-select', c.Games, 'readingcorner'); setC('sciencequiz-category-select', c.Apps, 'sciencequiz');
     }).catch(()=>{});
 
-    fetchWithProxy('Json/change-log.json').then(l => {
+    fetchWithProxy('Json/etc/change-log.json').then(l => {
         if (!l) return;
         
         if ($('changelog-timestamp')) $('changelog-timestamp').textContent = l.timestamp || "Unknown";
