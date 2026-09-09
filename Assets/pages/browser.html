@@ -655,10 +655,10 @@ async function getWorkingConfig(table) {
 
 async function initProxyBackend() {
     try {
-        const staticTable = await fetchWithProxy('Json/urls/static.json');
+        const staticTable = await fetchWithProxy('Assets/json/mirrors/static.json');
         const workingConfig = await getWorkingConfig(staticTable);
         if (workingConfig && workingConfig.url) {
-            workingstaticurl = cleanUrl(workingConfig.url); // Set global URL
+            workingstaticurl = cleanUrl(workingConfig.url); 
             const proxyIframe = document.createElement('iframe');
             proxyIframe.style.display = 'none';
             proxyIframe.src = `${workingstaticurl}/embed.html#https://example.com`;
