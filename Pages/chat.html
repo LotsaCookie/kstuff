@@ -332,7 +332,6 @@
                 cleanupDeletedChat(deletedRawId);
                 backendPort.postMessage({ type: 'get-convs' });
             } else if (data.type === 'get-messages') {
-                // Ensure section loader is always hidden when fetch finishes, even if new/empty
                 document.getElementById('section-loader').classList.add('hidden');
                 
                 let chatId = data.id; 
@@ -473,47 +472,55 @@
                 container.innerHTML = '';
             }
 
-            const newMessageString = JSON.stringify(messages || []);
-            if (newMessageString === lastMessageDataString) return; 
-            
-            const currentCount = container.querySelectorAll('.message-row').length;
-            
-            if (messages && currentCount > 0 && messages.length < currentCount) {
-                return; 
-            }
+            const currentMsgsArr = Array.isArray(messages) ? messages : [];
+            const newMessageString = JSON.stringify(currentMsgsArr);
 
+            if (newMessageString === lastMessageDataString) return;
+
+            const currentCount = container.querySelectorAll('.message-row').length;
             let needsFullRender = false;
-            if (currentCount > 0 && messages.length >= currentCount) {
+
+            if (currentCount === 0 || currentMsgsArr.length < currentCount) {
+                needsFullRender = true;
+            } else {
                 try {
-                    let lastRenderedArray = JSON.parse(lastMessageDataString || "[]");
-                    if (lastRenderedArray.length > 0 && messages.length > 0) {
-                        if (lastRenderedArray[0].message !== messages[0].message || lastRenderedArray[0].timestamp !== messages[0].timestamp) {
+                    const previousMsgs = JSON.parse(lastMessageDataString || "[]");
+                    for (let i = 0; i < currentCount; i++) {
+                        if (
+                            !previousMsgs[i] || 
+                            !currentMsgsArr[i] || 
+                            previousMsgs[i].message !== currentMsgsArr[i].message || 
+                            previousMsgs[i].timestamp !== currentMsgsArr[i].timestamp ||
+                            previousMsgs[i].sender !== currentMsgsArr[i].sender
+                        ) {
                             needsFullRender = true;
+                            break;
                         }
                     }
-                } catch(e) {}
+                } catch (e) {
+                    needsFullRender = true;
+                }
             }
 
             lastMessageDataString = newMessageString;
 
-            if (!messages || messages.length === 0) {
-                if (container.children.length === 0 || needsFullRender) {
-                    container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
-                }
+            if (currentMsgsArr.length === 0) {
+                container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
                 return;
             }
 
-            if (container.children.length === 1 && container.children[0].innerText.includes("No messages sent yet")) {
+            if (container.children.length === 1 && container.innerText.includes("No messages sent yet")) {
                 container.innerHTML = '';
+                needsFullRender = true;
             }
 
-            if (currentCount === 0 || needsFullRender) {
-                container.innerHTML = ''; 
-                messages.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
-            } else if (messages.length > currentCount) {
-                const newMsgs = messages.slice(currentCount);
+            if (needsFullRender) {
+                container.innerHTML = '';
+                currentMsgsArr.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
+            } else if (currentMsgsArr.length > currentCount) {
+                const newMsgs = currentMsgsArr.slice(currentCount);
                 newMsgs.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true));
-            } 
+            }
         }
 
         function appendSingleMessageToDOM(sender, text, timestamp, animate = false) {
@@ -565,14 +572,16 @@
             input.value = '';
             let currentTimestamp = new Date().toISOString();
             
-            appendSingleMessageToDOM(currentUser, text, currentTimestamp, true);
-            
+            let cached = [];
             try {
-                let cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
-                cached.push({ sender: currentUser, message: text, timestamp: currentTimestamp });
-                localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
-                lastMessageDataString = JSON.stringify(cached);
+                cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
             } catch(e) {}
+
+            const newMsgObj = { sender: currentUser, message: text, timestamp: currentTimestamp };
+            cached.push(newMsgObj);
+            
+            localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
+            renderMessages(cached, currentActiveRawId);
 
             messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: text, timestamp: currentTimestamp });
             processMessageQueue();
