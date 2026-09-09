@@ -331,7 +331,10 @@
                 const deletedRawId = xorDecode(data.encodedKey);
                 cleanupDeletedChat(deletedRawId);
                 backendPort.postMessage({ type: 'get-convs' });
-            } else if (data.type === 'get-messages' && data.success) {
+            } else if (data.type === 'get-messages') {
+                // Ensure section loader is always hidden when fetch finishes, even if new/empty
+                document.getElementById('section-loader').classList.add('hidden');
+                
                 let chatId = data.id; 
                 if (!chatId && data.payload && data.payload.length > 0) {
                     const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
@@ -342,11 +345,16 @@
                 if (!chatId) chatId = currentActiveRawId; 
                 if (!chatId) return;
 
-                const remoteMessages = data.payload || [];
-                localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
-                
-                if (chatId === currentActiveRawId) {
-                    renderMessages(remoteMessages, chatId);
+                if (data.success) {
+                    const remoteMessages = data.payload || [];
+                    localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
+                    if (chatId === currentActiveRawId) {
+                        renderMessages(remoteMessages, chatId);
+                    }
+                } else {
+                    if (chatId === currentActiveRawId) {
+                        renderMessages([], chatId);
+                    }
                 }
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
@@ -357,8 +365,6 @@
         }
 
         function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
-            if (currentActiveRawId === rawId && document.getElementById('chat-container').children.length > 0) return;
-
             currentActiveRawId = rawId;
             document.getElementById('header-username').innerText = peerName;
             
