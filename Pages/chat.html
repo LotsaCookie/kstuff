@@ -114,7 +114,6 @@
         <div id="chat-list"><div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div></div>
     </div>
 
-    <!-- DM Modal -->
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal-box">
             <h3>Start Conversation</h3>
@@ -123,7 +122,6 @@
         </div>
     </div>
 
-    <!-- Group Modal -->
     <div id="group-modal-overlay" class="modal-overlay">
         <div class="modal-box">
             <h3>Create Group (Max 7)</h3>
@@ -174,7 +172,6 @@
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
         const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
 
-        // XOR Utility functions matching the backend's style
         function xorDecode(hexStr, key = 42) {
             if (!hexStr || typeof hexStr !== 'string') return '';
             let str = '';
