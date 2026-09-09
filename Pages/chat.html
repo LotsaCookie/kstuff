@@ -100,6 +100,7 @@
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .modal-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.3); background: var(--card); color: var(--text); font-weight: 900 !important; cursor: pointer; }
         .modal-btn.primary { background-color: var(--text); color: var(--bg); border: none; }
+        .modal-btn.danger { background-color: rgba(255, 51, 51, 0.15); border-color: #ff3333; color: #ff8080; }
         .modal-btn:hover { opacity: 0.9; }
     </style>
 </head>
@@ -125,6 +126,7 @@
                 <img class="header-avatar" id="header-avatar-icon" src="" alt="Avatar" style="display:none;">
                 <span class="header-name" id="header-username">Select a chat</span>
             </div>
+            <button id="delete-chat-btn" class="modal-btn danger" style="display: none;">Delete Chat</button>
         </header>
 
         <div id="chat-wrapper">
@@ -292,6 +294,30 @@
             } else if (data.type === 'create-conv' && data.success) {
                 backendPort.postMessage({ type: 'get-convs' });
                 if (currentActiveRawId) fetchMessages(currentActiveRawId);
+            } else if (data.type === 'delete-convs' && data.success) {
+                const deletedRawId = xorDecode(data.encodedKey);
+                
+                localStorage.removeItem(`chat_msgs_${deletedRawId}`);
+                if (unreadChats.includes(deletedRawId)) {
+                    unreadChats = unreadChats.filter(id => id !== deletedRawId);
+                    localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+                }
+
+                if (currentActiveRawId === deletedRawId) {
+                    currentActiveRawId = null;
+                    lastRenderedChatId = null;
+                    lastMessageDataString = "";
+                    document.getElementById('header-username').innerText = 'Select a chat';
+                    const headerAvatar = document.getElementById('header-avatar-icon');
+                    headerAvatar.src = '';
+                    headerAvatar.style.display = 'none';
+                    document.getElementById('delete-chat-btn').style.display = 'none';
+                    document.getElementById('chat-container').innerHTML = '';
+                    document.getElementById('user-input').disabled = true;
+                    document.getElementById('send-btn').disabled = true;
+                }
+
+                backendPort.postMessage({ type: 'get-convs' });
             } else if (data.type === 'get-messages' && data.success) {
                 let chatId = data.id; 
                 if (!chatId && data.payload && data.payload.length > 0) {
@@ -327,6 +353,7 @@
             headerAvatar.src = peerAvatar;
             headerAvatar.style.display = 'block';
 
+            document.getElementById('delete-chat-btn').style.display = 'block';
             document.getElementById('user-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             
@@ -534,6 +561,13 @@
         
         document.getElementById('send-btn').onclick = sendMessage;
         document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
+
+        document.getElementById('delete-chat-btn').onclick = () => {
+            if (!currentActiveRawId || !backendPort) return;
+            if (confirm("Are you sure you want to delete this conversation? This will delete all messages permanently.")) {
+                backendPort.postMessage({ type: 'delete-convs', id: currentActiveRawId });
+            }
+        };
 
         const modal = document.getElementById('modal-overlay');
         const userContainer = document.getElementById('user-list-container');
