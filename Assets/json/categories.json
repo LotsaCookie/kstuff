@@ -1,0 +1,35 @@
+{
+  
+"Games" : [
+  "All",
+  "Action",
+  "Adventure",
+  "Arcade",
+  "Cards",
+  "Clicker",
+  "Driving",
+  "Cooking",
+  "Horror",
+  "Idle",
+  "Multiplayer",
+  "FPS",
+  "Platformer",
+  "Puzzle",
+  "RPG",
+  "Racing",
+  "Rhythm",
+  "Shooter",
+  "Simulation",
+  "Sports",
+  "Strategy"
+],
+
+"Apps" : [
+  "All",
+  "Cloud",
+  "Entertainment",
+  "Search Engine",
+  "Hacks"
+]
+
+}
