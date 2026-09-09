@@ -345,9 +345,8 @@
             lastMessageDataString = ""; 
             chatContainer.innerHTML = '';
             
-            // Re-trigger the smooth fade-in animation instantly without delaying code logic
             chatContainer.classList.remove('container-fade');
-            void chatContainer.offsetWidth; // Force CSS reflow cleanly
+            void chatContainer.offsetWidth;
             chatContainer.classList.add('container-fade');
 
             try {
@@ -511,7 +510,7 @@
                     fetchMessages(currentActiveRawId);
                 }
             }
-        }, 1500);
+        }, 1000);
 
         function sendMessage() {
             let input = document.getElementById('user-input');
