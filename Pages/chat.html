@@ -191,7 +191,7 @@
         
         async function fetchCommitHash() {
             try {
-                let res = await fetch(`https://api.github.com/repos/KStuff-App/KStuff-Backend/commits?path=backend.html&per_page=1&t=${Date.now()}`);
+                let res = await fetch(`https://api.github.com/repos/lotsacookie/Dnekcabtset/commits?path=chat-backend.html&per_page=1&t=${Date.now()}`);
                 if (res.ok) { let data = await res.json(); if (data.length > 0) return data[0].sha; }
             } catch (e) { console.error('Commit fetch failed', e); }
             return Date.now(); 
@@ -199,7 +199,7 @@
 
         async function initIframe() {
             cachedCommitHash = await fetchCommitHash();
-            let htmlUrl = `https://kstuff.neocities.org/backend.html?v=${cachedCommitHash}`;
+            let htmlUrl = `https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?v=${cachedCommitHash}`;
             frame.src = htmlUrl;
         }
         initIframe();
