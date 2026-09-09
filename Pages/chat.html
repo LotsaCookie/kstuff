@@ -95,7 +95,11 @@
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
         .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
         .modal-box h3 { margin: 0; font-size: 1.1rem; }
-        .user-list-container { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
+        
+        #user-search-input { width: 100%; background: var(--card); color: var(--text); border: 1px solid rgba(128,128,128,0.3); border-radius: 10px; padding: 10px 15px; font-family: inherit; font-size: 0.9rem; font-weight: bold; outline: none; }
+        #user-search-input:focus { border-color: var(--text); }
+
+        .user-list-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
         .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); }
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .modal-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.3); background: var(--card); color: var(--text); font-weight: 900 !important; cursor: pointer; }
@@ -115,6 +119,7 @@
     <div id="modal-overlay" class="modal-overlay">
         <div class="modal-box">
             <h3>Start Conversation</h3>
+            <input type="text" id="user-search-input" placeholder="Search users by username...">
             <div id="user-list-container" class="user-list-container"></div>
             <div class="modal-buttons"><button id="modal-cancel" class="modal-btn">Close</button></div>
         </div>
@@ -153,6 +158,7 @@
         let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
         let lastSidebarState = "";
         let lastRenderedChatId = null;
+        let currentSearchQuery = "";
         
         let messageQueue = [];
         let isSendingMessage = false;
@@ -243,7 +249,7 @@
                     backendPort.onmessage = e => handleBackendMessage(e.data);
                     iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
                 };
-                iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?svvv`;
+                iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?spll0`;
             } catch (err) { console.error(err); }
         }
         initBackendIframe();
@@ -269,6 +275,28 @@
             backendPort.postMessage(messageQueue.shift());
         }
 
+        function cleanupDeletedChat(deletedRawId) {
+            localStorage.removeItem(`chat_msgs_${deletedRawId}`);
+            if (unreadChats.includes(deletedRawId)) {
+                unreadChats = unreadChats.filter(id => id !== deletedRawId);
+                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+            }
+
+            if (currentActiveRawId === deletedRawId) {
+                currentActiveRawId = null;
+                lastRenderedChatId = null;
+                lastMessageDataString = "";
+                document.getElementById('header-username').innerText = 'Select a chat';
+                const headerAvatar = document.getElementById('header-avatar-icon');
+                headerAvatar.src = '';
+                headerAvatar.style.display = 'none';
+                document.getElementById('delete-chat-btn').style.display = 'none';
+                document.getElementById('chat-container').innerHTML = '';
+                document.getElementById('user-input').disabled = true;
+                document.getElementById('send-btn').disabled = true;
+            }
+        }
+
         function handleBackendMessage(data) {
             if (data.type === 'ready') {
                 backendReady = true;
@@ -290,33 +318,18 @@
                 const safeConvs = Array.isArray(data.payload) ? data.payload : [];
                 localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
                 activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
+                
+                if (currentActiveRawId && !activeConversations.includes(currentActiveRawId)) {
+                    cleanupDeletedChat(currentActiveRawId);
+                }
+
                 renderSidebarList();
             } else if (data.type === 'create-conv' && data.success) {
                 backendPort.postMessage({ type: 'get-convs' });
                 if (currentActiveRawId) fetchMessages(currentActiveRawId);
             } else if (data.type === 'delete-convs' && data.success) {
                 const deletedRawId = xorDecode(data.encodedKey);
-                
-                localStorage.removeItem(`chat_msgs_${deletedRawId}`);
-                if (unreadChats.includes(deletedRawId)) {
-                    unreadChats = unreadChats.filter(id => id !== deletedRawId);
-                    localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                }
-
-                if (currentActiveRawId === deletedRawId) {
-                    currentActiveRawId = null;
-                    lastRenderedChatId = null;
-                    lastMessageDataString = "";
-                    document.getElementById('header-username').innerText = 'Select a chat';
-                    const headerAvatar = document.getElementById('header-avatar-icon');
-                    headerAvatar.src = '';
-                    headerAvatar.style.display = 'none';
-                    document.getElementById('delete-chat-btn').style.display = 'none';
-                    document.getElementById('chat-container').innerHTML = '';
-                    document.getElementById('user-input').disabled = true;
-                    document.getElementById('send-btn').disabled = true;
-                }
-
+                cleanupDeletedChat(deletedRawId);
                 backendPort.postMessage({ type: 'get-convs' });
             } else if (data.type === 'get-messages' && data.success) {
                 let chatId = data.id; 
@@ -571,9 +584,12 @@
 
         const modal = document.getElementById('modal-overlay');
         const userContainer = document.getElementById('user-list-container');
+        const searchInput = document.getElementById('user-search-input');
         
         document.getElementById('new-chat-btn').onclick = () => {
             if (!currentUser) return alert("Waiting for username authorization...");
+            currentSearchQuery = "";
+            searchInput.value = "";
             modal.classList.add('active');
             if (cachedUsersList.length > 0) populateUserDirectoryModal(cachedUsersList);
             else {
@@ -581,16 +597,31 @@
                 backendPort.postMessage({ type: 'get-users' });
             }
         };
+
         document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
+
+        searchInput.oninput = (e) => {
+            currentSearchQuery = e.target.value.toLowerCase().trim();
+            populateUserDirectoryModal(cachedUsersList);
+        };
         
         function populateUserDirectoryModal(users) {
             userContainer.innerHTML = '';
-            if (!users || users.length === 0) {
+            const filteredUsers = (users || []).filter(u => {
+                if (!u || !u.username) return false;
+                if (u.username.toLowerCase() === currentUser) return false;
+                if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) {
+                    return false;
+                }
+                return true;
+            });
+
+            if (filteredUsers.length === 0) {
                 userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
                 return;
             }
-            users.forEach(u => {
-                if (u.username.toLowerCase() === currentUser) return; 
+
+            filteredUsers.forEach(u => {
                 let item = document.createElement('div');
                 item.className = 'user-list-item';
                 let avatar = u.profilePicture || fallbackAvatar;
