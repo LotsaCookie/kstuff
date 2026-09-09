@@ -1,0 +1,107 @@
+[
+  {
+    "title": "Spectra",
+    "description": "",
+    "category": "Cloud",
+    "url": "https://warm-biscochitos-44c02e.netlify.app/spectrafull.html",
+    "image": "https://cdn2.fptshop.com.vn/unsafe/1920x0/small/cloudmoon_1_90bf317a4d.jpg"
+  },
+  {
+    "title": "GeforceNOW",
+    "description": "",
+    "category": "Cloud",
+    "url": "${scram}https://play.geforcenow.com/mall",
+    "image": "https://play-lh.googleusercontent.com/lpJSHUmG-bcaB2oOxSuMhRtE53lZzEUDlEPWLP0on5wM717EuBXAH4Z9nF329QVl9v7-DJTM7CFGeST5qBk"
+  },
+  {
+    "title": "ToR Network",
+    "description": "",
+    "category": "Search Engine",
+    "url": "${static}https://kstuff.neocities.org/data_archive/data_new/tor6.html",
+    "image": "https://www.privacyguides.org/articles/assets/images/in-praise-of-tor/tor-cover.webp"
+  },
+  {
+    "title": "CoolMathGames",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://coolmathgames.com",
+    "image": "https://justcreateapp.com/wp-content/uploads/2023/11/Coolmath-Games.png"
+  },
+  {
+    "title": "Crazy Games",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://crazygames.com",
+    "image": "https://mobidictum.com/wp-content/uploads/2023/08/ten-reasons-to-publish-your-web-game-with-crazy-games-800x450.jpg"
+  },
+  {
+    "title": "DuckDuckGo",
+    "description": "",
+    "category": "Search Engine",
+    "url": "${static}https://duckduckgo.com",
+    "image": "https://tse1.mm.bing.net/th/id/OIP.ddOE7FO-kem9VWZeFxxFqQHaEO?o=7rm=3&rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+  {
+    "title": "DeepAI",
+    "description": "",
+    "category": "Cloud",
+    "url": "${static}https://deepai.org/chat",
+    "image": "https://tse2.mm.bing.net/th/id/OIP.kF2TcNatbmeBC87P7IMtIgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+  {
+    "title": "9anime",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://9animetv.to/",
+    "image": "https://tse1.mm.bing.net/th/id/OIP.hRxz8hqZpIrMsQwXgNHqvwHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+  {
+    "title": "Gimkit Hacks",
+    "description": "",
+    "category": "Hacks",
+    "url": "${scram}https://kstuff.neocities.org/data_archive/data/gimkit.html",
+    "image": "https://pbs.twimg.com/profile_images/1650568046745120771/fsqmyzLT_400x400.jpg"
+  },
+  {
+    "title": "Blooket Hacks",
+    "description": "",
+    "category": "Hacks",
+    "url": "${scram}https://blooketbot.schoolcheats.net/",
+    "image": "https://wallpaperaccess.com/full/9295251.jpg"
+  },
+  {
+    "title": "Yes! Movies",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://yesmovies.ag/",
+    "image": "https://tse1.mm.bing.net/th/id/OIP.bZyIzgPEvFjURSWmMRc8FgHaD4?rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+  {
+    "title": "Twitch",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://twitch.tv",
+    "image": "https://logosmarcas.net/wp-content/uploads/2020/11/Twitch-Simbolo.jpg"
+  },
+  {
+    "title": "Discord",
+    "description": "",
+    "category": "Cloud",
+    "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Discord",
+    "image": "https://www.fosslinux.com/wp-content/uploads/2021/12/Discord.jpg"
+  },
+  {
+    "title": "Tiktok",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://www.tiktok.com/",
+    "image": "https://cdn.shopify.com/s/files/1/0070/7032/files/tiktok-logo-2.png?v=1685556794"
+  },
+  {
+    "title": "Google",
+    "description": "",
+    "category": "Search Engine",
+    "url": "${static}https://www.google.com/",
+    "image": "https://logowik.com/content/uploads/images/google-new7326.jpg"
+  }
+]
