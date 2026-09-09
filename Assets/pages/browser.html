@@ -729,7 +729,7 @@ let currentModalCallback = null;
 async function fetchLatestQuote() {
     try {
         const commitData = await (await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main')).json();
-        const messages = await (await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitData.sha || 'main'}/Json/messages.json`)).json();
+        const messages = await (await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitData.sha || 'main'}/Assets/messages.json`)).json();
         
         if (Array.isArray(messages) && messages.length > 0) {
             cachedQuote = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
@@ -842,7 +842,7 @@ function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
     studyIframe.classList.add('active');
 
     if (workingstaticurl) {
-        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Pages/browser-content.html?site=${targetUrl}`;
+        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
         const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
         studyIframe.src = proxiedUrl;
     } else {
