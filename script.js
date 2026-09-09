@@ -211,7 +211,7 @@ function initApp() {
     };
 
     try { handleThemesLoaded(JSON.parse(getStorage('kstuff_themes_cache'))); } catch {}
-    fetchWithProxy('Json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(()=>{});
+    fetchWithProxy('Assets/json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(()=>{});
 
     [
         ['layout-theme-select', 'kstuff_theme', 'theme', v => { if(v) { body.classList.add(v); setStorage('kstuff_theme', v); } }],
@@ -264,11 +264,11 @@ function initApp() {
     });
 
     const iframePages = { 
-        mathworksheets: { id: 'mathworksheets-iframe', path: 'Pages/browser.html' }, 
-        gradebook: { id: 'gradebook-iframe', path: 'Pages/music.html' }, 
-        lessonplanner: { id: 'lessonplanner-iframe', path: 'Pages/ai.html' },
-        studyhall: { id: 'studyhall-iframe', path: 'Pages/chat.html' },
-        vms: { id: 'vms-iframe', path: 'Pages/music.html' }
+        mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' }, 
+        gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' }, 
+        lessonplanner: { id: 'lessonplanner-iframe', path: 'Assets/pages/ai.html' },
+        studyhall: { id: 'studyhall-iframe', path: 'Assets/pages/chat.html' },
+        vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
     };
 
     function loadIframePage(id, path) {
@@ -678,7 +678,7 @@ function initApp() {
     modalOverlay?.addEventListener('click', e => e.target === modalOverlay && closeRes());
     $('resource-fullscreen-btn')?.addEventListener('click', () => !document.fullscreenElement ? modalIframe?.requestFullscreen().catch(()=>{}) : document.exitFullscreen());
 
-    fetchWithProxy('Json/categories.json').then(c => {
+    fetchWithProxy('Assets/json/categories.json').then(c => {
         const setC = (id, opts, type) => {
             const s = $(id); if (!s) return;
             s.innerHTML = (opts||[]).map(o => `<option value="${o}">${o}</option>`).join(''); applyCustomDropdown(s);
@@ -687,7 +687,7 @@ function initApp() {
         setC('readingcorner-category-select', c.Games, 'readingcorner'); setC('sciencequiz-category-select', c.Apps, 'sciencequiz');
     }).catch(()=>{});
 
-    fetchWithProxy('Json/etc/change-log.json').then(l => {
+    fetchWithProxy('Assets/change-log.json').then(l => {
         if (!l) return;
         
         if ($('changelog-timestamp')) $('changelog-timestamp').textContent = l.timestamp || "Unknown";
@@ -744,7 +744,7 @@ function initApp() {
             return `https://raw.githubusercontent.com/freebuisness/${repo}/main/${path}`;
         };
 
-        const manualRes = await fetchWithProxy('Json/manual-g.json').catch(() => []);
+        const manualRes = await fetchWithProxy('Assets/json/g.json').catch(() => []);
         const manualMap = new Map();
         if (Array.isArray(manualRes)) {
             manualRes.forEach(item => {
@@ -809,7 +809,7 @@ function initApp() {
             } catch (e) {}
         }
         
-        const fallbackJson = await fetchWithProxy('Json/g.json').catch(()=>[]);
+        const fallbackJson = await fetchWithProxy('Assets/json/g.json').catch(()=>[]);
         const fallbackMapped = [];
         
         fallbackJson.forEach(item => {
@@ -856,16 +856,16 @@ function initApp() {
     $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
     const fCfg = u => fetchWithProxy(u).catch(()=>[]).then(getWorkingConfig);
-    const sDP = fetchWithProxy('Json/urls/static.json').catch(()=>[]);
+    const sDP = fetchWithProxy('Assets/json/mirrors/static.json').catch(()=>[]);
 
     Promise.all([
         fetchReadingCornerRaw(), 
-        fetchWithProxy('Json/a.json').catch(()=>[]), 
-        fetchWithProxy('Json/truffled.json').catch(()=>null),
-        fCfg('Json/urls/scram.json'), 
+        fetchWithProxy('Assets/json/a.json').catch(()=>[]), 
+        fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
+        fCfg('Assets/json/mirrors/scram.json'), 
         sDP.then(getWorkingConfig), 
-        fCfg('Json/urls/uv.json'), 
-        fCfg('Json/urls/truffled.json'),
+        fCfg('Assets/json/mirrors/uv.json'), 
+        fCfg('Assets/json/mirrors/truffled.json'),
         sDP.then(d => getWorkingConfig(d.map(i => ({ url: i.url, img: i.img, final: "" }))))
     ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
         if (st) initBackendBridge(st);
