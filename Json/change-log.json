@@ -3,6 +3,7 @@
   "changes": [
     "Chat Timestamps",
     "Group Chat",
-    "Faster chat response"
+    "Faster chat response",
+    "Ability to delete Conversations"
   ]
 }
