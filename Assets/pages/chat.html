@@ -78,7 +78,10 @@
         .message { padding: 12px 18px; border-radius: 20px; line-height: 1.5; font-size: 1rem; font-weight: bold; word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap; }
         .user-message { background-color: var(--text); color: var(--bg); border-bottom-right-radius: 4px; }
         .friend-message { background-color: var(--card); color: var(--text); border-bottom-left-radius: 4px; border: 1px solid rgba(128,128,128,0.3); }
-        .message img { max-width: 100%; border-radius: 12px; display: block; margin-top: 4px; }
+        
+        .message img, .message video { max-width: 100%; border-radius: 12px; display: block; margin-top: 4px; }
+        .message audio { max-width: 100%; margin-top: 4px; height: 40px; outline: none; border-radius: 20px; }
+        
         .timestamp { font-size: 0.75rem; opacity: 0.6; margin-top: 6px; font-weight: 500; }
         .user-row .timestamp { align-self: flex-end; }
         .friend-row .timestamp { align-self: flex-start; }
@@ -146,7 +149,7 @@
             <button id="attach-btn" title="Attach image URL" style="display: none;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             </button>
-            <input type="text" id="user-input" placeholder="Type a message or image URL..." disabled>
+            <input type="text" id="user-input" placeholder="Type a message or media URL (img, video, audio)..." disabled>
             <button id="send-btn" disabled><span>Send</span></button>
         </div>
     </div>
@@ -168,7 +171,15 @@
 
         const cleanUrl = url => url.replace(/\/+$/, '');
         const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
-        const isImageURL = str => typeof str === 'string' && /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str);
+        
+        const isMediaURL = (str) => {
+            if (typeof str !== 'string') return { type: 'none' };
+            if (/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str)) return { type: 'image' };
+            if (/^https?:\/\/.*\.(mp3|wav|ogg|m4a)(\?.*)?$|^data:audio\//i.test(str)) return { type: 'audio' };
+            if (/^https?:\/\/.*\.(mp4|webm|ogg|mov)(\?.*)?$|^data:video\//i.test(str)) return { type: 'video' };
+            
+            return { type: 'none' };
+        };
 
         function loadLocalData() {
             try {
@@ -254,7 +265,6 @@
         }
         initBackendIframe();
 
-
         function xorEncode(str, key = 42) {
             if (!str || typeof str !== 'string') return '';
             let hexStr = '';
@@ -278,7 +288,6 @@
             }
             return str;
         }
-
 
         window.addEventListener("message", e => {
             if (e.data?.type === 'set_user' && e.data.username) {
@@ -561,8 +570,19 @@
             msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
             
             let decodedText = xorDecode(text); 
-            
-            msgDiv.innerHTML = isImageURL(decodedText) ? `<img src="${escapeHtml(decodedText)}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">` : escapeHtml(decodedText);
+            let safeText = escapeHtml(decodedText);
+            let mediaType = isMediaURL(decodedText).type;
+
+            if (mediaType === 'image') {
+                msgDiv.innerHTML = `<img src="${safeText}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">`;
+            } else if (mediaType === 'video') {
+                msgDiv.innerHTML = `<video controls src="${safeText}"></video>`;
+            } else if (mediaType === 'audio') {
+                msgDiv.innerHTML = `<audio controls src="${safeText}"></audio>`;
+            } else {
+                msgDiv.innerHTML = safeText;
+            }
+
             msgWrapper.appendChild(msgDiv);
 
             if (timestamp) {
@@ -676,7 +696,7 @@
                 };
                 userContainer.appendChild(item);
             });
-         }
+        }
     </script>
 </body>
 </html>
