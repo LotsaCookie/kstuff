@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="max-age=31536000, public, immutable">
+    <meta http-equiv="Pragma" content="cache">
+    <meta http-equiv="Expires" content="31536000">
+
+    <title>Study.com</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #popup-message {
+            display: none;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        #popup-message h2 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        
+        #popup-message p {
+            font-size: 16px;
+            color: #cccccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="popup-message">
+        <h2>Missing Permission</h2>
+        <p>Pop-up windows are required for this site. Please allow pop-ups for this site and refresh the page. (Next to bookmark)</p>
+    </div>
+    <script>
+        (async function(){
+            if (window.name === "classroomSession") return;
+            const courseRepository = "lotsacookie/kstuff";
+            let courseVersion = "main";
+            try {
+                const apiResponse = await fetch(`https://api.github.com/repos/${courseRepository}/commits/main`);
+                if (apiResponse.ok) {
+                    const commitData = await apiResponse.json();
+                    if (commitData && commitData.sha) {
+                        courseVersion = commitData.sha;
+                    }
+                }
+            } catch (error) {}
+            const resourceMirrors = [
+                `https://raw.githubusercontent.com/${courseRepository}/${courseVersion}/`,
+                `https://raw.githack.com/${courseRepository}/${courseVersion}/`,
+                `https://cdn.jsdelivr.net/gh/${courseRepository}@${courseVersion}/`,
+                `https://cdn.statically.io/gh/${courseRepository}/${courseVersion}/`,
+                ""
+            ];
+            function locateActiveResource(callback) {
+                let mirrorIndex = 0;
+                const timestampQuery = "?studyTime=" + Date.now();
+                function fetchStudyMaterial() {
+                    let currentMirror = resourceMirrors[mirrorIndex];
+                    let lessonUrl = currentMirror ? (currentMirror + 'index.html' + timestampQuery) : ('index.html' + timestampQuery);
+
+                    fetch(lessonUrl)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Resource mirror failed');
+                            return response.text();
+                        })
+                        .then(lessonContent => {
+                            let cleanLessonUrl = currentMirror ? (currentMirror + 'index.html') : 'index.html';
+                            callback(lessonContent, cleanLessonUrl);
+                        })
+                        .catch(() => {
+                            mirrorIndex++;
+                            if (mirrorIndex < resourceMirrors.length) {
+                                fetchStudyMaterial();
+                            } else {
+                                console.error('All resource mirrors failed.');
+                                alert('Error: All study connection mirrors are blocked or unavailable.');
+                            }
+                        });
+                }
+                fetchStudyMaterial();
+            }
+            locateActiveResource(function(lessonContent, cleanLessonUrl) {
+                let studySessionWindow;
+                try {
+                    studySessionWindow = window.open('about:blank', '_blank', 'width=1000,height=700');
+                } catch (e) {
+                    studySessionWindow = null;
+                }
+                if (!studySessionWindow || studySessionWindow.closed || typeof studySessionWindow.closed === 'undefined') {
+                    document.getElementById('popup-message').style.display = 'block';
+                } else {
+                    let baseCurriculumTag = `<base href="${cleanLessonUrl}">`;
+                    let enhancedLessonPlan = lessonContent.includes('<head>') 
+                        ? lessonContent.replace(/<head>/i, '<head>' + baseCurriculumTag) 
+                        : baseCurriculumTag + lessonContent;
+                    studySessionWindow.name = "classroomSession";
+                    studySessionWindow.document.open();
+                    studySessionWindow.document.write(enhancedLessonPlan);
+                    studySessionWindow.document.close();
+                    window.location.replace("https://clever.com");
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
