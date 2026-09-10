@@ -177,7 +177,6 @@
             if (/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str)) return { type: 'image' };
             if (/^https?:\/\/.*\.(mp3|wav|ogg|m4a)(\?.*)?$|^data:audio\//i.test(str)) return { type: 'audio' };
             if (/^https?:\/\/.*\.(mp4|webm|ogg|mov)(\?.*)?$|^data:video\//i.test(str)) return { type: 'video' };
-            
             return { type: 'none' };
         };
 
@@ -203,7 +202,7 @@
                         renderSidebarList();
                     }
                 }
-            } catch (e) { console.error("Error loading local storage:", e); }
+            } catch (e) {}
         }
 
         async function getProxyList() {
@@ -261,7 +260,7 @@
                     iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
                 };
                 iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?spll0`;
-            } catch (err) { console.error(err); }
+            } catch (err) {}
         }
         initBackendIframe();
 
@@ -277,10 +276,7 @@
 
         function xorDecode(hexStr, key = 42) {
             if (!hexStr || typeof hexStr !== 'string') return '';
-            
-            if (!/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) {
-                return hexStr; 
-            }
+            if (!/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) return hexStr; 
             
             let str = '';
             for (let i = 0; i < hexStr.length; i += 2) {
@@ -365,23 +361,29 @@
                 let chatId = data.id; 
                 if (!chatId && data.payload && data.payload.length > 0) {
                     const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
-                    if (peerMsg) {
-                        chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
-                    }
+                    if (peerMsg) chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
                 }
                 if (!chatId) chatId = currentActiveRawId; 
                 if (!chatId) return;
 
                 if (data.success) {
                     const remoteMessages = data.payload || [];
-                    localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
-                    if (chatId === currentActiveRawId) {
-                        renderMessages(remoteMessages, chatId);
+                    let cached = [];
+                    try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
+                    
+                    let shouldUpdate = false;
+                    if (messageQueue.length === 0 && !isSendingMessage) {
+                        shouldUpdate = true;
+                    } else if (remoteMessages.length > cached.length) {
+                        shouldUpdate = true;
+                    }
+
+                    if (shouldUpdate) {
+                        localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
+                        if (chatId === currentActiveRawId) renderMessages(remoteMessages, chatId);
                     }
                 } else {
-                    if (chatId === currentActiveRawId) {
-                        renderMessages([], chatId);
-                    }
+                    if (chatId === currentActiveRawId) renderMessages([], chatId);
                 }
             } else if (data.type === 'send-message' && data.success) {
                 isSendingMessage = false; 
@@ -424,11 +426,8 @@
 
             try {
                 const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
-                if (cachedMsgs && cachedMsgs.length > 0) {
-                    renderMessages(cachedMsgs, rawId);
-                } else {
-                    document.getElementById('section-loader').classList.remove('hidden');
-                }
+                if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
+                else document.getElementById('section-loader').classList.remove('hidden');
             } catch (e) {
                 document.getElementById('section-loader').classList.remove('hidden');
             }
@@ -544,14 +543,29 @@
 
             if (needsFullRender) {
                 container.innerHTML = '';
-                currentMsgsArr.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false));
+                let prevTime = null;
+                currentMsgsArr.forEach(m => {
+                    let showTime = true;
+                    if (prevTime && (new Date(m.timestamp) - new Date(prevTime)) < 600000) showTime = false;
+                    prevTime = m.timestamp;
+                    appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime);
+                });
             } else if (currentMsgsArr.length > currentCount) {
+                let previousMsgs = [];
+                try { previousMsgs = JSON.parse(lastMessageDataString || "[]"); } catch(e){}
+                let prevTime = currentCount > 0 && previousMsgs[currentCount - 1] ? previousMsgs[currentCount - 1].timestamp : null;
+                
                 const newMsgs = currentMsgsArr.slice(currentCount);
-                newMsgs.forEach(m => appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true));
+                newMsgs.forEach(m => {
+                    let showTime = true;
+                    if (prevTime && (new Date(m.timestamp) - new Date(prevTime)) < 600000) showTime = false;
+                    prevTime = m.timestamp;
+                    appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true, showTime);
+                });
             }
         }
 
-        function appendSingleMessageToDOM(sender, text, timestamp, animate = false) {
+        function appendSingleMessageToDOM(sender, text, timestamp, animate = false, showTimestamp = true) {
             const container = document.getElementById('chat-container');
             
             let isMe = sender.toLowerCase() === currentUser;
@@ -585,7 +599,7 @@
 
             msgWrapper.appendChild(msgDiv);
 
-            if (timestamp) {
+            if (timestamp && showTimestamp) {
                 let timeDiv = document.createElement('span');
                 timeDiv.className = 'timestamp';
                 timeDiv.innerText = new Date(timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
@@ -601,9 +615,7 @@
         setInterval(() => {
             if (backendReady && currentUser) {
                 backendPort.postMessage({ type: 'get-convs' });
-                if (currentActiveRawId) {
-                    fetchMessages(currentActiveRawId);
-                }
+                if (currentActiveRawId) fetchMessages(currentActiveRawId);
             }
         }, 1000);
 
@@ -669,9 +681,7 @@
             const filteredUsers = (users || []).filter(u => {
                 if (!u || !u.username) return false;
                 if (u.username.toLowerCase() === currentUser) return false;
-                if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) {
-                    return false;
-                }
+                if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) return false;
                 return true;
             });
 
