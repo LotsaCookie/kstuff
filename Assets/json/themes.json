@@ -3,10 +3,10 @@
     "id": "theme-sakura",
     "name": "Sakura",
     "variables": {
-      "--bg-color": "#fdf6f8",
-      "--text-color": "#8b3a52",
-      "--nav-bg": "#f8e1e7",
-      "--card-bg": "#f3ced6"
+      "--bg-color": "#1a1216",
+      "--text-color": "#ffb8d9",
+      "--nav-bg": "#271a22",
+      "--card-bg": "#362530"
     }
   },
   {
