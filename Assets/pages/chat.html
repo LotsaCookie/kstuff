@@ -504,62 +504,65 @@
 
             if (newMessageString === lastMessageDataString) return;
 
-            const currentCount = container.querySelectorAll('.message-row').length;
-            let needsFullRender = false;
-
-            if (currentCount === 0 || currentMsgsArr.length < currentCount) {
-                needsFullRender = true;
-            } else {
-                try {
-                    const previousMsgs = JSON.parse(lastMessageDataString || "[]");
-                    for (let i = 0; i < currentCount; i++) {
-                        if (
-                            !previousMsgs[i] || 
-                            !currentMsgsArr[i] || 
-                            previousMsgs[i].message !== currentMsgsArr[i].message || 
-                            previousMsgs[i].timestamp !== currentMsgsArr[i].timestamp ||
-                            previousMsgs[i].sender !== currentMsgsArr[i].sender
-                        ) {
-                            needsFullRender = true;
-                            break;
-                        }
-                    }
-                } catch (e) {
-                    needsFullRender = true;
-                }
-            }
-
-            lastMessageDataString = newMessageString;
+            const rowDivs = container.querySelectorAll('.message-row');
+            const currentCount = rowDivs.length;
 
             if (currentMsgsArr.length === 0) {
+                lastMessageDataString = newMessageString;
                 container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
                 return;
             }
 
             if (container.children.length === 1 && container.innerText.includes("No messages sent yet")) {
                 container.innerHTML = '';
-                needsFullRender = true;
             }
 
-            if (needsFullRender) {
+            if (currentCount === 0 || currentMsgsArr.length < currentCount) {
+                lastMessageDataString = newMessageString;
                 container.innerHTML = '';
-                let prevTime = null;
-                currentMsgsArr.forEach(m => {
+                currentMsgsArr.forEach((m, index) => {
                     let showTime = true;
-                    if (prevTime && (new Date(m.timestamp) - new Date(prevTime)) < 600000) showTime = false;
-                    prevTime = m.timestamp;
+                    const next = currentMsgsArr[index + 1];
+                    if (next && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
+                        showTime = false;
+                    }
                     appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime);
                 });
-            } else if (currentMsgsArr.length > currentCount) {
-                let previousMsgs = [];
-                try { previousMsgs = JSON.parse(lastMessageDataString || "[]"); } catch(e){}
-                let prevTime = currentCount > 0 && previousMsgs[currentCount - 1] ? previousMsgs[currentCount - 1].timestamp : null;
-                
+                return;
+            }
+
+            if (currentMsgsArr.length > currentCount) {
+                lastMessageDataString = newMessageString;
+
+                const prevIndex = currentCount - 1;
+                const prevMsg = currentMsgsArr[prevIndex];
+                const newFirstAddedMsg = currentMsgsArr[currentCount];
+
+                const diff = new Date(newFirstAddedMsg.timestamp) - new Date(prevMsg.timestamp);
+                const shouldShowPrevTime = diff >= 600000;
+
+                const prevRow = rowDivs[prevIndex];
+                if (prevRow) {
+                    const wrapper = prevRow.querySelector('.message-wrapper');
+                    const existingTimestamp = wrapper.querySelector('.timestamp');
+                    if (shouldShowPrevTime && !existingTimestamp) {
+                        let timeDiv = document.createElement('span');
+                        timeDiv.className = 'timestamp';
+                        timeDiv.innerText = new Date(prevMsg.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+                        wrapper.appendChild(timeDiv);
+                    } else if (!shouldShowPrevTime && existingTimestamp) {
+                        existingTimestamp.remove();
+                    }
+                }
+
                 const newMsgs = currentMsgsArr.slice(currentCount);
-                newMsgs.forEach(m => {
+                newMsgs.forEach((m, offset) => {
+                    const actualIndex = currentCount + offset;
                     let showTime = true;
-                    if (prevTime && (new Date(m.timestamp) - new Date(prevTime)) < 600000) showTime = false;
-                    prevTime = m.timestamp;
+                    const next = currentMsgsArr[actualIndex + 1];
+                    if (next && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
+                        showTime = false;
+                    }
                     appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true, showTime);
                 });
             }
