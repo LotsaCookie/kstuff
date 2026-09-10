@@ -120,6 +120,12 @@
     "image": "https://tse3.mm.bing.net/th/id/OIP.LR4KzCF5uJVoHZd2qHMJ6QAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
+    "title": "Adventure Drivers",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/adventure-drivers.html"
+    "category": "Idle",
+    "image": ""
+  },
+  {
     "title": "Agar.io",
     "url": "${uv}https://agar.io",
     "category": "Multiplayer",
