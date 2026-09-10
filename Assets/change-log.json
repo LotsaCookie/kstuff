@@ -2,6 +2,7 @@
   "timestamp": "September 10th, 2026 | 🇺🇲 FREEDOM 🇺🇲 9/10/25",
   "changes": [
     "Encrypted chats, only the people in the conversation can see your messages",
-    "Fixed the chat to stop showing earlier messages"
+    "Fixed the chat to stop showing earlier messages",
+    "Settings Fixed"
   ]
 }
