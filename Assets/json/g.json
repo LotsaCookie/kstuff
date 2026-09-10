@@ -3982,6 +3982,12 @@
     "image": ""
   },
   {
+    "title": "Wrestle Bros",
+    "url":"${static}https://wrestlebros.io",
+    "category": "Action",
+    "image": ""
+  },
+  {
     "title": "Yandere Simulator",
     "url": "${truffled}/gamefile/yandere.html",
     "category": "Simulation",
