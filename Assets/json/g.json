@@ -3983,7 +3983,7 @@
   },
   {
     "title": "Wrestle Bros",
-    "url":"${static}https://wrestlebros.io",
+    "url":"https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/wrestle-bros.html",
     "category": "Action",
     "image": ""
   },
