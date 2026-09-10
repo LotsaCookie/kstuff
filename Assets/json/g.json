@@ -1975,7 +1975,7 @@
   },
   {
     "title": "Karate Bros",
-    "url": "${uv}https://karatebros.io/",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/karate-bros.html",
     "category": "Action",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoZIWSvfN6kZa5GEl5WuDsan1nk2ya-eAybg&s"
   },
