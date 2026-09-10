@@ -523,7 +523,9 @@
                 currentMsgsArr.forEach((m, index) => {
                     let showTime = true;
                     const next = currentMsgsArr[index + 1];
-                    if (next && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
+                    if (index === currentMsgsArr.length - 1) {
+                        showTime = true;
+                    } else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
                         showTime = false;
                     }
                     appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime);
@@ -538,19 +540,26 @@
                 const prevMsg = currentMsgsArr[prevIndex];
                 const newFirstAddedMsg = currentMsgsArr[currentCount];
 
-                const diff = new Date(newFirstAddedMsg.timestamp) - new Date(prevMsg.timestamp);
-                const shouldShowPrevTime = diff >= 600000;
+                let showPrevTime = true;
+                if (prevIndex === currentMsgsArr.length - 1) {
+                    showPrevTime = true;
+                } else {
+                    const nextOfPrev = currentMsgsArr[prevIndex + 1];
+                    if (nextOfPrev && nextOfPrev.sender === prevMsg.sender && (new Date(nextOfPrev.timestamp) - new Date(prevMsg.timestamp)) < 600000) {
+                        showPrevTime = false;
+                    }
+                }
 
                 const prevRow = rowDivs[prevIndex];
                 if (prevRow) {
                     const wrapper = prevRow.querySelector('.message-wrapper');
                     const existingTimestamp = wrapper.querySelector('.timestamp');
-                    if (shouldShowPrevTime && !existingTimestamp) {
+                    if (showPrevTime && !existingTimestamp) {
                         let timeDiv = document.createElement('span');
                         timeDiv.className = 'timestamp';
                         timeDiv.innerText = new Date(prevMsg.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
                         wrapper.appendChild(timeDiv);
-                    } else if (!shouldShowPrevTime && existingTimestamp) {
+                    } else if (!showPrevTime && existingTimestamp) {
                         existingTimestamp.remove();
                     }
                 }
@@ -560,7 +569,9 @@
                     const actualIndex = currentCount + offset;
                     let showTime = true;
                     const next = currentMsgsArr[actualIndex + 1];
-                    if (next && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
+                    if (actualIndex === currentMsgsArr.length - 1) {
+                        showTime = true;
+                    } else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
                         showTime = false;
                     }
                     appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true, showTime);
