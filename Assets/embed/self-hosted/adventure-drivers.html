@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+  <base href="https://cdn.jsdelivr.net/gh/AdventureDriversUnblocked/AdventureDriversUnblocked.github.io@main/">
+	<title>Adventure Drivers Unblocked</title>
+	<!--<link rel="manifest" href="manifest.json" />-->
+	<!--<link rel="shortcut icon" sizes="256x256" href="icon-256.png" />-->
+	<meta name="viewport" content="height=device-height, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="apple-mobile-web-app-capable" content="no" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<meta name="mobile-web-app-capable" content="no" />
+	<meta name="HandheldFriendly" content="true" />
+    <style>
+    	html, body {
+			margin-right: auto;
+			margin-left: auto;
+			margin-top: 0;
+			margin-bottom: 0;
+            padding: 0;
+			width: 100%
+			height: 100%;
+			max-height: 100%;
+			background: #FFFFFF;
+			color: #fff;
+			overflow: hidden;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		html {
+			display: block;
+		}
+		body {
+			display: block;
+			vertical-align: middle;
+		}
+		canvas {
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		#gamecanvas {
+			margin-right: auto;
+			margin-left: auto;
+			margin-top: 0;
+			margin-bottom: 0;
+			padding: 0;
+			width: 100%
+			height: 100%;
+			max-height: 100%;
+			display: block;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+    </style>
+
+	<!--
+	<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+	-->
+	<script>
+	window.famobi_gameID = "adventure-drivers";
+	window.famobi_gameJS = ['js/all.js',
+		function() {
+			Main.main();
+		}
+	];
+	(function (document, url, fgJS, firstJS) {
+		fgJS = document.createElement('script');
+		firstJS = document.getElementsByTagName('script')[0];
+		fgJS.src = url + encodeURIComponent(document.location.href);
+		firstJS.parentNode.insertBefore(fgJS, firstJS);
+	})(document, 'js/start.js?e=');
+	</script>
+</head>
+<body>
+	<canvas id="gamecanvas"></canvas>
+	<script src="js/analytics_ubg_v1_4.js"></script>
+	<script src="js/ubg235_client_v1_1.js"></script>
+</body>
+</html>
