@@ -180,6 +180,12 @@
     "image": ""
   },
   {
+    "title": "Angry Birds Showdown",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/angry-birds-showdown.html",
+    "category": "Puzzle",
+    "image": ""
+  },
+  {
     "title": "Animal Crossing Population: Growing!",
     "url": "${truffled}/games/slider/index.html",
     "category": "Simulation",
