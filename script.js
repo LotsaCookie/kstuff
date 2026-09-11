@@ -17,8 +17,7 @@ function initApp() {
 
     let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
     let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
-    let activeIframeLoadId = 0;
-    let sessionSettingsUpdated = false; // Tracks if the user saved settings manually during this session
+    let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
 
     pages.forEach(p => {
         p.style.opacity = p.classList.contains('active') ? '1' : '0';
@@ -142,7 +141,6 @@ function initApp() {
             if (data.type === 'auto-login' && syncInterval) clearInterval(syncInterval);
             const errEl = $('auth-error-msg');
             if (data.success) {
-                // If user saved settings during this session, upload to cloud. Otherwise, take cloud settings.
                 if (sessionSettingsUpdated && currentUser?.settings) {
                     data.payload.settings = currentUser.settings;
                     port.postMessage({ type: 'update-settings', username: data.payload.username, settings: currentUser.settings });
@@ -262,7 +260,7 @@ function initApp() {
         const p = { 
             theme: $('layout-theme-select')?.value, 
             navPos: $('layout-nav-select')?.value, 
-            navSize: $('layout-size-select')?.value, // FIXED: Now pulling from layout-size-select
+            navSize: $('layout-size-select')?.value,
             textVis: $('layout-text-select')?.value, 
             lastUpdated: Date.now() 
         };
@@ -274,15 +272,13 @@ function initApp() {
         setStorage('kstuff_user', JSON.stringify(currentUser));
         applyCloudSettings(p); 
         
-        // Flag that settings were updated during this session
         sessionSettingsUpdated = true;
 
-        // Push immediately if already connected
         if (currentUser.username && backendReady && backendPort) {
             backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: p });
         } 
         
-        btn.textContent = "Saved!"; // Changed from Saved Locally/Saved to Cloud
+        btn.textContent = "Saved!";
         const { background: oBg, color: oC } = btn.style; 
         btn.style.background = "#4CAF50"; 
         btn.style.color = "#fff";
@@ -409,7 +405,7 @@ function initApp() {
 
             toggleLoader(true);
             
-            const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+            const filtered = (grid.data || []).filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             grid.page = grid.page > totalPages ? 1 : grid.page;
             grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
@@ -466,7 +462,7 @@ function initApp() {
                     grid.pageEl.onclick = e => {
                         const btn = e.target.closest('.page-btn');
                         if (!btn) return;
-                        const f = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+                        const f = (grid.data || []).filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
                         const tp = Math.ceil(f.length / ITEMS_PER_PAGE) || 1;
                         const act = btn.dataset.action;
                         if (act === 'prev' && grid.page > 1) { grid.page--; renderGrid(type, true); }
@@ -504,7 +500,7 @@ function initApp() {
         const type = activePage.id;
         if (grids[type]) {
             const grid = grids[type];
-            const filtered = grid.data.filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
+            const filtered = (grid.data || []).filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
             const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
             if (e.key === 'ArrowLeft' && grid.page > 1) { e.preventDefault(); grid.page--; renderGrid(type, true); } 
             else if (e.key === 'ArrowRight' && grid.page < totalPages) { e.preventDefault(); grid.page++; renderGrid(type, true); }
@@ -637,16 +633,15 @@ function initApp() {
             if ($(iframeData.id)) $(iframeData.id).style.display = 'none';
             await loadIframePage(iframeData.id, iframeData.path); 
             if ($(iframeData.id)) $(iframeData.id).style.display = 'block';
+            toggleLoader(false);
         }
-
-        toggleLoader(false);
     };
 
     navBtns.forEach(btn => {
         const lDivs = btn.querySelectorAll('.label-data div');
         btn.dataset.tooltip = lDivs.length ? Array.from(lDivs).map(d => d.textContent).reverse().join('') : (btn.title || btn.dataset.target);
 
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             toggleTooltip(null, false);
             const tId = btn.dataset.target;
             if (tId === 'profile') return !currentUser ? authMod?.classList.add('active') : (updateAuthUI(), profMod?.classList.add('active'));
@@ -661,6 +656,9 @@ function initApp() {
             navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
             btn.classList.add('active'); 
             updateIndicator(btn);
+            
+            toggleLoader(true);
+            if (initPromise) await initPromise;
             
             loadContent(tId);
         });
@@ -738,7 +736,7 @@ function initApp() {
         return parsed.replace(/^http:\/\//i, 'https://'); 
     };
 
-    const proc = arr => arr.map(i => {
+    const proc = arr => (arr || []).map(i => {
         let p = { ...i };
         if (p.url?.includes('${truffled}') || !p.image || p.category === 'Truffled') {
             const m = gTruf.get(cleanGameTitle(p.title));
@@ -885,7 +883,7 @@ function initApp() {
     const fCfg = u => fetchWithProxy(u).catch(()=>[]).then(getWorkingConfig);
     const sDP = fetchWithProxy('Assets/json/mirrors/static.json').catch(()=>[]);
 
-    Promise.all([
+    initPromise = Promise.all([
         fetchReadingCornerRaw(), 
         fetchWithProxy('Assets/json/a.json').catch(()=>[]), 
         fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
@@ -893,7 +891,7 @@ function initApp() {
         sDP.then(getWorkingConfig), 
         fCfg('Assets/json/mirrors/uv.json'), 
         fCfg('Assets/json/mirrors/truffled.json'),
-        sDP.then(d => getWorkingConfig(d.map(i => ({ url: i.url, img: i.img, final: "" }))))
+        sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" }))))
     ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
         if (st) initBackendBridge(st);
         
@@ -908,9 +906,11 @@ function initApp() {
         gTruf.clear(); 
         tr?.games?.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
         
-        grids.readingcorner.data = proc(gResult.data); 
-        grids.sciencequiz.data = proc(a);
-        
+        grids.readingcorner.data = proc(gResult?.data || []); 
+        grids.sciencequiz.data = proc(a || []);
+    });
+
+    initPromise.then(async () => {
         let activePg = document.querySelector('.page.active');
         if (!activePg) {
             const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
@@ -924,7 +924,6 @@ function initApp() {
         
         if (activePg) await loadContent(activePg.id, true);
         else toggleLoader(false);
-
     }).catch(() => toggleLoader(false));
 }
 
