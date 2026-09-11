@@ -156,8 +156,8 @@
 
     <iframe id="backend-frame" style="display:none;"></iframe>
 
-    <script>
-        let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
+<script>
+let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
 let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
 let lastSidebarState = "";
 let lastRenderedChatId = null;
@@ -180,16 +180,27 @@ const isMediaURL = (str) => {
     return { type: 'none' };
 };
 
-// Helper: Remove duplicate messages based on sender, timestamp, and message content
 function deduplicateMessages(msgArray) {
     if (!Array.isArray(msgArray)) return [];
-    const seen = new Set();
     const result = [];
+
     for (const m of msgArray) {
         if (!m || !m.sender || !m.message) continue;
-        const key = `${m.sender.toLowerCase()}|${m.timestamp || ''}|${m.message}`;
-        if (!seen.has(key)) {
-            seen.add(key);
+
+        const currentSender = m.sender.toLowerCase();
+        const currentMsg = m.message;
+        const currentTime = new Date(m.timestamp).getTime();
+
+        const isDuplicate = result.some(existing => {
+            const sameSender = existing.sender.toLowerCase() === currentSender;
+            const sameText = existing.message === currentMsg;
+            if (!sameSender || !sameText) return false;
+
+            const existingTime = new Date(existing.timestamp).getTime();
+            return isNaN(currentTime) || isNaN(existingTime) || Math.abs(currentTime - existingTime) < 5000;
+        });
+
+        if (!isDuplicate) {
             result.push(m);
         }
     }
@@ -683,6 +694,6 @@ function populateUserDirectoryModal(users) {
         userContainer.appendChild(item);
     });
 }
-    </script>
+</script>
 </body>
 </html>
