@@ -2407,7 +2407,7 @@
   },
   {
     "title": "Mr Mine",
-    "url": "${uv}https://www.coolmathgames.com/0-mr-mine/play",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/mr-mine.html",
     "category": "Idle",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR95u4clv7-oekaMnIaKvhtZqeyab4YShwRkg&s"
   },
