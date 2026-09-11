@@ -2430,10 +2430,10 @@
     "image": "https://tse3.mm.bing.net/th/id/OIP.OZiB83fgWXpCjKpIl3W6gQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Nazi Zombies Portable",
-    "url": "${truffled}/gamefile/nzp.html",
+    "title": "Nazi Zombies: Portable",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/nazi-zombies-portable.html",
     "category": "FPS",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf51-6uDI2iCm8olmfHvvxYPSqDWXgHv72Zg&s"
+    "image": ""
   },
   {
     "title": "Needy Streamer Overload",
