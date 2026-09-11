@@ -606,6 +606,12 @@
     "image": ""
   },
   {
+    "title": "Cannon Basketball 2",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/cannon-basketball2.html",
+    "category": "Puzzle",
+    "image": ""
+  },
+  {
     "title": "Celeste",
     "url": "${truffled}/games/celeste/index.html",
     "category": "Platformer",
