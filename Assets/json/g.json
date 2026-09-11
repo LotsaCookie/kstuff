@@ -2389,7 +2389,7 @@
   },
   {
     "title": "Monkey Mart",
-    "url": "${frogiee}/stuff/selfhosted/monkey-mart",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/monkey-mart.html",
     "category": "Simulation",
     "image": "https://play-lh.googleusercontent.com/rWReIdyvDaYJPeOxn7hbC0b-96ixGpQKM_EndiQa3SUME8TtI_rNUcI4qsw5teK9mqk=w240-h480-rw"
   },
