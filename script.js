@@ -69,8 +69,13 @@ function initApp() {
             try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } 
             catch { cachedCommitHash = "main"; }
         }
-        return ["raw.githack.com", "cdn.jsdelivr.net/gh", "raw.githubusercontent.com", "cdn.statically.io/gh"]
-            .map(d => `https://${d}/lotsacookie/kstuff/${cachedCommitHash}/`).concat("");
+        return [
+            `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
+            `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`,
+            `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`,
+            `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`,
+            ""
+        ];
     }
 
     async function fetchWithProxy(path, asText = false) {
