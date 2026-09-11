@@ -600,6 +600,12 @@
     "image": "https://static.wikia.nocookie.net/callofduty/images/6/6c/COD_WWII_cover.JPG"
   },
   {
+    "title": "Cannon Basketball",
+    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/cannon-basketball.html",
+    "category": "Puzzle",
+    "image": ""
+  },
+  {
     "title": "Celeste",
     "url": "${truffled}/games/celeste/index.html",
     "category": "Platformer",
