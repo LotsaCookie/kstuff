@@ -746,10 +746,8 @@ async function initProxyBackend() {
             workingstaticurl = cleanUrl(workingConfig.url); 
             const proxyIframe = document.createElement('iframe');
             proxyIframe.style.display = 'none';
-            
             proxyIframe.onload = () => proxyReadyResolve(true);
             proxyIframe.onerror = () => proxyReadyResolve(false);
-            
             proxyIframe.src = `${workingstaticurl}/embed.html#https://example.com`;
             document.body.appendChild(proxyIframe);
         } else {
@@ -919,13 +917,6 @@ async function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
         return;
     }
 
-    const isProxyReady = await proxyReadyPromise;
-    
-    if (!isProxyReady || !workingstaticurl) {
-        console.error("Proxy is not ready or failed to connect. Aborting navigation.");
-        return; 
-    }
-
     currentUrl = targetUrl;
     mode = 'iframe';
     isNavigating = true;
@@ -938,6 +929,13 @@ async function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
 
     libraryHome.classList.add('hidden');
     studyIframe.classList.add('active');
+    studyIframe.src = 'about:blank';
+
+    const isProxyReady = await proxyReadyPromise;
+    if (!isProxyReady || !workingstaticurl) {
+        console.error("Proxy is not ready or failed to connect.");
+        return; 
+    }
 
     const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
     const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
