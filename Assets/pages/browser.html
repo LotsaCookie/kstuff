@@ -668,6 +668,11 @@ let cachedCommitHash = "";
 let workingstaticurl = "";
 let activePort = null;
 
+let proxyReadyResolve;
+const proxyReadyPromise = new Promise(resolve => {
+    proxyReadyResolve = resolve;
+});
+
 const cleanUrl = u => u ? u.replace(/\/+$/, '') : '';
 const trimSlash = u => u ? u.replace(/^\/+/, '') : '';
 
@@ -741,16 +746,22 @@ async function initProxyBackend() {
             workingstaticurl = cleanUrl(workingConfig.url); 
             const proxyIframe = document.createElement('iframe');
             proxyIframe.style.display = 'none';
+            
+            proxyIframe.onload = () => proxyReadyResolve(true);
+            proxyIframe.onerror = () => proxyReadyResolve(false);
+            
             proxyIframe.src = `${workingstaticurl}/embed.html#https://example.com`;
             document.body.appendChild(proxyIframe);
+        } else {
+            proxyReadyResolve(false);
         }
     } catch (e) {
         console.error("Could not initialize proxy backend:", e);
+        proxyReadyResolve(false);
     }
 }
 
 initProxyBackend();
-
 
 const defaultShortcuts = [
     ['emoH', 'kstuff://ho' + 'me', 'ph-house'],
@@ -899,13 +910,20 @@ function renderFlashcards() {
 }
 renderFlashcards();
 
-function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
+async function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
     if (!inputVal) return;
     const targetUrl = formatUrl(inputVal, true);
 
     if (targetUrl === 'kstuff://home') {
         showLibraryPage(isHistoryNav);
         return;
+    }
+
+    const isProxyReady = await proxyReadyPromise;
+    
+    if (!isProxyReady || !workingstaticurl) {
+        console.error("Proxy is not ready or failed to connect. Aborting navigation.");
+        return; 
     }
 
     currentUrl = targetUrl;
@@ -921,13 +939,9 @@ function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
     libraryHome.classList.add('hidden');
     studyIframe.classList.add('active');
 
-    if (workingstaticurl) {
-        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
-        const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
-        studyIframe.src = proxiedUrl;
-    } else {
-        studyIframe.src = targetUrl;
-    }
+    const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
+    const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
+    studyIframe.src = proxiedUrl;
 
     if (updateInput) {
         textbookInput.value = targetUrl;
