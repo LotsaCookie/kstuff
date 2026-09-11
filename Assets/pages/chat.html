@@ -158,569 +158,531 @@
 
     <script>
         let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
-        let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
-        let lastSidebarState = "";
-        let lastRenderedChatId = null;
-        let currentSearchQuery = "";
-        
-        let messageQueue = [];
-        let isSendingMessage = false;
-        let unreadChats = []; 
-        
-        const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
+let backendPort = null, activeConversations = [], userProfileMap = {}, cachedUsersList = [], lastMessageDataString = "";
+let lastSidebarState = "";
+let lastRenderedChatId = null;
+let currentSearchQuery = "";
 
-        const cleanUrl = url => url.replace(/\/+$/, '');
-        const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
-        
-        const isMediaURL = (str) => {
-            if (typeof str !== 'string') return { type: 'none' };
-            if (/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str)) return { type: 'image' };
-            if (/^https?:\/\/.*\.(mp3|wav|ogg|m4a)(\?.*)?$|^data:audio\//i.test(str)) return { type: 'audio' };
-            if (/^https?:\/\/.*\.(mp4|webm|ogg|mov)(\?.*)?$|^data:video\//i.test(str)) return { type: 'video' };
-            return { type: 'none' };
-        };
+let messageQueue = [];
+let isSendingMessage = false;
+let unreadChats = []; 
 
-        function loadLocalData() {
-            try {
-                const unreadData = localStorage.getItem('chat_unread');
-                if (unreadData) unreadChats = JSON.parse(unreadData);
+const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 
-                const localUsers = JSON.parse(localStorage.getItem('chat_users_list'));
-                if (localUsers && Array.isArray(localUsers)) {
-                    cachedUsersList = localUsers;
-                    cachedUsersList.forEach(u => {
-                        if (u && u.username) {
-                            userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
-                        }
-                    });
-                }
-                
-                if (currentUser) {
-                    const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
-                    if (localConvs && Array.isArray(localConvs)) {
-                        activeConversations = localConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
-                        renderSidebarList();
-                    }
-                }
-            } catch (e) {}
+const cleanUrl = url => url.replace(/\/+$/, '');
+const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
+
+const isMediaURL = (str) => {
+    if (typeof str !== 'string') return { type: 'none' };
+    if (/^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$|^data:image\//i.test(str)) return { type: 'image' };
+    if (/^https?:\/\/.*\.(mp3|wav|ogg|m4a)(\?.*)?$|^data:audio\//i.test(str)) return { type: 'audio' };
+    if (/^https?:\/\/.*\.(mp4|webm|ogg|mov)(\?.*)?$|^data:video\//i.test(str)) return { type: 'video' };
+    return { type: 'none' };
+};
+
+// Helper: Remove duplicate messages based on sender, timestamp, and message content
+function deduplicateMessages(msgArray) {
+    if (!Array.isArray(msgArray)) return [];
+    const seen = new Set();
+    const result = [];
+    for (const m of msgArray) {
+        if (!m || !m.sender || !m.message) continue;
+        const key = `${m.sender.toLowerCase()}|${m.timestamp || ''}|${m.message}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            result.push(m);
         }
+    }
+    return result;
+}
 
-        async function getProxyList() {
-            if (!cachedCommitHash) {
-                try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } 
-                catch { cachedCommitHash = "main"; }
+function loadLocalData() {
+    try {
+        const unreadData = localStorage.getItem('chat_unread');
+        if (unreadData) unreadChats = JSON.parse(unreadData);
+
+        const localUsers = JSON.parse(localStorage.getItem('chat_users_list'));
+        if (localUsers && Array.isArray(localUsers)) {
+            cachedUsersList = localUsers;
+            cachedUsersList.forEach(u => {
+                if (u && u.username) {
+                    userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
+                }
+            });
+        }
+        
+        if (currentUser) {
+            const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
+            if (localConvs && Array.isArray(localConvs)) {
+                activeConversations = localConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
+                renderSidebarList();
             }
-            return [`https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`, `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`, ""];
         }
+    } catch (e) {}
+}
 
-        async function getWorkingConfig(table) {
-            if (!table?.length) return null;
-            for (let i = 0; i < table.length; i += 5) {
-                const chunk = table.slice(i, i + 5);
-                const winner = await new Promise(resolve => {
-                    let done = false, fail = 0, imgs = [];
-                    const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-                    const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 5000);
-                    chunk.forEach(entry => {
-                        const img = new Image(); imgs.push(img);
-                        const testUrl = entry.url + entry.img;
-                        const handle = ok => {
-                            if (done) return;
-                            if (ok || ++fail === chunk.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? entry : null); }
-                        };
-                        img.onload = () => handle(img.naturalWidth > 0);
-                        img.onerror = () => handle(false);
-                        img.src = `${testUrl}${testUrl.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
-                    });
-                });
-                if (winner) return winner;
-            }
-            return table[0];
-        }
+async function getProxyList() {
+    if (!cachedCommitHash) {
+        try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } 
+        catch { cachedCommitHash = "main"; }
+    }
+    return [`https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`, `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`, ""];
+}
 
-        async function initBackendIframe() {
-            try {
-                const proxies = await getProxyList();
-                let staticJsonData = [];
-                for (let proxyUrl of proxies) {
-                    try {
-                        const res = await fetch(proxyUrl ? `${cleanUrl(proxyUrl)}Assets/json/mirrors/static.json` : "Assets/json/mirrors/static.json");
-                        if (res.ok) { staticJsonData = await res.json(); break; }
-                    } catch(e) {}
-                }
-                const workingProxy = await getWorkingConfig(staticJsonData);
-                const proxyBaseUrl = cleanUrl(workingProxy?.url || "https://raw.githack.com/lotsacookie/kstuff/main");
-                const finalPath = workingProxy?.final || "/embed.html#";
-                
-                const iframe = document.getElementById('backend-frame');
-                iframe.onload = () => {
-                    const channel = new MessageChannel();
-                    backendPort = channel.port1;
-                    backendPort.onmessage = e => handleBackendMessage(e.data);
-                    iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
+async function getWorkingConfig(table) {
+    if (!table?.length) return null;
+    for (let i = 0; i < table.length; i += 5) {
+        const chunk = table.slice(i, i + 5);
+        const winner = await new Promise(resolve => {
+            let done = false, fail = 0, imgs = [];
+            const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
+            const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 5000);
+            chunk.forEach(entry => {
+                const img = new Image(); imgs.push(img);
+                const testUrl = entry.url + entry.img;
+                const handle = ok => {
+                    if (done) return;
+                    if (ok || ++fail === chunk.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? entry : null); }
                 };
-                iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?fixedracecondition`;
-            } catch (err) {}
-        }
-        initBackendIframe();
+                img.onload = () => handle(img.naturalWidth > 0);
+                img.onerror = () => handle(false);
+                img.src = `${testUrl}${testUrl.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
+            });
+        });
+        if (winner) return winner;
+    }
+    return table[0];
+}
 
-        function xorEncode(str, key = 42) {
-            if (!str || typeof str !== 'string') return '';
-            let hexStr = '';
-            for (let i = 0; i < str.length; i++) {
-                let hex = (str.charCodeAt(i) ^ key).toString(16);
-                hexStr += (hex.length === 1 ? '0' + hex : hex);
-            }
-            return hexStr;
+async function initBackendIframe() {
+    try {
+        const proxies = await getProxyList();
+        let staticJsonData = [];
+        for (let proxyUrl of proxies) {
+            try {
+                const res = await fetch(proxyUrl ? `${cleanUrl(proxyUrl)}Assets/json/mirrors/static.json` : "Assets/json/mirrors/static.json");
+                if (res.ok) { staticJsonData = await res.json(); break; }
+            } catch(e) {}
         }
+        const workingProxy = await getWorkingConfig(staticJsonData);
+        const proxyBaseUrl = cleanUrl(workingProxy?.url || "https://raw.githack.com/lotsacookie/kstuff/main");
+        const finalPath = workingProxy?.final || "/embed.html#";
+        
+        const iframe = document.getElementById('backend-frame');
+        iframe.onload = () => {
+            const channel = new MessageChannel();
+            backendPort = channel.port1;
+            backendPort.onmessage = e => handleBackendMessage(e.data);
+            iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
+        };
+        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?fixedracecondition`;
+    } catch (err) {}
+}
+initBackendIframe();
 
-        function xorDecode(hexStr, key = 42) {
-            if (!hexStr || typeof hexStr !== 'string') return '';
-            if (!/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) return hexStr; 
-            
-            let str = '';
-            for (let i = 0; i < hexStr.length; i += 2) {
-                str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
-            }
-            return str;
-        }
+function xorEncode(str, key = 42) {
+    if (!str || typeof str !== 'string') return '';
+    let hexStr = '';
+    for (let i = 0; i < str.length; i++) {
+        let hex = (str.charCodeAt(i) ^ key).toString(16);
+        hexStr += (hex.length === 1 ? '0' + hex : hex);
+    }
+    return hexStr;
+}
 
-        window.addEventListener("message", e => {
-            if (e.data?.type === 'set_user' && e.data.username) {
-                currentUser = e.data.username.trim().toLowerCase();
-                loadLocalData(); 
-                if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
+function xorDecode(hexStr, key = 42) {
+    if (!hexStr || typeof hexStr !== 'string') return '';
+    if (!/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) return hexStr; 
+    
+    let str = '';
+    for (let i = 0; i < hexStr.length; i += 2) {
+        str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
+    }
+    return str;
+}
+
+window.addEventListener("message", e => {
+    if (e.data?.type === 'set_user' && e.data.username) {
+        currentUser = e.data.username.trim().toLowerCase();
+        loadLocalData(); 
+        if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
+    }
+});
+
+function processMessageQueue() {
+    if (isSendingMessage || messageQueue.length === 0 || !backendReady) return;
+    isSendingMessage = true;
+    backendPort.postMessage(messageQueue.shift());
+}
+
+function cleanupDeletedChat(deletedRawId) {
+    localStorage.removeItem(`chat_msgs_${deletedRawId}`);
+    if (unreadChats.includes(deletedRawId)) {
+        unreadChats = unreadChats.filter(id => id !== deletedRawId);
+        localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+    }
+
+    if (currentActiveRawId === deletedRawId) {
+        currentActiveRawId = null;
+        lastRenderedChatId = null;
+        lastMessageDataString = "";
+        document.getElementById('header-username').innerText = 'Select a chat';
+        const headerAvatar = document.getElementById('header-avatar-icon');
+        headerAvatar.src = '';
+        headerAvatar.style.display = 'none';
+        document.getElementById('delete-chat-btn').style.display = 'none';
+        document.getElementById('chat-container').innerHTML = '';
+        document.getElementById('user-input').disabled = true;
+        document.getElementById('send-btn').disabled = true;
+    }
+}
+
+function handleBackendMessage(data) {
+    if (data.type === 'ready') {
+        backendReady = true;
+        backendPort.postMessage({ type: 'get-users' });
+        if (currentUser) backendPort.postMessage({ type: 'get-convs' });
+        processMessageQueue(); 
+    } else if (data.type === 'get-users' && data.success) {
+        const safePayload = Array.isArray(data.payload) ? data.payload : [];
+        localStorage.setItem('chat_users_list', JSON.stringify(safePayload));
+        cachedUsersList = safePayload;
+        cachedUsersList.forEach(u => {
+            if (u && u.username) {
+                userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
             }
         });
-
-        function processMessageQueue() {
-            if (isSendingMessage || messageQueue.length === 0 || !backendReady) return;
-            isSendingMessage = true;
-            backendPort.postMessage(messageQueue.shift());
+        renderSidebarList();
+        if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
+    } else if (data.type === 'get-convs' && data.success) {
+        const safeConvs = Array.isArray(data.payload) ? data.payload : [];
+        localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
+        activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
+        
+        if (currentActiveRawId && !activeConversations.includes(currentActiveRawId)) {
+            cleanupDeletedChat(currentActiveRawId);
         }
 
-        function cleanupDeletedChat(deletedRawId) {
-            localStorage.removeItem(`chat_msgs_${deletedRawId}`);
-            if (unreadChats.includes(deletedRawId)) {
-                unreadChats = unreadChats.filter(id => id !== deletedRawId);
-                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-            }
-
-            if (currentActiveRawId === deletedRawId) {
-                currentActiveRawId = null;
-                lastRenderedChatId = null;
-                lastMessageDataString = "";
-                document.getElementById('header-username').innerText = 'Select a chat';
-                const headerAvatar = document.getElementById('header-avatar-icon');
-                headerAvatar.src = '';
-                headerAvatar.style.display = 'none';
-                document.getElementById('delete-chat-btn').style.display = 'none';
-                document.getElementById('chat-container').innerHTML = '';
-                document.getElementById('user-input').disabled = true;
-                document.getElementById('send-btn').disabled = true;
-            }
+        renderSidebarList();
+    } else if (data.type === 'create-conv' && data.success) {
+        backendPort.postMessage({ type: 'get-convs' });
+        if (currentActiveRawId) fetchMessages(currentActiveRawId);
+    } else if (data.type === 'delete-convs' && data.success) {
+        const deletedRawId = xorDecode(data.encodedKey);
+        cleanupDeletedChat(deletedRawId);
+        backendPort.postMessage({ type: 'get-convs' });
+    } else if (data.type === 'get-messages') {
+        document.getElementById('section-loader').classList.add('hidden');
+        
+        let chatId = data.id; 
+        if (!chatId && data.payload && data.payload.length > 0) {
+            const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
+            if (peerMsg) chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
         }
+        if (!chatId) chatId = currentActiveRawId; 
+        if (!chatId) return;
 
-        function handleBackendMessage(data) {
-            if (data.type === 'ready') {
-                backendReady = true;
-                backendPort.postMessage({ type: 'get-users' });
-                if (currentUser) backendPort.postMessage({ type: 'get-convs' });
-                processMessageQueue(); 
-            } else if (data.type === 'get-users' && data.success) {
-                const safePayload = Array.isArray(data.payload) ? data.payload : [];
-                localStorage.setItem('chat_users_list', JSON.stringify(safePayload));
-                cachedUsersList = safePayload;
-                cachedUsersList.forEach(u => {
-                    if (u && u.username) {
-                        userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar;
-                    }
-                });
-                renderSidebarList();
-                if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
-            } else if (data.type === 'get-convs' && data.success) {
-                const safeConvs = Array.isArray(data.payload) ? data.payload : [];
-                localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
-                activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
-                
-                if (currentActiveRawId && !activeConversations.includes(currentActiveRawId)) {
-                    cleanupDeletedChat(currentActiveRawId);
-                }
-
-                renderSidebarList();
-            } else if (data.type === 'create-conv' && data.success) {
-                backendPort.postMessage({ type: 'get-convs' });
-                if (currentActiveRawId) fetchMessages(currentActiveRawId);
-            } else if (data.type === 'delete-convs' && data.success) {
-                const deletedRawId = xorDecode(data.encodedKey);
-                cleanupDeletedChat(deletedRawId);
-                backendPort.postMessage({ type: 'get-convs' });
-            } else if (data.type === 'get-messages') {
-                document.getElementById('section-loader').classList.add('hidden');
-                
-                let chatId = data.id; 
-                if (!chatId && data.payload && data.payload.length > 0) {
-                    const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
-                    if (peerMsg) chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
-                }
-                if (!chatId) chatId = currentActiveRawId; 
-                if (!chatId) return;
-
-                if (data.success) {
-                    const remoteMessages = data.payload || [];
-                    let cached = [];
-                    try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
-                    
-                    let shouldUpdate = false;
-                    if (messageQueue.length === 0 && !isSendingMessage) {
-                        shouldUpdate = true;
-                    } else if (remoteMessages.length > cached.length) {
-                        shouldUpdate = true;
-                    }
-
-                    if (shouldUpdate) {
-                        localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(remoteMessages));
-                        if (chatId === currentActiveRawId) renderMessages(remoteMessages, chatId);
-                    }
-                } else {
-                    if (chatId === currentActiveRawId) renderMessages([], chatId);
-                }
-            } else if (data.type === 'send-message' && data.success) {
-                isSendingMessage = false; 
-                processMessageQueue();    
-                fetchMessages(currentActiveRawId);
-                backendPort.postMessage({ type: 'get-convs' });
-            }
-        }
-
-        function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
-            currentActiveRawId = rawId;
-            document.getElementById('header-username').innerText = peerName;
-            
-            let headerAvatar = document.getElementById('header-avatar-icon');
-            headerAvatar.src = peerAvatar;
-            headerAvatar.style.display = 'block';
-
-            document.getElementById('delete-chat-btn').style.display = 'block';
-            document.getElementById('user-input').disabled = false;
-            document.getElementById('send-btn').disabled = false;
-            
-            const chatContainer = document.getElementById('chat-container');
-
-            if (unreadChats.includes(rawId)) {
-                unreadChats = unreadChats.filter(id => id !== rawId);
-                localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
-                renderSidebarList(); 
-            } else {
-                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-                if (chatItemEl) chatItemEl.classList.add('active');
-            }
-
-            lastRenderedChatId = rawId;
-            lastMessageDataString = ""; 
-            chatContainer.innerHTML = '';
-            
-            chatContainer.classList.remove('container-fade');
-            void chatContainer.offsetWidth;
-            chatContainer.classList.add('container-fade');
-
-            try {
-                const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
-                if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
-                else document.getElementById('section-loader').classList.remove('hidden');
-            } catch (e) {
-                document.getElementById('section-loader').classList.remove('hidden');
-            }
-
-            fetchMessages(rawId);
-        }
-
-        function renderSidebarList() {
-            const chatList = document.getElementById('chat-list');
-            if (!currentUser) {
-                chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div>';
-                return;
-            }
-            
-            const myConvs = activeConversations.filter(rawId => {
-                if (!rawId) return false;
-                return rawId.toLowerCase().split('-').includes(currentUser);
-            });
-            
-            const currentState = JSON.stringify({ myConvs, unreadChats, currentActiveRawId });
-            if (currentState === lastSidebarState) return;
-            lastSidebarState = currentState;
-
-            chatList.innerHTML = '';
-            if (myConvs.length === 0) {
-                chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
-                return;
-            }
-            
-            myConvs.forEach(rawId => {
-                let parts = rawId.split('-');
-                let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
-                let peerAvatar = userProfileMap[peer.toLowerCase()] || fallbackAvatar;
-                let isUnread = unreadChats.includes(rawId);
-
-                let item = document.createElement('div');
-                item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
-                
-                item.innerHTML = `
-                    <div class="avatar-wrapper">
-                        <img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
-                        <div class="unread-indicator"></div>
-                    </div>
-                    <div class="chat-info">
-                        <span class="chat-title">${escapeHtml(peer)}</span>
-                        <span class="chat-preview">Open chat</span>
-                    </div>`;
-                    
-                item.onclick = () => openChat(rawId, peer, peerAvatar, item);
-                chatList.appendChild(item);
-            });
-        }
-
-        function fetchMessages(rawId) {
-            if (backendPort && rawId) {
-                backendPort.postMessage({ type: 'get-messages', id: rawId });
-            }
-        }
-
-        function renderMessages(messages, chatId) {
-            if (chatId !== currentActiveRawId) return;
-
-            document.getElementById('section-loader').classList.add('hidden');
-            const container = document.getElementById('chat-container');
-
-            if (chatId !== lastRenderedChatId) {
-                lastRenderedChatId = chatId;
-                lastMessageDataString = "";
-                container.innerHTML = '';
-            }
-
-            const currentMsgsArr = Array.isArray(messages) ? messages : [];
-            const newMessageString = JSON.stringify(currentMsgsArr);
-
-            if (newMessageString === lastMessageDataString) return;
-
-            const rowDivs = container.querySelectorAll('.message-row');
-            const currentCount = rowDivs.length;
-
-            if (currentMsgsArr.length === 0) {
-                lastMessageDataString = newMessageString;
-                container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
-                return;
-            }
-
-            if (container.children.length === 1 && container.innerText.includes("No messages sent yet")) {
-                container.innerHTML = '';
-            }
-
-            if (currentCount === 0 || currentMsgsArr.length < currentCount) {
-                lastMessageDataString = newMessageString;
-                container.innerHTML = '';
-                currentMsgsArr.forEach((m, index) => {
-                    let showTime = true;
-                    const next = currentMsgsArr[index + 1];
-                    if (index === currentMsgsArr.length - 1) {
-                        showTime = true;
-                    } else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
-                        showTime = false;
-                    }
-                    appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime);
-                });
-                return;
-            }
-
-            if (currentMsgsArr.length > currentCount) {
-                lastMessageDataString = newMessageString;
-
-                const prevIndex = currentCount - 1;
-                const prevMsg = currentMsgsArr[prevIndex];
-                const newFirstAddedMsg = currentMsgsArr[currentCount];
-
-                let showPrevTime = true;
-                if (prevIndex === currentMsgsArr.length - 1) {
-                    showPrevTime = true;
-                } else {
-                    const nextOfPrev = currentMsgsArr[prevIndex + 1];
-                    if (nextOfPrev && nextOfPrev.sender === prevMsg.sender && (new Date(nextOfPrev.timestamp) - new Date(prevMsg.timestamp)) < 600000) {
-                        showPrevTime = false;
-                    }
-                }
-
-                const prevRow = rowDivs[prevIndex];
-                if (prevRow) {
-                    const wrapper = prevRow.querySelector('.message-wrapper');
-                    const existingTimestamp = wrapper.querySelector('.timestamp');
-                    if (showPrevTime && !existingTimestamp) {
-                        let timeDiv = document.createElement('span');
-                        timeDiv.className = 'timestamp';
-                        timeDiv.innerText = new Date(prevMsg.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-                        wrapper.appendChild(timeDiv);
-                    } else if (!showPrevTime && existingTimestamp) {
-                        existingTimestamp.remove();
-                    }
-                }
-
-                const newMsgs = currentMsgsArr.slice(currentCount);
-                newMsgs.forEach((m, offset) => {
-                    const actualIndex = currentCount + offset;
-                    let showTime = true;
-                    const next = currentMsgsArr[actualIndex + 1];
-                    if (actualIndex === currentMsgsArr.length - 1) {
-                        showTime = true;
-                    } else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
-                        showTime = false;
-                    }
-                    appendSingleMessageToDOM(m.sender, m.message, m.timestamp, true, showTime);
-                });
-            }
-        }
-
-        function appendSingleMessageToDOM(sender, text, timestamp, animate = false, showTimestamp = true) {
-            const container = document.getElementById('chat-container');
-            
-            let isMe = sender.toLowerCase() === currentUser;
-            let rowDiv = document.createElement('div');
-            rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'} ${animate ? 'slide-in' : ''}`;
-
-            let avatarImg = document.createElement('img');
-            avatarImg.className = 'msg-avatar';
-            avatarImg.src = userProfileMap[sender.toLowerCase()] || fallbackAvatar;
-            avatarImg.onerror = () => { avatarImg.src = fallbackAvatar; };
-
-            let msgWrapper = document.createElement('div');
-            msgWrapper.className = 'message-wrapper';
-
-            let msgDiv = document.createElement('div');
-            msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
-            
-            let decodedText = xorDecode(text); 
-            let safeText = escapeHtml(decodedText);
-            let mediaType = isMediaURL(decodedText).type;
-
-            if (mediaType === 'image') {
-                msgDiv.innerHTML = `<img src="${safeText}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">`;
-            } else if (mediaType === 'video') {
-                msgDiv.innerHTML = `<video controls src="${safeText}"></video>`;
-            } else if (mediaType === 'audio') {
-                msgDiv.innerHTML = `<audio controls src="${safeText}"></audio>`;
-            } else {
-                msgDiv.innerHTML = safeText;
-            }
-
-            msgWrapper.appendChild(msgDiv);
-
-            if (timestamp && showTimestamp) {
-                let timeDiv = document.createElement('span');
-                timeDiv.className = 'timestamp';
-                timeDiv.innerText = new Date(timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-                msgWrapper.appendChild(timeDiv);
-            }
-
-            rowDiv.appendChild(avatarImg);
-            rowDiv.appendChild(msgWrapper);
-            container.appendChild(rowDiv);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        setInterval(() => {
-            if (backendReady && currentUser) {
-                backendPort.postMessage({ type: 'get-convs' });
-                if (currentActiveRawId) fetchMessages(currentActiveRawId);
-            }
-        }, 1000);
-
-        function sendMessage() {
-            let input = document.getElementById('user-input');
-            let text = input.value.trim();
-            if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
-            input.value = '';
-            let currentTimestamp = new Date().toISOString();
-            
-            let encodedText = xorEncode(text);
-
+        if (data.success) {
+            const remoteMessages = deduplicateMessages(data.payload || []);
             let cached = [];
-            try {
-                cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
-            } catch(e) {}
-
-            const newMsgObj = { sender: currentUser, message: encodedText, timestamp: currentTimestamp };
-            cached.push(newMsgObj);
+            try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
             
-            localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(cached));
-            renderMessages(cached, currentActiveRawId);
+            // Deduplicate combined cache and remote payload
+            const combined = deduplicateMessages([...cached, ...remoteMessages])
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-            messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: encodedText, timestamp: currentTimestamp });
-            processMessageQueue();
+            localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(combined));
+            if (chatId === currentActiveRawId) renderMessages(combined, chatId);
+        } else {
+            if (chatId === currentActiveRawId) {
+                let cached = [];
+                try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
+                renderMessages(deduplicateMessages(cached), chatId);
+            }
         }
+    } else if (data.type === 'send-message' && data.success) {
+        isSendingMessage = false; 
+        processMessageQueue();    
+        fetchMessages(currentActiveRawId);
+        backendPort.postMessage({ type: 'get-convs' });
+    }
+}
+
+function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
+    currentActiveRawId = rawId;
+    document.getElementById('header-username').innerText = peerName;
+    
+    let headerAvatar = document.getElementById('header-avatar-icon');
+    headerAvatar.src = peerAvatar;
+    headerAvatar.style.display = 'block';
+
+    document.getElementById('delete-chat-btn').style.display = 'block';
+    document.getElementById('user-input').disabled = false;
+    document.getElementById('send-btn').disabled = false;
+    
+    const chatContainer = document.getElementById('chat-container');
+
+    if (unreadChats.includes(rawId)) {
+        unreadChats = unreadChats.filter(id => id !== rawId);
+        localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+        renderSidebarList(); 
+    } else {
+        document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+        if (chatItemEl) chatItemEl.classList.add('active');
+    }
+
+    lastRenderedChatId = rawId;
+    lastMessageDataString = ""; 
+    chatContainer.innerHTML = '';
+    
+    chatContainer.classList.remove('container-fade');
+    void chatContainer.offsetWidth;
+    chatContainer.classList.add('container-fade');
+
+    try {
+        const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
+        if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
+        else document.getElementById('section-loader').classList.remove('hidden');
+    } catch (e) {
+        document.getElementById('section-loader').classList.remove('hidden');
+    }
+
+    fetchMessages(rawId);
+}
+
+function renderSidebarList() {
+    const chatList = document.getElementById('chat-list');
+    if (!currentUser) {
+        chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div>';
+        return;
+    }
+    
+    const myConvs = activeConversations.filter(rawId => {
+        if (!rawId) return false;
+        return rawId.toLowerCase().split('-').includes(currentUser);
+    });
+    
+    const currentState = JSON.stringify({ myConvs, unreadChats, currentActiveRawId });
+    if (currentState === lastSidebarState) return;
+    lastSidebarState = currentState;
+
+    chatList.innerHTML = '';
+    if (myConvs.length === 0) {
+        chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
+        return;
+    }
+    
+    myConvs.forEach(rawId => {
+        let parts = rawId.split('-');
+        let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
+        let peerAvatar = userProfileMap[peer.toLowerCase()] || fallbackAvatar;
+        let isUnread = unreadChats.includes(rawId);
+
+        let item = document.createElement('div');
+        item.className = `chat-item ${currentActiveRawId === rawId ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
         
-        document.getElementById('send-btn').onclick = sendMessage;
-        document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
+        item.innerHTML = `
+            <div class="avatar-wrapper">
+                <img class="chat-avatar" src="${escapeHtml(peerAvatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
+                <div class="unread-indicator"></div>
+            </div>
+            <div class="chat-info">
+                <span class="chat-title">${escapeHtml(peer)}</span>
+                <span class="chat-preview">Open chat</span>
+            </div>`;
+            
+        item.onclick = () => openChat(rawId, peer, peerAvatar, item);
+        chatList.appendChild(item);
+    });
+}
 
-        document.getElementById('delete-chat-btn').onclick = () => {
-            if (!currentActiveRawId || !backendPort) return;
-            if (confirm("Are you sure you want to delete this conversation? This will delete all messages permanently.")) {
-                backendPort.postMessage({ type: 'delete-convs', id: currentActiveRawId });
-            }
-        };
+function fetchMessages(rawId) {
+    if (backendPort && rawId) {
+        backendPort.postMessage({ type: 'get-messages', id: rawId });
+    }
+}
 
-        const modal = document.getElementById('modal-overlay');
-        const userContainer = document.getElementById('user-list-container');
-        const searchInput = document.getElementById('user-search-input');
-        
-        document.getElementById('new-chat-btn').onclick = () => {
-            if (!currentUser) return alert("Waiting for username authorization...");
-            currentSearchQuery = "";
-            searchInput.value = "";
-            modal.classList.add('active');
-            if (cachedUsersList.length > 0) populateUserDirectoryModal(cachedUsersList);
-            else {
-                userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
-                backendPort.postMessage({ type: 'get-users' });
-            }
-        };
+function renderMessages(messages, chatId) {
+    if (chatId !== currentActiveRawId) return;
 
-        document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
+    document.getElementById('section-loader').classList.add('hidden');
+    const container = document.getElementById('chat-container');
 
-        searchInput.oninput = (e) => {
-            currentSearchQuery = e.target.value.toLowerCase().trim();
-            populateUserDirectoryModal(cachedUsersList);
-        };
-        
-        function populateUserDirectoryModal(users) {
-            userContainer.innerHTML = '';
-            const filteredUsers = (users || []).filter(u => {
-                if (!u || !u.username) return false;
-                if (u.username.toLowerCase() === currentUser) return false;
-                if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) return false;
-                return true;
-            });
+    const cleanMsgs = deduplicateMessages(messages)
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-            if (filteredUsers.length === 0) {
-                userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
-                return;
-            }
+    if (chatId !== lastRenderedChatId) {
+        lastRenderedChatId = chatId;
+        lastMessageDataString = "";
+        container.innerHTML = '';
+    }
 
-            filteredUsers.forEach(u => {
-                let item = document.createElement('div');
-                item.className = 'user-list-item';
-                let avatar = u.profilePicture || fallbackAvatar;
-                item.innerHTML = `<img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
-                    <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span><span class="user-list-desc">${escapeHtml(u.description || "No bio provided.")}</span></div>
-                    <button class="modal-btn primary">Chat</button>`;
-                item.querySelector('button').onclick = () => {
-                    modal.classList.remove('active');
-                    let rawId = [currentUser, u.username.toLowerCase()].sort().join('-');
-                    backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: u.username.toLowerCase() });
-                    openChat(rawId, u.username, avatar);
-                    backendPort.postMessage({ type: 'get-convs' });
-                };
-                userContainer.appendChild(item);
-            });
+    const newMessageString = JSON.stringify(cleanMsgs);
+    if (newMessageString === lastMessageDataString) return;
+
+    lastMessageDataString = newMessageString;
+    container.innerHTML = '';
+
+    if (cleanMsgs.length === 0) {
+        container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
+        return;
+    }
+
+    cleanMsgs.forEach((m, index) => {
+        let showTime = true;
+        const next = cleanMsgs[index + 1];
+        if (index === cleanMsgs.length - 1) {
+            showTime = true;
+        } else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) {
+            showTime = false;
         }
+        appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime);
+    });
+}
+
+function appendSingleMessageToDOM(sender, text, timestamp, animate = false, showTimestamp = true) {
+    const container = document.getElementById('chat-container');
+    
+    let isMe = sender.toLowerCase() === currentUser;
+    let rowDiv = document.createElement('div');
+    rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'} ${animate ? 'slide-in' : ''}`;
+
+    let avatarImg = document.createElement('img');
+    avatarImg.className = 'msg-avatar';
+    avatarImg.src = userProfileMap[sender.toLowerCase()] || fallbackAvatar;
+    avatarImg.onerror = () => { avatarImg.src = fallbackAvatar; };
+
+    let msgWrapper = document.createElement('div');
+    msgWrapper.className = 'message-wrapper';
+
+    let msgDiv = document.createElement('div');
+    msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
+    
+    let decodedText = xorDecode(text); 
+    let safeText = escapeHtml(decodedText);
+    let mediaType = isMediaURL(decodedText).type;
+
+    if (mediaType === 'image') {
+        msgDiv.innerHTML = `<img src="${safeText}" alt="Attached image" onerror="this.outerHTML='[Invalid Image Link]'">`;
+    } else if (mediaType === 'video') {
+        msgDiv.innerHTML = `<video controls src="${safeText}"></video>`;
+    } else if (mediaType === 'audio') {
+        msgDiv.innerHTML = `<audio controls src="${safeText}"></audio>`;
+    } else {
+        msgDiv.innerHTML = safeText;
+    }
+
+    msgWrapper.appendChild(msgDiv);
+
+    if (timestamp && showTimestamp) {
+        let timeDiv = document.createElement('span');
+        timeDiv.className = 'timestamp';
+        timeDiv.innerText = new Date(timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+        msgWrapper.appendChild(timeDiv);
+    }
+
+    rowDiv.appendChild(avatarImg);
+    rowDiv.appendChild(msgWrapper);
+    container.appendChild(rowDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+setInterval(() => {
+    if (backendReady && currentUser) {
+        backendPort.postMessage({ type: 'get-convs' });
+        if (currentActiveRawId) fetchMessages(currentActiveRawId);
+    }
+}, 1000);
+
+function sendMessage() {
+    let input = document.getElementById('user-input');
+    let text = input.value.trim();
+    if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
+    input.value = '';
+    let currentTimestamp = new Date().toISOString();
+    
+    let encodedText = xorEncode(text);
+
+    let cached = [];
+    try {
+        cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || [];
+    } catch(e) {}
+
+    const newMsgObj = { sender: currentUser, message: encodedText, timestamp: currentTimestamp };
+    cached.push(newMsgObj);
+    
+    const uniqueCached = deduplicateMessages(cached);
+    localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(uniqueCached));
+    renderMessages(uniqueCached, currentActiveRawId);
+
+    messageQueue.push({ type: 'send-message', id: currentActiveRawId, sender: currentUser, message: encodedText, timestamp: currentTimestamp });
+    processMessageQueue();
+}
+
+document.getElementById('send-btn').onclick = sendMessage;
+document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
+
+document.getElementById('delete-chat-btn').onclick = () => {
+    if (!currentActiveRawId || !backendPort) return;
+    if (confirm("Are you sure you want to delete this conversation? This will delete all messages permanently.")) {
+        backendPort.postMessage({ type: 'delete-convs', id: currentActiveRawId });
+    }
+};
+
+const modal = document.getElementById('modal-overlay');
+const userContainer = document.getElementById('user-list-container');
+const searchInput = document.getElementById('user-search-input');
+
+document.getElementById('new-chat-btn').onclick = () => {
+    if (!currentUser) return alert("Waiting for username authorization...");
+    currentSearchQuery = "";
+    searchInput.value = "";
+    modal.classList.add('active');
+    if (cachedUsersList.length > 0) populateUserDirectoryModal(cachedUsersList);
+    else {
+        userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
+        backendPort.postMessage({ type: 'get-users' });
+    }
+};
+
+document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
+
+searchInput.oninput = (e) => {
+    currentSearchQuery = e.target.value.toLowerCase().trim();
+    populateUserDirectoryModal(cachedUsersList);
+};
+
+function populateUserDirectoryModal(users) {
+    userContainer.innerHTML = '';
+    const filteredUsers = (users || []).filter(u => {
+        if (!u || !u.username) return false;
+        if (u.username.toLowerCase() === currentUser) return false;
+        if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) return false;
+        return true;
+    });
+
+    if (filteredUsers.length === 0) {
+        userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
+        return;
+    }
+
+    filteredUsers.forEach(u => {
+        let item = document.createElement('div');
+        item.className = 'user-list-item';
+        let avatar = u.profilePicture || fallbackAvatar;
+        item.innerHTML = `<img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
+            <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span><span class="user-list-desc">${escapeHtml(u.description || "No bio provided.")}</span></div>
+            <button class="modal-btn primary">Chat</button>`;
+        item.querySelector('button').onclick = () => {
+            modal.classList.remove('active');
+            let rawId = [currentUser, u.username.toLowerCase()].sort().join('-');
+            backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: u.username.toLowerCase() });
+            openChat(rawId, u.username, avatar);
+            backendPort.postMessage({ type: 'get-convs' });
+        };
+        userContainer.appendChild(item);
+    });
+}
     </script>
 </body>
 </html>
