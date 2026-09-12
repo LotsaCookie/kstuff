@@ -92,9 +92,16 @@
         .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
         .modal-box h3 { margin: 0; font-size: 1.1rem; }
         
-        .group-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: var(--text); }
         .user-list-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
-        .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); }
+        .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); transition: all 0.2s ease; }
+        
+        /* Light-up effect for selected users in Group Creation */
+        .user-list-item.selected {
+            border: 1px solid var(--text);
+            background-color: color-mix(in srgb, var(--text) 15%, var(--card));
+            box-shadow: 0 0 10px rgba(255, 184, 217, 0.2);
+        }
+
         .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
         .modal-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(128,128,128,0.3); background: var(--card); color: var(--text); font-weight: 900 !important; cursor: pointer; }
         .modal-btn.primary { background-color: var(--text); color: var(--bg); border: none; }
@@ -680,20 +687,29 @@ function populateUserDirectoryModal(users) {
         let item = document.createElement('div');
         item.className = 'user-list-item';
         let avatar = u.profilePicture || fallbackAvatar;
+        let lowerName = u.username.toLowerCase();
         
         if (isGroupMode) {
             item.innerHTML = `
-                <input type="checkbox" class="group-checkbox" value="${u.username.toLowerCase()}">
                 <img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
                 <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span></div>
             `;
-            const cb = item.querySelector('input');
-            if(selectedUsersForGroup.has(u.username.toLowerCase())) cb.checked = true;
-            cb.onchange = (e) => {
-                if(e.target.checked) selectedUsersForGroup.add(u.username.toLowerCase());
-                else selectedUsersForGroup.delete(u.username.toLowerCase());
+            
+            if (selectedUsersForGroup.has(lowerName)) item.classList.add('selected');
+            
+            item.onclick = () => {
+                if (selectedUsersForGroup.has(lowerName)) {
+                    selectedUsersForGroup.delete(lowerName);
+                    item.classList.remove('selected');
+                } else {
+                    if (selectedUsersForGroup.size >= 10) {
+                        alert("You can only select up to 10 users for a group.");
+                        return;
+                    }
+                    selectedUsersForGroup.add(lowerName);
+                    item.classList.add('selected');
+                }
             };
-            item.onclick = (e) => { if(e.target !== cb) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); } };
             item.style.cursor = 'pointer';
         } else {
             item.innerHTML = `<img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
@@ -701,8 +717,8 @@ function populateUserDirectoryModal(users) {
                 <button class="modal-btn primary">Chat</button>`;
             item.querySelector('button').onclick = () => {
                 modal.classList.remove('active');
-                let rawId = [currentUser, u.username.toLowerCase()].sort().join('-');
-                backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: u.username.toLowerCase() });
+                let rawId = [currentUser, lowerName].sort().join('-');
+                backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: lowerName });
                 openChat(rawId, u.username, avatar);
                 backendPort.postMessage({ type: 'get-convs' });
             };
