@@ -336,62 +336,72 @@ function initApp() {
     };
 
     const openResource = async item => {
-        if (!item) return;
-        toggleTooltip(null, false);
-        savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
-        savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
-        if (modalTitle) modalTitle.textContent = item.title;
-        if (modalOverlay) modalOverlay.classList.add('active');
-        
-        if (modalIframe) {
-            modalIframe.removeAttribute('srcdoc');
-            modalIframe.src = 'about:blank';
+    if (!item) return;
+    toggleTooltip(null, false);
+    savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
+    savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
+    if (modalTitle) modalTitle.textContent = item.title;
+    if (modalOverlay) modalOverlay.classList.add('active');
+    
+    if (modalIframe) {
+        modalIframe.removeAttribute('srcdoc');
+        modalIframe.src = 'about:blank';
 
-            if (item.url) {
-                let targetUrl = item.url;
-                if (targetUrl.includes('freebuisness/html')) {
-                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)main\//, 'https://raw.githack.com/freebuisness/html/main');
-                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/freebuisness\/html\//, 'https://raw.githack.com/freebuisness/html/main');
+        if (item.url) {
+            let targetUrl = item.url.trim();
+
+            const isHtmlRepo = targetUrl.includes('freebuisness/html') || 
+                               targetUrl.includes('{HTML_URL}') || 
+                               targetUrl.includes('htm@main') ||
+                               !targetUrl.startsWith('http');
+
+            if (isHtmlRepo) {
+                const cleanPath = targetUrl
+                    .replace(/\$?\{HTML_URL\}\/?/gi, '')
+                    .replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '')
+                    .replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '')
+                    .replace(/^\/+/, '');
+
+                modalIframe.src = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
+            } else {
+                const isProxyUrl = 
+                    targetUrl.includes(gRep.static) || 
+                    targetUrl.includes(gRep.scram) || 
+                    targetUrl.includes(gRep.uv) || 
+                    targetUrl.includes(gRep.truffled) ||
+                    item.category === 'Apps' ||
+                    (!targetUrl.includes('raw.githubusercontent.com') && 
+                     !targetUrl.includes('cdn.jsdelivr.net') && 
+                     !targetUrl.includes('raw.githack.com') && 
+                     !targetUrl.includes('cdn.statically.io'));
+
+                if (isProxyUrl) {
                     modalIframe.src = targetUrl;
                 } else {
-                    const isProxyUrl = 
-                        targetUrl.includes(gRep.static) || 
-                        targetUrl.includes(gRep.scram) || 
-                        targetUrl.includes(gRep.uv) || 
-                        targetUrl.includes(gRep.truffled) ||
-                        item.category === 'Apps' ||
-                        (!targetUrl.includes('raw.githubusercontent.com') && 
-                         !targetUrl.includes('cdn.jsdelivr.net') && 
-                         !targetUrl.includes('raw.githack.com') && 
-                         !targetUrl.includes('cdn.statically.io'));
-
-                    if (isProxyUrl) {
-                        modalIframe.src = targetUrl;
-                    } else {
-                        try {
-                            const res = await fetch(targetUrl, { cache: 'no-store' });
-                            if (res.ok) {
-                                const htmlText = await res.text();
-                                modalIframe.srcdoc = htmlText;
-                            } else {
-                                modalIframe.src = targetUrl;
-                            }
-                        } catch {
+                    try {
+                        const res = await fetch(targetUrl, { cache: 'no-store' });
+                        if (res.ok) {
+                            const htmlText = await res.text();
+                            modalIframe.srcdoc = htmlText;
+                        } else {
                             modalIframe.src = targetUrl;
                         }
+                    } catch {
+                        modalIframe.src = targetUrl;
                     }
                 }
             }
         }
+    }
 
-        setTimeout(() => Object.values(grids).forEach(g => {
-            if(g.gridEl) {
-                if (g.pool) g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
-                g.gridEl.innerHTML = '';
-                g.pool = [];
-            }
-        }), 50);
-    };
+    setTimeout(() => Object.values(grids).forEach(g => {
+        if (g.gridEl) {
+            if (g.pool) g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
+            g.gridEl.innerHTML = '';
+            g.pool = [];
+        }
+    }), 50);
+};
 
     const buildPool = type => {
         const grid = grids[type]; if (!grid.gridEl) return;
