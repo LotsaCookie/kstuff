@@ -354,6 +354,7 @@ function initApp() {
                     item.url.includes(gRep.uv) || 
                     item.url.includes(gRep.truffled) ||
                     item.category === 'Apps' ||
+                    item.url.includes('raw.githack.com/freebuisness/html/main') ||
                     (!item.url.includes('raw.githubusercontent.com') && 
                      !item.url.includes('cdn.jsdelivr.net') && 
                      !item.url.includes('raw.githack.com') && 
@@ -768,6 +769,7 @@ function initApp() {
         const pTypes = ['jsdelivr', 'githack', 'github', 'statically'];
         
         const getUrl = (repo, path, pt) => {
+            if (repo === 'html') return `https://raw.githack.com/freebuisness/html/main/${path}`;
             if (pt === 'jsdelivr') return `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
             if (pt === 'githack') return `https://raw.githack.com/freebuisness/${repo}/main/${path}`;
             if (pt === 'statically') return `https://cdn.statically.io/gh/freebuisness/${repo}/main/${path}`;
