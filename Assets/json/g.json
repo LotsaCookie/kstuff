@@ -408,10 +408,8 @@
     "image": ""
   },
   {
-    "title": "Black Jack",
-    "url": "${truffled}/gamefile/BlackJack.html",
-    "category": "Cards",
-    "image": ""
+    "title": "BlackJack",
+    "category": "Cards"
   },
   {
     "title": "Block Blast",
