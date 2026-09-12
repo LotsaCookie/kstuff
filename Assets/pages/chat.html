@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Chat</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,13 +50,16 @@
         .header-name { font-size: 1.1rem; font-weight: 900 !important; }
 
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 3px; }
+        /* The message area */
+        #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 3px; transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1); opacity: 1; transform: translateY(0); }
+        /* Hidden state while switching conversations */
+        #chat-container.container-hidden { opacity: 0; transform: translateY(6px); pointer-events: none; }
 
         @keyframes containerFadeIn { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
         .container-fade { animation: containerFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         .section-loader { position: absolute; inset: 0; width: 100%; height: 100%; background: color-mix(in srgb, var(--bg) 85%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 1000; opacity: 1; transition: opacity 0.3s ease, visibility 0.3s ease; }
-        .section-loader.hidden { opacity: 0; visibility: hidden; }
+        .section-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .spinner { width: 48px; height: 48px; border: 4px solid var(--bg); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1.5rem; }
         .loading-text { font-size: 0.9rem; font-weight: 900 !important; letter-spacing: .25em; text-transform: uppercase; animation: pulse 1.5s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
@@ -87,9 +90,17 @@
         button#send-btn { background-color: var(--text); color: var(--bg); border: none; padding: 15px 25px; border-radius: 25px; font-weight: 900 !important; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
         button#send-btn:hover { opacity: 0.9; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        /* Modal overlay + modal box animation */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px; }
+        .modal-overlay.closing { opacity: 0; pointer-events: none; }
+
+        .modal-box { background-color: var(--nav); border: 1px solid rgba(128,128,128,0.3); border-radius: 16px; padding: 24px; width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 16px;
+            transform: translateY(-8px) scale(0.96); opacity: 0; transition: transform 260ms cubic-bezier(.2,.9,.2,1), opacity 200ms linear; will-change: transform, opacity;
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0) scale(1); opacity: 1; }
+        .modal-overlay.closing .modal-box { transform: translateY(8px) scale(0.95); opacity: 0; }
+
         .modal-box h3 { margin: 0; font-size: 1.1rem; }
         
         .user-list-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
@@ -119,8 +130,8 @@
         <div id="chat-list"><div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div></div>
     </div>
 
-    <div id="modal-overlay" class="modal-overlay">
-        <div class="modal-box">
+    <div id="modal-overlay" class="modal-overlay" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
             <h3 id="modal-title">Start Conversation</h3>
             <input type="text" id="group-name-input" placeholder="Group Name (e.g. Squad)" style="display:none;">
             <input type="text" id="user-search-input" placeholder="Search users by username...">
@@ -170,6 +181,8 @@ let groupNames = {};
 let messageQueue = [];
 let isSendingMessage = false;
 let unreadChats = []; 
+
+let currentRenderToken = null; // New: token to ensure renders belong to latest openChat
 
 const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 const groupFallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E";
@@ -418,7 +431,7 @@ function handleBackendMessage(data) {
         const combined = deduplicateMessages([...cached, ...remoteMessages]).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(combined));
         
-        if (chatId === currentActiveRawId) renderMessages(combined, chatId);
+        renderMessages(combined, chatId);
     } 
     else if ((data.type === 'send-message' || data.type === 'send-group-message') && data.success) {
         isSendingMessage = false; 
@@ -450,6 +463,7 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     document.getElementById('send-btn').disabled = false;
     
     const chatContainer = document.getElementById('chat-container');
+
     if (unreadChats.includes(rawId)) {
         unreadChats = unreadChats.filter(id => id !== rawId);
         localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
@@ -461,17 +475,22 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
 
     lastRenderedChatId = rawId;
     lastMessageDataString = ""; 
+    const token = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    currentRenderToken = token;
+    chatContainer.dataset.renderToken = token;
+
+    chatContainer.classList.add('container-hidden');
+    document.getElementById('section-loader').classList.remove('hidden');
+
     chatContainer.innerHTML = '';
-    
-    chatContainer.classList.remove('container-fade');
-    void chatContainer.offsetWidth;
-    chatContainer.classList.add('container-fade');
 
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
-        if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
-        else document.getElementById('section-loader').classList.remove('hidden');
-    } catch (e) { document.getElementById('section-loader').classList.remove('hidden'); }
+        if (cachedMsgs && cachedMsgs.length > 0) {
+            renderMessages(cachedMsgs, rawId);
+        } else {
+        }
+    } catch (e) {}
 
     fetchMessages(rawId);
 }
@@ -545,10 +564,12 @@ function fetchMessages(rawId) {
 }
 
 function renderMessages(messages, chatId) {
-    if (chatId !== currentActiveRawId) return; 
-    
-    document.getElementById('section-loader').classList.add('hidden');
     const container = document.getElementById('chat-container');
+    if (chatId !== currentActiveRawId) return;
+    if (!container.dataset.renderToken) return;
+    if (container.dataset.renderToken !== currentRenderToken) return;
+
+    document.getElementById('section-loader').classList.add('hidden');
 
     const cleanMsgs = deduplicateMessages(messages).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
@@ -559,7 +580,12 @@ function renderMessages(messages, chatId) {
     }
     
     const newMessageString = JSON.stringify(cleanMsgs);
-    if (newMessageString === lastMessageDataString) return; 
+    if (newMessageString === lastMessageDataString) {
+        container.classList.remove('container-hidden');
+        void container.offsetWidth;
+        container.classList.add('container-fade');
+        return; 
+    }
 
     let oldMsgs = [];
     if (lastMessageDataString) {
@@ -571,6 +597,9 @@ function renderMessages(messages, chatId) {
 
     if (cleanMsgs.length === 0) {
         container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
+        container.classList.remove('container-hidden');
+        void container.offsetWidth;
+        container.classList.add('container-fade');
         return;
     }
 
@@ -585,6 +614,10 @@ function renderMessages(messages, chatId) {
         
         appendSingleMessageToDOM(m.sender, m.message, m.timestamp, isNewMessage, showTime, chatId.startsWith('grp-'));
     });
+
+    container.classList.remove('container-hidden');
+    void container.offsetWidth;
+    container.classList.add('container-fade');
 }
 
 function appendSingleMessageToDOM(sender, text, timestamp, animate = false, showTimestamp = true, isGroup = false) {
@@ -710,8 +743,11 @@ function openModal(groupMode, addMemberMode = false) {
         createGroupBtn.innerText = "Create Group";
     }
     
+    modal.classList.remove('closing');
+    void modal.offsetWidth;
     modal.classList.add('active');
-    
+    modal.setAttribute('aria-hidden', 'false');
+
     if (cachedUsersList.length > 0) populateUserDirectoryModal(cachedUsersList);
     else {
         userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
@@ -725,7 +761,24 @@ document.getElementById('new-group-btn').onclick = () => openModal(true);
 const btnAddMember = document.getElementById('add-member-btn');
 if (btnAddMember) btnAddMember.onclick = () => openModal(true, true);
 
-document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
+function closeModal() {
+    if (!modal.classList.contains('active')) return;
+    modal.classList.add('closing');
+    modal.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+        modal.classList.remove('active', 'closing');
+        userContainer.innerHTML = '';
+    }, 280);
+}
+
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+});
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('modal-cancel').onclick = () => closeModal();
 
 createGroupBtn.onclick = () => {
     if (selectedUsersForGroup.size === 0) return alert("Select at least one user.");
@@ -743,7 +796,7 @@ createGroupBtn.onclick = () => {
         });
         
         alert("Members added successfully!");
-        modal.classList.remove('active');
+        closeModal();
         return;
     }
 
@@ -762,7 +815,7 @@ createGroupBtn.onclick = () => {
     }
     localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
     
-    modal.classList.remove('active');
+    closeModal();
     openChat(newGroupId, gName, groupFallbackAvatar);
     renderSidebarList();
 };
@@ -815,7 +868,7 @@ function populateUserDirectoryModal(users) {
                 <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span><span class="user-list-desc">${escapeHtml(u.description || "No bio provided.")}</span></div>
                 <button class="modal-btn primary">Chat</button>`;
             item.querySelector('button').onclick = () => {
-                modal.classList.remove('active');
+                closeModal();
                 let rawId = [currentUser, lowerName].sort().join('-');
                 backendPort.postMessage({ type: 'create-conv', u1: currentUser, u2: lowerName });
                 openChat(rawId, u.username, avatar);
