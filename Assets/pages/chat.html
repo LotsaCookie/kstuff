@@ -42,18 +42,16 @@
         .header-user-info { display: flex; align-items: center; gap: 12px; }
         .header-name { font-size: 1.1rem; font-weight: 900 !important; }
         #chat-wrapper { position: relative; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 6px; transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1); opacity: 1; transform: translateY(0); will-change: opacity, transform; }
-        #chat-container.container-hidden { opacity: 0; transform: translateY(6px); pointer-events: none; }
-        .container-fade { animation: containerFadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes containerFadeIn { 0% { opacity: 0; transform: translateY(4px); } 100% { opacity: 1; transform: translateY(0); } }
+        #chat-container { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 6px; transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1); opacity: 0; transform: translateY(6px); will-change: opacity, transform; }
+        #chat-container.visible { opacity: 1; transform: translateY(0); }
         .section-loader { position: absolute; inset: 0; width: 100%; height: 100%; background: color-mix(in srgb, var(--bg) 85%, transparent); display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; z-index: 1000; opacity: 1; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .section-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .spinner { width: 48px; height: 48px; border: 4px solid var(--bg); border-top-color: var(--text); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1.5rem; }
         .loading-text { font-size: 0.9rem; font-weight: 900 !important; letter-spacing: .25em; text-transform: uppercase; animation: pulse 1.5s ease-in-out infinite; }
         @keyframes spin { 0% { transform: rotate(0) } 100% { transform: rotate(360deg) } }
         @keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .4 } }
-        @keyframes slideInMessage { 0% { opacity: 0; transform: translateY(18px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-        .slide-in { animation: slideInMessage 300ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        @keyframes slideInMessage { 0% { opacity: 0; transform: translateY(12px) scale(0.995); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .slide-in { animation: slideInMessage 260ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         .message-row { display: flex; align-items: flex-end; gap: 10px; max-width: 75%; min-width: 0; }
         .message-row.user-row { align-self: flex-end; flex-direction: row-reverse; }
         .message-row.friend-row { align-self: flex-start; }
@@ -144,10 +142,11 @@ let messageQueue = [];
 let isSendingMessage = false;
 let unreadChats = [];
 let currentRenderToken = null;
-let forceAnimateNextRender = false;
+let justOpened = false;
 let mediaWatcher = { token: null, timeoutId: null, remaining: 0, listeners: [] };
-const MAX_STAGGER_MS = 220;
+const MAX_STAGGER_MS = 80;
 const STAGGER_STEP = 12;
+const FALLBACK_SCROLL_THRESHOLD = 150;
 const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 const groupFallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E";
 const cleanUrl = url => url.replace(/\/+$/, '');
@@ -403,10 +402,10 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     const token = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
     currentRenderToken = token;
     chatContainer.dataset.renderToken = token;
-    chatContainer.classList.add('container-hidden');
+    chatContainer.classList.remove('visible');
     document.getElementById('section-loader').classList.remove('hidden');
     chatContainer.innerHTML = '';
-    forceAnimateNextRender = true;
+    justOpened = true;
     stopMediaWatcher();
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
@@ -509,10 +508,7 @@ function renderMessages(messages, chatId) {
     }
     const newMessageString = JSON.stringify(cleanMsgs);
     if (newMessageString === lastMessageDataString) {
-        scrollToBottomImmediate(container);
-        container.classList.remove('container-hidden');
-        void container.offsetWidth;
-        container.classList.add('container-fade');
+        maybeShowContainer(container);
         return;
     }
     let oldMsgs = [];
@@ -523,25 +519,18 @@ function renderMessages(messages, chatId) {
     container.innerHTML = '';
     if (cleanMsgs.length === 0) {
         container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
-        scrollToBottomImmediate(container);
-        container.classList.remove('container-hidden');
-        void container.offsetWidth;
-        container.classList.add('container-fade');
-        forceAnimateNextRender = false;
+        maybeShowContainer(container);
+        justOpened = false;
         return;
     }
-    const animateAll = forceAnimateNextRender || switched;
+    const animateAll = justOpened || switched;
     const frag = document.createDocumentFragment();
     const tokenSnapshot = currentRenderToken;
     const mediaElements = [];
     for (let index = 0; index < cleanMsgs.length; index++) {
         const m = cleanMsgs[index];
-        const showTime = (() => {
-            const next = cleanMsgs[index + 1];
-            if (index === cleanMsgs.length - 1) return true;
-            if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) return false;
-            return true;
-        })();
+        const next = cleanMsgs[index + 1];
+        const showTime = (index === cleanMsgs.length - 1) ? true : !(next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000);
         const isNewMessage = oldMsgs.length > 0 && index >= oldMsgs.length;
         let animateDelay = false;
         if (animateAll) {
@@ -557,12 +546,10 @@ function renderMessages(messages, chatId) {
     }
     stopMediaWatcher();
     container.appendChild(frag);
-    scrollToBottomImmediate(container);
+    scrollToBottomIfShould(container, true);
     if (mediaElements.length > 0) startMediaWatcher(mediaElements, container);
-    container.classList.remove('container-hidden');
-    void container.offsetWidth;
-    container.classList.add('container-fade');
-    forceAnimateNextRender = false;
+    maybeShowContainer(container);
+    justOpened = false;
 }
 function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, showTimestamp, isGroup) {
     const container = document.getElementById('chat-container');
@@ -633,9 +620,23 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
     rowDiv.appendChild(msgWrapper);
     return { row: rowDiv, mediaElems };
 }
+function maybeShowContainer(container) {
+    container.classList.remove('visible');
+    void container.offsetWidth;
+    container.classList.add('visible');
+}
 function scrollToBottomImmediate(container) {
     if (!container) return;
     container.scrollTop = container.scrollHeight;
+}
+function scrollToBottomIfShould(container, isOpenScroll = false) {
+    if (!container) return;
+    if (isOpenScroll) {
+        scrollToBottomImmediate(container);
+        return;
+    }
+    const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
+    if (distanceFromBottom <= FALLBACK_SCROLL_THRESHOLD) scrollToBottomImmediate(container);
 }
 function startMediaWatcher(mediaElems, container) {
     stopMediaWatcher();
@@ -645,7 +646,7 @@ function startMediaWatcher(mediaElems, container) {
     mediaWatcher.listeners = [];
     const onFinish = () => {
         if (mediaWatcher.token !== token) return;
-        scrollToBottomImmediate(container);
+        scrollToBottomIfShould(container, false);
         clearTimeout(mediaWatcher.timeoutId);
         mediaWatcher.token = null;
         mediaWatcher.remaining = 0;
@@ -667,7 +668,7 @@ function startMediaWatcher(mediaElems, container) {
     });
     mediaWatcher.timeoutId = setTimeout(() => {
         if (mediaWatcher.token !== token) return;
-        scrollToBottomImmediate(container);
+        scrollToBottomIfShould(container, false);
         mediaWatcher.token = null;
         mediaWatcher.listeners.forEach(l => l.el.removeEventListener(l.ev, l.fn));
         mediaWatcher.listeners = [];
