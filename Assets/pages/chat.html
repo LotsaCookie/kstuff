@@ -145,6 +145,7 @@ let isSendingMessage = false;
 let unreadChats = [];
 let currentRenderToken = null;
 let forceAnimateNextRender = false;
+let mediaWatcher = { token: null, timeoutId: null, remaining: 0, listeners: [] };
 const MAX_STAGGER_MS = 220;
 const STAGGER_STEP = 12;
 const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
@@ -406,6 +407,7 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     document.getElementById('section-loader').classList.remove('hidden');
     chatContainer.innerHTML = '';
     forceAnimateNextRender = true;
+    stopMediaWatcher();
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
         if (cachedMsgs && cachedMsgs.length > 0) {
@@ -507,6 +509,7 @@ function renderMessages(messages, chatId) {
     }
     const newMessageString = JSON.stringify(cleanMsgs);
     if (newMessageString === lastMessageDataString) {
+        scrollToBottomImmediate(container);
         container.classList.remove('container-hidden');
         void container.offsetWidth;
         container.classList.add('container-fade');
@@ -520,6 +523,7 @@ function renderMessages(messages, chatId) {
     container.innerHTML = '';
     if (cleanMsgs.length === 0) {
         container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
+        scrollToBottomImmediate(container);
         container.classList.remove('container-hidden');
         void container.offsetWidth;
         container.classList.add('container-fade');
@@ -529,6 +533,7 @@ function renderMessages(messages, chatId) {
     const animateAll = forceAnimateNextRender || switched;
     const frag = document.createDocumentFragment();
     const tokenSnapshot = currentRenderToken;
+    const mediaElements = [];
     for (let index = 0; index < cleanMsgs.length; index++) {
         const m = cleanMsgs[index];
         const showTime = (() => {
@@ -544,10 +549,16 @@ function renderMessages(messages, chatId) {
         } else if (isNewMessage) {
             animateDelay = 0;
         }
-        const row = buildMessageRow(tokenSnapshot, m.sender, m.message, m.timestamp, animateDelay, showTime, chatId.startsWith('grp-'));
-        if (row) frag.appendChild(row);
+        const built = buildMessageRow(tokenSnapshot, m.sender, m.message, m.timestamp, animateDelay, showTime, chatId.startsWith('grp-'));
+        if (built) {
+            frag.appendChild(built.row);
+            if (built.mediaElems && built.mediaElems.length) mediaElements.push(...built.mediaElems);
+        }
     }
+    stopMediaWatcher();
     container.appendChild(frag);
+    scrollToBottomImmediate(container);
+    if (mediaElements.length > 0) startMediaWatcher(mediaElements, container);
     container.classList.remove('container-hidden');
     void container.offsetWidth;
     container.classList.add('container-fade');
@@ -582,22 +593,32 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
     const decodedText = xorDecode(text);
     const safeText = escapeHtml(decodedText);
     const mediaType = isMediaURL(decodedText).type;
+    const mediaElems = [];
     if (mediaType === 'image') {
         const img = document.createElement('img');
         img.src = safeText;
         img.alt = 'Attached image';
+        img.loading = 'eager';
+        img.decoding = 'async';
         img.onerror = function() { this.outerHTML = '[Invalid Image Link]'; };
         msgDiv.appendChild(img);
+        mediaElems.push(img);
     } else if (mediaType === 'video') {
         const vid = document.createElement('video');
         vid.controls = true;
         vid.src = safeText;
+        vid.preload = 'auto';
+        vid.onerror = function() {};
         msgDiv.appendChild(vid);
+        mediaElems.push(vid);
     } else if (mediaType === 'audio') {
         const aud = document.createElement('audio');
         aud.controls = true;
         aud.src = safeText;
+        aud.preload = 'auto';
+        aud.onerror = function() {};
         msgDiv.appendChild(aud);
+        mediaElems.push(aud);
     } else {
         msgDiv.innerHTML = safeText;
     }
@@ -610,7 +631,55 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
     }
     rowDiv.appendChild(avatarImg);
     rowDiv.appendChild(msgWrapper);
-    return rowDiv;
+    return { row: rowDiv, mediaElems };
+}
+function scrollToBottomImmediate(container) {
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+}
+function startMediaWatcher(mediaElems, container) {
+    stopMediaWatcher();
+    const token = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+    mediaWatcher.token = token;
+    mediaWatcher.remaining = mediaElems.length;
+    mediaWatcher.listeners = [];
+    const onFinish = () => {
+        if (mediaWatcher.token !== token) return;
+        scrollToBottomImmediate(container);
+        clearTimeout(mediaWatcher.timeoutId);
+        mediaWatcher.token = null;
+        mediaWatcher.remaining = 0;
+        mediaWatcher.listeners.forEach(l => l.el.removeEventListener(l.ev, l.fn));
+        mediaWatcher.listeners = [];
+    };
+    const decrement = () => {
+        if (mediaWatcher.token !== token) return;
+        mediaWatcher.remaining -= 1;
+        if (mediaWatcher.remaining <= 0) onFinish();
+    };
+    mediaElems.forEach(el => {
+        const evLoad = el.tagName.toLowerCase() === 'img' ? 'load' : 'loadeddata';
+        const fnLoad = () => decrement();
+        const fnErr = () => decrement();
+        el.addEventListener(evLoad, fnLoad, { passive: true });
+        el.addEventListener('error', fnErr, { passive: true });
+        mediaWatcher.listeners.push({ el, ev: evLoad, fn: fnLoad }, { el, ev: 'error', fn: fnErr });
+    });
+    mediaWatcher.timeoutId = setTimeout(() => {
+        if (mediaWatcher.token !== token) return;
+        scrollToBottomImmediate(container);
+        mediaWatcher.token = null;
+        mediaWatcher.listeners.forEach(l => l.el.removeEventListener(l.ev, l.fn));
+        mediaWatcher.listeners = [];
+    }, 900);
+}
+function stopMediaWatcher() {
+    if (!mediaWatcher.token) return;
+    clearTimeout(mediaWatcher.timeoutId);
+    mediaWatcher.listeners.forEach(l => l.el.removeEventListener(l.ev, l.fn));
+    mediaWatcher.token = null;
+    mediaWatcher.remaining = 0;
+    mediaWatcher.listeners = [];
 }
 setInterval(() => {
     if (backendReady && currentUser) {
