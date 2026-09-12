@@ -165,7 +165,7 @@
 let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
 let backendPort = null, activeConversations = [], activeGroups = [], userProfileMap = {}, cachedUsersList = [];
 let lastMessageDataString = "", lastSidebarState = "", lastRenderedChatId = null;
-let currentSearchQuery = "", isGroupMode = false, selectedUsersForGroup = new Set();
+let currentSearchQuery = "", isGroupMode = false, isAddMemberMode = false, selectedUsersForGroup = new Set();
 let groupNames = {}; 
 
 let messageQueue = [];
@@ -313,6 +313,8 @@ function cleanupDeletedChat(deletedRawId) {
         document.getElementById('header-avatar-icon').style.display = 'none';
         document.getElementById('delete-chat-btn').style.display = 'none';
         document.getElementById('leave-group-btn').style.display = 'none';
+        const addBtn = document.getElementById('add-member-btn');
+        if (addBtn) addBtn.style.display = 'none';
         document.getElementById('chat-container').innerHTML = '';
         document.getElementById('user-input').disabled = true;
         document.getElementById('send-btn').disabled = true;
@@ -335,8 +337,30 @@ function handleBackendMessage(data) {
     } 
     else if (data.type === 'get-convs' && data.success) {
         const safeConvs = Array.isArray(data.payload) ? data.payload : [];
-        localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(safeConvs));
-        activeConversations = safeConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
+        
+        // Handle grp- prefixed entries injected into conversation-data.json
+        const newGroupsFromConvs = [];
+        const filteredConvs = [];
+        
+        safeConvs.forEach(encoded => {
+            const decoded = xorDecode(encoded);
+            // Check if it's stored with grp- prefix or starts with grp- decoded
+            if (encoded.startsWith('grp-') || decoded.startsWith('grp-')) {
+                const gId = encoded.startsWith('grp-') ? encoded : decoded;
+                if (!activeGroups.includes(gId)) newGroupsFromConvs.push(gId);
+            } else {
+                filteredConvs.push(decoded);
+            }
+        });
+
+        if (newGroupsFromConvs.length > 0) {
+            activeGroups = [...new Set([...activeGroups, ...newGroupsFromConvs])];
+            if (currentUser) {
+                localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+            }
+        }
+
+        activeConversations = filteredConvs.filter(Boolean);
         if (currentActiveRawId && !currentActiveRawId.startsWith('grp-') && !activeConversations.includes(currentActiveRawId)) {
             cleanupDeletedChat(currentActiveRawId);
         }
@@ -384,6 +408,10 @@ function handleBackendMessage(data) {
         fetchMessages(currentActiveRawId);
         if(data.type === 'send-message') backendPort.postMessage({ type: 'get-convs' });
     }
+    else if (data.type === 'add-to-group' && data.success) {
+        alert("Members added successfully!");
+        fetchMessages(currentActiveRawId);
+    }
 }
 
 function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
@@ -397,6 +425,9 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     let isGroup = rawId.startsWith('grp-');
     document.getElementById('delete-chat-btn').style.display = isGroup ? 'none' : 'block';
     document.getElementById('leave-group-btn').style.display = isGroup ? 'block' : 'none';
+    
+    let addBtn = document.getElementById('add-member-btn');
+    if (addBtn) addBtn.style.display = isGroup ? 'block' : 'none';
     
     document.getElementById('user-input').disabled = false;
     document.getElementById('send-btn').disabled = false;
@@ -628,15 +659,24 @@ const searchInput = document.getElementById('user-search-input');
 const groupNameInput = document.getElementById('group-name-input');
 const createGroupBtn = document.getElementById('modal-create-group');
 
-function openModal(groupMode) {
+function openModal(groupMode, addMemberMode = false) {
     if (!currentUser) return alert("Waiting for username authorization...");
     isGroupMode = groupMode;
+    isAddMemberMode = addMemberMode;
     selectedUsersForGroup.clear();
     currentSearchQuery = ""; searchInput.value = ""; groupNameInput.value = "";
     
-    document.getElementById('modal-title').innerText = isGroupMode ? "Create Group Chat" : "Start Conversation";
-    groupNameInput.style.display = isGroupMode ? "block" : "none";
-    createGroupBtn.style.display = isGroupMode ? "block" : "none";
+    if (isAddMemberMode) {
+        document.getElementById('modal-title').innerText = "Add Members to Group";
+        groupNameInput.style.display = "none";
+        createGroupBtn.style.display = "block";
+        createGroupBtn.innerText = "Add Members";
+    } else {
+        document.getElementById('modal-title').innerText = isGroupMode ? "Create Group Chat" : "Start Conversation";
+        groupNameInput.style.display = isGroupMode ? "block" : "none";
+        createGroupBtn.style.display = isGroupMode ? "block" : "none";
+        createGroupBtn.innerText = "Create Group";
+    }
     
     modal.classList.add('active');
     
@@ -652,7 +692,23 @@ document.getElementById('new-group-btn').onclick = () => openModal(true);
 document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
 
 createGroupBtn.onclick = () => {
-    if(!isGroupMode || selectedUsersForGroup.size === 0) return alert("Select at least one user to add.");
+    if (selectedUsersForGroup.size === 0) return alert("Select at least one user.");
+    
+    if (isAddMemberMode) {
+        if (!currentActiveRawId || !currentActiveRawId.startsWith('grp-')) return alert("No active group selected.");
+        
+        const usersArray = Array.from(selectedUsersForGroup);
+        backendPort.postMessage({ 
+            type: 'add-to-group', 
+            groupId: currentActiveRawId, 
+            users: usersArray 
+        });
+        
+        modal.classList.remove('active');
+        return;
+    }
+
+    if(!isGroupMode) return;
     const gName = groupNameInput.value.trim() || "New Group";
     const newGroupId = "grp-" + Date.now() + "-" + Math.random().toString(36).substr(2,6);
     
@@ -660,7 +716,9 @@ createGroupBtn.onclick = () => {
     selectedUsersForGroup.forEach(u => backendPort.postMessage({ type: 'add-to-group', groupId: newGroupId, user: u }));
     
     groupNames[newGroupId] = gName;
-    activeGroups.push(newGroupId);
+    if (!activeGroups.includes(newGroupId)) {
+        activeGroups.push(newGroupId);
+    }
     localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
     
     modal.classList.remove('active');
@@ -689,7 +747,7 @@ function populateUserDirectoryModal(users) {
         let avatar = u.profilePicture || fallbackAvatar;
         let lowerName = u.username.toLowerCase();
         
-        if (isGroupMode) {
+        if (isGroupMode || isAddMemberMode) {
             item.innerHTML = `
                 <img class="user-list-avatar" src="${escapeHtml(avatar)}" onerror="this.src='${fallbackAvatar}'" alt="Avatar">
                 <div class="user-list-info"><span class="user-list-name">${escapeHtml(u.username)}</span></div>
@@ -703,7 +761,7 @@ function populateUserDirectoryModal(users) {
                     item.classList.remove('selected');
                 } else {
                     if (selectedUsersForGroup.size >= 10) {
-                        alert("You can only select up to 10 users for a group.");
+                        alert("You can only select up to 10 users.");
                         return;
                     }
                     selectedUsersForGroup.add(lowerName);
@@ -725,7 +783,7 @@ function populateUserDirectoryModal(users) {
         }
         userContainer.appendChild(item);
     });
-}
+ }
 </script>
 </body>
 </html>
