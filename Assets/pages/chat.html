@@ -382,7 +382,7 @@ function handleBackendMessage(data) {
 
         if (data.type === 'get-group-chat' && data.groupName) {
             groupNames[chatId] = data.groupName;
-            localStorage.setItem('chat_group_names', JSON.stringify(groupNames)); // Save permanently
+            localStorage.setItem('chat_group_names', JSON.stringify(groupNames)); 
             if (currentActiveRawId === chatId) {
                 document.getElementById('header-username').innerText = data.groupName || "Unnamed Group";
             }
@@ -407,7 +407,6 @@ function handleBackendMessage(data) {
         if(data.type === 'send-message') backendPort.postMessage({ type: 'get-convs' });
     }
     else if (data.type === 'add-to-group' && data.success) {
-        alert("Members added successfully!");
         fetchMessages(currentActiveRawId);
     }
 }
@@ -701,6 +700,10 @@ function openModal(groupMode, addMemberMode = false) {
 
 document.getElementById('new-chat-btn').onclick = () => openModal(false);
 document.getElementById('new-group-btn').onclick = () => openModal(true);
+
+const btnAddMember = document.getElementById('add-member-btn');
+if (btnAddMember) btnAddMember.onclick = () => openModal(true, true);
+
 document.getElementById('modal-cancel').onclick = () => modal.classList.remove('active');
 
 createGroupBtn.onclick = () => {
@@ -710,12 +713,15 @@ createGroupBtn.onclick = () => {
         if (!currentActiveRawId || !currentActiveRawId.startsWith('grp-')) return alert("No active group selected.");
         
         const usersArray = Array.from(selectedUsersForGroup);
-        backendPort.postMessage({ 
-            type: 'add-to-group', 
-            groupId: currentActiveRawId, 
-            users: usersArray 
+        usersArray.forEach(u => {
+            backendPort.postMessage({ 
+                type: 'add-to-group', 
+                groupId: currentActiveRawId, 
+                user: u
+            });
         });
         
+        alert("Members added successfully!");
         modal.classList.remove('active');
         return;
     }
