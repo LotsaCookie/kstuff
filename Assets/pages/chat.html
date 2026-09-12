@@ -339,24 +339,22 @@ function handleBackendMessage(data) {
     } 
     else if (data.type === 'get-convs' && data.success) {
         const safeConvs = Array.isArray(data.payload) ? data.payload : [];
-        const newGroupsFromConvs = [];
+        const backendGroups = [];
         const filteredConvs = [];
         
         safeConvs.forEach(encoded => {
             const decoded = xorDecode(encoded);
             if (encoded.startsWith('grp-') || decoded.startsWith('grp-')) {
                 const gId = encoded.startsWith('grp-') ? encoded : decoded;
-                if (!activeGroups.includes(gId)) newGroupsFromConvs.push(gId);
+                backendGroups.push(gId);
             } else {
                 filteredConvs.push(decoded);
             }
         });
 
-        if (newGroupsFromConvs.length > 0) {
-            activeGroups = [...new Set([...activeGroups, ...newGroupsFromConvs])];
-            if (currentUser) {
-                localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
-            }
+        activeGroups = [...new Set(backendGroups)];
+        if (currentUser) {
+            localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
         }
 
         activeConversations = filteredConvs.filter(Boolean);
