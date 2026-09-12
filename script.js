@@ -348,31 +348,37 @@ function initApp() {
             modalIframe.src = 'about:blank';
 
             if (item.url) {
-                const isProxyUrl = 
-                    item.url.includes(gRep.static) || 
-                    item.url.includes(gRep.scram) || 
-                    item.url.includes(gRep.uv) || 
-                    item.url.includes(gRep.truffled) ||
-                    item.category === 'Apps' ||
-                    item.url.includes('raw.githack.com/freebuisness/html/main') ||
-                    (!item.url.includes('raw.githubusercontent.com') && 
-                     !item.url.includes('cdn.jsdelivr.net') && 
-                     !item.url.includes('raw.githack.com') && 
-                     !item.url.includes('cdn.statically.io'));
-
-                if (isProxyUrl) {
-                    modalIframe.src = item.url;
+                let targetUrl = item.url;
+                if (targetUrl.includes('freebuisness/html')) {
+                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)main\//, 'https://raw.githack.com/freebuisness/html/main/');
+                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/freebuisness\/html\//, 'https://raw.githack.com/freebuisness/html/main/');
+                    modalIframe.src = targetUrl;
                 } else {
-                    try {
-                        const res = await fetch(item.url, { cache: 'no-store' });
-                        if (res.ok) {
-                            const htmlText = await res.text();
-                            modalIframe.srcdoc = htmlText;
-                        } else {
-                            modalIframe.src = item.url;
+                    const isProxyUrl = 
+                        targetUrl.includes(gRep.static) || 
+                        targetUrl.includes(gRep.scram) || 
+                        targetUrl.includes(gRep.uv) || 
+                        targetUrl.includes(gRep.truffled) ||
+                        item.category === 'Apps' ||
+                        (!targetUrl.includes('raw.githubusercontent.com') && 
+                         !targetUrl.includes('cdn.jsdelivr.net') && 
+                         !targetUrl.includes('raw.githack.com') && 
+                         !targetUrl.includes('cdn.statically.io'));
+
+                    if (isProxyUrl) {
+                        modalIframe.src = targetUrl;
+                    } else {
+                        try {
+                            const res = await fetch(targetUrl, { cache: 'no-store' });
+                            if (res.ok) {
+                                const htmlText = await res.text();
+                                modalIframe.srcdoc = htmlText;
+                            } else {
+                                modalIframe.src = targetUrl;
+                            }
+                        } catch {
+                            modalIframe.src = targetUrl;
                         }
-                    } catch {
-                        modalIframe.src = item.url;
                     }
                 }
             }
