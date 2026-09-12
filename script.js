@@ -350,8 +350,8 @@ function initApp() {
             if (item.url) {
                 let targetUrl = item.url;
                 if (targetUrl.includes('freebuisness/html')) {
-                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)main\//, 'https://raw.githack.com/freebuisness/html/main/');
-                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/freebuisness\/html\//, 'https://raw.githack.com/freebuisness/html/main/');
+                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)main\//, 'https://raw.githack.com/freebuisness/html/main');
+                    targetUrl = targetUrl.replace(/https?:\/\/[^\/]+\/freebuisness\/html\//, 'https://raw.githack.com/freebuisness/html/main');
                     modalIframe.src = targetUrl;
                 } else {
                     const isProxyUrl = 
