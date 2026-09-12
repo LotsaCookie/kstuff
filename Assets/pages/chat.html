@@ -95,7 +95,6 @@
         .user-list-container { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
         .user-list-item { display: flex; align-items: center; background: var(--card); padding: 12px; border-radius: 10px; gap: 12px; border: 1px solid rgba(128,128,128,0.1); transition: all 0.2s ease; }
         
-        /* Light-up effect for selected users in Group Creation */
         .user-list-item.selected {
             border: 1px solid var(--text);
             background-color: color-mix(in srgb, var(--text) 15%, var(--card));
@@ -207,6 +206,9 @@ function loadLocalData() {
             cachedUsersList = localUsers;
             cachedUsersList.forEach(u => { if (u && u.username) userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar; });
         }
+        
+        const savedGroupNames = JSON.parse(localStorage.getItem('chat_group_names'));
+        if (savedGroupNames) groupNames = savedGroupNames;
         
         if (currentUser) {
             const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
@@ -337,14 +339,11 @@ function handleBackendMessage(data) {
     } 
     else if (data.type === 'get-convs' && data.success) {
         const safeConvs = Array.isArray(data.payload) ? data.payload : [];
-        
-        // Handle grp- prefixed entries injected into conversation-data.json
         const newGroupsFromConvs = [];
         const filteredConvs = [];
         
         safeConvs.forEach(encoded => {
             const decoded = xorDecode(encoded);
-            // Check if it's stored with grp- prefix or starts with grp- decoded
             if (encoded.startsWith('grp-') || decoded.startsWith('grp-')) {
                 const gId = encoded.startsWith('grp-') ? encoded : decoded;
                 if (!activeGroups.includes(gId)) newGroupsFromConvs.push(gId);
@@ -378,20 +377,18 @@ function handleBackendMessage(data) {
         document.getElementById('section-loader').classList.add('hidden');
         
         let chatId = data.type === 'get-group-chat' ? data.groupId : data.id;
-        if (!chatId && data.payload && data.payload.length > 0 && data.type !== 'get-group-chat') {
-            const peerMsg = data.payload.find(m => m.sender.toLowerCase() !== currentUser.toLowerCase());
-            if (peerMsg) chatId = [currentUser, peerMsg.sender.toLowerCase()].sort().join('-');
-        }
         
+        if (!chatId) chatId = currentActiveRawId;
+
         if (data.type === 'get-group-chat' && data.groupName) {
             groupNames[chatId] = data.groupName;
+            localStorage.setItem('chat_group_names', JSON.stringify(groupNames)); // Save permanently
             if (currentActiveRawId === chatId) {
                 document.getElementById('header-username').innerText = data.groupName || "Unnamed Group";
             }
             renderSidebarList();
         }
 
-        if (!chatId) chatId = currentActiveRawId; 
         if (!chatId) return;
 
         const remoteMessages = deduplicateMessages(data.payload || []);
@@ -400,6 +397,7 @@ function handleBackendMessage(data) {
         
         const combined = deduplicateMessages([...cached, ...remoteMessages]).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(combined));
+        
         if (chatId === currentActiveRawId) renderMessages(combined, chatId);
     } 
     else if ((data.type === 'send-message' || data.type === 'send-group-message') && data.success) {
@@ -533,11 +531,22 @@ function renderMessages(messages, chatId) {
     const container = document.getElementById('chat-container');
 
     const cleanMsgs = deduplicateMessages(messages).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    if (chatId !== lastRenderedChatId) { lastRenderedChatId = chatId; lastMessageDataString = ""; container.innerHTML = ''; }
+    
+    if (chatId !== lastRenderedChatId) { 
+        lastRenderedChatId = chatId; 
+        lastMessageDataString = ""; 
+        container.innerHTML = ''; 
+    }
     
     const newMessageString = JSON.stringify(cleanMsgs);
-    if (newMessageString === lastMessageDataString) return;
+    if (newMessageString === lastMessageDataString) return; 
+
+    let oldMsgs = [];
+    if (lastMessageDataString) {
+        try { oldMsgs = JSON.parse(lastMessageDataString); } catch(e) {}
+    }
     lastMessageDataString = newMessageString;
+
     container.innerHTML = '';
 
     if (cleanMsgs.length === 0) {
@@ -548,10 +557,13 @@ function renderMessages(messages, chatId) {
     cleanMsgs.forEach((m, index) => {
         let showTime = true;
         const next = cleanMsgs[index + 1];
+        
         if (index === cleanMsgs.length - 1) showTime = true;
         else if (next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000) showTime = false;
         
-        appendSingleMessageToDOM(m.sender, m.message, m.timestamp, false, showTime, chatId.startsWith('grp-'));
+        let isNewMessage = oldMsgs.length > 0 && index >= oldMsgs.length;
+        
+        appendSingleMessageToDOM(m.sender, m.message, m.timestamp, isNewMessage, showTime, chatId.startsWith('grp-'));
     });
 }
 
@@ -716,6 +728,8 @@ createGroupBtn.onclick = () => {
     selectedUsersForGroup.forEach(u => backendPort.postMessage({ type: 'add-to-group', groupId: newGroupId, user: u }));
     
     groupNames[newGroupId] = gName;
+    localStorage.setItem('chat_group_names', JSON.stringify(groupNames)); 
+    
     if (!activeGroups.includes(newGroupId)) {
         activeGroups.push(newGroupId);
     }
@@ -783,7 +797,7 @@ function populateUserDirectoryModal(users) {
         }
         userContainer.appendChild(item);
     });
- }
+}
 </script>
 </body>
 </html>
