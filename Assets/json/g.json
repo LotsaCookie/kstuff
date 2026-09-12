@@ -252,24 +252,6 @@
     "image": ""
   },
   {
-    "title": "Bad Icecream 1",
-    "url": "${truffled}/gamefile/badice1.html",
-    "category": "Arcade",
-    "image": ""
-  },
-  {
-    "title": "Bad Icecream 2",
-    "url": "${truffled}/gamefile/badice2.html",
-    "category": "Arcade",
-    "image": ""
-  },
-  {
-    "title": "Bad Icecream 3",
-    "url": "${truffled}/gamefile/badice3.html",
-    "category": "Arcade",
-    "image": ""
-  },
-  {
     "title": "Bad Parenting",
     "url": "${truffled}/games/bad/index.html",
     "category": "Horror",
