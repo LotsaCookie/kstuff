@@ -10,6 +10,7 @@ function initApp() {
   const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
 
   const ITEMS_PER_PAGE = 48;
+  const IMAGE_LOAD_TIMEOUT = 5000; // ms to wait for images before hiding loader
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
@@ -37,6 +38,7 @@ function initApp() {
   };
   toggleLoader(true);
 
+  // Tooltip: single pointer handler throttled via rAF
   const tooltipEl = body.appendChild(el('div', { className: 'js-custom-tooltip' }));
   tooltipEl.style.cssText = 'position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;';
   let tooltipPending = false, lastPointerEvent = null;
@@ -113,7 +115,7 @@ function initApp() {
       const winner = await new Promise(resolve => {
         let done = false, fail = 0, imgs = [];
         const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 3000); // shorter timeout
+        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 3000);
         chunk.forEach(entry => {
           const img = new Image(); imgs.push(img);
           const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
@@ -365,7 +367,7 @@ function initApp() {
     const frag = document.createDocumentFragment();
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
       const card = el('div', { className: 'round-btn' }); card.dataset.index = i;
-      card.innerHTML = `<img alt="" style="display:none;" loading="lazy"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
+      card.innerHTML = `<img alt="" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
       grid.pool.push({ el: card, img: card.querySelector('img'), t: card.querySelector('h3'), d: card.querySelector('p'), c: card.querySelector('.category-label') });
       frag.appendChild(card);
     }
@@ -373,21 +375,8 @@ function initApp() {
     grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
   };
 
-  const scheduleImageLoad = (imgEl, src) => {
-    if (!imgEl) return;
-    imgEl.dataset.src = src || '';
-    if (!src) { imgEl.removeAttribute('src'); imgEl.style.display = 'none'; return; }
-    const assign = () => {
-      imgEl.onload = imgEl.onerror = () => { imgEl.onload = imgEl.onerror = null; };
-      imgEl.style.display = 'block';
-      imgEl.src = src;
-    };
-    if ('requestIdleCallback' in window) requestIdleCallback(assign, { timeout: 800 });
-    else setTimeout(assign, 40);
-  };
-
   const renderGrid = (type, preload = false) => {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       const grid = grids[type]; if (!grid.gridEl) return resolve();
       grid.renderId = (grid.renderId || 0) + 1;
       const myRenderId = grid.renderId;
@@ -396,23 +385,43 @@ function initApp() {
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       if (grid.page > totalPages) grid.page = 1;
       grid.paginatedData = filtered.slice((grid.page - 1) * ITEMS_PER_PAGE, grid.page * ITEMS_PER_PAGE);
+
+      const imagePromises = [];
       for (let idx = 0; idx < grid.pool.length; idx++) {
         const p = grid.pool[idx];
         const item = grid.paginatedData[idx];
         p.el.style.display = item ? 'block' : 'none';
+
         if (item) {
           if (p.t.textContent !== item.title) p.t.textContent = item.title;
           if (p.d.textContent !== (item.description || '')) p.d.textContent = item.description || '';
           if (p.c) p.c.textContent = item.category || 'All';
           p.el.dataset.tooltip = item.title;
+
           if (p.img.dataset.src !== (item.image || '')) {
             p.img.onload = p.img.onerror = null;
             if (p.img.src) p.img.src = '';
-            if (item.image) scheduleImageLoad(p.img, item.image);
-            else scheduleImageLoad(p.img, '');
-          } else if (item.image) p.img.style.display = 'block';
+            p.img.dataset.src = item.image || '';
+            if (item.image) {
+              p.img.style.display = 'block';
+              try {
+                p.img.loading = 'eager'; // ensure browsers don't lazy-load
+              } catch (e) {}
+              const pr = new Promise(res => {
+                let done = false;
+                const doneFn = () => { if (done) return; done = true; p.img.onload = p.img.onerror = null; res(); };
+                p.img.onload = doneFn; p.img.onerror = doneFn;
+                p.img.src = item.image;
+              });
+              imagePromises.push(pr);
+            } else {
+              p.img.removeAttribute('src'); p.img.style.display = 'none';
+            }
+          } else if (item.image) {
+            p.img.style.display = 'block';
+          }
         } else {
-          scheduleImageLoad(p.img, '');
+          if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none'; }
           if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
         }
       }
@@ -431,10 +440,15 @@ function initApp() {
           };
         }
       }
+
+      const waitPromise = (imagePromises.length ? Promise.allSettled(imagePromises) : Promise.resolve());
+      const timeout = new Promise(r => setTimeout(r, IMAGE_LOAD_TIMEOUT));
+      await Promise.race([waitPromise, timeout]);
+
       if (grid.renderId === myRenderId) {
         toggleLoader(false);
-        resolve();
-      } else resolve();
+      }
+      resolve();
     });
   };
 
