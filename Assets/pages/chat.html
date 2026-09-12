@@ -271,7 +271,7 @@ async function initBackendIframe() {
             backendPort.onmessage = e => handleBackendMessage(e.data);
             iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
         };
-        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?usdixxxUSAUSA47`;
+        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?usdixxxUSAUSA`;
     } catch (err) {}
 }
 initBackendIframe();
@@ -379,6 +379,17 @@ function handleBackendMessage(data) {
         let chatId = data.type === 'get-group-chat' ? data.groupId : data.id;
         
         if (!chatId) chatId = currentActiveRawId;
+        if (!chatId) return;
+        
+        const remoteMessages = deduplicateMessages(data.payload || []);
+
+        if (!chatId.startsWith('grp-')) {
+            const expectedUsers = chatId.toLowerCase().split('-');
+            const isContaminated = remoteMessages.some(m => !expectedUsers.includes(m.sender.toLowerCase()));
+            if (isContaminated) {
+                return; 
+            }
+        }
 
         if (data.type === 'get-group-chat' && data.groupName) {
             groupNames[chatId] = data.groupName;
@@ -389,9 +400,6 @@ function handleBackendMessage(data) {
             renderSidebarList();
         }
 
-        if (!chatId) return;
-
-        const remoteMessages = deduplicateMessages(data.payload || []);
         let cached = [];
         try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
         
@@ -447,6 +455,7 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     void chatContainer.offsetWidth;
     chatContainer.classList.add('container-fade');
 
+    // Eagerly load ANY chat from local storage instantly
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
         if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
@@ -525,7 +534,8 @@ function fetchMessages(rawId) {
 }
 
 function renderMessages(messages, chatId) {
-    if (chatId !== currentActiveRawId) return;
+    if (chatId !== currentActiveRawId) return; // Guard against delayed re-renders
+    
     document.getElementById('section-loader').classList.add('hidden');
     const container = document.getElementById('chat-container');
 
@@ -546,7 +556,7 @@ function renderMessages(messages, chatId) {
     }
     lastMessageDataString = newMessageString;
 
-    container.innerHTML = '';
+    container.innerHTML = ''; 
 
     if (cleanMsgs.length === 0) {
         container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
