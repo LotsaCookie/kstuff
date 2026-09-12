@@ -271,7 +271,7 @@ async function initBackendIframe() {
             backendPort.onmessage = e => handleBackendMessage(e.data);
             iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
         };
-        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?usdixxxUSAUdSA`;
+        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?usdixxxUSAUSA`;
     } catch (err) {}
 }
 initBackendIframe();
@@ -360,6 +360,11 @@ function handleBackendMessage(data) {
         }
 
         activeConversations = filteredConvs.filter(Boolean);
+        
+        if (currentUser) {
+            localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(activeConversations.map(c => xorEncode(c))));
+        }
+
         if (currentActiveRawId && !currentActiveRawId.startsWith('grp-') && !activeConversations.includes(currentActiveRawId)) {
             cleanupDeletedChat(currentActiveRawId);
         }
@@ -376,19 +381,28 @@ function handleBackendMessage(data) {
     else if ((data.type === 'get-messages' || data.type === 'get-group-chat') && data.success) {
         document.getElementById('section-loader').classList.add('hidden');
         
-        let chatId = data.type === 'get-group-chat' ? data.groupId : data.id;
-        
-        if (!chatId) chatId = currentActiveRawId;
-        if (!chatId) return;
-        
+        let chatId = data.id || data.groupId || data.chatId;
         const remoteMessages = deduplicateMessages(data.payload || []);
+        
+        if (!chatId) {
+            if (remoteMessages.length === 0) return;
+            
+            if (data.type === 'get-group-chat') {
+                if (currentActiveRawId && currentActiveRawId.startsWith('grp-')) chatId = currentActiveRawId;
+                else return;
+            } else {
+                const senders = [...new Set(remoteMessages.map(m => m.sender.toLowerCase()))];
+                const otherUser = senders.find(s => s !== currentUser) || currentUser;
+                chatId = [currentUser, otherUser].sort().join('-');
+            }
+        }
 
-        if (!chatId.startsWith('grp-')) {
+        if (!chatId) return;
+
+        if (!chatId.startsWith('grp-') && remoteMessages.length > 0) {
             const expectedUsers = chatId.toLowerCase().split('-');
             const isContaminated = remoteMessages.some(m => !expectedUsers.includes(m.sender.toLowerCase()));
-            if (isContaminated) {
-                return; 
-            }
+            if (isContaminated) return;
         }
 
         if (data.type === 'get-group-chat' && data.groupName) {
@@ -455,7 +469,6 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     void chatContainer.offsetWidth;
     chatContainer.classList.add('container-fade');
 
-    // Eagerly load ANY chat from local storage instantly
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
         if (cachedMsgs && cachedMsgs.length > 0) renderMessages(cachedMsgs, rawId);
@@ -534,7 +547,7 @@ function fetchMessages(rawId) {
 }
 
 function renderMessages(messages, chatId) {
-    if (chatId !== currentActiveRawId) return; // Guard against delayed re-renders
+    if (chatId !== currentActiveRawId) return; 
     
     document.getElementById('section-loader').classList.add('hidden');
     const container = document.getElementById('chat-container');
