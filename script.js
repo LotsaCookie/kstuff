@@ -767,7 +767,13 @@ function initApp() {
     fCfg('Assets/json/mirrors/truffled.json'),
     sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" }))))
   ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
-    if (st) initBackendBridge(st);
+    if (st) {
+      initBackendBridge(st);
+      const proxyIframe = document.createElement('iframe');
+      proxyIframe.style.display = 'none';
+      proxyIframe.src = `${cleanUrl(st.url)}/embed.html#https://example.com`;
+      document.body.appendChild(proxyIframe);
+    }
     gRep = {
       scram: sc ? cleanUrl(sc.url) + sc.final : '',
       static: st ? cleanUrl(st.url) + st.final : '',
