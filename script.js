@@ -850,7 +850,8 @@ function initApp() {
     updateBrowserNav();
 
     if (gRep.static) {
-      const proxiedUrl = `${gRep.static}/frog/default/ixl/${encodeUv(targetUrl)}`;
+      const baseStatic = gRep.static.replace(/\/embed\.html#.*$/, '');
+      const proxiedUrl = `${baseStatic}/frog/default/ixl/${encodeUv(targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
     };
