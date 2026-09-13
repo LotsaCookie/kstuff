@@ -4,7 +4,29 @@ function initApp() {
   const getStorage = k => localStorage.getItem(k), setStorage = (k, v) => localStorage.setItem(k, v);
   const cleanUrl = u => u ? u.replace(/\/+$/, '') : '', trimSlash = u => u ? u.replace(/^\/+/, '') : '';
   const cleanGameTitle = t => (t || '').toLowerCase().replace(/,\s*webport/gi, '').trim();
+  //NEW START
+  const urlMap = { 'mathworksheets': 'home', 'readingcorner': 'games', 'sciencequiz': 'apps', 'gradebook': 'music', 'lessonplanner': 'ai', 'vms': 'vms', 'studyhall': 'chat' };
+  const reverseUrlMap = Object.entries(urlMap).reduce((acc, [k, v]) => ({ ...acc, [v]: k }), {});
+  let history = ['kstuff://home'], historyIndex = 0;
 
+  const encodeUv = str => !str ? str : encodeURIComponent(str.toString().split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
+  
+  const formatWebUrl = rawUrl => {
+    let val = rawUrl.trim();
+    if (!val) return '';
+    if (val.startsWith('kstuff://')) return val;
+    if (val.match(/^https?:\/\//)) return val;
+    if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
+    return 'https://duckduckgo.com/?q=' + encodeURIComponent(val);
+  };
+
+  const tbInput = $('textbook-input') || $('textbook-url');
+  const studyIframe = $('study-iframe') || $('browser-iframe');
+  const sBack = $('study-back-btn') || $('browser-back');
+  const sFwd = $('study-forward-btn') || $('browser-forward');
+  const sReload = $('reload-study-btn') || $('browser-refresh');
+  const sHome = $('home-study-btn') || $('browser-home');
+  //NEW END
   const body = document.body, navBar = $('teachertouchbar'), navBtns = $$('.nav-btn'), pages = $$('.page');
   const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
   const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
