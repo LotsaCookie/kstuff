@@ -83,6 +83,22 @@ body.size-large.text-hide {
     left: 0;
 }
 
+.nav-left .learning-header {
+    width: calc(100% - var(--nav-width));
+    left: var(--nav-width);
+}
+
+.nav-right .learning-header {
+    width: calc(100% - var(--nav-width));
+    left: 0;
+}
+
+.nav-top .learning-header,
+.nav-bottom .learning-header {
+    width: 100%;
+    left: 0;
+}
+
 .study-nav-btn {
     background: var(--card-bg);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -224,8 +240,8 @@ body.size-large.text-hide {
 
 .nav-top #classroom-portal-container { flex-direction: column; margin-top: var(--header-height); }
 .nav-bottom #classroom-portal-container { flex-direction: column-reverse; margin-top: var(--header-height); }
-.nav-left #classroom-portal-container { flex-direction: row; margin-top: var(--header-height); }
-.nav-right #classroom-portal-container { flex-direction: row-reverse; margin-top: var(--header-height); }
+.nav-left #classroom-portal-container { flex-direction: row; margin-top: 0; }
+.nav-right #classroom-portal-container { flex-direction: row-reverse; margin-top: 0; }
 
 #studymaterial-area {
     flex-grow: 1;
@@ -260,6 +276,7 @@ body.size-large.text-hide {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
+    margin-top: var(--header-height);
 }
 
 .nav-top #teachertouchbar::before,
@@ -278,6 +295,7 @@ body.size-large.text-hide {
     align-items: center;
     gap: 0.4rem;
     padding-top: 1.1rem;
+    margin-top: 0;
 }
 
 .nav-left #teachertouchbar::before,
