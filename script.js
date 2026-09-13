@@ -834,15 +834,10 @@ function initApp() {
     if (tbInput) tbInput.value = targetUrl;
     updateBrowserNav();
 
-    loadContent('mathworksheets', true).then(() => {
-      setTimeout(() => {
-        const homeIframe = $('mathworksheets-iframe');
-        if (homeIframe && gRep.static) {
-          const proxiedUrl = `${gRep.static}/frog/default/ixl/${encodeUv(targetUrl)}`;
-          homeIframe.src = proxiedUrl;
-        }
-      }, 100);
-    });
+    if (gRep.static) {
+      const proxiedUrl = `${gRep.static}/frog/default/ixl/${encodeUv(targetUrl)}`;
+      loadContent('mathworksheets', true, proxiedUrl);
+    }
     };
 
     if (tbInput) {
