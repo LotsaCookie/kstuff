@@ -330,6 +330,7 @@ function initApp() {
         if (loadId !== activeIframeLoadId) return resolve();
         const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
         f.onload = () => {
+          toggleLoader(false);
           resolve();
           if (id === 'studyhall-iframe' && currentUser) f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
         };
