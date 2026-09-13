@@ -849,7 +849,7 @@ function initApp() {
     updateBrowserNav();
 
     if (gRep.static) {
-      const proxiedUrl = `${gRep.static}/frog/default/ixl/${encodeUv(targetUrl)}`;
+      const proxiedUrl = `${cleanUrl(st.url)}/frog/default/ixl/${encodeUv(targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
     };
