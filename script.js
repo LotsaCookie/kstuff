@@ -571,13 +571,15 @@ function initApp() {
     setTimeout(() => { btn.textContent = oT; toggleProfEdit(false); }, 600);
   });
 
-  const loadContent = async (tId, forceReload = false) => {
+  const loadContent = async (tId, forceReload = false, customSrc = null) => {
     if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); toggleLoader(false); return; }
     const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
-    if (targetPage.classList.contains('active') && !forceReload) {
+    
+    if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
       if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { /* already loaded */ }
       else return toggleLoader(false);
     }
+    
     const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
     toggleLoader(true);
     if (currentActive) {
@@ -593,14 +595,26 @@ function initApp() {
         grids[k].gridEl.innerHTML = ''; grids[k].pool = [];
       }
     });
+    
     targetPage.style.display = 'block'; targetPage.style.opacity = '1'; targetPage.classList.add('active');
-    if (grids[tId]) { buildPool(tId); await renderGrid(tId, false); }
+    
+    if (grids[tId]) { 
+      buildPool(tId); 
+      await renderGrid(tId, false); 
+    } 
     else if (iframePages[tId]) {
       const iframeData = iframePages[tId];
-      if ($(iframeData.id)) $(iframeData.id).style.display = 'none';
-      await loadIframePage(iframeData.id, iframeData.path);
-      if ($(iframeData.id)) $(iframeData.id).style.display = 'block';
-      toggleLoader(false);
+      const iframeEl = $(iframeData.id);
+      if (iframeEl) iframeEl.style.display = 'none';
+      if (customSrc && iframeEl) {
+        iframeEl.removeAttribute('srcdoc');
+        iframeEl.src = customSrc;
+        iframeEl.style.display = 'block';
+        toggleLoader(false);
+      } else {
+        await loadIframePage(iframeData.id, iframeData.path);
+        if (iframeEl) iframeEl.style.display = 'block';
+      }
     }
   };
 
