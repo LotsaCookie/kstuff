@@ -212,10 +212,10 @@ body.size-large.text-hide {
 
 #classroom-portal-container {
     display: flex;
-    height: calc(100vh - var(--header-height));
+    height: 100vh;
     width: 100vw;
     position: fixed;
-    top: var(--header-height);
+    top: 0;
     left: 0;
 }
 
@@ -254,10 +254,16 @@ body.size-large.text-hide {
     flex-direction: column;
     position: relative;
     font-weight: bold;
+    margin-top: var(--header-height);
+}
+
+.nav-left #studymaterial-area,
+.nav-right #studymaterial-area {
+    margin-top: 0;
 }
 
 #teachertouchbar {
-    position: relative;
+    position: fixed;
     background: var(--nav-bg);
     display: flex;
     align-items: center;
@@ -279,6 +285,8 @@ body.size-large.text-hide {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
+    top: var(--header-height);
+    left: 0;
 }
 
 .nav-top #teachertouchbar::before,
@@ -297,6 +305,16 @@ body.size-large.text-hide {
     align-items: center;
     gap: 0.4rem;
     padding-top: 1.1rem;
+    top: 0;
+}
+
+.nav-left #teachertouchbar {
+    left: 0;
+}
+
+.nav-right #teachertouchbar {
+    right: 0;
+    left: auto;
 }
 
 .nav-left #teachertouchbar::before,
