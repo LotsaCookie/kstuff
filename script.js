@@ -807,6 +807,67 @@ function initApp() {
     grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
   });
 
+//New start
+  const updateBrowserNav = () => {
+      if (sBack) sBack.disabled = historyIndex <= 0;
+      if (sFwd) sFwd.disabled = historyIndex >= history.length - 1;
+    };
+
+    const loadBrowserUrl = (val, isHistory = false) => {
+      const targetUrl = formatWebUrl(val);
+      if (!targetUrl) return;
+
+      if (targetUrl.startsWith('kstuff://')) {
+        const pageName = targetUrl.replace('kstuff://', '').toLowerCase();
+        const targetId = reverseUrlMap[pageName] || pageName;
+        const btn = Array.from(navBtns).find(b => b.dataset.target === targetId);
+        if (btn) btn.click();
+        return;
+      }
+
+      if (!isHistory && history[historyIndex] !== targetUrl) {
+        history = history.slice(0, historyIndex + 1);
+        history.push(targetUrl);
+        historyIndex++;
+      }
+
+      if (tbInput) tbInput.value = targetUrl;
+      updateBrowserNav();
+
+      if (studyIframe && gRep.static) {
+        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
+        studyIframe.src = `${gRep.static}/frog/default/ixl/${encodeUv(wrapperUrl)}`;
+      }
+    };
+
+    if (tbInput) {
+      tbInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(e.target.value); });
+      $('study-enter-btn')?.addEventListener('click', () => loadBrowserUrl(tbInput.value));
+    }
+    
+    sBack?.addEventListener('click', () => { if (historyIndex > 0) { historyIndex--; loadBrowserUrl(history[historyIndex], true); } });
+    sFwd?.addEventListener('click', () => { if (historyIndex < history.length - 1) { historyIndex++; loadBrowserUrl(history[historyIndex], true); } });
+    sReload?.addEventListener('click', () => { if (studyIframe) { try { studyIframe.contentWindow.location.reload(); } catch(e) { studyIframe.src = studyIframe.src; } } });
+    sHome?.addEventListener('click', () => loadBrowserUrl('kstuff://home'));
+
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tId = btn.dataset.target;
+        if (urlMap[tId] && tbInput) {
+          const newUrl = `kstuff://${urlMap[tId]}`;
+          if (tbInput.value !== newUrl) {
+            tbInput.value = newUrl;
+            if (history[historyIndex] !== newUrl) {
+              history = history.slice(0, historyIndex + 1);
+              history.push(newUrl);
+              historyIndex++;
+              updateBrowserNav();
+            }
+          }
+        }
+      });
+    });
+// NEW END
   initPromise.then(async () => {
     let activePg = document.querySelector('.page.active');
     if (!activePg) {
