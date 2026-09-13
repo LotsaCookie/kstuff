@@ -196,6 +196,7 @@ body.size-large.text-hide {
     height: calc(100vh - 56px);
     width: 100vw;
     flex: 1;
+    order: 2;
 }
 
 .section-loader {
@@ -270,12 +271,14 @@ body.size-large.text-hide {
 .nav-left #teachertouchbar, 
 .nav-right #teachertouchbar {
     width: var(--nav-width);
-    height: 100%;
+    height: auto;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     gap: 0.4rem;
     padding-top: 1.1rem;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
 }
 
 .nav-left #teachertouchbar::before,
@@ -1346,4 +1349,4 @@ body.text-hide .nav-right .nav-divider {
 #do-logout-btn:active {
     transform: translateY(0);
     box-shadow: none;
-    }
+}
