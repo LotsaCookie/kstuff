@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
     <script>window.addEventListener("beforeunload",e=>{e.preventDefault();e.returnValue=""});</script>
     <script>(async function(){let c='main';try{const r=await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main');if(r.ok){const d=await r.json();c=d.sha}}catch(e){}const p=["https://raw.githubusercontent.com/lotsacookie/kstuff/refs/heads/main/","https://raw.githack.com/lotsacookie/kstuff/main/",`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${c}/`,"https://cdn.statically.io/gh/lotsacookie/kstuff/main/",""];window.kAssets=Promise.all(['style.css','script.js'].map(f=>new Promise(res=>{const isScript=f.endsWith('.js');let i=0,cb="?i_="+Date.now();function t(){if(i>=p.length)return res();let e=document.createElement(isScript?'script':'link'),cp=p[i],u=cp?(cp+f+(cp.includes('jsdelivr')?'':cb)):(f+cb);if(isScript){e.src=u;e.async=false}else{e.rel='stylesheet';e.href=u}e.onload=res;e.onerror=()=>{e.remove();i++;t()};document.head.appendChild(e)}t()})))})();</script>
@@ -66,6 +67,32 @@
             <button class="nav-btn" data-target="profile" id="profile-nav-btn"><i class="ph ph-user" id="profile-nav-icon"></i><span class="label-data"><div>e</div><div>l</div><div>i</div><div>f</div><div>o</div><div>r</div><div>P</div></span></button>
             <div class="nav-indicator"></div>
         </nav>
+
+        <header class="learning-header">
+            <button class="study-nav-btn" id="study-back-btn" title="Go Back" disabled>
+                <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+            </button>
+            <button class="study-nav-btn" id="study-forward-btn" title="Go Forward" disabled>
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+            </button>
+            <button class="study-nav-btn" id="home-study-btn" title="Library Home Page">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </button>
+            <button class="study-nav-btn" id="reload-study-btn" title="Reload Tab">
+                <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </button>
+            
+            <div class="textbook-bar-container">
+                <input type="text" class="textbook-input" id="textbook-input" value="kstuff://home" />
+                <button class="subject-action-btn" id="flashcard-shortcut-btn" title="Add Shortcut">
+                    <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </button>
+                <button class="study-action-btn" id="study-enter-btn" title="Enter">
+                    <svg viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+                </button>
+            </div>
+        </header>
+
         <main id="studymaterial-area">
             <div id="section-loader" class="section-loader">
                 <div class="spinner"></div>
