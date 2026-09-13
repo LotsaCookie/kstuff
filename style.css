@@ -33,8 +33,6 @@ body {
     overflow: hidden;
     font-weight: bold;
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
-    display: flex;
-    flex-direction: column;
 }
 
 body.text-hide {
@@ -80,7 +78,9 @@ body.size-large.text-hide {
     height: var(--header-height);
     width: 100%;
     box-sizing: border-box;
-    order: 1;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
 .study-nav-btn {
@@ -196,8 +196,8 @@ body.size-large.text-hide {
     display: flex;
     height: calc(100vh - var(--header-height));
     width: 100vw;
-    flex: 1;
-    order: 2;
+    margin-top: var(--header-height);
+    position: relative;
 }
 
 .section-loader {
@@ -222,10 +222,10 @@ body.size-large.text-hide {
     pointer-events: none;
 }
 
-.nav-top #classroom-portal-container { flex-direction: column; }
-.nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
-.nav-left #classroom-portal-container { flex-direction: row; }
-.nav-right #classroom-portal-container { flex-direction: row-reverse; }
+.nav-top #classroom-portal-container { flex-direction: column; margin-top: var(--header-height); }
+.nav-bottom #classroom-portal-container { flex-direction: column-reverse; margin-top: var(--header-height); }
+.nav-left #classroom-portal-container { flex-direction: row; margin-top: var(--header-height); }
+.nav-right #classroom-portal-container { flex-direction: row-reverse; margin-top: var(--header-height); }
 
 #studymaterial-area {
     flex-grow: 1;
