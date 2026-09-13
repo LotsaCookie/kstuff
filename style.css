@@ -212,12 +212,38 @@ body.size-large.text-hide {
 
 #classroom-portal-container {
     display: flex;
-    height: 100vh;
-    width: 100vw;
     position: fixed;
-    top: 0;
+    top: var(--header-height);
     left: 0;
+    width: 100vw;
+    height: calc(100vh - var(--header-height));
 }
+
+.nav-top #classroom-portal-container {
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height) - var(--nav-size));
+}
+
+.nav-bottom #classroom-portal-container {
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height) - var(--nav-size));
+}
+
+.nav-left #classroom-portal-container {
+    left: var(--nav-width);
+    width: calc(100vw - var(--nav-width));
+    height: calc(100vh - var(--header-height));
+}
+
+.nav-right #classroom-portal-container {
+    width: calc(100vw - var(--nav-width));
+    height: calc(100vh - var(--header-height));
+}
+
+.nav-top #classroom-portal-container { flex-direction: column; }
+.nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
+.nav-left #classroom-portal-container { flex-direction: row; }
+.nav-right #classroom-portal-container { flex-direction: row-reverse; }
 
 .section-loader {
     position: absolute;
@@ -241,11 +267,6 @@ body.size-large.text-hide {
     pointer-events: none;
 }
 
-.nav-top #classroom-portal-container { flex-direction: column; }
-.nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
-.nav-left #classroom-portal-container { flex-direction: row; }
-.nav-right #classroom-portal-container { flex-direction: row-reverse; }
-
 #studymaterial-area {
     flex-grow: 1;
     padding: 0; 
@@ -254,12 +275,6 @@ body.size-large.text-hide {
     flex-direction: column;
     position: relative;
     font-weight: bold;
-    margin-top: var(--header-height);
-}
-
-.nav-left #studymaterial-area,
-.nav-right #studymaterial-area {
-    margin-top: 0;
 }
 
 #teachertouchbar {
@@ -280,8 +295,7 @@ body.size-large.text-hide {
                 padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-top #teachertouchbar, 
-.nav-bottom #teachertouchbar {
+.nav-top #teachertouchbar {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
@@ -289,30 +303,47 @@ body.size-large.text-hide {
     left: 0;
 }
 
-.nav-top #teachertouchbar::before,
+.nav-top #teachertouchbar::before {
+    content: "";
+    width: 35px;
+    flex-shrink: 0;
+}
+
+.nav-bottom #teachertouchbar {
+    height: var(--nav-size);
+    width: 100%;
+    flex-direction: row;
+    bottom: 0;
+    left: 0;
+}
+
 .nav-bottom #teachertouchbar::before {
     content: "";
     width: 35px;
     flex-shrink: 0;
 }
 
-.nav-left #teachertouchbar, 
-.nav-right #teachertouchbar {
+.nav-left #teachertouchbar {
     width: var(--nav-width);
-    height: 100%;
+    height: 100vh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     gap: 0.4rem;
     padding-top: 1.1rem;
     top: 0;
-}
-
-.nav-left #teachertouchbar {
     left: 0;
 }
 
 .nav-right #teachertouchbar {
+    width: var(--nav-width);
+    height: 100vh;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 1.1rem;
+    top: 0;
     right: 0;
     left: auto;
 }
