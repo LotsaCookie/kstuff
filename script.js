@@ -813,31 +813,36 @@ function initApp() {
       if (sFwd) sFwd.disabled = historyIndex >= history.length - 1;
     };
 
-    const loadBrowserUrl = (val, isHistory = false) => {
-      const targetUrl = formatWebUrl(val);
-      if (!targetUrl) return;
+  const loadBrowserUrl = (val, isHistory = false) => {
+    const targetUrl = formatWebUrl(val);
+    if (!targetUrl) return;
 
-      if (targetUrl.startsWith('kstuff://')) {
-        const pageName = targetUrl.replace('kstuff://', '').toLowerCase();
-        const targetId = reverseUrlMap[pageName] || pageName;
-        const btn = Array.from(navBtns).find(b => b.dataset.target === targetId);
-        if (btn) btn.click();
-        return;
-      }
+    if (targetUrl.startsWith('kstuff://')) {
+      const pageName = targetUrl.replace('kstuff://', '').toLowerCase();
+      const targetId = reverseUrlMap[pageName] || pageName;
+      const btn = Array.from(navBtns).find(b => b.dataset.target === targetId);
+      if (btn) btn.click();
+      return;
+    }
 
-      if (!isHistory && history[historyIndex] !== targetUrl) {
-        history = history.slice(0, historyIndex + 1);
-        history.push(targetUrl);
-        historyIndex++;
-      }
+    if (!isHistory && history[historyIndex] !== targetUrl) {
+      history = history.slice(0, historyIndex + 1);
+      history.push(targetUrl);
+      historyIndex++;
+    }
 
-      if (tbInput) tbInput.value = targetUrl;
-      updateBrowserNav();
+    if (tbInput) tbInput.value = targetUrl;
+    updateBrowserNav();
 
-      if (studyIframe && gRep.static) {
-        const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
-        studyIframe.src = `${gRep.static}/frog/default/ixl/${encodeUv(wrapperUrl)}`;
-      }
+    loadContent('mathworksheets', true).then(() => {
+      setTimeout(() => {
+        const homeIframe = $('mathworksheets-iframe');
+        if (homeIframe && gRep.static) {
+          const proxiedUrl = `${gRep.static}/frog/default/ixl/${encodeUv(targetUrl)}`;
+          homeIframe.src = proxiedUrl;
+        }
+      }, 100);
+    });
     };
 
     if (tbInput) {
