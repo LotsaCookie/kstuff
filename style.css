@@ -33,6 +33,8 @@ body {
     overflow: hidden;
     font-weight: bold;
     transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+    display: flex;
+    flex-direction: column;
 }
 
 body.text-hide {
@@ -212,8 +214,9 @@ body.size-large.text-hide {
     display: flex;
     height: calc(100vh - var(--header-height));
     width: 100vw;
-    margin-top: var(--header-height);
-    position: relative;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
 }
 
 .section-loader {
@@ -238,10 +241,10 @@ body.size-large.text-hide {
     pointer-events: none;
 }
 
-.nav-top #classroom-portal-container { flex-direction: column; margin-top: var(--header-height); }
-.nav-bottom #classroom-portal-container { flex-direction: column-reverse; margin-top: var(--header-height); }
-.nav-left #classroom-portal-container { flex-direction: row; margin-top: 0; }
-.nav-right #classroom-portal-container { flex-direction: row-reverse; margin-top: 0; }
+.nav-top #classroom-portal-container { flex-direction: column; }
+.nav-bottom #classroom-portal-container { flex-direction: column-reverse; }
+.nav-left #classroom-portal-container { flex-direction: row; }
+.nav-right #classroom-portal-container { flex-direction: row-reverse; }
 
 #studymaterial-area {
     flex-grow: 1;
@@ -276,7 +279,6 @@ body.size-large.text-hide {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
-    margin-top: var(--header-height);
 }
 
 .nav-top #teachertouchbar::before,
@@ -295,7 +297,6 @@ body.size-large.text-hide {
     align-items: center;
     gap: 0.4rem;
     padding-top: 1.1rem;
-    margin-top: 0;
 }
 
 .nav-left #teachertouchbar::before,
