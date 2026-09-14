@@ -884,6 +884,39 @@ function initApp() {
       });
     });
 // NEW END
+// NEW START
+let activePort = null;
+  const mathworksIframe = $('mathworksheets-iframe');
+
+  if (mathworksIframe) {
+    mathworksIframe.addEventListener('load', () => {
+      try {
+        const channel = new MessageChannel();
+        activePort = channel.port1;
+        activePort.onmessage = (event) => {
+          if (event.data && event.data.type === 'tabData') {
+            const reportedUrl = event.data.url;
+            
+            if (reportedUrl && reportedUrl !== (tbInput ? tbInput.value : '') && reportedUrl !== 'about:blank') {
+              if (tbInput) tbInput.value = reportedUrl;
+              
+              if (history[historyIndex] !== reportedUrl) {
+                history = history.slice(0, historyIndex + 1);
+                history.push(reportedUrl);
+                historyIndex++;
+                updateBrowserNav();
+              }
+            }
+          }
+        };
+        if (mathworksIframe.contentWindow) {
+          mathworksIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
+        }
+      } catch (e) {}
+    });
+  }
+// NEW END
+  
   initPromise.then(async () => {
     let activePg = document.querySelector('.page.active');
     if (!activePg) {
