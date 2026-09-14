@@ -37,6 +37,7 @@ function initApp() {
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
   let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
+  let isNavigating = false, autoRefreshBusy = false;
 
   pages.forEach(p => {
     p.style.opacity = p.classList.contains('active') ? '1' : '0';
@@ -51,8 +52,10 @@ function initApp() {
 
   if (!getStorage('kstuff_theme')) setStorage('kstuff_theme', 'theme-sakura');
 
-  const toggleLoader = show => {
+  const loaderTextEl = loader?.querySelector('.loading-text');
+  const toggleLoader = (show, mode = 'loading') => {
     if (!loader) return;
+    if (show && loaderTextEl) loaderTextEl.textContent = mode === 'updating' ? 'Updating' : 'Loading';
     loader.style.opacity = show ? '1' : '0';
     loader.classList.toggle('hidden', !show);
   };
@@ -395,12 +398,12 @@ function initApp() {
     grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
   };
 
-  const renderGrid = (type, preload = false) => {
+  const renderGrid = (type, preload = false, mode = 'loading') => {
     return new Promise(async resolve => {
       const grid = grids[type]; if (!grid.gridEl) return resolve();
       grid.renderId = (grid.renderId || 0) + 1;
       const myRenderId = grid.renderId;
-      toggleLoader(true);
+      toggleLoader(true, mode);
       const filtered = (grid.data || []).filter(i => (grid.category === "All" || i.category === grid.category) && i.title.toLowerCase().includes(grid.search));
       const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
       if (grid.page > totalPages) grid.page = 1;
@@ -570,49 +573,54 @@ function initApp() {
   });
 
   const loadContent = async (tId, forceReload = false, customSrc = null) => {
-    if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); toggleLoader(false); return; }
-    const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
-    
-    if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
-      if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { /* already loaded */ }
-      else return toggleLoader(false);
-    }
-    
-    const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
-    toggleLoader(true);
-    if (currentActive) {
-      currentActive.classList.remove('active'); currentActive.style.display = 'none';
-      if (iframePages[currentActive.id]) {
-        const oldIframe = $(iframePages[currentActive.id].id);
-        if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
+    isNavigating = true;
+    try {
+      if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); toggleLoader(false); return; }
+      const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
+
+      if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
+        if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { /* already loaded */ }
+        else return toggleLoader(false);
       }
-    }
-    Object.keys(grids).forEach(k => {
-      if (k !== tId && grids[k].gridEl) {
-        if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
-        grids[k].gridEl.innerHTML = ''; grids[k].pool = [];
+
+      const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
+      toggleLoader(true);
+      if (currentActive) {
+        currentActive.classList.remove('active'); currentActive.style.display = 'none';
+        if (iframePages[currentActive.id]) {
+          const oldIframe = $(iframePages[currentActive.id].id);
+          if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
+        }
       }
-    });
-    
-    targetPage.style.display = 'block'; targetPage.style.opacity = '1'; targetPage.classList.add('active');
-    
-    if (grids[tId]) { 
-      buildPool(tId); 
-      await renderGrid(tId, false); 
-    } 
-    else if (iframePages[tId]) {
-      const iframeData = iframePages[tId];
-      const iframeEl = $(iframeData.id);
-      if (iframeEl) iframeEl.style.display = 'none';
-      if (customSrc && iframeEl) {
-        iframeEl.removeAttribute('srcdoc');
-        iframeEl.src = customSrc;
-        iframeEl.style.display = 'block';
-        toggleLoader(false);
-      } else {
-        await loadIframePage(iframeData.id, iframeData.path);
-        if (iframeEl) iframeEl.style.display = 'block';
+      Object.keys(grids).forEach(k => {
+        if (k !== tId && grids[k].gridEl) {
+          if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
+          grids[k].gridEl.innerHTML = ''; grids[k].pool = [];
+        }
+      });
+
+      targetPage.style.display = 'block'; targetPage.style.opacity = '1'; targetPage.classList.add('active');
+
+      if (grids[tId]) {
+        buildPool(tId);
+        await renderGrid(tId, false);
       }
+      else if (iframePages[tId]) {
+        const iframeData = iframePages[tId];
+        const iframeEl = $(iframeData.id);
+        if (iframeEl) iframeEl.style.display = 'none';
+        if (customSrc && iframeEl) {
+          iframeEl.removeAttribute('srcdoc');
+          iframeEl.src = customSrc;
+          iframeEl.style.display = 'block';
+          toggleLoader(false);
+        } else {
+          await loadIframePage(iframeData.id, iframeData.path);
+          if (iframeEl) iframeEl.style.display = 'block';
+        }
+      }
+    } finally {
+      isNavigating = false;
     }
   };
 
@@ -695,11 +703,11 @@ function initApp() {
     p.url = appB(p.url); p.image = appB(p.image); return p;
   }).sort((a, b) => (a.title||"").localeCompare(b.title||"", undefined, { sensitivity: 'base' }));
 
-  const rData = async (t, p) => {
-    toggleLoader(true);
+  const rData = async (t, p, resetPage = true, mode = 'updating') => {
+    toggleLoader(true, mode);
     try {
       const n = await fetchWithProxy(p).catch(()=>[]);
-      if (n?.length) { grids[t].data = proc(n); grids[t].page = 1; await renderGrid(t, true); } else toggleLoader(false);
+      if (n?.length) { grids[t].data = proc(n); if (resetPage) grids[t].page = 1; await renderGrid(t, true, mode); } else toggleLoader(false);
     } catch { toggleLoader(false); }
   };
 
@@ -774,17 +782,19 @@ function initApp() {
     return { data: fallbackMapped };
   };
 
-  $('readingcorner-refresh-btn')?.addEventListener('click', async () => {
-    toggleLoader(true);
+  const refreshReadingCorner = async (resetPage = true, mode = 'updating') => {
+    toggleLoader(true, mode);
     try {
       const result = await fetchReadingCornerRaw();
-      if (result.data?.length) {
+      if (result?.data?.length) {
         grids.readingcorner.data = proc(result.data);
-        grids.readingcorner.page = 1;
-        await renderGrid('readingcorner', true);
+        if (resetPage) grids.readingcorner.page = 1;
+        await renderGrid('readingcorner', true, mode);
       }
     } finally { toggleLoader(false); }
-  });
+  };
+
+  $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshReadingCorner());
 
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
@@ -856,7 +866,7 @@ function initApp() {
       tbInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(e.target.value); });
       $('study-enter-btn')?.addEventListener('click', () => loadBrowserUrl(tbInput.value));
     }
-    
+
     sBack?.addEventListener('click', () => { if (historyIndex > 0) { historyIndex--; loadBrowserUrl(history[historyIndex], true); } });
     sFwd?.addEventListener('click', () => { if (historyIndex < history.length - 1) { historyIndex++; loadBrowserUrl(history[historyIndex], true); } });
     sReload?.addEventListener('click', () => { if (studyIframe) { try { studyIframe.contentWindow.location.reload(); } catch(e) { studyIframe.src = studyIframe.src; } } });
@@ -891,14 +901,14 @@ if (mathworksIframe) {
         activePort.onmessage = (event) => {
           if (event.data && event.data.type === 'tabData') {
             const reportedUrl = event.data.url;
-            
+
             if (document.activeElement === tbInput) return;
 
             const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
             const currentVal = tbInput ? tbInput.value : '';
             if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
               if (tbInput) tbInput.value = reportedUrl;
-              
+
               if (history[historyIndex] !== reportedUrl) {
                 history = history.slice(0, historyIndex + 1);
                 history.push(reportedUrl);
@@ -920,16 +930,16 @@ if (mathworksIframe) {
     if (event.data && typeof event.data === 'string') {
       const data = event.data.trim();
       if (
-        data.startsWith('http://') || 
-        data.startsWith('https://') || 
-        data.startsWith('kstuff://') || 
+        data.startsWith('http://') ||
+        data.startsWith('https://') ||
+        data.startsWith('kstuff://') ||
         (data.includes('.') && !data.includes(' '))
       ) {
         loadBrowserUrl(data);
       }
     }
   });
-  
+
   initPromise.then(async () => {
     let activePg = document.querySelector('.page.active');
     if (!activePg) {
@@ -938,6 +948,34 @@ if (mathworksIframe) {
     }
     if (activePg) await loadContent(activePg.id, true); else toggleLoader(false);
   }).catch(() => toggleLoader(false));
+
+  const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
+
+  async function autoRefreshActivePage() {
+    if (autoRefreshBusy || isNavigating || isAnyModalActive()) return;
+    const activePage = document.querySelector('.page.active');
+    if (!activePage) return;
+    const tId = activePage.id;
+
+    if (tId === 'mathworksheets' && tbInput && tbInput.value && tbInput.value !== 'kstuff://home') return;
+
+    autoRefreshBusy = true;
+    try {
+      if (tId === 'readingcorner') {
+        await refreshReadingCorner(false, 'updating');
+      } else if (tId === 'sciencequiz') {
+        await rData('sciencequiz', 'Json/a.json', false, 'updating');
+      } else if (iframePages[tId]) {
+        toggleLoader(true, 'updating');
+        await loadIframePage(iframePages[tId].id, iframePages[tId].path);
+        toggleLoader(false);
+      }
+    } finally {
+      autoRefreshBusy = false;
+    }
+  }
+
+  setInterval(autoRefreshActivePage, 30000);
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initApp) : initApp();
