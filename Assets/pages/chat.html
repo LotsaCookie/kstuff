@@ -363,12 +363,12 @@ function handleBackendMessage(data) {
             const isContaminated = remoteMessages.some(m => !expectedUsers.includes(m.sender.toLowerCase()));
             if (isContaminated) return;
         }
-        if (data.type === 'get-group-chat' && data.groupName) {
-            groupNames[chatId] = data.groupName;
-            localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
-            if (currentActiveRawId === chatId) {
-                document.getElementById('header-username').innerText = data.groupName || "Unnamed Group";
-            }
+        else if (data.type === 'get-group-chat' && !data.success && data.reason === 'not_member') {
+            activeGroups = activeGroups.filter(id => id !== currentActiveRawId);
+            leftGroups[currentActiveRawId] = true;
+            localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+            localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
+            cleanupDeletedChat(currentActiveRawId);
             renderSidebarList();
         }
         let cached = [];
@@ -382,7 +382,6 @@ function handleBackendMessage(data) {
         fetchMessages(currentActiveRawId);
         if (data.type === 'send-message') backendPort.postMessage({ type: 'get-convs' });
     } else if (data.type === 'add-to-group' && data.success) {
-        // Add group to activeGroups if not already there
         if (!activeGroups.includes(data.groupId)) {
             activeGroups.push(data.groupId);
             if (currentUser) {
@@ -392,17 +391,14 @@ function handleBackendMessage(data) {
         renderSidebarList();
         fetchMessages(currentActiveRawId);
     } else if (data.type === 'leave-group' && data.success) {
-        // Mark as left permanently
         leftGroups[data.groupId] = true;
         localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
         
-        // Remove from local activeGroups
         activeGroups = activeGroups.filter(id => id !== data.groupId);
         if (currentUser) {
             localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
         }
         
-        // Clean up
         delete groupMembers[data.groupId];
         localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
         cleanupDeletedChat(data.groupId);
