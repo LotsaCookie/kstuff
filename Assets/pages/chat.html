@@ -145,7 +145,7 @@ let currentRenderToken = null;
 let justOpened = false;
 let mediaWatcher = { token: null, timeoutId: null, remaining: 0, listeners: [] };
 let pendingDeletions = new Set();
-let backendConversationList = []; // FIX: Track what backend says exists
+let backendConversationList = [];
 const MAX_STAGGER_MS = 80;
 const STAGGER_STEP = 12;
 const FALLBACK_SCROLL_THRESHOLD = 150;
@@ -172,6 +172,45 @@ function deduplicateMessages(msgArray) {
     return result;
 }
 
+function cleanupOrphanedCaches() {
+    if (!currentUser) return;
+    
+    const allKeys = Object.keys(localStorage);
+    const validConversationIds = new Set();
+    
+    for (const conv of activeConversations) {
+        validConversationIds.add(conv);
+    }
+    for (const group of activeGroups) {
+        validConversationIds.add(group);
+    }
+    
+    for (const key of allKeys) {
+        if (key.startsWith('chat_msgs_')) {
+            const convId = key.replace('chat_msgs_', '');
+            if (!validConversationIds.has(convId)) {
+                console.log("Removing orphaned cache:", key);
+                localStorage.removeItem(key);
+            }
+        }
+    }
+    
+    const orphanedGroupIds = Object.keys(groupNames).filter(gId => !validConversationIds.has(gId));
+    const orphanedMemberIds = Object.keys(groupMembers).filter(gId => !validConversationIds.has(gId));
+    
+    for (const gId of orphanedGroupIds) {
+        delete groupNames[gId];
+    }
+    for (const gId of orphanedMemberIds) {
+        delete groupMembers[gId];
+    }
+    
+    if (orphanedGroupIds.length > 0 || orphanedMemberIds.length > 0) {
+        localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
+        localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
+    }
+}
+
 function loadLocalData() {
     try {
         const unreadData = localStorage.getItem('chat_unread');
@@ -195,6 +234,8 @@ function loadLocalData() {
             if (localGroups && Array.isArray(localGroups)) {
                 activeGroups = localGroups.filter(gId => !leftGroups[gId]);
             }
+            
+            cleanupOrphanedCaches();
             renderSidebarList();
         }
     } catch (e) {}
@@ -376,7 +417,7 @@ function handleBackendMessage(data) {
     } 
     else if (data.type === 'get-convs' && data.success) {
         const safeConvs = Array.isArray(data.payload) ? data.payload : [];
-        backendConversationList = safeConvs; // FIX: Store what backend says exists
+        backendConversationList = safeConvs;
         
         const backendGroups = [];
         const filteredConvs = [];
@@ -414,9 +455,39 @@ function handleBackendMessage(data) {
             }
         }
         
-        for (const orphan of orphanedConversations) {
-            cleanupDeletedChat(orphan);
+        for (const localGroup of activeGroups) {
+            const isInBackend = backendConversationList.includes(localGroup);
+            if (!isInBackend) {
+                orphanedConversations.push(localGroup);
+            }
         }
+        
+        for (const orphan of orphanedConversations) {
+            console.log("Cleaning up orphaned conversation:", orphan);
+            
+            localStorage.removeItem(`chat_msgs_${orphan}`);
+            
+            activeConversations = activeConversations.filter(id => id !== orphan);
+            activeGroups = activeGroups.filter(id => id !== orphan);
+            
+            delete groupNames[orphan];
+            delete groupMembers[orphan];
+            
+            if (orphan.startsWith('grp-')) {
+                leftGroups[orphan] = true;
+            }
+            
+            unreadChats = unreadChats.filter(id => id !== orphan);
+        }
+        
+        if (currentUser) {
+            localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(activeConversations.map(c => xorEncode(c))));
+            localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+        }
+        localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
+        localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
+        localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
+        localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
         
         if (currentActiveRawId && !currentActiveRawId.startsWith('grp-') && !activeConversations.includes(currentActiveRawId)) {
             cleanupDeletedChat(currentActiveRawId);
@@ -513,8 +584,15 @@ function handleBackendMessage(data) {
                 localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
             }
         }
+        if (data.members && Array.isArray(data.members)) {
+            groupMembers[data.groupId] = data.members;
+            localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
+        }
         renderSidebarList();
         if (currentActiveRawId === data.groupId) fetchMessages(currentActiveRawId);
+        setTimeout(() => {
+            if (backendPort) backendPort.postMessage({ type: 'get-convs' });
+        }, 300);
     } 
     else if (data.type === 'leave-group' && data.success) {
         leftGroups[data.groupId] = true;
@@ -928,7 +1006,7 @@ setInterval(() => {
         backendPort.postMessage({ type: 'get-convs' });
         if (currentActiveRawId) fetchMessages(currentActiveRawId);
     }
-}, 1000);
+}, 800);
 
 function sendMessage() {
     let input = document.getElementById('user-input');
