@@ -219,7 +219,7 @@ body.size-large.text-hide {
 }
 
 .nav-top #classroom-portal-container {
-    top: var(--header-height);
+    top: calc(var(--header-height) + var(--nav-size));
     height: calc(100vh - var(--header-height) - var(--nav-size));
 }
 
@@ -1192,19 +1192,19 @@ body.text-hide .nav-right .nav-divider {
     :root {
         --btn-icon-size: 0.75rem;
         --btn-text-size: 0.55rem;
-        --nav-width-mobile: 41px;
+        --nav-width: 41px;
     }
     
     body.size-medium {
         --btn-icon-size: 0.95rem;
         --btn-text-size: 0.7rem;
-        --nav-width-mobile: 48px;
+        --nav-width: 48px;
     }
     
     body.size-large {
         --btn-icon-size: 1.15rem;
         --btn-text-size: 0.85rem;
-        --nav-width-mobile: 56px;
+        --nav-width: 56px;
     }
 
     #teachertouchbar {
@@ -1238,7 +1238,7 @@ body.text-hide .nav-right .nav-divider {
 
     .nav-left #teachertouchbar, 
     .nav-right #teachertouchbar {
-        width: var(--nav-width-mobile);
+        width: var(--nav-width);
         padding-top: 0.55rem;
     }
 }
