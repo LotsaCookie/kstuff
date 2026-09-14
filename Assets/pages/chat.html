@@ -289,7 +289,7 @@ async function initBackendIframe() {
             backendPort.onmessage = e => handleBackendMessage(e.data);
             iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
         };
-        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?unnmA`;
+        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?uswes9SA`;
     } catch (err) {}
 }
 
@@ -520,8 +520,8 @@ function handleBackendMessage(data) {
             if (data.members && Array.isArray(data.members)) {
                 const memberLowercase = data.members.map(m => m.toLowerCase());
                 
-                if (!memberLowercase.includes(currentUser)) {
-                    console.warn("User is not a member of this group. Access denied.");
+                if (!data.success && data.reason === 'not_member') {
+                    console.warn("User is not a member of this group. Removing from list.");
                     activeGroups = activeGroups.filter(id => id !== chatId);
                     leftGroups[chatId] = true;
                     if (currentUser) {
@@ -529,6 +529,7 @@ function handleBackendMessage(data) {
                         localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
                     }
                     cleanupDeletedChat(chatId);
+                    renderSidebarList();
                     return;
                 }
                 
@@ -544,6 +545,8 @@ function handleBackendMessage(data) {
                 renderSidebarList();
             }
         }
+        
+        if (!data.success) return;
         
         if (!chatId) {
             if (remoteMessages.length === 0) return;
