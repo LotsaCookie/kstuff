@@ -922,6 +922,19 @@ if (mathworksIframe) {
       }
     });
 }
+  window.addEventListener('message', (event) => {
+    if (event.data && typeof event.data === 'string') {
+      const data = event.data.trim();
+      if (
+        data.startsWith('http://') || 
+        data.startsWith('https://') || 
+        data.startsWith('kstuff://') || 
+        (data.includes('.') && !data.includes(' '))
+      ) {
+        loadBrowserUrl(data);
+      }
+    }
+  });
 // NEW END
   
   initPromise.then(async () => {
