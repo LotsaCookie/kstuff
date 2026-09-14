@@ -888,16 +888,21 @@ function initApp() {
 let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
-  if (mathworksIframe) {
+if (mathworksIframe) {
     mathworksIframe.addEventListener('load', () => {
       try {
         const channel = new MessageChannel();
         activePort = channel.port1;
+
         activePort.onmessage = (event) => {
           if (event.data && event.data.type === 'tabData') {
             const reportedUrl = event.data.url;
             
-            if (reportedUrl && reportedUrl !== (tbInput ? tbInput.value : '') && reportedUrl !== 'about:blank') {
+            if (document.activeElement === tbInput) return;
+
+            const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
+            const currentVal = tbInput ? tbInput.value : '';
+            if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
               if (tbInput) tbInput.value = reportedUrl;
               
               if (history[historyIndex] !== reportedUrl) {
@@ -909,12 +914,14 @@ let activePort = null;
             }
           }
         };
+
         if (mathworksIframe.contentWindow) {
           mathworksIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
         }
-      } catch (e) {}
+      } catch (e) {
+      }
     });
-  }
+}
 // NEW END
   
   initPromise.then(async () => {
