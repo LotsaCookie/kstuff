@@ -189,8 +189,11 @@ function loadLocalData() {
         if (currentUser) {
             const localConvs = JSON.parse(localStorage.getItem(`chat_convs_${currentUser}`));
             if (localConvs && Array.isArray(localConvs)) activeConversations = localConvs.map(encoded => xorDecode(encoded)).filter(Boolean);
+            
             const localGroups = JSON.parse(localStorage.getItem(`chat_groups_${currentUser}`));
-            if (localGroups && Array.isArray(localGroups)) activeGroups = localGroups.filter(gId => !leftGroups[gId]);
+            if (localGroups && Array.isArray(localGroups)) {
+                activeGroups = localGroups.filter(gId => !leftGroups[gId]);
+            }
             renderSidebarList();
         }
     } catch (e) {}
@@ -244,7 +247,7 @@ async function initBackendIframe() {
             backendPort.onmessage = e => handleBackendMessage(e.data);
             iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
         };
-        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?usw9ffhSA`;
+        iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?uswes9SA`;
     } catch (err) {}
 }
 
@@ -272,6 +275,7 @@ window.addEventListener("message", e => {
     }
 });
 
+// SYNC storage events across tabs
 window.addEventListener('storage', (e) => {
     if (!currentUser) return;
     
@@ -378,7 +382,8 @@ function handleBackendMessage(data) {
             }
         });
         
-        activeGroups = [...new Set(backendGroups)];
+        const mergedGroups = [...new Set([...activeGroups, ...backendGroups])];
+        activeGroups = mergedGroups.filter(gId => !leftGroups[gId]);
         if (currentUser) {
             localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
         }
@@ -440,6 +445,7 @@ function handleBackendMessage(data) {
             if (data.groupName && chatId) {
                 groupNames[chatId] = data.groupName;
                 localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
+                renderSidebarList();
             }
         }
         
@@ -497,6 +503,20 @@ function handleBackendMessage(data) {
         delete groupMembers[data.groupId];
         localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
         cleanupDeletedChat(data.groupId);
+        renderSidebarList();
+    }
+    else if (data.type === 'create-group' && data.success) {
+        // FIX: Add new group to activeGroups immediately
+        if (!activeGroups.includes(data.groupId)) {
+            activeGroups.push(data.groupId);
+            if (currentUser) {
+                localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+            }
+        }
+        if (data.groupName) {
+            groupNames[data.groupId] = data.groupName;
+            localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
+        }
         renderSidebarList();
     }
 }
@@ -568,6 +588,7 @@ function renderSidebarList() {
     
     const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
     
+    // FIX: Filter groups - exclude leftGroups
     const validGroups = activeGroups.filter(groupId => !leftGroups[groupId]);
     
     const currentState = JSON.stringify({ myConvs, validGroups, unreadChats, currentActiveRawId, groupNames });
@@ -780,7 +801,7 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
         vid.preload = 'auto';
         vid.onerror = function() {};
         msgDiv.appendChild(vid);
-        mediaElements.push(vid);
+        mediaElems.push(vid);
     } else if (mediaType === 'audio') {
         const aud = document.createElement('audio');
         aud.controls = true;
