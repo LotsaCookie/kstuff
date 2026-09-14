@@ -851,7 +851,7 @@ function initApp() {
 
     if (gRep.static) {
       const baseStatic = gRep.static.replace(/\/embed\.html#.*$/, '');
-      const proxiedUrl = `${baseStatic}/frog/default/ixl/${encodeUv(targetUrl)}`;
+      const proxiedUrl = `${baseStatic}/frog/default/ixl/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
     };
