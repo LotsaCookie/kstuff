@@ -4,7 +4,6 @@ function initApp() {
   const getStorage = k => localStorage.getItem(k), setStorage = (k, v) => localStorage.setItem(k, v);
   const cleanUrl = u => u ? u.replace(/\/+$/, '') : '', trimSlash = u => u ? u.replace(/^\/+/, '') : '';
   const cleanGameTitle = t => (t || '').toLowerCase().replace(/,\s*webport/gi, '').trim();
-  //NEW START
   const urlMap = { 'mathworksheets': 'home', 'readingcorner': 'games', 'sciencequiz': 'apps', 'gradebook': 'music', 'lessonplanner': 'ai', 'vms': 'vms', 'studyhall': 'chat' };
   const reverseUrlMap = Object.entries(urlMap).reduce((acc, [k, v]) => ({ ...acc, [v]: k }), {});
   let history = ['kstuff://home'], historyIndex = 0;
@@ -26,7 +25,6 @@ function initApp() {
   const sFwd = $('study-forward-btn') || $('browser-forward');
   const sReload = $('reload-study-btn') || $('browser-refresh');
   const sHome = $('home-study-btn') || $('browser-home');
-  //NEW END
   const body = document.body, navBar = $('teachertouchbar'), navBtns = $$('.nav-btn'), pages = $$('.page');
   const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
   const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
@@ -60,7 +58,6 @@ function initApp() {
   };
   toggleLoader(true);
 
-  // Tooltip: single pointer handler throttled via rAF
   const tooltipEl = body.appendChild(el('div', { className: 'js-custom-tooltip' }));
   tooltipEl.style.cssText = 'position:fixed;display:none;padding:6px 10px;background:rgba(0,0,0,0.85);color:#fff;font-size:0.75rem;border-radius:6px;pointer-events:none;z-index:999999;white-space:nowrap;';
   let tooltipPending = false, lastPointerEvent = null;
@@ -822,7 +819,6 @@ function initApp() {
     grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
   });
 
-//New start
   const updateBrowserNav = () => {
       if (sBack) sBack.disabled = historyIndex <= 0;
       if (sFwd) sFwd.disabled = historyIndex >= history.length - 1;
@@ -883,8 +879,6 @@ function initApp() {
         }
       });
     });
-// NEW END
-// NEW START
 let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
@@ -935,7 +929,6 @@ if (mathworksIframe) {
       }
     }
   });
-// NEW END
   
   initPromise.then(async () => {
     let activePg = document.querySelector('.page.active');
