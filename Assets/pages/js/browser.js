@@ -1,18 +1,5 @@
-
-let currentUrl = '';
-let mode = 'library';
-let history = ['kstuff://home'];
-let historyIndex = 0;
-let isNavigating = false;
 let cachedQuote = "";
 let cachedCommitHash = "";
-let workingstaticurl = "";
-let activePort = null;
-
-let proxyReadyResolve;
-const proxyReadyPromise = new Promise(resolve => {
-    proxyReadyResolve = resolve;
-});
 
 const cleanUrl = u => u ? u.replace(/\/+$/, '') : '';
 const trimSlash = u => u ? u.replace(/^\/+/, '') : '';
@@ -29,78 +16,6 @@ function encode(str) {
             .join('')
     );
 }
-
-async function getProxyList() {
-    if (!cachedCommitHash) {
-        try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } 
-        catch { cachedCommitHash = "main"; }
-    }
-    return ["raw.githack.com", "cdn.jsdelivr.net/gh", "raw.githubusercontent.com", "cdn.statically.io/gh"]
-        .map(d => `https://${d}/lotsacookie/kstuff/${cachedCommitHash}/`).concat("");
-}
-
-async function fetchWithProxy(path, asText = false) {
-    const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
-    const proxies = await getProxyList();
-    try {
-        return await Promise.any(proxies.map(async p => {
-            const r = await fetch(p + path + cb, { cache: 'no-store' });
-            if (!r.ok) throw new Error();
-            return asText ? await r.text() : await r.json();
-        }));
-    } catch {
-        throw new Error("Proxies failed: " + path);
-    }
-}
-
-async function getWorkingConfig(table) {
-    if (!table?.length) return null;
-    for (let i = 0; i < table.length; i += 5) {
-        const chunk = table.slice(i, i + 5);
-        const winner = await new Promise(resolve => {
-            let done = false, fail = 0, imgs = [];
-            const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-            const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 5000);
-
-            chunk.forEach(entry => {
-                const img = new Image(); imgs.push(img);
-                const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
-                const handle = ok => {
-                    if (done) return;
-                    if (ok || ++fail === chunk.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? entry : null); }
-                };
-                img.onload = () => handle(img.naturalWidth > 0);
-                img.onerror = () => handle(false);
-                img.src = `${url}${url.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
-            });
-        });
-        if (winner) return winner;
-    }
-    return table[0];
-}
-
-async function initProxyBackend() {
-    try {
-        const staticTable = await fetchWithProxy('Assets/json/mirrors/static.json');
-        const workingConfig = await getWorkingConfig(staticTable);
-        if (workingConfig && workingConfig.url) {
-            workingstaticurl = cleanUrl(workingConfig.url); 
-            const proxyIframe = document.createElement('iframe');
-            proxyIframe.style.display = 'none';
-            proxyIframe.onload = () => proxyReadyResolve(true);
-            proxyIframe.onerror = () => proxyReadyResolve(false);
-            proxyIframe.src = `${workingstaticurl}/embed.html#https://example.com`;
-            document.body.appendChild(proxyIframe);
-        } else {
-            proxyReadyResolve(false);
-        }
-    } catch (e) {
-        console.error("Could not initialize proxy backend:", e);
-        proxyReadyResolve(false);
-    }
-}
-
-initProxyBackend();
 
 const defaultShortcuts = [
     ['emoH', 'kstuff://ho' + 'me', 'ph-house'],
@@ -134,14 +49,6 @@ function formatUrl(rawUrl, allowSearch = false) {
 }
 
 const libraryHome = document.getElementById('library-home');
-const studyIframe = document.getElementById('study-iframe');
-const textbookInput = document.getElementById('textbook-input');
-const studyEnterBtn = document.getElementById('study-enter-btn');
-const reloadStudyBtn = document.getElementById('reload-study-btn');
-const homeStudyBtn = document.getElementById('home-study-btn');
-const flashcardShortcutBtn = document.getElementById('flashcard-shortcut-btn');
-const studyBackBtn = document.getElementById('study-back-btn');
-const studyForwardBtn = document.getElementById('study-forward-btn');
 const addFlashcardMainBtn = document.getElementById('add-flashcard-main-btn');
 const flashcardsContainer = document.getElementById('flashcards-container');
 
@@ -189,11 +96,6 @@ examSaveBtn.addEventListener('click', () => {
     closeExamModal();
 });
 examCancelBtn.addEventListener('click', closeExamModal);
-
-function updateNavButtons() {
-    studyBackBtn.disabled = historyIndex <= 0;
-    studyForwardBtn.disabled = historyIndex >= history.length - 1;
-}
 
 function renderFlashcards() {
     flashcardsContainer.innerHTML = '';
@@ -243,146 +145,25 @@ function renderFlashcards() {
             renderFlashcards();
         });
 
-        card.addEventListener('click', () => loadUrl(fc.url, true));
+        card.addEventListener('click', () => {
+            const targetUrl = formatUrl(fc.url, true);
+            window.parent.postMessage(targetUrl, '*');
+        });
         flashcardsContainer.appendChild(card);
     });
 }
 renderFlashcards();
 
-async function loadUrl(inputVal, updateInput = true, isHistoryNav = false) {
-    if (!inputVal) return;
-    const targetUrl = formatUrl(inputVal, true);
-
-    if (targetUrl === 'kstuff://home') {
-        showLibraryPage(isHistoryNav);
-        return;
-    }
-
-    currentUrl = targetUrl;
-    mode = 'iframe';
-    isNavigating = true;
-
-    if (!isHistoryNav && history[historyIndex] !== targetUrl) {
-        history = history.slice(0, historyIndex + 1);
-        history.push(targetUrl);
-        historyIndex++;
-    }
-
-    libraryHome.classList.add('hidden');
-    studyIframe.classList.add('active');
-    studyIframe.src = 'about:blank';
-
-    const isProxyReady = await proxyReadyPromise;
-    if (!isProxyReady || !workingstaticurl) {
-        console.error("Proxy is not ready or failed to connect.");
-        return; 
-    }
-
-    const wrapperUrl = `https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=${targetUrl}`;
-    const proxiedUrl = `${workingstaticurl}/frog/default/ixl/${encode(wrapperUrl)}`;
-    studyIframe.src = proxiedUrl;
-
-    if (updateInput) {
-        textbookInput.value = targetUrl;
-        librarySearchInput.value = targetUrl;
-    }
-    updateNavButtons();
+function handleSearch() {
+    const query = librarySearchInput.value.trim();
+    if (!query) return;
+    const targetUrl = formatUrl(query, true);
+    window.parent.postMessage(targetUrl, '*');
 }
 
-function showLibraryPage(isHistoryNav = false) {
-    mode = 'library';
-    currentUrl = '';
-    isNavigating = false;
-
-    if (!isHistoryNav && history[historyIndex] !== 'kstuff://home') {
-        history = history.slice(0, historyIndex + 1);
-        history.push('kstuff://home');
-        historyIndex++;
-    }
-
-    studyIframe.classList.remove('active');
-    studyIframe.src = 'about:blank';
-    libraryHome.classList.remove('hidden');
-
-    textbookInput.value = 'kstuff://home';
-    librarySearchInput.value = '';
-    updateNavButtons();
-}
-
-function navigateHistory(offset) {
-    const newIndex = historyIndex + offset;
-    if (newIndex >= 0 && newIndex < history.length) {
-        historyIndex = newIndex;
-        const targetUrl = history[newIndex];
-        if (targetUrl === 'kstuff://home' || targetUrl === '') {
-            showLibraryPage(true);
-        } else {
-            loadUrl(targetUrl, true, true);
-        }
-    }
-}
-
-studyBackBtn.addEventListener('click', () => navigateHistory(-1));
-studyForwardBtn.addEventListener('click', () => navigateHistory(1));
-
-studyIframe.onload = () => {
-    isNavigating = false;
-
-    if (mode === 'iframe') {
-        const channel = new MessageChannel();
-        activePort = channel.port1;
-
-        activePort.onmessage = (event) => {
-            if (event.data && event.data.type === 'tabData') {
-                const reportedUrl = event.data.url;
-                if (reportedUrl && reportedUrl !== currentUrl && reportedUrl !== 'about:blank') {
-                    currentUrl = reportedUrl;
-                    textbookInput.value = currentUrl;
-                    librarySearchInput.value = currentUrl;
-                    
-                    if (history[historyIndex] !== currentUrl) {
-                        history = history.slice(0, historyIndex + 1);
-                        history.push(currentUrl);
-                        historyIndex++;
-                        updateNavButtons();
-                    }
-                }
-            }
-        };
-
-        if (studyIframe.contentWindow) {
-            studyIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
-        }
-    }
-};
-
-window.addEventListener('message', (event) => {
-    if (typeof event.data === 'string' && event.data.startsWith('nav: ')) {
-        loadUrl(event.data.substring(5));
-    }
+librarySearchBtn.addEventListener('click', handleSearch);
+librarySearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleSearch();
 });
 
-studyEnterBtn.addEventListener('click', () => loadUrl(textbookInput.value));
-textbookInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadUrl(textbookInput.value); });
-
-librarySearchBtn.addEventListener('click', () => loadUrl(librarySearchInput.value));
-librarySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loadUrl(librarySearchInput.value); });
-
-reloadStudyBtn.addEventListener('click', () => {
-    if (mode === 'iframe') {
-        try { studyIframe.contentWindow.location.reload(); } 
-        catch (e) { studyIframe.src = studyIframe.src; }
-    }
-});
-
-homeStudyBtn.addEventListener('click', () => showLibraryPage(false));
 addFlashcardMainBtn.addEventListener('click', () => openExamModal('', '', addFlashcard));
-
-flashcardShortcutBtn.addEventListener('click', () => {
-    const currentVal = textbookInput.value;
-    if (!currentVal || currentVal === 'kstuff://home') return openExamModal('', '', addFlashcard);
-    
-    let defaultName = currentVal;
-    try { defaultName = new URL(currentVal).hostname.replace('www.', ''); } catch(e) {}
-    openExamModal(defaultName, currentVal, addFlashcard);
-});
