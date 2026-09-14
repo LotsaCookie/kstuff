@@ -144,6 +144,7 @@ let unreadChats = [];
 let currentRenderToken = null;
 let justOpened = false;
 let mediaWatcher = { token: null, timeoutId: null, remaining: 0, listeners: [] };
+let pendingDeletions = new Set();
 const MAX_STAGGER_MS = 80;
 const STAGGER_STEP = 12;
 const FALLBACK_SCROLL_THRESHOLD = 150;
@@ -158,6 +159,7 @@ const isMediaURL = (str) => {
     if (/^https?:\/\/.*\.(mp4|webm|ogg|mov)(\?.*)?$|^data:video\//i.test(str)) return { type: 'video' };
     return { type: 'none' };
 };
+
 function deduplicateMessages(msgArray) {
     if (!Array.isArray(msgArray)) return [];
     const result = [];
@@ -168,6 +170,7 @@ function deduplicateMessages(msgArray) {
     }
     return result;
 }
+
 function loadLocalData() {
     try {
         const unreadData = localStorage.getItem('chat_unread');
@@ -192,12 +195,14 @@ function loadLocalData() {
         }
     } catch (e) {}
 }
+
 async function getProxyList() {
     if (!cachedCommitHash) {
         try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } catch { cachedCommitHash = "main"; }
     }
     return [`https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`, `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`, ""];
 }
+
 async function getWorkingConfig(table) {
     if (!table?.length) return null;
     for (let i = 0; i < table.length; i += 5) {
@@ -218,6 +223,7 @@ async function getWorkingConfig(table) {
     }
     return table[0];
 }
+
 async function initBackendIframe() {
     try {
         const proxies = await getProxyList();
@@ -241,19 +247,23 @@ async function initBackendIframe() {
         iframe.src = `${proxyBaseUrl}${finalPath}https://lotsacookie.github.io/Dnekcabtset/chat-backend.html?uswes9SA`;
     } catch (err) {}
 }
+
 initBackendIframe();
+
 function xorEncode(str, key = 42) {
     if (!str || typeof str !== 'string') return '';
     let hexStr = '';
     for (let i = 0; i < str.length; i++) { let hex = (str.charCodeAt(i) ^ key).toString(16); hexStr += (hex.length === 1 ? '0' + hex : hex); }
     return hexStr;
 }
+
 function xorDecode(hexStr, key = 42) {
     if (!hexStr || typeof hexStr !== 'string' || !/^[0-9a-fA-F]+$/.test(hexStr) || hexStr.length % 2 !== 0) return hexStr || '';
     let str = '';
     for (let i = 0; i < hexStr.length; i += 2) str += String.fromCharCode(parseInt(hexStr.substr(i, 2), 16) ^ key);
     return str;
 }
+
 window.addEventListener("message", e => {
     if (e.data?.type === 'set_user' && e.data.username) {
         currentUser = e.data.username.trim().toLowerCase();
@@ -261,17 +271,67 @@ window.addEventListener("message", e => {
         if (backendReady) { backendPort.postMessage({ type: 'get-users' }); backendPort.postMessage({ type: 'get-convs' }); }
     }
 });
+
+window.addEventListener('storage', (e) => {
+    if (!currentUser) return;
+    
+    if (e.key === `chat_convs_${currentUser}`) {
+        try {
+            const stored = JSON.parse(e.newValue || '[]');
+            activeConversations = stored.map(enc => xorDecode(enc)).filter(Boolean);
+        } catch (err) {}
+    }
+    
+    if (e.key === `chat_groups_${currentUser}`) {
+        try {
+            const stored = JSON.parse(e.newValue || '[]');
+            activeGroups = stored.filter(gId => !leftGroups[gId]);
+        } catch (err) {}
+    }
+    
+    if (e.key === 'chat_group_names') {
+        try {
+            groupNames = JSON.parse(e.newValue || '{}');
+        } catch (err) {}
+    }
+    
+    if (e.key === 'chat_group_members') {
+        try {
+            groupMembers = JSON.parse(e.newValue || '{}');
+        } catch (err) {}
+    }
+    
+    if (e.key === 'chat_left_groups') {
+        try {
+            leftGroups = JSON.parse(e.newValue || '{}');
+            activeGroups = activeGroups.filter(gId => !leftGroups[gId]);
+        } catch (err) {}
+    }
+    
+    if (e.key === 'chat_unread') {
+        try {
+            unreadChats = JSON.parse(e.newValue || '[]');
+        } catch (err) {}
+    }
+    
+    renderSidebarList();
+});
+
 function processMessageQueue() {
     if (isSendingMessage || messageQueue.length === 0 || !backendReady) return;
     isSendingMessage = true;
     backendPort.postMessage(messageQueue.shift());
 }
+
 function cleanupDeletedChat(deletedRawId) {
     localStorage.removeItem(`chat_msgs_${deletedRawId}`);
     unreadChats = unreadChats.filter(id => id !== deletedRawId);
     localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
+    
     if (currentActiveRawId === deletedRawId) {
-        currentActiveRawId = null; lastRenderedChatId = null; lastMessageDataString = "";
+        currentActiveRawId = null; 
+        lastRenderedChatId = null; 
+        lastMessageDataString = "";
         document.getElementById('header-username').innerText = 'Select a chat';
         const headerAvatar = document.getElementById('header-avatar-icon');
         headerAvatar.style.display = 'none';
@@ -284,65 +344,102 @@ function cleanupDeletedChat(deletedRawId) {
         document.getElementById('send-btn').disabled = true;
     }
 }
+
 function handleBackendMessage(data) {
     if (data.type === 'ready') {
         backendReady = true;
         backendPort.postMessage({ type: 'get-users' });
         if (currentUser) backendPort.postMessage({ type: 'get-convs' });
         processMessageQueue();
-    } else if (data.type === 'get-users' && data.success) {
+    } 
+    else if (data.type === 'get-users' && data.success) {
         cachedUsersList = Array.isArray(data.payload) ? data.payload : [];
         localStorage.setItem('chat_users_list', JSON.stringify(cachedUsersList));
         cachedUsersList.forEach(u => { if (u && u.username) userProfileMap[u.username.toLowerCase()] = u.profilePicture || fallbackAvatar; });
         renderSidebarList();
         if (document.getElementById('modal-overlay').classList.contains('active')) populateUserDirectoryModal(cachedUsersList);
-    } else if (data.type === 'get-convs' && data.success) {
+    } 
+    else if (data.type === 'get-convs' && data.success) {
         const safeConvs = Array.isArray(data.payload) ? data.payload : [];
         const backendGroups = [];
         const filteredConvs = [];
+        
         safeConvs.forEach(encoded => {
             const decoded = xorDecode(encoded);
-            if (encoded.startsWith('grp-') || decoded.startsWith('grp-')) {
-                const gId = encoded.startsWith('grp-') ? encoded : decoded;
-                if (!leftGroups[gId]) {
-                    backendGroups.push(gId);
+            const isGroup = encoded.startsWith('grp-') || decoded.startsWith('grp-');
+            const groupId = isGroup ? (encoded.startsWith('grp-') ? encoded : decoded) : null;
+            
+            if (groupId) {
+                if (!leftGroups[groupId] && !pendingDeletions.has(groupId)) {
+                    backendGroups.push(groupId);
                 }
             } else {
                 filteredConvs.push(decoded);
             }
         });
+        
         activeGroups = [...new Set(backendGroups)];
         if (currentUser) {
             localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
         }
+        
         activeConversations = filteredConvs.filter(Boolean);
         if (currentUser) {
             localStorage.setItem(`chat_convs_${currentUser}`, JSON.stringify(activeConversations.map(c => xorEncode(c))));
         }
+        
         if (currentActiveRawId && !currentActiveRawId.startsWith('grp-') && !activeConversations.includes(currentActiveRawId)) {
             cleanupDeletedChat(currentActiveRawId);
         }
+        
         renderSidebarList();
-    } else if (data.type === 'create-conv' && data.success) {
+    } 
+    else if (data.type === 'create-conv' && data.success) {
         backendPort.postMessage({ type: 'get-convs' });
         if (currentActiveRawId) fetchMessages(currentActiveRawId);
-    } else if (data.type === 'delete-convs' && data.success) {
-        cleanupDeletedChat(xorDecode(data.encodedKey));
-        backendPort.postMessage({ type: 'get-convs' });
-    } else if ((data.type === 'get-messages' || data.type === 'get-group-chat') && data.success) {
+    } 
+    else if (data.type === 'delete-convs' && data.success) {
+        const deletedId = xorDecode(data.encodedKey);
+        pendingDeletions.delete(deletedId);
+        cleanupDeletedChat(deletedId);
+        
+        setTimeout(() => {
+            if (currentActiveRawId !== deletedId && backendPort) {
+                backendPort.postMessage({ type: 'get-convs' });
+            }
+        }, 800);
+    } 
+    else if ((data.type === 'get-messages' || data.type === 'get-group-chat') && data.success) {
         document.getElementById('section-loader').classList.add('hidden');
         let chatId = data.id || data.groupId || data.chatId;
         const remoteMessages = deduplicateMessages(data.payload || []);
         
-        if (data.type === 'get-group-chat' && data.members && Array.isArray(data.members)) {
-            const memberLowercase = data.members.map(m => m.toLowerCase());
-            if (!memberLowercase.includes(currentUser)) {
-                console.warn("User is not a member of this group. Access denied.");
-                return;
+        if (data.type === 'get-group-chat') {
+            if (data.members && Array.isArray(data.members)) {
+                const memberLowercase = data.members.map(m => m.toLowerCase());
+                
+                if (!memberLowercase.includes(currentUser)) {
+                    console.warn("User is not a member of this group. Access denied.");
+                    activeGroups = activeGroups.filter(id => id !== chatId);
+                    leftGroups[chatId] = true;
+                    if (currentUser) {
+                        localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+                        localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
+                    }
+                    cleanupDeletedChat(chatId);
+                    renderSidebarList();
+                    return;
+                }
+                
+                if (chatId) {
+                    groupMembers[chatId] = memberLowercase;
+                    localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
+                }
             }
-            if (chatId) {
-                groupMembers[chatId] = memberLowercase;
-                localStorage.setItem('chat_group_members', JSON.stringify(groupMembers));
+            
+            if (data.groupName && chatId) {
+                groupNames[chatId] = data.groupName;
+                localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
             }
         }
         
@@ -357,31 +454,28 @@ function handleBackendMessage(data) {
                 chatId = [currentUser, otherUser].sort().join('-');
             }
         }
+        
         if (!chatId) return;
+        
         if (!chatId.startsWith('grp-') && remoteMessages.length > 0) {
             const expectedUsers = chatId.toLowerCase().split('-');
             const isContaminated = remoteMessages.some(m => !expectedUsers.includes(m.sender.toLowerCase()));
             if (isContaminated) return;
         }
-        else if (data.type === 'get-group-chat' && !data.success && data.reason === 'not_member') {
-            activeGroups = activeGroups.filter(id => id !== currentActiveRawId);
-            leftGroups[currentActiveRawId] = true;
-            localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
-            localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
-            cleanupDeletedChat(currentActiveRawId);
-            renderSidebarList();
-        }
+        
         let cached = [];
         try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${chatId}`)) || []; } catch(e) {}
         const combined = deduplicateMessages([...cached, ...remoteMessages]).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
         localStorage.setItem(`chat_msgs_${chatId}`, JSON.stringify(combined));
         renderMessages(combined, chatId);
-    } else if ((data.type === 'send-message' || data.type === 'send-group-message') && data.success) {
+    } 
+    else if ((data.type === 'send-message' || data.type === 'send-group-message') && data.success) {
         isSendingMessage = false;
         processMessageQueue();
         fetchMessages(currentActiveRawId);
         if (data.type === 'send-message') backendPort.postMessage({ type: 'get-convs' });
-    } else if (data.type === 'add-to-group' && data.success) {
+    } 
+    else if (data.type === 'add-to-group' && data.success) {
         if (!activeGroups.includes(data.groupId)) {
             activeGroups.push(data.groupId);
             if (currentUser) {
@@ -389,8 +483,9 @@ function handleBackendMessage(data) {
             }
         }
         renderSidebarList();
-        fetchMessages(currentActiveRawId);
-    } else if (data.type === 'leave-group' && data.success) {
+        if (currentActiveRawId === data.groupId) fetchMessages(currentActiveRawId);
+    } 
+    else if (data.type === 'leave-group' && data.success) {
         leftGroups[data.groupId] = true;
         localStorage.setItem('chat_left_groups', JSON.stringify(leftGroups));
         
@@ -405,6 +500,7 @@ function handleBackendMessage(data) {
         renderSidebarList();
     }
 }
+
 function createAvatarElement(src, alt, sizeClass = "chat-avatar") {
     const img = document.createElement('img');
     img.className = sizeClass;
@@ -413,6 +509,7 @@ function createAvatarElement(src, alt, sizeClass = "chat-avatar") {
     img.onerror = function() { this.onerror = null; this.src = fallbackAvatar; };
     return img;
 }
+
 function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     currentActiveRawId = rawId;
     document.getElementById('header-username').innerText = peerName;
@@ -420,14 +517,18 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     headerAvatar.src = peerAvatar || fallbackAvatar;
     headerAvatar.style.display = 'block';
     headerAvatar.onerror = function() { this.onerror = null; this.src = fallbackAvatar; };
+    
     let isGroup = rawId.startsWith('grp-');
     document.getElementById('delete-chat-btn').style.display = isGroup ? 'none' : 'block';
     document.getElementById('leave-group-btn').style.display = isGroup ? 'block' : 'none';
     let addBtn = document.getElementById('add-member-btn');
     if (addBtn) addBtn.style.display = isGroup ? 'block' : 'none';
+    
     document.getElementById('user-input').disabled = false;
     document.getElementById('send-btn').disabled = false;
+    
     const chatContainer = document.getElementById('chat-container');
+    
     if (unreadChats.includes(rawId)) {
         unreadChats = unreadChats.filter(id => id !== rawId);
         localStorage.setItem('chat_unread', JSON.stringify(unreadChats));
@@ -436,6 +537,7 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
         document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
         if (chatItemEl) chatItemEl.classList.add('active');
     }
+    
     lastRenderedChatId = rawId;
     lastMessageDataString = "";
     const token = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
@@ -446,34 +548,50 @@ function openChat(rawId, peerName, peerAvatar, chatItemEl = null) {
     chatContainer.innerHTML = '';
     justOpened = true;
     stopMediaWatcher();
+    
     try {
         const cachedMsgs = JSON.parse(localStorage.getItem(`chat_msgs_${rawId}`));
         if (cachedMsgs && cachedMsgs.length > 0) {
             renderMessages(cachedMsgs, rawId);
         }
     } catch (e) {}
+    
     fetchMessages(rawId);
 }
+
 function renderSidebarList() {
     const chatList = document.getElementById('chat-list');
     if (!currentUser) {
         chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">Waiting for user data...</div>';
         return;
     }
+    
     const myConvs = activeConversations.filter(rawId => rawId && rawId.toLowerCase().split('-').includes(currentUser));
-    const currentState = JSON.stringify({ myConvs, activeGroups, unreadChats, currentActiveRawId, groupNames });
+    
+    const validGroups = activeGroups.filter(groupId => !leftGroups[groupId]);
+    
+    const currentState = JSON.stringify({ myConvs, validGroups, unreadChats, currentActiveRawId, groupNames });
     if (currentState === lastSidebarState) return;
     lastSidebarState = currentState;
+    
     chatList.innerHTML = '';
-    if (myConvs.length === 0 && activeGroups.length === 0) {
+    
+    if (myConvs.length === 0 && validGroups.length === 0) {
         chatList.innerHTML = '<div style="padding: 15px; font-size: 0.85rem; opacity: 0.6;">No conversations yet.</div>';
         return;
     }
-    activeGroups.forEach(groupId => {
+    
+    validGroups.forEach(groupId => {
+        const members = groupMembers[groupId];
+        if (members && Array.isArray(members) && !members.includes(currentUser)) {
+            return;
+        }
+        
         let isUnread = unreadChats.includes(groupId);
         let gName = groupNames[groupId] || "Group Chat";
         let item = document.createElement('div');
         item.className = 'chat-item' + (currentActiveRawId === groupId ? ' active' : '') + (isUnread ? ' unread' : '');
+        
         const avatarWrap = document.createElement('div');
         avatarWrap.className = 'avatar-wrapper';
         const avatar = createAvatarElement(groupFallbackAvatar, 'Group', 'chat-avatar');
@@ -481,6 +599,7 @@ function renderSidebarList() {
         const unreadDot = document.createElement('div');
         unreadDot.className = 'unread-indicator';
         avatarWrap.appendChild(unreadDot);
+        
         const info = document.createElement('div');
         info.className = 'chat-info';
         const title = document.createElement('span');
@@ -496,6 +615,7 @@ function renderSidebarList() {
         item.addEventListener('click', () => openChat(groupId, gName, groupFallbackAvatar, item));
         chatList.appendChild(item);
     });
+    
     myConvs.forEach(rawId => {
         let parts = rawId.split('-');
         let peer = parts.find(p => p.toLowerCase() !== currentUser) || parts[0];
@@ -503,6 +623,7 @@ function renderSidebarList() {
         let isUnread = unreadChats.includes(rawId);
         let item = document.createElement('div');
         item.className = 'chat-item' + (currentActiveRawId === rawId ? ' active' : '') + (isUnread ? ' unread' : '');
+        
         const avatarWrap = document.createElement('div');
         avatarWrap.className = 'avatar-wrapper';
         const avatar = createAvatarElement(peerAvatar, peer, 'chat-avatar');
@@ -510,6 +631,7 @@ function renderSidebarList() {
         const unreadDot = document.createElement('div');
         unreadDot.className = 'unread-indicator';
         avatarWrap.appendChild(unreadDot);
+        
         const info = document.createElement('div');
         info.className = 'chat-info';
         const title = document.createElement('span');
@@ -526,63 +648,76 @@ function renderSidebarList() {
         chatList.appendChild(item);
     });
 }
+
 function fetchMessages(rawId) {
     if (backendPort && rawId) {
         if (rawId.startsWith('grp-')) backendPort.postMessage({ type: 'get-group-chat', groupId: rawId, requestUser: currentUser });
         else backendPort.postMessage({ type: 'get-messages', id: rawId });
     }
 }
+
 function renderMessages(messages, chatId) {
     const container = document.getElementById('chat-container');
     if (chatId !== currentActiveRawId) return;
     if (!container.dataset.renderToken) return;
     if (container.dataset.renderToken !== currentRenderToken) return;
+    
     document.getElementById('section-loader').classList.add('hidden');
+    
     const cleanMsgs = deduplicateMessages(messages).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     const switched = chatId !== lastRenderedChatId;
+    
     if (switched) {
         lastRenderedChatId = chatId;
         lastMessageDataString = "";
         container.innerHTML = '';
     }
+    
     const newMessageString = JSON.stringify(cleanMsgs);
     if (newMessageString === lastMessageDataString) {
         maybeShowContainer(container);
         return;
     }
+    
     let oldMsgs = [];
     if (lastMessageDataString) {
         try { oldMsgs = JSON.parse(lastMessageDataString); } catch(e) {}
     }
     lastMessageDataString = newMessageString;
     container.innerHTML = '';
+    
     if (cleanMsgs.length === 0) {
         container.innerHTML = '<div style="opacity: 0.5; text-align: center; margin-top: 20px;">No messages sent yet. Start the conversation!</div>';
         maybeShowContainer(container);
         justOpened = false;
         return;
     }
+    
     const animateAll = justOpened || switched;
     const frag = document.createDocumentFragment();
     const tokenSnapshot = currentRenderToken;
     const mediaElements = [];
+    
     for (let index = 0; index < cleanMsgs.length; index++) {
         const m = cleanMsgs[index];
         const next = cleanMsgs[index + 1];
         const showTime = (index === cleanMsgs.length - 1) ? true : !(next && next.sender === m.sender && (new Date(next.timestamp) - new Date(m.timestamp)) < 600000);
         const isNewMessage = oldMsgs.length > 0 && index >= oldMsgs.length;
         let animateDelay = false;
+        
         if (animateAll) {
             animateDelay = Math.min(index * STAGGER_STEP, MAX_STAGGER_MS);
         } else if (isNewMessage) {
             animateDelay = 0;
         }
+        
         const built = buildMessageRow(tokenSnapshot, m.sender, m.message, m.timestamp, animateDelay, showTime, chatId.startsWith('grp-'));
         if (built) {
             frag.appendChild(built.row);
             if (built.mediaElems && built.mediaElems.length) mediaElements.push(...built.mediaElems);
         }
     }
+    
     stopMediaWatcher();
     container.appendChild(frag);
     scrollToBottomIfShould(container, true);
@@ -590,36 +725,45 @@ function renderMessages(messages, chatId) {
     maybeShowContainer(container);
     justOpened = false;
 }
+
 function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, showTimestamp, isGroup) {
     const container = document.getElementById('chat-container');
     if (container.dataset.renderToken !== tokenSnapshot) return null;
+    
     const isMe = sender.toLowerCase() === currentUser;
     const rowDiv = document.createElement('div');
     rowDiv.className = `message-row ${isMe ? 'user-row' : 'friend-row'}`;
+    
     if (animateDelay !== false) {
         rowDiv.classList.add('slide-in');
         rowDiv.style.animationDelay = `${animateDelay}ms`;
     } else {
         rowDiv.style.animationDelay = '0ms';
     }
+    
     const avatarImg = document.createElement('img');
     avatarImg.className = 'msg-avatar';
     avatarImg.src = userProfileMap[sender.toLowerCase()] || fallbackAvatar;
     avatarImg.onerror = function() { this.onerror = null; this.src = fallbackAvatar; };
+    
     const msgWrapper = document.createElement('div');
     msgWrapper.className = 'message-wrapper';
+    
     if (isGroup && !isMe) {
         const senderName = document.createElement('span');
         senderName.style.cssText = 'font-size: 0.75rem; opacity: 0.8; margin-bottom: 2px; margin-left: 4px;';
         senderName.innerText = sender;
         msgWrapper.appendChild(senderName);
     }
+    
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${isMe ? 'user-message' : 'friend-message'}`;
+    
     const decodedText = xorDecode(text);
     const safeText = escapeHtml(decodedText);
     const mediaType = isMediaURL(decodedText).type;
     const mediaElems = [];
+    
     if (mediaType === 'image') {
         const img = document.createElement('img');
         img.src = safeText;
@@ -636,7 +780,7 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
         vid.preload = 'auto';
         vid.onerror = function() {};
         msgDiv.appendChild(vid);
-        mediaElems.push(vid);
+        mediaElements.push(vid);
     } else if (mediaType === 'audio') {
         const aud = document.createElement('audio');
         aud.controls = true;
@@ -648,26 +792,32 @@ function buildMessageRow(tokenSnapshot, sender, text, timestamp, animateDelay, s
     } else {
         msgDiv.innerHTML = safeText;
     }
+    
     msgWrapper.appendChild(msgDiv);
+    
     if (timestamp && showTimestamp) {
         const timeDiv = document.createElement('span');
         timeDiv.className = 'timestamp';
         timeDiv.innerText = new Date(timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
         msgWrapper.appendChild(timeDiv);
     }
+    
     rowDiv.appendChild(avatarImg);
     rowDiv.appendChild(msgWrapper);
     return { row: rowDiv, mediaElems };
 }
+
 function maybeShowContainer(container) {
     container.classList.remove('visible');
     void container.offsetWidth;
     container.classList.add('visible');
 }
+
 function scrollToBottomImmediate(container) {
     if (!container) return;
     container.scrollTop = container.scrollHeight;
 }
+
 function scrollToBottomIfShould(container, isOpenScroll = false) {
     if (!container) return;
     if (isOpenScroll) {
@@ -677,12 +827,14 @@ function scrollToBottomIfShould(container, isOpenScroll = false) {
     const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
     if (distanceFromBottom <= FALLBACK_SCROLL_THRESHOLD) scrollToBottomImmediate(container);
 }
+
 function startMediaWatcher(mediaElems, container) {
     stopMediaWatcher();
     const token = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
     mediaWatcher.token = token;
     mediaWatcher.remaining = mediaElems.length;
     mediaWatcher.listeners = [];
+    
     const onFinish = () => {
         if (mediaWatcher.token !== token) return;
         scrollToBottomIfShould(container, false);
@@ -692,11 +844,13 @@ function startMediaWatcher(mediaElems, container) {
         mediaWatcher.listeners.forEach(l => l.el.removeEventListener(l.ev, l.fn));
         mediaWatcher.listeners = [];
     };
+    
     const decrement = () => {
         if (mediaWatcher.token !== token) return;
         mediaWatcher.remaining -= 1;
         if (mediaWatcher.remaining <= 0) onFinish();
     };
+    
     mediaElems.forEach(el => {
         const evLoad = el.tagName.toLowerCase() === 'img' ? 'load' : 'loadeddata';
         const fnLoad = () => decrement();
@@ -705,6 +859,7 @@ function startMediaWatcher(mediaElems, container) {
         el.addEventListener('error', fnErr, { passive: true });
         mediaWatcher.listeners.push({ el, ev: evLoad, fn: fnLoad }, { el, ev: 'error', fn: fnErr });
     });
+    
     mediaWatcher.timeoutId = setTimeout(() => {
         if (mediaWatcher.token !== token) return;
         scrollToBottomIfShould(container, false);
@@ -713,6 +868,7 @@ function startMediaWatcher(mediaElems, container) {
         mediaWatcher.listeners = [];
     }, 900);
 }
+
 function stopMediaWatcher() {
     if (!mediaWatcher.token) return;
     clearTimeout(mediaWatcher.timeoutId);
@@ -721,25 +877,30 @@ function stopMediaWatcher() {
     mediaWatcher.remaining = 0;
     mediaWatcher.listeners = [];
 }
+
 setInterval(() => {
     if (backendReady && currentUser) {
         backendPort.postMessage({ type: 'get-convs' });
         if (currentActiveRawId) fetchMessages(currentActiveRawId);
     }
 }, 1000);
+
 function sendMessage() {
     let input = document.getElementById('user-input');
     let text = input.value.trim();
     if (!text || !currentActiveRawId || !backendPort || !currentUser) return;
+    
     input.value = '';
     let currentTimestamp = new Date().toISOString();
     let encodedText = xorEncode(text);
+    
     let cached = [];
     try { cached = JSON.parse(localStorage.getItem(`chat_msgs_${currentActiveRawId}`)) || []; } catch(e) {}
     cached.push({ sender: currentUser, message: encodedText, timestamp: currentTimestamp });
     const uniqueCached = deduplicateMessages(cached);
     localStorage.setItem(`chat_msgs_${currentActiveRawId}`, JSON.stringify(uniqueCached));
     renderMessages(uniqueCached, currentActiveRawId);
+    
     if (currentActiveRawId.startsWith('grp-')) {
         messageQueue.push({ type: 'send-group-message', groupId: currentActiveRawId, sender: currentUser, message: encodedText });
     } else {
@@ -747,29 +908,41 @@ function sendMessage() {
     }
     processMessageQueue();
 }
+
 document.getElementById('send-btn').onclick = sendMessage;
 document.getElementById('user-input').onkeydown = e => { if (e.key === 'Enter') sendMessage(); };
+
 document.getElementById('delete-chat-btn').onclick = () => {
     if (!currentActiveRawId || !backendPort) return;
-    if (confirm("Are you sure you want to delete this conversation?")) backendPort.postMessage({ type: 'delete-convs', id: currentActiveRawId });
+    if (confirm("Are you sure you want to delete this conversation?")) {
+        pendingDeletions.add(currentActiveRawId);
+        backendPort.postMessage({ type: 'delete-convs', id: currentActiveRawId });
+    }
 };
+
 document.getElementById('leave-group-btn').onclick = () => {
     if (!currentActiveRawId || !backendPort) return;
     if (confirm("Are you sure you want to leave this group?")) {
+        pendingDeletions.add(currentActiveRawId);
         backendPort.postMessage({ type: 'leave-group', groupId: currentActiveRawId, user: currentUser });
     }
 };
+
 const modal = document.getElementById('modal-overlay');
 const userContainer = document.getElementById('user-list-container');
 const searchInput = document.getElementById('user-search-input');
 const groupNameInput = document.getElementById('group-name-input');
 const createGroupBtn = document.getElementById('modal-create-group');
+
 function openModal(groupMode, addMemberMode = false) {
     if (!currentUser) return alert("Waiting for username authorization...");
     isGroupMode = groupMode;
     isAddMemberMode = addMemberMode;
     selectedUsersForGroup.clear();
-    currentSearchQuery = ""; searchInput.value = ""; groupNameInput.value = "";
+    currentSearchQuery = ""; 
+    searchInput.value = ""; 
+    groupNameInput.value = "";
+    
     if (isAddMemberMode) {
         document.getElementById('modal-title').innerText = "Add Members to Group";
         groupNameInput.style.display = "none";
@@ -781,20 +954,25 @@ function openModal(groupMode, addMemberMode = false) {
         createGroupBtn.style.display = isGroupMode ? "block" : "none";
         createGroupBtn.innerText = "Create Group";
     }
+    
     modal.classList.remove('closing');
     void modal.offsetWidth;
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
+    
     if (cachedUsersList.length > 0) populateUserDirectoryModal(cachedUsersList);
     else {
         userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">Loading users...</div>';
         if (backendPort) backendPort.postMessage({ type: 'get-users' });
     }
 }
+
 document.getElementById('new-chat-btn').onclick = () => openModal(false);
 document.getElementById('new-group-btn').onclick = () => openModal(true);
+
 const btnAddMember = document.getElementById('add-member-btn');
 if (btnAddMember) btnAddMember.onclick = () => openModal(true, true);
+
 function closeModal() {
     if (!modal.classList.contains('active')) return;
     modal.classList.add('closing');
@@ -804,15 +982,20 @@ function closeModal() {
         userContainer.innerHTML = '';
     }, 280);
 }
+
 modal.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
 });
+
 window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
 });
+
 document.getElementById('modal-cancel').onclick = () => closeModal();
+
 createGroupBtn.onclick = () => {
     if (selectedUsersForGroup.size === 0) return alert("Select at least one user.");
+    
     if (isAddMemberMode) {
         if (!currentActiveRawId || !currentActiveRawId.startsWith('grp-')) return alert("No active group selected.");
         const usersArray = Array.from(selectedUsersForGroup);
@@ -827,22 +1010,33 @@ createGroupBtn.onclick = () => {
         closeModal();
         return;
     }
+    
     if (!isGroupMode) return;
+    
     const gName = groupNameInput.value.trim() || "New Group";
     const newGroupId = "grp-" + Date.now() + "-" + Math.random().toString(36).substr(2,6);
+    
     if (backendPort) backendPort.postMessage({ type: 'create-group', groupId: newGroupId, creator: currentUser, name: gName });
     selectedUsersForGroup.forEach(u => { if (backendPort) backendPort.postMessage({ type: 'add-to-group', groupId: newGroupId, user: u }); });
+    
     groupNames[newGroupId] = gName;
     localStorage.setItem('chat_group_names', JSON.stringify(groupNames));
+    
     if (!activeGroups.includes(newGroupId)) {
         activeGroups.push(newGroupId);
     }
     localStorage.setItem(`chat_groups_${currentUser}`, JSON.stringify(activeGroups));
+    
     closeModal();
     openChat(newGroupId, gName, groupFallbackAvatar);
     renderSidebarList();
 };
-searchInput.oninput = (e) => { currentSearchQuery = e.target.value.toLowerCase().trim(); populateUserDirectoryModal(cachedUsersList); };
+
+searchInput.oninput = (e) => { 
+    currentSearchQuery = e.target.value.toLowerCase().trim(); 
+    populateUserDirectoryModal(cachedUsersList); 
+};
+
 function populateUserDirectoryModal(users) {
     userContainer.innerHTML = '';
     const filteredUsers = (users || []).filter(u => {
@@ -850,15 +1044,18 @@ function populateUserDirectoryModal(users) {
         if (currentSearchQuery && !u.username.toLowerCase().includes(currentSearchQuery)) return false;
         return true;
     });
+    
     if (filteredUsers.length === 0) {
         userContainer.innerHTML = '<div style="text-align:center; opacity:0.6; padding: 20px;">No users found.</div>';
         return;
     }
+    
     filteredUsers.forEach(u => {
         let item = document.createElement('div');
         item.className = 'user-list-item';
         let avatar = u.profilePicture || fallbackAvatar;
         let lowerName = u.username.toLowerCase();
+        
         if (isGroupMode || isAddMemberMode) {
             const avatarEl = createAvatarElement(avatar, u.username, 'user-list-avatar');
             const info = document.createElement('div');
@@ -869,7 +1066,9 @@ function populateUserDirectoryModal(users) {
             info.appendChild(name);
             item.appendChild(avatarEl);
             item.appendChild(info);
+            
             if (selectedUsersForGroup.has(lowerName)) item.classList.add('selected');
+            
             item.onclick = () => {
                 if (selectedUsersForGroup.has(lowerName)) {
                     selectedUsersForGroup.delete(lowerName);
@@ -896,6 +1095,7 @@ function populateUserDirectoryModal(users) {
             desc.textContent = u.description || "No bio provided.";
             info.appendChild(name);
             info.appendChild(desc);
+            
             const btn = document.createElement('button');
             btn.className = 'modal-btn primary';
             btn.textContent = 'Chat';
@@ -906,6 +1106,7 @@ function populateUserDirectoryModal(users) {
                 openChat(rawId, u.username, avatar);
                 if (backendPort) backendPort.postMessage({ type: 'get-convs' });
             };
+            
             item.appendChild(avatarEl);
             item.appendChild(info);
             item.appendChild(btn);
