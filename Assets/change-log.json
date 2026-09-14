@@ -1,12 +1,7 @@
 {
-  "timestamp": "September 13th",
+  "timestamp": "September 14th",
   "changes": [
-    "Chat is back up",
-    "(SOON) Updated Apps.",
-    "(SOON) Updated Proxies.",
-    "Better CSS",
-    "Most of the games are fixed.",
-    "New Header, and Navigation",
-    "Updated Chat Style, and Group Chats."
+     "Stale chat data has been removed.",
+     "An auto-updater has been added to prevent conflicting versions."
   ]
 }
