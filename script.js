@@ -1052,8 +1052,8 @@ if (mathworksIframe) {
       autoRefreshBusy = false;
     }
   }
-
-  setInterval(autoRefreshActivePage, 30000);
+  // 200 seconds to prevent rate limit 60/hr
+  setInterval(autoRefreshActivePage, 200000);
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initApp) : initApp();
