@@ -96,5 +96,12 @@
     "category": "Entertainment",
     "url": "${static}https://webtoons.com/",
     "image": ""
+  },
+  {
+    "title": "VSCode",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${scram}https://vscode.dev/",
+    "image": ""
   }
 ]
