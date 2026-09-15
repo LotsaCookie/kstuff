@@ -1,7 +1,7 @@
 {
-  "timestamp": "September 14th",
+  "timestamp": "September 15th",
   "changes": [
-     "Stale chat data has been removed.",
-     "An auto-updater has been added to prevent conflicting versions."
+    "(SOON) Fixing Emojis",
+    "Chat is fixed. If you're on an old version it is not. (kill anyone on an old one)",
   ]
 }
