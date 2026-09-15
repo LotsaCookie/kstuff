@@ -49,13 +49,6 @@
     "image": "https://tse2.mm.bing.net/th/id/OIP.kF2TcNatbmeBC87P7IMtIgHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "9anime",
-    "description": "",
-    "category": "Entertainment",
-    "url": "${static}https://9animetv.to/",
-    "image": "https://tse1.mm.bing.net/th/id/OIP.hRxz8hqZpIrMsQwXgNHqvwHaEK?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
     "title": "Gimkit Hacks",
     "description": "",
     "category": "Hacks",
@@ -84,10 +77,10 @@
     "image": "https://logosmarcas.net/wp-content/uploads/2020/11/Twitch-Simbolo.jpg"
   },
   {
-    "title": "Discord",
+    "title": "Discord (Bannable via joining/accepting)",
     "description": "",
     "category": "Cloud",
-    "url": "https://warm-biscochitos-44c02e.netlify.app/spectra.html?launch=Discord",
+    "url": "${static}https://discord.com/app",
     "image": "https://www.fosslinux.com/wp-content/uploads/2021/12/Discord.jpg"
   },
   {
@@ -96,12 +89,5 @@
     "category": "Entertainment",
     "url": "${static}https://www.tiktok.com/",
     "image": "https://cdn.shopify.com/s/files/1/0070/7032/files/tiktok-logo-2.png?v=1685556794"
-  },
-  {
-    "title": "Google",
-    "description": "",
-    "category": "Search Engine",
-    "url": "${static}https://www.google.com/",
-    "image": "https://logowik.com/content/uploads/images/google-new7326.jpg"
   }
 ]
