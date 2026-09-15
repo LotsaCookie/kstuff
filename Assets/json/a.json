@@ -89,5 +89,12 @@
     "category": "Entertainment",
     "url": "${static}https://www.tiktok.com/",
     "image": "https://cdn.shopify.com/s/files/1/0070/7032/files/tiktok-logo-2.png?v=1685556794"
+  },
+  {
+    "title": "Webtoon",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://webtoons.com/",
+    "image": ""
   }
 ]
