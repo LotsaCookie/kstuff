@@ -9,7 +9,7 @@ function initApp() {
   let history = ['kstuff://home'], historyIndex = 0;
 
   const encodeUv = str => !str ? str : encodeURIComponent(str.toString().split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
-  
+
   const formatWebUrl = rawUrl => {
     let val = rawUrl.trim();
     if (!val) return '';
@@ -30,11 +30,13 @@ function initApp() {
   const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
 
   const ITEMS_PER_PAGE = 48;
-  const IMAGE_LOAD_TIMEOUT = 5000; // ms to wait for images before hiding loader
+  const IMAGE_LOAD_TIMEOUT = 5000;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
+  let commitEtag = null, hashCheckInFlight = null;
+  const lastIframeHtml = {};
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
   let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
   let isNavigating = false, autoRefreshBusy = false;
@@ -103,9 +105,46 @@ function initApp() {
     let rs; window.addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => updateIndicator(document.querySelector('.nav-btn.active')), 120); });
   }
 
+  async function refreshCommitHash() {
+    if (hashCheckInFlight) return hashCheckInFlight;
+
+    hashCheckInFlight = (async () => {
+      try {
+        const headers = commitEtag ? { 'If-None-Match': commitEtag } : {};
+        const res = await fetch(
+          'https://api.github.com/repos/lotsacookie/kstuff/commits/main',
+          { headers }
+        );
+
+        if (res.status === 304) return false;
+        if (!res.ok) return false;
+
+        const newEtag = res.headers.get('ETag');
+        if (newEtag) commitEtag = newEtag;
+
+        const json = await res.json();
+        const newSha = json?.sha;
+        if (!newSha) return false;
+
+        const isFirstCheck = cachedCommitHash === null;
+        const changed = newSha !== cachedCommitHash;
+        cachedCommitHash = newSha;
+
+        return changed && !isFirstCheck;
+      } catch {
+        return false;
+      } finally {
+        hashCheckInFlight = null;
+      }
+    })();
+
+    return hashCheckInFlight;
+  }
+
   async function getProxyList() {
     if (!cachedCommitHash) {
-      try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } catch { cachedCommitHash = "main"; }
+      await refreshCommitHash();
+      if (!cachedCommitHash) cachedCommitHash = 'main';
     }
     return [
       `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
@@ -318,7 +357,7 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
-  function loadIframePage(id, path) {
+  function loadIframePage(id, path, preFetchedHtml = null) {
     return new Promise(async resolve => {
       const loadId = ++activeIframeLoadId;
       const f = $(id);
@@ -326,8 +365,9 @@ function initApp() {
       f.removeAttribute('srcdoc'); f.src = 'about:blank';
       if (loadId !== activeIframeLoadId) return resolve();
       try {
-        let html = await fetchWithProxy(path, true);
+        let html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
         if (loadId !== activeIframeLoadId) return resolve();
+        lastIframeHtml[id] = html;
         const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
         f.onload = () => {
           toggleLoader(false);
@@ -428,7 +468,7 @@ function initApp() {
             if (item.image) {
               p.img.style.display = 'block';
               try {
-                p.img.loading = 'eager'; // ensure browsers don't lazy-load
+                p.img.loading = 'eager';
               } catch (e) {}
               const pr = new Promise(res => {
                 let done = false;
@@ -579,7 +619,7 @@ function initApp() {
       const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
 
       if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
-        if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { /* already loaded */ }
+        if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { }
         else return toggleLoader(false);
       }
 
@@ -703,12 +743,26 @@ function initApp() {
     p.url = appB(p.url); p.image = appB(p.image); return p;
   }).sort((a, b) => (a.title||"").localeCompare(b.title||"", undefined, { sensitivity: 'base' }));
 
-  const rData = async (t, p, resetPage = true, mode = 'updating') => {
-    toggleLoader(true, mode);
+  const rData = async (t, p, resetPage = true, mode = 'updating', silent = false) => {
     try {
-      const n = await fetchWithProxy(p).catch(()=>[]);
-      if (n?.length) { grids[t].data = proc(n); if (resetPage) grids[t].page = 1; await renderGrid(t, true, mode); } else toggleLoader(false);
-    } catch { toggleLoader(false); }
+      const n = await fetchWithProxy(p).catch(() => null);
+      if (!n?.length) { if (!silent) toggleLoader(false); return false; }
+
+      const processed = proc(n);
+      if (JSON.stringify(processed) === JSON.stringify(grids[t].data)) {
+        if (!silent) toggleLoader(false);
+        return false;
+      }
+
+      toggleLoader(true, mode);
+      grids[t].data = processed;
+      if (resetPage) grids[t].page = 1;
+      await renderGrid(t, true, mode);
+      return true;
+    } catch {
+      if (!silent) toggleLoader(false);
+      return false;
+    }
   };
 
   const fetchReadingCornerRaw = async () => {
@@ -782,16 +836,26 @@ function initApp() {
     return { data: fallbackMapped };
   };
 
-  const refreshReadingCorner = async (resetPage = true, mode = 'updating') => {
-    toggleLoader(true, mode);
+  const refreshReadingCorner = async (resetPage = true, mode = 'updating', silent = false) => {
     try {
       const result = await fetchReadingCornerRaw();
-      if (result?.data?.length) {
-        grids.readingcorner.data = proc(result.data);
-        if (resetPage) grids.readingcorner.page = 1;
-        await renderGrid('readingcorner', true, mode);
+      if (!result?.data?.length) { if (!silent) toggleLoader(false); return false; }
+
+      const processed = proc(result.data);
+      if (JSON.stringify(processed) === JSON.stringify(grids.readingcorner.data)) {
+        if (!silent) toggleLoader(false);
+        return false;
       }
-    } finally { toggleLoader(false); }
+
+      toggleLoader(true, mode);
+      grids.readingcorner.data = processed;
+      if (resetPage) grids.readingcorner.page = 1;
+      await renderGrid('readingcorner', true, mode);
+      return true;
+    } catch {
+      if (!silent) toggleLoader(false);
+      return false;
+    }
   };
 
   $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshReadingCorner());
@@ -951,6 +1015,19 @@ if (mathworksIframe) {
 
   const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
 
+  async function maybeReloadIframe(id, path) {
+    try {
+      const html = await fetchWithProxy(path, true);
+      if (lastIframeHtml[id] === html) return false;
+      toggleLoader(true, 'updating');
+      await loadIframePage(id, path, html);
+      toggleLoader(false);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async function autoRefreshActivePage() {
     if (autoRefreshBusy || isNavigating || isAnyModalActive()) return;
     const activePage = document.querySelector('.page.active');
@@ -961,14 +1038,15 @@ if (mathworksIframe) {
 
     autoRefreshBusy = true;
     try {
+      const upstreamChanged = await refreshCommitHash();
+      if (!upstreamChanged) return;
+
       if (tId === 'readingcorner') {
-        await refreshReadingCorner(false, 'updating');
+        await refreshReadingCorner(false, 'updating', true);
       } else if (tId === 'sciencequiz') {
-        await rData('sciencequiz', 'Json/a.json', false, 'updating');
+        await rData('sciencequiz', 'Json/a.json', false, 'updating', true);
       } else if (iframePages[tId]) {
-        toggleLoader(true, 'updating');
-        await loadIframePage(iframePages[tId].id, iframePages[tId].path);
-        toggleLoader(false);
+        await maybeReloadIframe(iframePages[tId].id, iframePages[tId].path);
       }
     } finally {
       autoRefreshBusy = false;
