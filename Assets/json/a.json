@@ -32,7 +32,7 @@
     "description": "",
     "category": "Entertainment",
     "url": "${static}https://crazygames.com",
-    "image": "https://mobidictum.com/wp-content/uploads/2023/08/ten-reasons-to-publish-your-web-game-with-crazy-games-800x450.jpg"
+    "image": "https://play-lh.googleusercontent.com/zGvYCipVc-uIpRVf6P5maUThHJyuNE35Y-tQCQz6tYigWuxlZThhQh0Te8G0SlLi1j8PAgHds8EkL2KXkKPG=s256-rw"
   },
   {
     "title": "DuckDuckGo",
@@ -95,13 +95,13 @@
     "description": "",
     "category": "Entertainment",
     "url": "${static}https://webtoons.com/",
-    "image": ""
+    "image": "https://play-lh.googleusercontent.com/he2lEwx_2GRMBKxpN78dcnwbtTntaOOvUlnBpPJ0G5xXBetmzkdXgYuu_6xqwMTrjlYMb74NW1bb5RUwvp2pmQ"
   },
   {
     "title": "VSCode",
     "description": "",
     "category": "Entertainment",
     "url": "${scram}https://vscode.dev/",
-    "image": ""
+    "image": "https://cdn-1.webcatalog.io/catalog/vs-code/vs-code-social-preview.png?v=1714776407457"
   }
 ]
