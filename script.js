@@ -475,7 +475,7 @@ function sendContentToSVG(svgEl, htmlContent) {
           }
           
           if (htmlToLoad) {
-            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?zxs';
+            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?6777';
             modalIframe.onload = async () => {
               await sendContentToSVG(modalIframe, htmlToLoad);
             };
@@ -505,7 +505,7 @@ function sendContentToSVG(svgEl, htmlContent) {
             }
             
             if (htmlToLoad) {
-              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?zxs';
+              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?677';
               modalIframe.onload = async () => {
                 await sendContentToSVG(modalIframe, htmlToLoad);
               };
