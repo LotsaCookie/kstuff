@@ -32,8 +32,12 @@ function initApp() {
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
   const IMAGE_TEST_TIMEOUT = 2000;
+  const URL_TEST_TIMEOUT = 3000;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
+
+
+  const TRUFFLED_CANDIDATES = ['https://truffled.lol', 'https://boat.strongson.com'];
 
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
   let commitEtag = null, hashCheckInFlight = null;
@@ -215,6 +219,30 @@ function initApp() {
     });
   }
 
+
+  async function testUrlReachable(url, timeoutMs = URL_TEST_TIMEOUT) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      await fetch(url, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+
+  async function resolveTruffledUrl(preferred) {
+    const candidates = [...new Set([preferred, ...TRUFFLED_CANDIDATES].filter(Boolean))];
+    for (const base of candidates) {
+      const clean = cleanUrl(base);
+      if (await testUrlReachable(clean)) return clean;
+    }
+    return cleanUrl(candidates[0] || TRUFFLED_CANDIDATES[0]);
+  }
+
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
@@ -378,33 +406,42 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
-function sendContentToSVG(svgEl, htmlContent) {
-  return new Promise((resolve) => {
-    if (!svgEl || !svgEl.contentWindow) return resolve(false);
-    
-    const timeout = setTimeout(() => {
-      window.removeEventListener('message', handler);
-      resolve(false);
-    }, 5000);
 
-    const handler = (event) => {
-      if (!event.data || event.data.source !== 'launch-svg') return;
-      
-      if (event.data.type === 'ready') {
-        svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
-      }
-      
-      if (event.data.type === 'content-loaded') {
-        clearTimeout(timeout);
+  function sendContentToSVG(svgEl, htmlContent, baseUrl = '') {
+    return new Promise((resolve) => {
+      if (!svgEl || !svgEl.contentWindow) return resolve(false);
+
+      const timeout = setTimeout(() => {
         window.removeEventListener('message', handler);
-        resolve(true);
-      }
-    };
+        resolve(false);
+      }, 5000);
 
-    window.addEventListener('message', handler);
-    svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
-  });
-}
+      const send = () => svgEl.contentWindow.postMessage({ type: 'CONTENT', source: 'launch-parent', html: htmlContent, baseUrl }, '*');
+
+      const handler = (event) => {
+        if (!event.data || event.data.source !== 'launch-svg') return;
+
+        if (event.data.type === 'ready') {
+          send();
+        }
+
+        if (event.data.type === 'content-loaded') {
+          clearTimeout(timeout);
+          window.removeEventListener('message', handler);
+          resolve(true);
+        }
+
+        if (event.data.type === 'content-error') {
+          clearTimeout(timeout);
+          window.removeEventListener('message', handler);
+          resolve(false);
+        }
+      };
+
+      window.addEventListener('message', handler);
+      send();
+    });
+  }
 
   function loadIframePage(id, path, preFetchedHtml = null) {
     return new Promise(async resolve => {
@@ -453,6 +490,7 @@ function sendContentToSVG(svgEl, htmlContent) {
     if (item.url) {
       let targetUrl = item.url.trim();
       let htmlToLoad = null;
+      let baseUrl = '';
       
       try {
         const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
@@ -465,6 +503,7 @@ function sendContentToSVG(svgEl, htmlContent) {
             .replace(/^\/+/, '');
           
           const fullUrl = `https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+          baseUrl = fullUrl.replace(/[^\/]*$/, '');
           
           try {
             const res = await fetch(fullUrl, { cache: 'no-store' });
@@ -477,7 +516,7 @@ function sendContentToSVG(svgEl, htmlContent) {
           if (htmlToLoad) {
             modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?6777';
             modalIframe.onload = async () => {
-              await sendContentToSVG(modalIframe, htmlToLoad);
+              await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
             };
           } else {
             modalIframe.src = fullUrl;
@@ -496,6 +535,7 @@ function sendContentToSVG(svgEl, htmlContent) {
           if (isProxyUrl) {
             modalIframe.src = targetUrl;
           } else {
+            baseUrl = targetUrl.replace(/[^\/]*$/, '');
             try {
               const res = await fetch(targetUrl, { cache: 'no-store' });
               if (res.ok) {
@@ -507,7 +547,7 @@ function sendContentToSVG(svgEl, htmlContent) {
             if (htmlToLoad) {
               modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?677';
               modalIframe.onload = async () => {
-                await sendContentToSVG(modalIframe, htmlToLoad);
+                await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
               };
             } else {
               modalIframe.src = targetUrl;
@@ -989,12 +1029,17 @@ function sendContentToSVG(svgEl, htmlContent) {
       proxyIframe.src = `${cleanUrl(st.url)}/embed.html#https://example.com`;
       document.body.appendChild(proxyIframe);
     }
+    // trCfg (from Assets/json/mirrors/truffled.json) is already reachability-tested by
+    // getWorkingConfig via its favicon-style image probe. Only when that config is
+    // missing/unreachable do we fall back to actively probing the known truffled.lol
+    // domain (and the older backup) so the app never silently ships a dead default.
+    const truffledUrl = trCfg ? cleanUrl(trCfg.url) : await resolveTruffledUrl();
     gRep = {
       scram: sc ? cleanUrl(sc.url) + sc.final : '',
       static: st ? cleanUrl(st.url) + st.final : '',
       uv: uv ? cleanUrl(uv.url) + uv.final : '',
       frogiee: fr ? cleanUrl(fr.url) : '',
-      truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
+      truffled: truffledUrl
     };
     gTruf.clear(); tr?.games?.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
     grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
