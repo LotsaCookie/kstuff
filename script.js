@@ -458,7 +458,7 @@ function initApp() {
             .replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '')
             .replace(/^\/+/, '');
           
-          const fullUrl = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
+          const fullUrl = `https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
           
           try {
             const res = await fetch(fullUrl, { cache: 'no-store' });
@@ -466,11 +466,10 @@ function initApp() {
               htmlToLoad = await res.text();
             }
           } catch (e) {
-            // Fall back to direct URL
           }
           
           if (htmlToLoad) {
-            modalIframe.src = 'Assets/embed/launch.svg';
+            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg';
             modalIframe.onload = async () => {
               await sendContentToSVG(modalIframe, htmlToLoad);
             };
@@ -497,11 +496,10 @@ function initApp() {
                 htmlToLoad = await res.text();
               }
             } catch (e) {
-              // Fall back to direct URL
             }
             
             if (htmlToLoad) {
-              modalIframe.src = 'Assets/embed/launch.svg';
+              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg';
               modalIframe.onload = async () => {
                 await sendContentToSVG(modalIframe, htmlToLoad);
               };
