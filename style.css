@@ -20,6 +20,7 @@
     --btn-icon-hide-size: 1rem;
     --transition-speed: 0.3s;
     --header-height: 56px;
+    --footer-height: 36px;
 }
 
 body {
@@ -100,6 +101,78 @@ body.size-large.text-hide {
 .nav-bottom .learning-header {
     width: 100%;
     left: 0;
+}
+
+.learning-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background-color: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    z-index: 11;
+    flex-shrink: 0;
+    height: var(--footer-height);
+    width: 100%;
+    box-sizing: border-box;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
+
+.nav-left .learning-footer {
+    width: calc(100% - var(--nav-width));
+    left: var(--nav-width);
+}
+
+.nav-right .learning-footer {
+    width: calc(100% - var(--nav-width));
+    left: 0;
+}
+
+.nav-top .learning-footer,
+.nav-bottom .learning-footer {
+    width: 100%;
+    left: 0;
+}
+
+.footer-left, 
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.footer-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: 6px;
+    opacity: 0.85;
+    font-weight: bold;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.footer-item:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-item i {
+    font-size: 0.95rem;
+}
+
+.clock-item {
+    font-family: 'Orbitron', monospace, sans-serif !important;
+    letter-spacing: 0.5px;
 }
 
 .study-nav-btn {
@@ -217,28 +290,28 @@ body.size-large.text-hide {
     top: var(--header-height);
     left: 0;
     width: 100vw;
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-height) - var(--footer-height));
 }
 
 .nav-top #classroom-portal-container {
     top: calc(var(--header-height) + var(--nav-size));
-    height: calc(100vh - var(--header-height) - var(--nav-size));
+    height: calc(100vh - var(--header-height) - var(--nav-size) - var(--footer-height));
 }
 
 .nav-bottom #classroom-portal-container {
     top: var(--header-height);
-    height: calc(100vh - var(--header-height) - var(--nav-size));
+    height: calc(100vh - var(--header-height) - var(--nav-size) - var(--footer-height));
 }
 
 .nav-left #classroom-portal-container {
     left: var(--nav-width);
     width: calc(100vw - var(--nav-width));
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-height) - var(--footer-height));
 }
 
 .nav-right #classroom-portal-container {
     width: calc(100vw - var(--nav-width));
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-height) - var(--footer-height));
 }
 
 .nav-top #classroom-portal-container { flex-direction: column; }
@@ -315,7 +388,7 @@ body.size-large.text-hide {
     height: var(--nav-size);
     width: 100%;
     flex-direction: row;
-    bottom: 0;
+    bottom: var(--footer-height);
     left: 0;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -328,7 +401,7 @@ body.size-large.text-hide {
 
 .nav-left #teachertouchbar {
     width: var(--nav-width);
-    height: 100vh;
+    height: calc(100vh - var(--footer-height));
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
@@ -341,7 +414,7 @@ body.size-large.text-hide {
 
 .nav-right #teachertouchbar {
     width: var(--nav-width);
-    height: 100vh;
+    height: calc(100vh - var(--footer-height));
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
