@@ -378,27 +378,33 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
-  function sendContentToSVG(svgEl, htmlContent) {
-    return new Promise((resolve) => {
-      if (!svgEl || !svgEl.contentWindow) return resolve(false);
+function sendContentToSVG(svgEl, htmlContent) {
+  return new Promise((resolve) => {
+    if (!svgEl || !svgEl.contentWindow) return resolve(false);
+    
+    const timeout = setTimeout(() => {
+      window.removeEventListener('message', handler);
+      resolve(false);
+    }, 5000);
+
+    const handler = (event) => {
+      if (!event.data || event.data.source !== 'launch-svg') return;
       
-      const timeout = setTimeout(() => {
+      if (event.data.type === 'ready') {
+        svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
+      }
+      
+      if (event.data.type === 'content-loaded') {
+        clearTimeout(timeout);
         window.removeEventListener('message', handler);
-        resolve(false);
-      }, 5000);
+        resolve(true);
+      }
+    };
 
-      const handler = (event) => {
-        if (event.data && event.data.type === 'content-loaded' && event.data.source === 'launch-svg') {
-          clearTimeout(timeout);
-          window.removeEventListener('message', handler);
-          resolve(true);
-        }
-      };
-
-      window.addEventListener('message', handler);
-      svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
-    });
-  }
+    window.addEventListener('message', handler);
+    svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
+  });
+}
 
   function loadIframePage(id, path, preFetchedHtml = null) {
     return new Promise(async resolve => {
