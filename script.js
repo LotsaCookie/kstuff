@@ -442,11 +442,11 @@ function initApp() {
     if (modalOverlay) modalOverlay.classList.add('active');
     if (!modalIframe) return;
     
-    modalIframe.removeAttribute('srcdoc'); 
-    modalIframe.src = 'about:blank';
+    modalIframe.removeAttribute('srcdoc');
     
     if (item.url) {
       let targetUrl = item.url.trim();
+      let htmlToLoad = null;
       
       try {
         const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
@@ -463,12 +463,18 @@ function initApp() {
           try {
             const res = await fetch(fullUrl, { cache: 'no-store' });
             if (res.ok) {
-              const htmlContent = await res.text();
-              modalIframe.srcdoc = htmlContent;
-            } else {
-              modalIframe.src = fullUrl;
+              htmlToLoad = await res.text();
             }
           } catch (e) {
+            // Fall back to direct URL
+          }
+          
+          if (htmlToLoad) {
+            modalIframe.src = 'Assets/embed/launch.svg';
+            modalIframe.onload = async () => {
+              await sendContentToSVG(modalIframe, htmlToLoad);
+            };
+          } else {
             modalIframe.src = fullUrl;
           }
         } else {
@@ -488,12 +494,18 @@ function initApp() {
             try {
               const res = await fetch(targetUrl, { cache: 'no-store' });
               if (res.ok) {
-                const htmlContent = await res.text();
-                modalIframe.srcdoc = htmlContent;
-              } else {
-                modalIframe.src = targetUrl;
+                htmlToLoad = await res.text();
               }
             } catch (e) {
+              // Fall back to direct URL
+            }
+            
+            if (htmlToLoad) {
+              modalIframe.src = 'Assets/embed/launch.svg';
+              modalIframe.onload = async () => {
+                await sendContentToSVG(modalIframe, htmlToLoad);
+              };
+            } else {
               modalIframe.src = targetUrl;
             }
           }
