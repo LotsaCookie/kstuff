@@ -401,7 +401,7 @@ body.size-large.text-hide {
 
 .nav-left #teachertouchbar {
     width: var(--nav-width);
-    height: calc(100vh - var(--footer-height));
+    height: 100vh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
@@ -414,7 +414,7 @@ body.size-large.text-hide {
 
 .nav-right #teachertouchbar {
     width: var(--nav-width);
-    height: calc(100vh - var(--footer-height));
+    height: 100vh;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
