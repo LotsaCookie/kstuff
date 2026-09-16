@@ -389,6 +389,32 @@ function initApp() {
     sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz', renderId: 0 }
   };
 
+  async function loadHtmlToBlob(urlOrHtml, isAlreadyHtml = false) {
+    try {
+      let htmlContent = isAlreadyHtml ? urlOrHtml : await fetchWithProxy(urlOrHtml, true);
+      
+      if (!htmlContent || typeof htmlContent !== 'string') {
+        return null;
+      }
+
+      if (!htmlContent.includes('<!DOCTYPE') && !htmlContent.includes('<html')) {
+        htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>${htmlContent}</body>
+</html>`;
+      }
+
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      return null;
+    }
+  }
+
   const openResource = async item => {
     if (!item) return;
     tooltipEl.style.display = 'none';
@@ -397,24 +423,68 @@ function initApp() {
     if (modalTitle) modalTitle.textContent = item.title;
     if (modalOverlay) modalOverlay.classList.add('active');
     if (!modalIframe) return;
-    modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank';
+    
+    modalIframe.removeAttribute('srcdoc'); 
+    modalIframe.src = 'about:blank';
+    
     if (item.url) {
       let targetUrl = item.url.trim();
-      const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
-      if (isHtmlRepo) {
-        const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
-        modalIframe.src = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
-      } else {
-        const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net') && !targetUrl.includes('raw.githack.com') && !targetUrl.includes('cdn.statically.io'));
-        if (isProxyUrl) modalIframe.src = targetUrl;
-        else {
-          try {
-            const res = await fetch(targetUrl, { cache: 'no-store' });
-            if (res.ok) modalIframe.srcdoc = await res.text(); else modalIframe.src = targetUrl;
-          } catch { modalIframe.src = targetUrl; }
+      
+      try {
+        const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
+        
+        if (isHtmlRepo) {
+          const cleanPath = targetUrl
+            .replace(/\$?\{HTML_URL\}\/?/gi, '')
+            .replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '')
+            .replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '')
+            .replace(/^\/+/, '');
+          
+          const fullUrl = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
+          
+          const blobUrl = await loadHtmlToBlob(fullUrl);
+          if (blobUrl) {
+            modalIframe.src = blobUrl;
+          } else {
+            modalIframe.src = fullUrl;
+          }
+        } else {
+          const isProxyUrl = targetUrl.includes(gRep.static) || 
+                            targetUrl.includes(gRep.scram) || 
+                            targetUrl.includes(gRep.uv) || 
+                            targetUrl.includes(gRep.truffled) || 
+                            item.category === 'Apps' || 
+                            (!targetUrl.includes('raw.githubusercontent.com') && 
+                             !targetUrl.includes('cdn.jsdelivr.net') && 
+                             !targetUrl.includes('raw.githack.com') && 
+                             !targetUrl.includes('cdn.statically.io'));
+          
+          if (isProxyUrl) {
+            modalIframe.src = targetUrl;
+          } else {
+            try {
+              const res = await fetch(targetUrl, { cache: 'no-store' });
+              if (res.ok) {
+                const htmlContent = await res.text();
+                const blobUrl = await loadHtmlToBlob(htmlContent, true);
+                if (blobUrl) {
+                  modalIframe.src = blobUrl;
+                } else {
+                  modalIframe.srcdoc = htmlContent;
+                }
+              } else {
+                modalIframe.src = targetUrl;
+              }
+            } catch (e) {
+              modalIframe.src = targetUrl;
+            }
+          }
         }
+      } catch (e) {
+        modalIframe.src = targetUrl;
       }
     }
+
     setTimeout(() => Object.values(grids).forEach(g => {
       if (g.gridEl && g.pool) {
         g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
@@ -694,7 +764,13 @@ function initApp() {
 
   const closeRes = () => {
     modalOverlay?.classList.remove('active');
-    if (modalIframe) { modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank'; }
+    if (modalIframe) { 
+      if (modalIframe.src && modalIframe.src.startsWith('blob:')) {
+        URL.revokeObjectURL(modalIframe.src);
+      }
+      modalIframe.removeAttribute('srcdoc'); 
+      modalIframe.src = 'about:blank'; 
+    }
     const aPg = document.querySelector('.page.active');
     if (aPg && grids[aPg.id]) { buildPool(aPg.id); renderGrid(aPg.id, false); }
     setTimeout(() => { window.scrollTo(0, savedWindowScrollY); if (aPg) aPg.scrollTop = savedPageScrollTop; }, 50);
@@ -1052,7 +1128,6 @@ if (mathworksIframe) {
       autoRefreshBusy = false;
     }
   }
-  // 200 seconds to prevent rate limit 60/hr
   setInterval(autoRefreshActivePage, 200000);
 }
 
