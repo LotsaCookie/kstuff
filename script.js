@@ -31,15 +31,16 @@ function initApp() {
 
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
+  const IMAGE_TEST_TIMEOUT = 2000;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
   let commitEtag = null, hashCheckInFlight = null;
-  const lastIframeHtml = {};
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
   let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
   let isNavigating = false, autoRefreshBusy = false;
+  let iframeReadyHandlers = new Map();
 
   pages.forEach(p => {
     p.style.opacity = p.classList.contains('active') ? '1' : '0';
@@ -176,7 +177,7 @@ function initApp() {
       const winner = await new Promise(resolve => {
         let done = false, fail = 0, imgs = [];
         const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 3000);
+        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, IMAGE_TEST_TIMEOUT);
         chunk.forEach(entry => {
           const img = new Image(); imgs.push(img);
           const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
@@ -192,6 +193,26 @@ function initApp() {
       if (winner) return winner;
     }
     return table[0];
+  }
+
+  async function testImageUrls(imageUrls) {
+    if (!imageUrls?.length) return null;
+    return new Promise(resolve => {
+      let done = false, fail = 0, imgs = [];
+      const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
+      const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, IMAGE_TEST_TIMEOUT);
+      
+      imageUrls.forEach(url => {
+        const img = new Image(); imgs.push(img);
+        const handle = ok => {
+          if (done) return;
+          if (ok || ++fail === imageUrls.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? url : null); }
+        };
+        img.onload = () => handle(img.naturalWidth > 0);
+        img.onerror = () => handle(false);
+        img.src = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
+      });
+    });
   }
 
   function initBackendBridge(config) {
@@ -357,6 +378,28 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
+  function sendContentToSVG(svgEl, htmlContent) {
+    return new Promise((resolve) => {
+      if (!svgEl || !svgEl.contentWindow) return resolve(false);
+      
+      const timeout = setTimeout(() => {
+        window.removeEventListener('message', handler);
+        resolve(false);
+      }, 5000);
+
+      const handler = (event) => {
+        if (event.data && event.data.type === 'content-loaded' && event.data.source === 'launch-svg') {
+          clearTimeout(timeout);
+          window.removeEventListener('message', handler);
+          resolve(true);
+        }
+      };
+
+      window.addEventListener('message', handler);
+      svgEl.contentWindow.postMessage('CONTENT:' + htmlContent, '*');
+    });
+  }
+
   function loadIframePage(id, path, preFetchedHtml = null) {
     return new Promise(async resolve => {
       const loadId = ++activeIframeLoadId;
@@ -367,14 +410,15 @@ function initApp() {
       try {
         let html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
         if (loadId !== activeIframeLoadId) return resolve();
-        lastIframeHtml[id] = html;
         const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
+        const finalHtml = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
+        
         f.onload = () => {
           toggleLoader(false);
           resolve();
           if (id === 'studyhall-iframe' && currentUser) f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
         };
-        f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
+        f.srcdoc = finalHtml;
       } catch {
         if (loadId === activeIframeLoadId) {
           f.onload = () => resolve();
@@ -388,32 +432,6 @@ function initApp() {
     readingcorner: { data: [], pool: [], gridEl: $('readingcorner-grid'), pageEl: $('readingcorner-pagination'), category: "All", search: "", page: 1, id: 'readingcorner', renderId: 0 },
     sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz', renderId: 0 }
   };
-
-  async function loadHtmlToBlob(urlOrHtml, isAlreadyHtml = false) {
-    try {
-      let htmlContent = isAlreadyHtml ? urlOrHtml : await fetchWithProxy(urlOrHtml, true);
-      
-      if (!htmlContent || typeof htmlContent !== 'string') {
-        return null;
-      }
-
-      if (!htmlContent.includes('<!DOCTYPE') && !htmlContent.includes('<html')) {
-        htmlContent = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>${htmlContent}</body>
-</html>`;
-      }
-
-      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-      return URL.createObjectURL(blob);
-    } catch (e) {
-      return null;
-    }
-  }
 
   const openResource = async item => {
     if (!item) return;
@@ -442,10 +460,15 @@ function initApp() {
           
           const fullUrl = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
           
-          const blobUrl = await loadHtmlToBlob(fullUrl);
-          if (blobUrl) {
-            modalIframe.src = blobUrl;
-          } else {
+          try {
+            const res = await fetch(fullUrl, { cache: 'no-store' });
+            if (res.ok) {
+              const htmlContent = await res.text();
+              modalIframe.srcdoc = htmlContent;
+            } else {
+              modalIframe.src = fullUrl;
+            }
+          } catch (e) {
             modalIframe.src = fullUrl;
           }
         } else {
@@ -466,12 +489,7 @@ function initApp() {
               const res = await fetch(targetUrl, { cache: 'no-store' });
               if (res.ok) {
                 const htmlContent = await res.text();
-                const blobUrl = await loadHtmlToBlob(htmlContent, true);
-                if (blobUrl) {
-                  modalIframe.src = blobUrl;
-                } else {
-                  modalIframe.srcdoc = htmlContent;
-                }
+                modalIframe.srcdoc = htmlContent;
               } else {
                 modalIframe.src = targetUrl;
               }
@@ -765,9 +783,6 @@ function initApp() {
   const closeRes = () => {
     modalOverlay?.classList.remove('active');
     if (modalIframe) { 
-      if (modalIframe.src && modalIframe.src.startsWith('blob:')) {
-        URL.revokeObjectURL(modalIframe.src);
-      }
       modalIframe.removeAttribute('srcdoc'); 
       modalIframe.src = 'about:blank'; 
     }
@@ -1029,6 +1044,7 @@ function initApp() {
         }
       });
     });
+
 let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
@@ -1094,7 +1110,6 @@ if (mathworksIframe) {
   async function maybeReloadIframe(id, path) {
     try {
       const html = await fetchWithProxy(path, true);
-      if (lastIframeHtml[id] === html) return false;
       toggleLoader(true, 'updating');
       await loadIframePage(id, path, html);
       toggleLoader(false);
