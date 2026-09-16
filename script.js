@@ -485,7 +485,7 @@ function initApp() {
           }
           
           if (htmlToLoad) {
-            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?6777';
+            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?donelll';
             modalIframe.onload = async () => {
               await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
             };
@@ -516,7 +516,7 @@ function initApp() {
             }
             
             if (htmlToLoad) {
-              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?677';
+              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?67lll7';
               modalIframe.onload = async () => {
                 await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
               };
