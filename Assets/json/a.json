@@ -10,7 +10,7 @@
     "title": "GeforceNOW",
     "description": "",
     "category": "Cloud",
-    "url": "${scram}https://play.geforcenow.com/mall",
+    "url": "${static}https://play.geforcenow.com/mall",
     "image": "https://play-lh.googleusercontent.com/lpJSHUmG-bcaB2oOxSuMhRtE53lZzEUDlEPWLP0on5wM717EuBXAH4Z9nF329QVl9v7-DJTM7CFGeST5qBk"
   },
   {
@@ -52,14 +52,14 @@
     "title": "Gimkit Hacks",
     "description": "",
     "category": "Hacks",
-    "url": "${scram}https://kstuff.neocities.org/data_archive/data/gimkit.html",
+    "url": "${static}https://kstuff.neocities.org/data_archive/data/gimkit.html",
     "image": "https://assets.super.so/cfd44b5a-3ea6-49c2-8265-848bc01340d6/uploads/favicon/a9d1486d-8e69-4ad8-9961-fc760b1253d2.jpeg"
   },
   {
     "title": "Blooket Hacks",
     "description": "",
     "category": "Hacks",
-    "url": "${scram}https://blooketbot.schoolcheats.net/",
+    "url": "${static}https://blooketbot.schoolcheats.net/",
     "image": "https://static.wikia.nocookie.net/08be7f80-3b57-4de9-ad54-489228080b1d/scale-to-width/755"
   },
   {
@@ -101,7 +101,7 @@
     "title": "VSCode",
     "description": "",
     "category": "Entertainment",
-    "url": "${scram}https://vscode.dev/",
+    "url": "${static}https://vscode.dev/",
     "image": "https://cdn-1.webcatalog.io/catalog/vs-code/vs-code-social-preview.png?v=1714776407457"
   }
 ]
