@@ -169,39 +169,35 @@ function initApp() {
     }
   }
 
-  const mirrorTestCache = new Map(); 
+  const mirrorTestCache = new Map();
+
+
   function probeMirrorImage(entry, timeoutMs) {
     return new Promise(resolve => {
       let done = false;
-      const controller = new AbortController();
+      const img = new Image();
       const timer = setTimeout(() => finish(false), timeoutMs);
       function finish(ok) {
         if (done) return;
         done = true;
         clearTimeout(timer);
-        try { controller.abort(); } catch {}
+        img.onload = img.onerror = null;
+        img.src = '';
         resolve(ok);
       }
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
       const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
       const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const url = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
-      fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store', redirect: 'follow', referrerPolicy: 'no-referrer', signal: controller.signal })
-        .then(() => finish(true))
-        .catch(() => finish(false));
+      img.referrerPolicy = 'no-referrer';
+      img.src = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
     });
   }
 
-  async function testMirrorEntry(entry, timeoutMs = 6000) {
+  async function testMirrorEntry(entry, timeoutMs = 5000) {
     const cacheKey = `${entry.url}|${entry.img}`;
     if (!mirrorTestCache.has(cacheKey)) {
-      mirrorTestCache.set(cacheKey, (async () => {
-        let ok = await probeMirrorImage(entry, timeoutMs);
-        if (!ok) {
-          await new Promise(r => setTimeout(r, 350));
-          ok = await probeMirrorImage(entry, timeoutMs);
-        }
-        return ok;
-      })());
+      mirrorTestCache.set(cacheKey, probeMirrorImage(entry, timeoutMs));
     }
     const ok = await mirrorTestCache.get(cacheKey);
     return ok ? entry : null;
