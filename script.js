@@ -169,28 +169,38 @@ function initApp() {
     }
   }
 
+
+  function testMirrorEntry(entry, timeoutMs = 6000) {
+    return new Promise(resolve => {
+      let done = false;
+      const img = new Image();
+      const timer = setTimeout(() => finish(false), timeoutMs);
+      function finish(ok) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        img.onload = img.onerror = null;
+        img.src = '';
+        resolve(ok ? entry : null);
+      }
+      img.onload = () => finish(img.naturalWidth > 0);
+      img.onerror = () => finish(false);
+      const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
+      const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      img.referrerPolicy = 'no-referrer';
+      img.src = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
+    });
+  }
+
   async function getWorkingConfig(table) {
     if (!table?.length) return null;
-    for (let i = 0; i < table.length; i += 5) {
-      const chunk = table.slice(i, i + 5);
-      const winner = await new Promise(resolve => {
-        let done = false, fail = 0, imgs = [];
-        const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 3000);
-        chunk.forEach(entry => {
-          const img = new Image(); imgs.push(img);
-          const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
-          const handle = ok => {
-            if (done) return;
-            if (ok || ++fail === chunk.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? entry : null); }
-          };
-          img.onload = () => handle(img.naturalWidth > 0);
-          img.onerror = () => handle(false);
-          img.src = `${url}${url.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
-        });
-      });
-      if (winner) return winner;
+    const results = await Promise.allSettled(table.map(entry => testMirrorEntry(entry)));
+
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.status === 'fulfilled' && r.value) return r.value;
     }
+
     return table[0];
   }
 
