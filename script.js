@@ -171,7 +171,6 @@ function initApp() {
 
   const mirrorTestCache = new Map();
 
-
   function probeMirrorImage(entry, timeoutMs) {
     return new Promise(resolve => {
       let done = false;
@@ -226,11 +225,15 @@ function initApp() {
     return table[0];
   }
 
+  function buildServiceUrl(config, targetUrl) {
+    const base = cleanUrl(config.url) + (config.final ? '/' + trimSlash(config.final) : '');
+    return `${base}/service/${encodeUv(targetUrl)}`;
+  }
+
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    const pfx = cleanUrl(config.url) + (config.final ? '/' + trimSlash(config.final) : '');
-    iframe.src = pfx + (pfx.includes('uv.html?site=') ? '' : '/uv.html?site=') + 'https://lotsacookie.github.io/Dnekcabtset/backend.html?fixx1';
+    iframe.src = buildServiceUrl(config, 'https://lotsacookie.github.io/Dnekcabtset/backend.html?fixx1');
     body.appendChild(iframe);
     const timer = setInterval(() => {
       if (!backendReady && iframe.contentWindow) {
@@ -911,7 +914,7 @@ function initApp() {
       initBackendBridge(uv);
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
-      proxyIframe.src = `${cleanUrl(uv.url)}/uv.html?site=https://example.com`;
+      proxyIframe.src = buildServiceUrl(uv, 'https://example.com');
       document.body.appendChild(proxyIframe);
     }
     gRep = {
