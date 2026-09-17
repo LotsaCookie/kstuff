@@ -290,7 +290,7 @@ async function initBackendIframe() {
         let staticJsonData = [];
         for (let proxyUrl of proxies) {
             try {
-                const res = await fetch(proxyUrl ? `${cleanUrl(proxyUrl)}Assets/json/mirrors/static.json` : "Assets/json/mirrors/static.json");
+                const res = await fetch(proxyUrl ? `${cleanUrl(proxyUrl)}Assets/json/mirrors/uv.json` : "Assets/json/mirrors/uv.json");
                 if (res.ok) { staticJsonData = await res.json(); break; }
             } catch(e) {}
         }
