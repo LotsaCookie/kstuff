@@ -403,7 +403,7 @@ function initApp() {
       const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
       if (isHtmlRepo) {
         const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
-        modalIframe.src = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
+        modalIframe.src = `https://warm-biscochitos-44c02e.netlify.app/data/interpreter.html?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
       } else {
         const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net') && !targetUrl.includes('raw.githack.com') && !targetUrl.includes('cdn.statically.io'));
         if (isProxyUrl) modalIframe.src = targetUrl;
