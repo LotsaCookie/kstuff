@@ -1,5 +1,10 @@
 [
   {
+    "url": "https://datacrafted.org",
+    "img": "/images/extrememathtextlogo.png",
+    "final": "/uv.html?site="
+  },
+  {
     "url": "https://tutoring4free.org",
     "img": "/images/extrememathtextlogo.png",
     "final": "/uv.html?site="
@@ -26,11 +31,6 @@
   },
   {
     "url": "https://extrememath.education",
-    "img": "/images/extrememathtextlogo.png",
-    "final": "/uv.html?site="
-  },
-  {
-    "url": "https://datacrafted.org",
     "img": "/images/extrememathtextlogo.png",
     "final": "/uv.html?site="
   },
