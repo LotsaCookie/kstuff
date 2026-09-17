@@ -31,16 +31,15 @@ function initApp() {
 
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
-  const IMAGE_TEST_TIMEOUT = 2000;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
   let commitEtag = null, hashCheckInFlight = null;
+  const lastIframeHtml = {};
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
   let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
   let isNavigating = false, autoRefreshBusy = false;
-  let iframeReadyHandlers = new Map();
 
   pages.forEach(p => {
     p.style.opacity = p.classList.contains('active') ? '1' : '0';
@@ -177,7 +176,7 @@ function initApp() {
       const winner = await new Promise(resolve => {
         let done = false, fail = 0, imgs = [];
         const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, IMAGE_TEST_TIMEOUT);
+        const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 3000);
         chunk.forEach(entry => {
           const img = new Image(); imgs.push(img);
           const url = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
@@ -193,26 +192,6 @@ function initApp() {
       if (winner) return winner;
     }
     return table[0];
-  }
-
-  async function testImageUrls(imageUrls) {
-    if (!imageUrls?.length) return null;
-    return new Promise(resolve => {
-      let done = false, fail = 0, imgs = [];
-      const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-      const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, IMAGE_TEST_TIMEOUT);
-      
-      imageUrls.forEach(url => {
-        const img = new Image(); imgs.push(img);
-        const handle = ok => {
-          if (done) return;
-          if (ok || ++fail === imageUrls.length) { done = true; clearTimeout(timer); cleanup(); resolve(ok ? url : null); }
-        };
-        img.onload = () => handle(img.naturalWidth > 0);
-        img.onerror = () => handle(false);
-        img.src = `${url}${url.includes('?') ? '&' : '?'}t=${Date.now()}`;
-      });
-    });
   }
 
   function initBackendBridge(config) {
@@ -378,42 +357,6 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
-  function sendContentToSVG(svgEl, htmlContent, baseUrl = '') {
-    return new Promise((resolve) => {
-      if (!svgEl || !svgEl.contentWindow) return resolve(false);
-
-      const timeout = setTimeout(() => {
-        window.removeEventListener('message', handler);
-        resolve(false);
-      }, 5000);
-
-      const send = () => svgEl.contentWindow.postMessage({ type: 'CONTENT', source: 'launch-parent', html: htmlContent, baseUrl }, '*');
-
-      const handler = (event) => {
-        if (!event.data || event.data.source !== 'launch-svg') return;
-
-        if (event.data.type === 'ready') {
-          send();
-        }
-
-        if (event.data.type === 'content-loaded') {
-          clearTimeout(timeout);
-          window.removeEventListener('message', handler);
-          resolve(true);
-        }
-
-        if (event.data.type === 'content-error') {
-          clearTimeout(timeout);
-          window.removeEventListener('message', handler);
-          resolve(false);
-        }
-      };
-
-      window.addEventListener('message', handler);
-      send();
-    });
-  }
-
   function loadIframePage(id, path, preFetchedHtml = null) {
     return new Promise(async resolve => {
       const loadId = ++activeIframeLoadId;
@@ -424,15 +367,14 @@ function initApp() {
       try {
         let html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
         if (loadId !== activeIframeLoadId) return resolve();
+        lastIframeHtml[id] = html;
         const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-        const finalHtml = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
-        
         f.onload = () => {
           toggleLoader(false);
           resolve();
           if (id === 'studyhall-iframe' && currentUser) f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
         };
-        f.srcdoc = finalHtml;
+        f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
       } catch {
         if (loadId === activeIframeLoadId) {
           f.onload = () => resolve();
@@ -455,81 +397,24 @@ function initApp() {
     if (modalTitle) modalTitle.textContent = item.title;
     if (modalOverlay) modalOverlay.classList.add('active');
     if (!modalIframe) return;
-    
-    modalIframe.removeAttribute('srcdoc');
-    
+    modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank';
     if (item.url) {
       let targetUrl = item.url.trim();
-      let htmlToLoad = null;
-      let baseUrl = '';
-      
-      try {
-        const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
-        
-        if (isHtmlRepo) {
-          const cleanPath = targetUrl
-            .replace(/\$?\{HTML_URL\}\/?/gi, '')
-            .replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '')
-            .replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '')
-            .replace(/^\/+/, '');
-          
-          const fullUrl = `https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
-          baseUrl = fullUrl.replace(/[^\/]*$/, '');
-          
+      const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
+      if (isHtmlRepo) {
+        const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
+        modalIframe.src = `https://raw.githack.com/freebuisness/html/main/${cleanPath}`;
+      } else {
+        const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net') && !targetUrl.includes('raw.githack.com') && !targetUrl.includes('cdn.statically.io'));
+        if (isProxyUrl) modalIframe.src = targetUrl;
+        else {
           try {
-            const res = await fetch(fullUrl, { cache: 'no-store' });
-            if (res.ok) {
-              htmlToLoad = await res.text();
-            }
-          } catch (e) {
-          }
-          
-          if (htmlToLoad) {
-            modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?dnfykn';
-            modalIframe.onload = async () => {
-              await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
-            };
-          } else {
-            modalIframe.src = fullUrl;
-          }
-        } else {
-          const isProxyUrl = targetUrl.includes(gRep.static) || 
-                            targetUrl.includes(gRep.scram) || 
-                            targetUrl.includes(gRep.uv) || 
-                            targetUrl.includes(gRep.truffled) || 
-                            item.category === 'Apps' || 
-                            (!targetUrl.includes('raw.githubusercontent.com') && 
-                             !targetUrl.includes('cdn.jsdelivr.net') && 
-                             !targetUrl.includes('raw.githack.com') && 
-                             !targetUrl.includes('cdn.statically.io'));
-          
-          if (isProxyUrl) {
-            modalIframe.src = targetUrl;
-          } else {
-            baseUrl = targetUrl.replace(/[^\/]*$/, '');
-            try {
-              const res = await fetch(targetUrl, { cache: 'no-store' });
-              if (res.ok) {
-                htmlToLoad = await res.text();
-              }
-            } catch (e) {
-            }
-            
-            if (htmlToLoad) {
-              modalIframe.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?6hhujnfdh7';
-              modalIframe.onload = async () => {
-                await sendContentToSVG(modalIframe, htmlToLoad, baseUrl);
-              };
-            } else {
-              modalIframe.src = targetUrl;
-            }
-          }
+            const res = await fetch(targetUrl, { cache: 'no-store' });
+            if (res.ok) modalIframe.srcdoc = await res.text(); else modalIframe.src = targetUrl;
+          } catch { modalIframe.src = targetUrl; }
         }
-      } catch (e) {
-        modalIframe.src = targetUrl;
       }
     }
-
     setTimeout(() => Object.values(grids).forEach(g => {
       if (g.gridEl && g.pool) {
         g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
@@ -809,10 +694,7 @@ function initApp() {
 
   const closeRes = () => {
     modalOverlay?.classList.remove('active');
-    if (modalIframe) { 
-      modalIframe.removeAttribute('srcdoc'); 
-      modalIframe.src = 'about:blank'; 
-    }
+    if (modalIframe) { modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank'; }
     const aPg = document.querySelector('.page.active');
     if (aPg && grids[aPg.id]) { buildPool(aPg.id); renderGrid(aPg.id, false); }
     setTimeout(() => { window.scrollTo(0, savedWindowScrollY); if (aPg) aPg.scrollTop = savedPageScrollTop; }, 50);
@@ -1005,7 +887,7 @@ function initApp() {
       static: st ? cleanUrl(st.url) + st.final : '',
       uv: uv ? cleanUrl(uv.url) + uv.final : '',
       frogiee: fr ? cleanUrl(fr.url) : '',
-      truffled: trCfg ? cleanUrl(trCfg.url) : ''
+      truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
     };
     gTruf.clear(); tr?.games?.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
     grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
@@ -1071,7 +953,6 @@ function initApp() {
         }
       });
     });
-
 let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
@@ -1137,6 +1018,7 @@ if (mathworksIframe) {
   async function maybeReloadIframe(id, path) {
     try {
       const html = await fetchWithProxy(path, true);
+      if (lastIframeHtml[id] === html) return false;
       toggleLoader(true, 'updating');
       await loadIframePage(id, path, html);
       toggleLoader(false);
