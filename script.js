@@ -169,27 +169,25 @@ function initApp() {
     }
   }
 
-  const mirrorTestCache = new Map();
-
+  const mirrorTestCache = new Map(); 
   function probeMirrorImage(entry, timeoutMs) {
     return new Promise(resolve => {
       let done = false;
-      const img = new Image();
+      const controller = new AbortController();
       const timer = setTimeout(() => finish(false), timeoutMs);
       function finish(ok) {
         if (done) return;
         done = true;
         clearTimeout(timer);
-        img.onload = img.onerror = null;
-        img.src = '';
+        try { controller.abort(); } catch {}
         resolve(ok);
       }
-      img.onload = () => finish(img.naturalWidth > 0);
-      img.onerror = () => finish(false);
       const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
       const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      img.referrerPolicy = 'no-referrer';
-      img.src = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
+      const url = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
+      fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store', redirect: 'follow', referrerPolicy: 'no-referrer', signal: controller.signal })
+        .then(() => finish(true))
+        .catch(() => finish(false));
     });
   }
 
