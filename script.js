@@ -919,9 +919,9 @@ function initApp() {
     if (tbInput) tbInput.value = targetUrl;
     updateBrowserNav();
 
-    if (gRep.static) {
-      const baseStatic = gRep.static.replace(/\/embed\.html#.*$/, '');
-      const proxiedUrl = `${baseStatic}/frog/default/ixl/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
+    if (gRep.uv) {
+      const baseStatic = gRep.uv.replace(/\?uv\.html=.*$/, '');
+      const proxiedUrl = `${baseStatic}/service/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
     };
