@@ -920,7 +920,7 @@ function initApp() {
     updateBrowserNav();
 
     if (gRep.uv) {
-      const baseStatic = gRep.uv.replace(/\?uv\.html\?site=.*$/, '');
+      const baseStatic = gRep.uv.replace('/uv.html?site=', '');
       const proxiedUrl = `${baseStatic}/service/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
