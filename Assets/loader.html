@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -96,23 +98,25 @@
                 fetchStudyMaterial();
             }
             locateActiveResource(function(lessonContent, cleanLessonUrl) {
+                let baseCurriculumTag = `<base href="${cleanLessonUrl}">`;
+                let enhancedLessonPlan = lessonContent.includes('<head>') 
+                    ? lessonContent.replace(/<head>/i, '<head>' + baseCurriculumTag) 
+                    : baseCurriculumTag + lessonContent;
+
+                const htmlBlob = new Blob([enhancedLessonPlan], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(htmlBlob);
+
                 let studySessionWindow;
                 try {
-                    studySessionWindow = window.open('about:blank', '_blank', 'width=1000,height=700');
+                    studySessionWindow = window.open(blobUrl, '_blank', 'width=1000,height=700');
                 } catch (e) {
                     studySessionWindow = null;
                 }
+
                 if (!studySessionWindow || studySessionWindow.closed || typeof studySessionWindow.closed === 'undefined') {
                     document.getElementById('popup-message').style.display = 'block';
                 } else {
-                    let baseCurriculumTag = `<base href="${cleanLessonUrl}">`;
-                    let enhancedLessonPlan = lessonContent.includes('<head>') 
-                        ? lessonContent.replace(/<head>/i, '<head>' + baseCurriculumTag) 
-                        : baseCurriculumTag + lessonContent;
                     studySessionWindow.name = "classroomSession";
-                    studySessionWindow.document.open();
-                    studySessionWindow.document.write(enhancedLessonPlan);
-                    studySessionWindow.document.close();
                     window.location.replace("https://clever.com");
                 }
             });
