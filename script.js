@@ -169,8 +169,9 @@ function initApp() {
     }
   }
 
+  const mirrorTestCache = new Map();
 
-  function testMirrorEntry(entry, timeoutMs = 6000) {
+  function probeMirrorImage(entry, timeoutMs) {
     return new Promise(resolve => {
       let done = false;
       const img = new Image();
@@ -181,7 +182,7 @@ function initApp() {
         clearTimeout(timer);
         img.onload = img.onerror = null;
         img.src = '';
-        resolve(ok ? entry : null);
+        resolve(ok);
       }
       img.onload = () => finish(img.naturalWidth > 0);
       img.onerror = () => finish(false);
@@ -192,15 +193,42 @@ function initApp() {
     });
   }
 
-  async function getWorkingConfig(table) {
+  async function testMirrorEntry(entry, timeoutMs = 6000) {
+    const cacheKey = `${entry.url}|${entry.img}`;
+    if (!mirrorTestCache.has(cacheKey)) {
+      mirrorTestCache.set(cacheKey, (async () => {
+        let ok = await probeMirrorImage(entry, timeoutMs);
+        if (!ok) {
+          await new Promise(r => setTimeout(r, 350));
+          ok = await probeMirrorImage(entry, timeoutMs);
+        }
+        return ok;
+      })());
+    }
+    const ok = await mirrorTestCache.get(cacheKey);
+    return ok ? entry : null;
+  }
+
+  async function getWorkingConfig(table, storageKey = null) {
     if (!table?.length) return null;
     const results = await Promise.allSettled(table.map(entry => testMirrorEntry(entry)));
 
     for (let i = 0; i < results.length; i++) {
       const r = results[i];
-      if (r.status === 'fulfilled' && r.value) return r.value;
+      if (r.status === 'fulfilled' && r.value) {
+        if (storageKey) {
+          try { setStorage(`kstuff_lastgood_${storageKey}`, JSON.stringify(r.value)); } catch {}
+        }
+        return r.value;
+      }
     }
 
+    if (storageKey) {
+      try {
+        const cached = JSON.parse(getStorage(`kstuff_lastgood_${storageKey}`));
+        if (cached && table.some(e => e.url === cached.url)) return cached;
+      } catch {}
+    }
     return table[0];
   }
 
@@ -872,18 +900,18 @@ function initApp() {
 
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
-  const fCfg = u => fetchWithProxy(u).catch(()=>[]).then(getWorkingConfig);
+  const fCfg = (u, key) => fetchWithProxy(u).catch(()=>[]).then(d => getWorkingConfig(d, key));
   const sDP = fetchWithProxy('Assets/json/mirrors/static.json').catch(()=>[]);
 
   initPromise = Promise.all([
     fetchReadingCornerRaw(),
     fetchWithProxy('Assets/json/a.json').catch(()=>[]),
     fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
-    fCfg('Assets/json/mirrors/scram.json'),
-    sDP.then(getWorkingConfig),
-    fCfg('Assets/json/mirrors/uv.json'),
-    fCfg('Assets/json/mirrors/truffled.json'),
-    sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" }))))
+    fCfg('Assets/json/mirrors/scram.json', 'scram'),
+    sDP.then(d => getWorkingConfig(d, 'static')),
+    fCfg('Assets/json/mirrors/uv.json', 'uv'),
+    fCfg('Assets/json/mirrors/truffled.json', 'truffled'),
+    sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" })), 'frogiee'))
   ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
     if (uv) {
       initBackendBridge(uv);
