@@ -876,7 +876,7 @@ function initApp() {
     sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" }))))
   ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
     if (st) {
-      initBackendBridge(st);
+      initBackendBridge(uv);
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
       proxyIframe.src = `${cleanUrl(st.url)}/embed.html#https://example.com`;
