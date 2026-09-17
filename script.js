@@ -233,7 +233,7 @@ function initApp() {
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    iframe.src = buildServiceUrl(config, 'https://lotsacookie.github.io/Dnekcabtset/backend.html?fixx1');
+    iframe.src = buildServiceUrl(config, 'https://lotsacookie.github.io/Dnekcabtset/backend.html');
     body.appendChild(iframe);
     const timer = setInterval(() => {
       if (!backendReady && iframe.contentWindow) {
