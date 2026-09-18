@@ -1223,7 +1223,7 @@ async function getStreamCandidates(videoId) {
 
     try {
         const baseUrl = getBaseUrl();
-        const response = await fetchWithTimeout(`${baseUrl}/api/v1/videos/${videoId}`, 6000);
+        const response = await fetchWithTimeout(`${BASE_URL}/api/v1/videos/${videoId}?local=true`, 8000);        
         if (response.ok) {
             const data = await response.json();
             const adaptive = data.adaptiveFormats || [];
