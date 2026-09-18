@@ -230,10 +230,16 @@ function initApp() {
     return `${base}/service/${encodeUv(targetUrl)}`;
   }
 
+  function buildUvUrl(config, targetUrl) {
+    const base = cleanUrl(config.url);
+    const final = config.final ? trimSlash(config.final) : 'uv.html';
+    return `${base}/${final}?site=${encodeURIComponent(targetUrl)}`;
+  }
+
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    iframe.src = buildServiceUrl(config, 'https://lotsacookie.github.io/Dnekcabtset/backend.html');
+    iframe.src = buildUvUrl(config, 'https://lotsacookie.github.io/Dnekcabtset/backend.html');
     body.appendChild(iframe);
     const timer = setInterval(() => {
       if (!backendReady && iframe.contentWindow) {
@@ -914,14 +920,13 @@ function initApp() {
       initBackendBridge(uv);
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
-      const baseUvUrl = cleanUrl(uv.url);
-      proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;    
+      proxyIframe.src = buildUvUrl(uv, 'https://example.com');
       document.body.appendChild(proxyIframe);
     }
     gRep = {
-      scram: sc ? cleanUrl(sc.url) + sc.final : '',
-      static: st ? cleanUrl(st.url) + st.final : '',
-      uv: uv ? cleanUrl(uv.url) + uv.final : '',
+      scram: sc ? cleanUrl(sc.url) + (sc.final || '') : '',
+      static: st ? cleanUrl(st.url) + (st.final || '') : '',
+      uv: uv ? cleanUrl(uv.url) + '/' + trimSlash(uv.final || 'uv.html') : '',
       frogiee: fr ? cleanUrl(fr.url) : '',
       truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
     };
@@ -956,8 +961,7 @@ function initApp() {
     updateBrowserNav();
 
     if (gRep.uv) {
-      const baseStatic = gRep.uv.replace('/uv.html?site=', '');
-      const proxiedUrl = `${baseStatic}/service/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
+      const proxiedUrl = buildUvUrl({ url: gRep.uv.split('/').slice(0, -1).join('/'), final: 'uv.html' }, 'https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + encodeURIComponent(targetUrl));
       loadContent('mathworksheets', true, proxiedUrl);
     }
     };
@@ -989,106 +993,108 @@ function initApp() {
         }
       });
     });
-let activePort = null;
-  const mathworksIframe = $('mathworksheets-iframe');
 
-if (mathworksIframe) {
-    mathworksIframe.addEventListener('load', () => {
-      try {
-        const channel = new MessageChannel();
-        activePort = channel.port1;
+    let activePort = null;
+    const mathworksIframe = $('mathworksheets-iframe');
 
-        activePort.onmessage = (event) => {
-          if (event.data && event.data.type === 'tabData') {
-            const reportedUrl = event.data.url;
+    if (mathworksIframe) {
+      mathworksIframe.addEventListener('load', () => {
+        try {
+          const channel = new MessageChannel();
+          activePort = channel.port1;
 
-            if (document.activeElement === tbInput) return;
+          activePort.onmessage = (event) => {
+            if (event.data && event.data.type === 'tabData') {
+              const reportedUrl = event.data.url;
 
-            const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
-            const currentVal = tbInput ? tbInput.value : '';
-            if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
-              if (tbInput) tbInput.value = reportedUrl;
+              if (document.activeElement === tbInput) return;
 
-              if (history[historyIndex] !== reportedUrl) {
-                history = history.slice(0, historyIndex + 1);
-                history.push(reportedUrl);
-                historyIndex++;
-                updateBrowserNav();
+              const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
+              const currentVal = tbInput ? tbInput.value : '';
+              if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
+                if (tbInput) tbInput.value = reportedUrl;
+
+                if (history[historyIndex] !== reportedUrl) {
+                  history = history.slice(0, historyIndex + 1);
+                  history.push(reportedUrl);
+                  historyIndex++;
+                  updateBrowserNav();
+                }
               }
             }
-          }
-        };
+          };
 
-        if (mathworksIframe.contentWindow) {
-          mathworksIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
+          if (mathworksIframe.contentWindow) {
+            mathworksIframe.contentWindow.postMessage('init-port', '*', [channel.port2]);
+          }
+        } catch (e) {
         }
-      } catch (e) {
+      });
+    }
+
+    window.addEventListener('message', (event) => {
+      if (event.data && typeof event.data === 'string') {
+        const data = event.data.trim();
+        if (
+          data.startsWith('http://') ||
+          data.startsWith('https://') ||
+          data.startsWith('kstuff://') ||
+          (data.includes('.') && !data.includes(' '))
+        ) {
+          loadBrowserUrl(data);
+        }
       }
     });
-}
-  window.addEventListener('message', (event) => {
-    if (event.data && typeof event.data === 'string') {
-      const data = event.data.trim();
-      if (
-        data.startsWith('http://') ||
-        data.startsWith('https://') ||
-        data.startsWith('kstuff://') ||
-        (data.includes('.') && !data.includes(' '))
-      ) {
-        loadBrowserUrl(data);
+
+    initPromise.then(async () => {
+      let activePg = document.querySelector('.page.active');
+      if (!activePg) {
+        const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
+        if (defaultHomeBtn) { navBtns.forEach(b => b.classList.remove('active')); defaultHomeBtn.classList.add('active'); updateIndicator(defaultHomeBtn); activePg = { id: 'mathworksheets' }; }
+      }
+      if (activePg) await loadContent(activePg.id, true); else toggleLoader(false);
+    }).catch(() => toggleLoader(false));
+
+    const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
+
+    async function maybeReloadIframe(id, path) {
+      try {
+        const html = await fetchWithProxy(path, true);
+        if (lastIframeHtml[id] === html) return false;
+        toggleLoader(true, 'updating');
+        await loadIframePage(id, path, html);
+        toggleLoader(false);
+        return true;
+      } catch {
+        return false;
       }
     }
-  });
 
-  initPromise.then(async () => {
-    let activePg = document.querySelector('.page.active');
-    if (!activePg) {
-      const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
-      if (defaultHomeBtn) { navBtns.forEach(b => b.classList.remove('active')); defaultHomeBtn.classList.add('active'); updateIndicator(defaultHomeBtn); activePg = { id: 'mathworksheets' }; }
-    }
-    if (activePg) await loadContent(activePg.id, true); else toggleLoader(false);
-  }).catch(() => toggleLoader(false));
+    async function autoRefreshActivePage() {
+      if (autoRefreshBusy || isNavigating || isAnyModalActive()) return;
+      const activePage = document.querySelector('.page.active');
+      if (!activePage) return;
+      const tId = activePage.id;
 
-  const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
+      if (tId === 'mathworksheets' && tbInput && tbInput.value && tbInput.value !== 'kstuff://home') return;
 
-  async function maybeReloadIframe(id, path) {
-    try {
-      const html = await fetchWithProxy(path, true);
-      if (lastIframeHtml[id] === html) return false;
-      toggleLoader(true, 'updating');
-      await loadIframePage(id, path, html);
-      toggleLoader(false);
-      return true;
-    } catch {
-      return false;
-    }
-  }
+      autoRefreshBusy = true;
+      try {
+        const upstreamChanged = await refreshCommitHash();
+        if (!upstreamChanged) return;
 
-  async function autoRefreshActivePage() {
-    if (autoRefreshBusy || isNavigating || isAnyModalActive()) return;
-    const activePage = document.querySelector('.page.active');
-    if (!activePage) return;
-    const tId = activePage.id;
-
-    if (tId === 'mathworksheets' && tbInput && tbInput.value && tbInput.value !== 'kstuff://home') return;
-
-    autoRefreshBusy = true;
-    try {
-      const upstreamChanged = await refreshCommitHash();
-      if (!upstreamChanged) return;
-
-      if (tId === 'readingcorner') {
-        await refreshReadingCorner(false, 'updating', true);
-      } else if (tId === 'sciencequiz') {
-        await rData('sciencequiz', 'Json/a.json', false, 'updating', true);
-      } else if (iframePages[tId]) {
-        await maybeReloadIframe(iframePages[tId].id, iframePages[tId].path);
+        if (tId === 'readingcorner') {
+          await refreshReadingCorner(false, 'updating', true);
+        } else if (tId === 'sciencequiz') {
+          await rData('sciencequiz', 'Json/a.json', false, 'updating', true);
+        } else if (iframePages[tId]) {
+          await maybeReloadIframe(iframePages[tId].id, iframePages[tId].path);
+        }
+      } finally {
+        autoRefreshBusy = false;
       }
-    } finally {
-      autoRefreshBusy = false;
     }
-  }
-  setInterval(autoRefreshActivePage, 200000);
+    setInterval(autoRefreshActivePage, 200000);
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initApp) : initApp();
