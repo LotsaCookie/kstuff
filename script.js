@@ -143,16 +143,19 @@ function initApp() {
     return hashCheckInFlight;
   }
 
+  // FIX: only cdn.jsdelivr.net (reliable, immutable-commit CDN) plus a same-origin
+  // fallback. raw.githack.com and cdn.statically.io were removed: they often return
+  // HTTP 200 with an empty/stale/interstitial body, and since fetchWithProxy() races
+  // all mirrors with Promise.any() and takes whichever resolves first, a "fast but
+  // broken" response from those mirrors was intermittently winning over jsdelivr -
+  // this is what caused music.html (and other iframe pages) to rarely load correctly.
   async function getProxyList() {
     if (!cachedCommitHash) {
       await refreshCommitHash();
       if (!cachedCommitHash) cachedCommitHash = 'main';
     }
     return [
-      `https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`,
       `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`,
-      `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`,
-      `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`,
       ""
     ];
   }
@@ -459,7 +462,9 @@ function initApp() {
         const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
         modalIframe.src = `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
       } else {
-        const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net') && !targetUrl.includes('raw.githack.com') && !targetUrl.includes('cdn.statically.io'));
+        // FIX: raw.githack.com and cdn.statically.io removed from this "already
+        // proxied" allow-list check, since we no longer route through them.
+        const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
         if (isProxyUrl) modalIframe.src = targetUrl;
         else {
           try {
@@ -821,15 +826,12 @@ function initApp() {
     }
   };
 
+  // FIX: single reliable mirror (jsdelivr) instead of racing jsdelivr/githack/github/statically.
+  // The previous version also had a latent bug where the 'html' repo branch always
+  // hardcoded raw.githack.com regardless of which proxy type (pt) was being tried.
   const fetchReadingCornerRaw = async () => {
-    const pTypes = ['jsdelivr', 'githack', 'github', 'statically'];
-    const getUrl = (repo, path, pt) => {
-      if (repo === 'html') return `https://raw.githack.com/freebuisness/html/main/${path}`;
-      if (pt === 'jsdelivr') return `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
-      if (pt === 'githack') return `https://raw.githack.com/freebuisness/${repo}/main/${path}`;
-      if (pt === 'statically') return `https://cdn.statically.io/gh/freebuisness/${repo}/main/${path}`;
-      return `https://raw.githubusercontent.com/freebuisness/${repo}/main/${path}`;
-    };
+    const pTypes = ['jsdelivr'];
+    const getUrl = (repo, path, pt) => `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
     const manualRes = await fetchWithProxy('Assets/json/g.json').catch(() => []);
     const manualMap = new Map();
     if (Array.isArray(manualRes)) manualRes.forEach(item => { if (item && item.title) manualMap.set(item.title.toLowerCase().trim(), item); });
