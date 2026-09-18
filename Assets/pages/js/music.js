@@ -577,15 +577,12 @@ async function getStreamCandidates(videoId) {
             const adaptive = data.adaptiveFormats || [];
             const formats = data.formatStreams || [];
             const allFormats = adaptive.concat(formats);
-            
             allFormats
                 .filter(f => {
                     const mime = f.mimeType || f.type || "";
                     return mime.includes("audio") && f.url;
                 })
                 .forEach(f => candidates.push(f.url));
-
-
             allFormats
                 .filter(f => {
                     const mime = f.mimeType || f.type || "";
@@ -602,12 +599,6 @@ async function getStreamCandidates(videoId) {
     } catch (e) {
         console.error("Stream fetch error:", e);
     }
-
-    // 3. Fallback itags (Audio-only first, then muxed video+audio)
-    ["140", "251", "250", "249", "171", "18", "22"].forEach(itag => {
-        const url = `${BASE_URL}/latest_version?id=${videoId}&itag=${itag}`;
-        if (!candidates.includes(url)) candidates.push(url);
-    });
 
     return candidates;
 }
