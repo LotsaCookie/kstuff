@@ -571,8 +571,7 @@ function fetchWithTimeout(url, ms = 10000) {
 async function getStreamCandidates(videoId) {
     const candidates = [];
     try {
-        const response = await fetchWithTimeout(`${BASE_URL}/api/v1/videos/${videoId}`, 8000);
-        if (response.ok) {
+         const response = await fetchWithTimeout(`${BASE_URL}/api/v1/videos/${videoId}?local=true`, 8000);        if (response.ok) {
             const data = await response.json();
             const adaptive = data.adaptiveFormats || [];
             const formats = data.formatStreams || [];
