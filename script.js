@@ -37,6 +37,7 @@ function initApp() {
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
   let commitEtag = null, hashCheckInFlight = null;
   const lastIframeHtml = {};
+  const iframeLoadFailed = {};
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
   let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
   let isNavigating = false, autoRefreshBusy = false;
@@ -131,7 +132,8 @@ function initApp() {
         cachedCommitHash = newSha;
 
         return changed && !isFirstCheck;
-      } catch {
+      } catch (err) {
+        console.error('refreshCommitHash failed', err);
         return false;
       } finally {
         hashCheckInFlight = null;
@@ -164,7 +166,8 @@ function initApp() {
         if (!r.ok) throw new Error();
         return asText ? await r.text() : await r.json();
       }));
-    } catch {
+    } catch (err) {
+      console.error('All proxies failed for', path, err);
       throw new Error("Proxies failed: " + path);
     }
   }
@@ -325,7 +328,7 @@ function initApp() {
   };
 
   try { handleThemesLoaded(JSON.parse(getStorage('kstuff_themes_cache'))); } catch {}
-  fetchWithProxy('Assets/json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(() => {});
+  fetchWithProxy('Assets/json/themes.json').then(t => { setStorage('kstuff_themes_cache', JSON.stringify(t)); handleThemesLoaded(t); }).catch(err => console.error('themes.json failed', err));
 
   [
     ['layout-theme-select', 'kstuff_theme', 'theme', v => { if (v) { body.classList.add(v); setStorage('kstuff_theme', v); } }],
@@ -392,7 +395,7 @@ function initApp() {
     vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
   };
 
-  function loadIframePage(id, path, preFetchedHtml = null) {
+  function loadIframePage(id, path, preFetchedHtml = null, isRetry = false) {
     return new Promise(async resolve => {
       const loadId = ++activeIframeLoadId;
       const f = $(id);
@@ -402,6 +405,7 @@ function initApp() {
       try {
         let html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
         if (loadId !== activeIframeLoadId) return resolve();
+        iframeLoadFailed[id] = false;
         lastIframeHtml[id] = html;
         const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
         f.onload = () => {
@@ -410,14 +414,29 @@ function initApp() {
           if (id === 'studyhall-iframe' && currentUser) f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
         };
         f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
-      } catch {
-        if (loadId === activeIframeLoadId) {
-          f.onload = () => resolve();
-          f.srcdoc = `<html style="background:transparent;"><body style="color:var(--text-color, white);display:flex;justify-content:center;align-items:center;height:100vh;"><h2>Failed to load.</h2></body></html>`;
-        } else resolve();
+      } catch (err) {
+        console.error('loadIframePage failed for', path, err);
+        if (loadId !== activeIframeLoadId) return resolve();
+        if (!isRetry) {
+          setTimeout(() => { loadIframePage(id, path, null, true).then(resolve); }, 900);
+          return;
+        }
+        iframeLoadFailed[id] = true;
+        f.onload = () => resolve();
+        f.srcdoc = `<html style="background:#1b1b1f;margin:0;"><body style="margin:0;color:#f5f5f5;background:#1b1b1f;font-family:sans-serif;display:flex;flex-direction:column;gap:14px;justify-content:center;align-items:center;height:100vh;"><h2 style="margin:0;">Failed to load.</h2><button id="js-iframe-retry" style="padding:8px 18px;border:none;border-radius:6px;background:#4a7dff;color:#fff;cursor:pointer;font-size:0.9rem;">Retry</button><script>document.getElementById('js-iframe-retry').onclick=()=>window.parent.postMessage({type:'retry-iframe',id:'${id}'},'*');<\/script></body></html>`;
       }
     });
   }
+
+  window.addEventListener('message', event => {
+    if (event.data && event.data.type === 'retry-iframe' && event.data.id) {
+      const entry = Object.values(iframePages).find(p => p.id === event.data.id);
+      if (entry) {
+        toggleLoader(true);
+        loadIframePage(entry.id, entry.path).then(() => { const f = $(entry.id); if (f) f.style.display = 'block'; });
+      }
+    }
+  });
 
   const grids = {
     readingcorner: { data: [], pool: [], gridEl: $('readingcorner-grid'), pageEl: $('readingcorner-pagination'), category: "All", search: "", page: 1, id: 'readingcorner', renderId: 0 },
@@ -654,7 +673,8 @@ function initApp() {
       const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
 
       if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
-        if (iframePages[tId] && !$(iframePages[tId].id)?.srcdoc) { }
+        const ifr = iframePages[tId];
+        if (ifr && (iframeLoadFailed[ifr.id] || !$(ifr.id)?.srcdoc)) { }
         else return toggleLoader(false);
       }
 
@@ -746,7 +766,7 @@ function initApp() {
       s.addEventListener('change', e => { grids[type].category = e.target.value; grids[type].page = 1; renderGrid(type, true); });
     };
     setC('readingcorner-category-select', c.Games, 'readingcorner'); setC('sciencequiz-category-select', c.Apps, 'sciencequiz');
-  }).catch(()=>{});
+  }).catch(err => console.error('categories.json failed', err));
 
   fetchWithProxy('Assets/change-log.json').then(l => {
     if (!l) return;
@@ -754,7 +774,7 @@ function initApp() {
     if ($('changelog-content')) $('changelog-content').innerHTML = l.changes?.length ? `<ul style="padding-left:1.5rem;margin:0;">${l.changes.map(c => `<li style="margin-bottom:0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
     const fetchedJsonString = JSON.stringify(l), savedJsonString = getStorage('kstuff_last_changelog');
     if (fetchedJsonString !== savedJsonString) { setStorage('kstuff_last_changelog', fetchedJsonString); $('changelog-modal')?.classList.add('active'); }
-  }).catch(()=>{});
+  }).catch(err => console.error('change-log.json failed', err));
 
   const appB = s => {
     if (typeof s !== 'string') return s;
@@ -780,7 +800,7 @@ function initApp() {
 
   const rData = async (t, p, resetPage = true, mode = 'updating', silent = false) => {
     try {
-      const n = await fetchWithProxy(p).catch(() => null);
+      const n = await fetchWithProxy(p).catch(err => { console.error('rData fetch failed', p, err); return null; });
       if (!n?.length) { if (!silent) toggleLoader(false); return false; }
 
       const processed = proc(n);
@@ -794,7 +814,8 @@ function initApp() {
       if (resetPage) grids[t].page = 1;
       await renderGrid(t, true, mode);
       return true;
-    } catch {
+    } catch (err) {
+      console.error('rData failed', t, p, err);
       if (!silent) toggleLoader(false);
       return false;
     }
@@ -852,7 +873,7 @@ function initApp() {
           }
         });
         return { data: mappedData };
-      } catch (e) {}
+      } catch (e) { console.error('fetchReadingCornerRaw proxy type failed', pt, e); }
     }
     const fallbackJson = await fetchWithProxy('Assets/json/g.json').catch(()=>[]);
     const fallbackMapped = [];
@@ -887,7 +908,8 @@ function initApp() {
       if (resetPage) grids.readingcorner.page = 1;
       await renderGrid('readingcorner', true, mode);
       return true;
-    } catch {
+    } catch (err) {
+      console.error('refreshReadingCorner failed', err);
       if (!silent) toggleLoader(false);
       return false;
     }
@@ -1047,19 +1069,20 @@ if (mathworksIframe) {
       if (defaultHomeBtn) { navBtns.forEach(b => b.classList.remove('active')); defaultHomeBtn.classList.add('active'); updateIndicator(defaultHomeBtn); activePg = { id: 'mathworksheets' }; }
     }
     if (activePg) await loadContent(activePg.id, true); else toggleLoader(false);
-  }).catch(() => toggleLoader(false));
+  }).catch(err => { console.error('initPromise failed', err); toggleLoader(false); });
 
   const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
 
   async function maybeReloadIframe(id, path) {
     try {
       const html = await fetchWithProxy(path, true);
-      if (lastIframeHtml[id] === html) return false;
+      if (!iframeLoadFailed[id] && lastIframeHtml[id] === html) return false;
       toggleLoader(true, 'updating');
       await loadIframePage(id, path, html);
       toggleLoader(false);
       return true;
-    } catch {
+    } catch (err) {
+      console.error('maybeReloadIframe failed for', path, err);
       return false;
     }
   }
@@ -1074,15 +1097,17 @@ if (mathworksIframe) {
 
     autoRefreshBusy = true;
     try {
+      const ifr = iframePages[tId];
+      const forcedByFailure = ifr && iframeLoadFailed[ifr.id];
       const upstreamChanged = await refreshCommitHash();
-      if (!upstreamChanged) return;
+      if (!upstreamChanged && !forcedByFailure) return;
 
       if (tId === 'readingcorner') {
         await refreshReadingCorner(false, 'updating', true);
       } else if (tId === 'sciencequiz') {
         await rData('sciencequiz', 'Json/a.json', false, 'updating', true);
-      } else if (iframePages[tId]) {
-        await maybeReloadIframe(iframePages[tId].id, iframePages[tId].path);
+      } else if (ifr) {
+        await maybeReloadIframe(ifr.id, ifr.path);
       }
     } finally {
       autoRefreshBusy = false;
