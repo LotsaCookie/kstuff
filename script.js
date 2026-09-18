@@ -255,7 +255,7 @@ function initApp() {
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    iframe.src = cleanUrl(config.url) + '/uv.html?site=https://file.garden/acQjJWD7IC-_L9-w/b.html';
+    //iframe.src = cleanUrl(config.url) + '/uv.html?site=https://file.garden/acQjJWD7IC-_L9-w/b.html';
     body.appendChild(iframe);
     const timer = setInterval(() => {
       if (!backendReady && iframe.contentWindow) {
@@ -744,7 +744,7 @@ function initApp() {
         currentActive.classList.remove('active'); currentActive.style.display = 'none';
         if (iframePages[currentActive.id]) {
           const oldId = iframePages[currentActive.id].id;
-          cancelIframeLoads(oldId);   // FIX: stop any pending load for the page we are leaving
+          cancelIframeLoads(oldId); 
           const oldIframe = $(oldId);
           if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
         }
@@ -765,12 +765,9 @@ function initApp() {
       else if (iframePages[tId]) {
         const iframeData = iframePages[tId];
         const iframeEl = $(iframeData.id);
-        // FIX: the iframe is no longer set to display:none while loading. It used to stay
-        // hidden until 'load' fired, so any load that stalled or never fired left the page
-        // permanently invisible.
         if (iframeEl) iframeEl.style.display = 'block';
         if (customSrc && iframeEl) {
-          cancelIframeLoads(iframeData.id);   // FIX: a late srcdoc load must not overwrite customSrc
+          cancelIframeLoads(iframeData.id); 
           iframeEl.removeAttribute('srcdoc');
           iframeEl.src = customSrc;
           toggleLoader(false);
@@ -998,7 +995,7 @@ function initApp() {
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
       const baseUvUrl = cleanUrl(uv.url);
-      proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;
+     // proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;
       document.body.appendChild(proxyIframe);
     }
     gRep = {
