@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media Search & Playlists</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
 
@@ -655,15 +657,18 @@ const BASE_URL = "https://invidious.f5.si";
 
 let playlists = JSON.parse(localStorage.getItem('myPlaylists')) || { "Favorites": [] };
 
+// Playlist queue state
 let activePlayingPlaylist = null;
 let activePlayingIndex = -1;
 
+// Search-results queue state (lets prev/next work even when not playing from a saved playlist)
 let currentSearchResults = [];
 let searchQueueIndex = -1;
 
 let currentTrackInfo = null;
 
 /* ----------------------- Picture-in-Picture setup ----------------------- */
+// Square canvas so the PiP window itself is square.
 const PIP_SIZE = 480;
 const pipCanvas = document.createElement("canvas");
 pipCanvas.width = PIP_SIZE;
@@ -678,6 +683,8 @@ pipVideo.setAttribute("autopictureinpicture", "");
 pipVideo.style.display = "none";
 document.body.appendChild(pipVideo);
 
+// Low base frame rate (theme/thumbnail changes are rare) but we push frames
+// on demand via requestFrame() so updates are instant, not delayed up to 1s.
 let pipStream = null;
 let pipTrack = null;
 try {
@@ -692,6 +699,8 @@ function pushPipFrame() {
     }
 }
 
+// Read the live CSS custom properties instead of hardcoding colors, so the
+// PiP canvas stays in sync when the parent window updates :root dynamically.
 function getThemeColor(varName, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
     return value || fallback;
@@ -705,6 +714,8 @@ function drawPipFrame(track, img) {
     pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
 
     if (img) {
+        // Cover-fit: crop the thumbnail to fill the square instead of
+        // letterboxing it.
         const scale = Math.max(pipCanvas.width / img.width, pipCanvas.height / img.height);
         const drawWidth = img.width * scale;
         const drawHeight = img.height * scale;
@@ -712,6 +723,7 @@ function drawPipFrame(track, img) {
         const dy = (pipCanvas.height - drawHeight) / 2;
         pipCtx.drawImage(img, dx, dy, drawWidth, drawHeight);
 
+        // subtle scrim so the title stays legible over any thumbnail
         const gradient = pipCtx.createLinearGradient(0, pipCanvas.height - 90, 0, pipCanvas.height);
         gradient.addColorStop(0, "rgba(0,0,0,0)");
         gradient.addColorStop(1, "rgba(0,0,0,0.75)");
@@ -771,6 +783,8 @@ function updatePiPCanvas(track) {
     };
 }
 
+// Redraw the PiP canvas (colors only need the cached thumbnail, no refetch)
+// whenever the parent window mutates :root's inline style/class.
 const rootThemeObserver = new MutationObserver(() => {
     if (currentTrackInfo) updatePiPCanvas(currentTrackInfo);
 });
@@ -780,6 +794,10 @@ rootThemeObserver.observe(document.documentElement, {
 });
 
 /* ------------------------- Media Session wiring -------------------------- */
+// This is what actually gives the PiP overlay (and OS media controls) a
+// working, draggable scrubber: the canvas-captured stream has no intrinsic
+// duration, but setPositionState()/the 'seekto' handler are independent of
+// that and drive the native seek bar directly against audioPlayer.
 function updatePositionState() {
     if (!('mediaSession' in navigator)) return;
     if (!audioPlayer.duration || !isFinite(audioPlayer.duration)) return;
