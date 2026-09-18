@@ -70,7 +70,6 @@ function openCacheDB() {
 }
 
 const cacheDBPromise = openCacheDB().catch(err => {
-    console.warn("Track/thumbnail cache disabled:", err);
     return null;
 });
 
@@ -156,8 +155,7 @@ async function fetchAndCacheThumbnail(videoId) {
             if (blob && blob.size > 0) {
                 return await cacheThumbBlob(videoId, blob);
             }
-        } catch (e) {
-        }
+        } catch (e) {}
     }
     return null;
 }
@@ -485,7 +483,7 @@ async function search() {
     if (!query) return;
     resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;">${SVG_ICONS.spinner} Searching...</li>`;
     try {
-        const response = await fetch(`${BASE_URL}/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
+        const response = await fetchWithTimeout(`${BASE_URL}/api/v1/search?q=${encodeURIComponent(query)}&type=video`, 8000);
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
         const data = await response.json();
         renderResults(data);
@@ -573,19 +571,19 @@ function fetchWithTimeout(url, ms = 10000) {
 async function getStreamCandidates(videoId) {
     const candidates = [];
     try {
-        const response = await fetch(`${BASE_URL}/api/v1/videos/${videoId}`);
+        const response = await fetchWithTimeout(`${BASE_URL}/api/v1/videos/${videoId}`, 8000);
         if (response.ok) {
             const data = await response.json();
-            const formats = data.adaptiveFormats || [];
+            const formats = (data.adaptiveFormats || []).concat(data.formatStreams || []);
+            
             formats
-                .filter(f => f.type?.includes("audio/mp4") && f.url)
-                .forEach(f => candidates.push(f.url));
-            formats
-                .filter(f => f.type?.startsWith("audio/") && !f.type?.includes("audio/mp4") && f.url)
+                .filter(f => {
+                    const mime = f.mimeType || f.type || "";
+                    return mime.includes("audio") && f.url;
+                })
                 .forEach(f => candidates.push(f.url));
         }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     ["140", "251", "250", "249", "171"].forEach(itag => {
         candidates.push(`${BASE_URL}/latest_version?id=${videoId}&itag=${itag}`);
@@ -612,7 +610,6 @@ async function playAudio(videoId, title) {
     audioDock.classList.add("visible");
     updateNavButtons();
 
-
     const cachedUrl = await getCachedAudioObjectURL(videoId);
     if (myToken !== playRequestToken) return;
     if (cachedUrl) {
@@ -623,8 +620,7 @@ async function playAudio(videoId, title) {
             if (myToken !== playRequestToken) return;
             onPlaybackStarted(title);
             return;
-        } catch (e) {
-        }
+        } catch (e) {}
     }
 
     const candidates = await getStreamCandidates(videoId);
@@ -633,29 +629,23 @@ async function playAudio(videoId, title) {
     let lastError = null;
 
     for (const url of candidates) {
-        if (myToken !== playRequestToken) return; // user moved on to another track
-
-        let objectUrl = null;
-        try {
-            const resp = await fetchWithTimeout(url, 10000);
-            if (resp.ok) {
-                const blob = await resp.blob();
-                if (blob && blob.size > 0) {
-                    objectUrl = await cacheAudioBlob(videoId, blob);
-                }
-            }
-        } catch (fetchErr) {
-        }
-
         if (myToken !== playRequestToken) return;
 
         try {
-            audioPlayer.src = objectUrl || url;
+            audioPlayer.src = url;
             audioPlayer.volume = volumeBar.value;
             await attemptToPlay(audioPlayer);
             if (myToken !== playRequestToken) return;
             onPlaybackStarted(title);
-            fetchAndCacheThumbnail(videoId); // fire and forget
+            
+            fetchWithTimeout(url, 15000)
+                .then(r => r.ok ? r.blob() : null)
+                .then(blob => {
+                    if (blob && blob.size > 0) cacheAudioBlob(videoId, blob);
+                })
+                .catch(() => {});
+            
+            fetchAndCacheThumbnail(videoId);
             return;
         } catch (err) {
             lastError = err;
@@ -810,7 +800,7 @@ playPauseBtn.addEventListener("click", () => {
 });
 
 closePlayerBtn.addEventListener("click", () => {
-    playRequestToken++; // cancel any in-flight load/retry loop
+    playRequestToken++;
     audioPlayer.pause();
     audioPlayer.removeAttribute("src");
     audioPlayer.load();
