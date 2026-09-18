@@ -45,6 +45,122 @@ let currentSearchResults = [];
 let searchQueueIndex = -1;
 
 let currentTrackInfo = null;
+let playRequestToken = 0;
+
+const CACHE_DB_NAME = "musicAppCache";
+const CACHE_DB_VERSION = 1;
+const AUDIO_STORE = "audio";
+const THUMB_STORE = "thumbnails";
+
+function openCacheDB() {
+    return new Promise((resolve, reject) => {
+        if (!("indexedDB" in window)) {
+            reject(new Error("IndexedDB unavailable"));
+            return;
+        }
+        const req = indexedDB.open(CACHE_DB_NAME, CACHE_DB_VERSION);
+        req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(AUDIO_STORE)) db.createObjectStore(AUDIO_STORE);
+            if (!db.objectStoreNames.contains(THUMB_STORE)) db.createObjectStore(THUMB_STORE);
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+    });
+}
+
+const cacheDBPromise = openCacheDB().catch(err => {
+    console.warn("Track/thumbnail cache disabled:", err);
+    return null;
+});
+
+function idbGet(storeName, key) {
+    return cacheDBPromise.then(db => {
+        if (!db) return undefined;
+        return new Promise(resolve => {
+            try {
+                const tx = db.transaction(storeName, "readonly");
+                const req = tx.objectStore(storeName).get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => resolve(undefined);
+            } catch (e) {
+                resolve(undefined);
+            }
+        });
+    });
+}
+
+function idbSet(storeName, key, value) {
+    return cacheDBPromise.then(db => {
+        if (!db) return;
+        return new Promise(resolve => {
+            try {
+                const tx = db.transaction(storeName, "readwrite");
+                tx.objectStore(storeName).put(value, key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            } catch (e) {
+                resolve();
+            }
+        });
+    });
+}
+
+const audioObjectUrlCache = new Map();
+const thumbObjectUrlCache = new Map();
+
+async function getCachedAudioObjectURL(videoId) {
+    if (audioObjectUrlCache.has(videoId)) return audioObjectUrlCache.get(videoId);
+    const blob = await idbGet(AUDIO_STORE, videoId);
+    if (!blob) return null;
+    const url = URL.createObjectURL(blob);
+    audioObjectUrlCache.set(videoId, url);
+    return url;
+}
+
+async function cacheAudioBlob(videoId, blob) {
+    try {
+        await idbSet(AUDIO_STORE, videoId, blob);
+    } catch (e) {}
+    const url = URL.createObjectURL(blob);
+    audioObjectUrlCache.set(videoId, url);
+    return url;
+}
+
+async function getCachedThumbObjectURL(videoId) {
+    if (thumbObjectUrlCache.has(videoId)) return thumbObjectUrlCache.get(videoId);
+    const blob = await idbGet(THUMB_STORE, videoId);
+    if (!blob) return null;
+    const url = URL.createObjectURL(blob);
+    thumbObjectUrlCache.set(videoId, url);
+    return url;
+}
+
+async function cacheThumbBlob(videoId, blob) {
+    try {
+        await idbSet(THUMB_STORE, videoId, blob);
+    } catch (e) {}
+    const url = URL.createObjectURL(blob);
+    thumbObjectUrlCache.set(videoId, url);
+    return url;
+}
+
+async function fetchAndCacheThumbnail(videoId) {
+    const existing = await getCachedThumbObjectURL(videoId);
+    if (existing) return existing;
+    for (const url of thumbnailUrlsFor(videoId)) {
+        try {
+            const resp = await fetch(url);
+            if (!resp.ok) continue;
+            const blob = await resp.blob();
+            if (blob && blob.size > 0) {
+                return await cacheThumbBlob(videoId, blob);
+            }
+        } catch (e) {
+        }
+    }
+    return null;
+}
 
 const PIP_SIZE = 480;
 const pipCanvas = document.createElement("canvas");
@@ -146,7 +262,7 @@ function loadCoverImage(urls, index, onSuccess, onFail) {
     img.src = urls[index];
 }
 
-function updatePiPCanvas(track) {
+async function updatePiPCanvas(track) {
     if (!track) {
         drawPipFrame(null, null);
         return;
@@ -157,8 +273,13 @@ function updatePiPCanvas(track) {
         return;
     }
 
+    let cachedUrl = await getCachedThumbObjectURL(track.videoId);
+    if (!cachedUrl) cachedUrl = await fetchAndCacheThumbnail(track.videoId);
+
+    const urls = cachedUrl ? [cachedUrl, ...thumbnailUrlsFor(track.videoId)] : thumbnailUrlsFor(track.videoId);
+
     loadCoverImage(
-        thumbnailUrlsFor(track.videoId),
+        urls,
         0,
         (img) => {
             pipThumbCache = { videoId: track.videoId, img };
@@ -225,12 +346,14 @@ if ('mediaSession' in navigator) {
     } catch (e) {}
 }
 
-function updateMediaSessionMetadata(track) {
+async function updateMediaSessionMetadata(track) {
     if (!('mediaSession' in navigator) || !track) return;
+    let artworkUrl = await getCachedThumbObjectURL(track.videoId);
+    if (!artworkUrl) artworkUrl = `https://i.ytimg.com/vi/${track.videoId}/mqdefault.jpg`;
     navigator.mediaSession.metadata = new MediaMetadata({
         title: track.title,
         artist: track.author || "",
-        artwork: [{ src: `https://i.ytimg.com/vi/${track.videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' }]
+        artwork: [{ src: artworkUrl, sizes: '320x180', type: 'image/jpeg' }]
     });
 }
 
@@ -405,6 +528,13 @@ function renderResults(videos) {
             </div>
         `;
 
+        getCachedThumbObjectURL(video.videoId).then(cachedUrl => {
+            if (cachedUrl) {
+                const imgEl = li.querySelector("img");
+                if (imgEl) imgEl.src = cachedUrl;
+            }
+        });
+
         li.addEventListener("click", () => {
             playFromSearchResults(index);
         });
@@ -413,55 +543,129 @@ function renderResults(videos) {
     });
 }
 
-async function playAudio(videoId, title, attempt = 1) {
-    nowPlayingTitle.textContent = "Loading: " + title;
+function attemptToPlay(audio, timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+        let done = false;
+        const cleanup = () => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            audio.removeEventListener("playing", onPlaying);
+            audio.removeEventListener("error", onError);
+        };
+        const onPlaying = () => { cleanup(); resolve(); };
+        const onError = () => { cleanup(); reject(audio.error || new Error("media error")); };
+        const timer = setTimeout(() => { cleanup(); reject(new Error("timeout waiting for playback")); }, timeoutMs);
+
+        audio.addEventListener("playing", onPlaying, { once: true });
+        audio.addEventListener("error", onError, { once: true });
+
+        audio.play().catch(err => { cleanup(); reject(err); });
+    });
+}
+
+function fetchWithTimeout(url, ms = 10000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+async function getStreamCandidates(videoId) {
+    const candidates = [];
+    try {
+        const response = await fetch(`${BASE_URL}/api/v1/videos/${videoId}`);
+        if (response.ok) {
+            const data = await response.json();
+            const formats = data.adaptiveFormats || [];
+            formats
+                .filter(f => f.type?.includes("audio/mp4") && f.url)
+                .forEach(f => candidates.push(f.url));
+            formats
+                .filter(f => f.type?.startsWith("audio/") && !f.type?.includes("audio/mp4") && f.url)
+                .forEach(f => candidates.push(f.url));
+        }
+    } catch (e) {
+    }
+
+    ["140", "251", "250", "249", "171"].forEach(itag => {
+        candidates.push(`${BASE_URL}/latest_version?id=${videoId}&itag=${itag}`);
+    });
+
+    return candidates;
+}
+
+function onPlaybackStarted(title) {
+    nowPlayingTitle.textContent = title;
+    updatePlayButton();
+    updateNavButtons();
+    renderSidebarTracks();
+    if (currentTrackInfo) {
+        updatePiPCanvas(currentTrackInfo);
+        updateMediaSessionMetadata(currentTrackInfo);
+    }
+}
+
+async function playAudio(videoId, title) {
+    const myToken = ++playRequestToken;
+
+    nowPlayingTitle.innerHTML = `${SVG_ICONS.spinner} Loading: ${escapeHTML(title)}`;
     audioDock.classList.add("visible");
     updateNavButtons();
 
-    try {
-        const response = await fetch(`${BASE_URL}/api/v1/videos/${videoId}`);
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
 
-        let format = data.adaptiveFormats?.find(item => item.type?.includes("audio/mp4") && item.url);
-        if (!format) format = data.adaptiveFormats?.find(item => item.type?.startsWith("audio/") && item.url);
-
-        if (format && format.url) {
-            audioPlayer.src = format.url;
-        } else {
-            audioPlayer.src = `${BASE_URL}/latest_version?id=${videoId}&itag=140`;
-        }
-
-        audioPlayer.volume = volumeBar.value;
-        await audioPlayer.play();
-        nowPlayingTitle.textContent = title;
-        updatePlayButton();
-        updateNavButtons();
-        renderSidebarTracks();
-
-        if (currentTrackInfo) {
-            updatePiPCanvas(currentTrackInfo);
-            updateMediaSessionMetadata(currentTrackInfo);
-        }
-
-    } catch (error) {
-        if (attempt < 2) {
-            setTimeout(() => playAudio(videoId, title, attempt + 1), 1000);
-        } else {
-            audioPlayer.src = `${BASE_URL}/latest_version?id=${videoId}&itag=140`;
-            audioPlayer.play().then(() => {
-                nowPlayingTitle.textContent = title;
-                updatePlayButton();
-                updateNavButtons();
-                if (currentTrackInfo) {
-                    updatePiPCanvas(currentTrackInfo);
-                    updateMediaSessionMetadata(currentTrackInfo);
-                }
-            }).catch(e => {
-                nowPlayingTitle.textContent = `Error: Cannot load audio stream.`;
-            });
+    const cachedUrl = await getCachedAudioObjectURL(videoId);
+    if (myToken !== playRequestToken) return;
+    if (cachedUrl) {
+        try {
+            audioPlayer.src = cachedUrl;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer);
+            if (myToken !== playRequestToken) return;
+            onPlaybackStarted(title);
+            return;
+        } catch (e) {
         }
     }
+
+    const candidates = await getStreamCandidates(videoId);
+    if (myToken !== playRequestToken) return;
+
+    let lastError = null;
+
+    for (const url of candidates) {
+        if (myToken !== playRequestToken) return; // user moved on to another track
+
+        let objectUrl = null;
+        try {
+            const resp = await fetchWithTimeout(url, 10000);
+            if (resp.ok) {
+                const blob = await resp.blob();
+                if (blob && blob.size > 0) {
+                    objectUrl = await cacheAudioBlob(videoId, blob);
+                }
+            }
+        } catch (fetchErr) {
+        }
+
+        if (myToken !== playRequestToken) return;
+
+        try {
+            audioPlayer.src = objectUrl || url;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer);
+            if (myToken !== playRequestToken) return;
+            onPlaybackStarted(title);
+            fetchAndCacheThumbnail(videoId); // fire and forget
+            return;
+        } catch (err) {
+            lastError = err;
+        }
+    }
+
+    if (myToken !== playRequestToken) return;
+    console.error("All playback candidates failed for", videoId, lastError);
+    nowPlayingTitle.textContent = `Cannot load audio stream.`;
+    updateNavButtons();
 }
 
 function updatePlaylistDropdowns() {
@@ -606,6 +810,7 @@ playPauseBtn.addEventListener("click", () => {
 });
 
 closePlayerBtn.addEventListener("click", () => {
+    playRequestToken++; // cancel any in-flight load/retry loop
     audioPlayer.pause();
     audioPlayer.removeAttribute("src");
     audioPlayer.load();
