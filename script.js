@@ -914,7 +914,8 @@ function initApp() {
       initBackendBridge(uv);
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
-      proxyIframe.src = buildServiceUrl(uv, 'https://example.com');
+      const baseUvUrl = cleanUrl(uv.url);
+      proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;    
       document.body.appendChild(proxyIframe);
     }
     gRep = {
