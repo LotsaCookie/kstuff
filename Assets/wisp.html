@@ -70,8 +70,8 @@
   <pre id="output">Enter a Wisp server and target URL, then click fetch.</pre>
 
   <script type="module">
-    // Import directly as an ES module via jsDelivr +esm endpoint
-    import { WispConnection } from 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/wisp-webconn@latest/+esm';
+    // Using esm.sh to resolve the bundle with valid JS headers
+    import { WispConnection } from 'https://esm.sh/@mercuryworkshop/wisp-webconn';
 
     document.getElementById('fetchBtn').addEventListener('click', async () => {
       const output = document.getElementById('output');
@@ -105,6 +105,7 @@
         try {
           formattedContent = JSON.stringify(JSON.parse(content), null, 2);
         } catch (e) {
+          // Keep text as-is if not JSON
         }
 
         output.textContent = `HTTP Status: ${status}\n\n--- Body Output ---\n${formattedContent}`;
