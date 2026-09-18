@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
+        .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type="text"] { padding: 8px; width: 300px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 400px; white-space: pre-wrap; }
+        #media-container { margin-top: 15px; }
+        audio { max-width: 100%; border-radius: 5px; margin-top: 10px; width: 100%; }
+    </style>
+</head>
+<body>
+    
+    <div class="controls">
+        <input type="text" id="video-id-input" placeholder="Enter YouTube Video ID (e.g. dQw4w9WgXcQ)" />
+        <button id="get-audio">Get Highest Quality Audio</button>
+    </div>
+    
+    <div id="media-container"></div>
+    <pre id="output">Initializing proxy...</pre>
+
+    <script type="module">
+        import { BareMuxConnection, BareClient } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm";
+
+        const output = document.getElementById("output");
+        const mediaContainer = document.getElementById("media-container");
+        const videoIdInput = document.getElementById("video-id-input");
+
+        async function setupProxy() {
+            try {
+                const workerCode = `importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js");`;
+                const blob = new Blob([workerCode], { type: "text/javascript" });
+                const workerUrl = URL.createObjectURL(blob);
+
+                const conn = new BareMuxConnection(workerUrl);
+
+                await conn.setTransport(
+                    "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+                    [{ wisp: "wss://wisp.mercurywork.shop/" }]
+                );
+                
+                output.textContent = "Ready! Enter a video ID to fetch audio.";
+                return new BareClient();
+            } catch (err) {
+                output.textContent = "Error setting up proxy: " + err;
+                return null;
+            }
+        }
+
+        const clientPromise = setupProxy();
+
+        document.getElementById("get-audio").addEventListener("click", async () => {
+            const client = await clientPromise;
+            if (!client) {
+                output.textContent = "Proxy failed to initialize.";
+                return;
+            }
+
+            const videoId = videoIdInput.value.trim();
+            if (!videoId) {
+                output.textContent = "Please enter a valid YouTube Video ID.";
+                return;
+            }
+
+            output.textContent = `Initializing fetch for ID: ${videoId}...\n`;
+            mediaContainer.innerHTML = '';
+
+            try {
+                const apiUrl = `https://invidious.f5.si/api/v1/videos/${videoId}`;
+                let data = null;
+
+                try {
+                    output.textContent += `Attempting direct API fetch...\n`;
+                    const directResponse = await fetch(apiUrl);
+                    
+                    if (!directResponse.ok) {
+                        throw new Error(`Status ${directResponse.status}`);
+                    }
+                    data = await directResponse.json();
+                    output.textContent += `Direct fetch successful!\n`;
+
+                } catch (directError) {
+                    output.textContent += `Direct fetch failed (${directError.message}). Falling back to Wisp proxy...\n`;
+                    
+                    const proxyResponse = await client.fetch(apiUrl);
+                    
+                    if (!proxyResponse.ok) {
+                        throw new Error(`Proxy API returned ${proxyResponse.status} ${proxyResponse.statusText}`);
+                    }
+                    data = await proxyResponse.json();
+                    output.textContent += `Proxy fetch successful!\n`;
+                }
+
+                if (!data || !data.adaptiveFormats || data.adaptiveFormats.length === 0) {
+                    throw new Error("No adaptiveFormats found in the response.");
+                }
+
+                const audioFormats = data.adaptiveFormats.filter(f => f.type && f.type.includes("audio"));
+                
+                if (audioFormats.length === 0) {
+                    throw new Error("No audio formats found for this video.");
+                }
+
+                audioFormats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+                const bestAudio = audioFormats[0];
+                const audioUrl = bestAudio.url;
+
+                output.textContent += `Found audio: ${bestAudio.type} (Bitrate: ${bestAudio.bitrate}).\nLoading directly into audio player...`;
+
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.src = audioUrl; // Loaded directly
+                mediaContainer.appendChild(audio);
+
+            } catch (err) {
+                output.textContent += "\nError: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
