@@ -392,7 +392,7 @@ function initApp() {
     gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' },
     lessonplanner: { id: 'lessonplanner-iframe', path: 'Assets/pages/ai.html' },
     studyhall: { id: 'studyhall-iframe', path: 'Assets/pages/chat.html' },
-    vms: { id: 'vms-iframe', path: 'Assets/pages/music.html' }
+    vms: { id: 'vms-iframe', path: 'Assets/pages/vms.html' }
   };
 
   function loadIframePage(id, path, preFetchedHtml = null, isRetry = false) {
