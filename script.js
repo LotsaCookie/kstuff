@@ -143,12 +143,6 @@ function initApp() {
     return hashCheckInFlight;
   }
 
-  // FIX: only cdn.jsdelivr.net (reliable, immutable-commit CDN) plus a same-origin
-  // fallback. raw.githack.com and cdn.statically.io were removed: they often return
-  // HTTP 200 with an empty/stale/interstitial body, and since fetchWithProxy() races
-  // all mirrors with Promise.any() and takes whichever resolves first, a "fast but
-  // broken" response from those mirrors was intermittently winning over jsdelivr -
-  // this is what caused music.html (and other iframe pages) to rarely load correctly.
   async function getProxyList() {
     if (!cachedCommitHash) {
       await refreshCommitHash();
