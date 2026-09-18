@@ -37,7 +37,11 @@
       font-weight: 600;
       cursor: pointer;
     }
-    button:hover { background: #2563eb; }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) { background: #2563eb; }
     pre {
       background: #1e1e1e;
       padding: 1rem;
@@ -56,7 +60,7 @@
 
   <div class="form-group">
     <label for="wispServer">Wisp WebSocket Server URL</label>
-    <input type="text" id="wispServer" value="wss://wisp.mercuryworkshop.sub.id/" placeholder="wss://your-wisp-server.com/">
+    <input type="text" id="wispServer" value="wss://wisp.mercurywork.shop/" placeholder="wss://your-wisp-server.com/">
   </div>
 
   <div class="form-group">
@@ -70,8 +74,7 @@
   <pre id="output">Enter a Wisp server and target URL, then click fetch.</pre>
 
   <script type="module">
-    // Using esm.sh to resolve the bundle with valid JS headers
-    import { WispConnection } from 'https://esm.sh/@mercuryworkshop/wisp-webconn';
+    import { EpoxyClient } from 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs';
 
     document.getElementById('fetchBtn').addEventListener('click', async () => {
       const output = document.getElementById('output');
@@ -85,15 +88,14 @@
       }
 
       btn.disabled = true;
-      output.textContent = 'Connecting to Wisp proxy backend...';
+      output.textContent = 'Connecting to Wisp proxy backend via Epoxy...';
 
       try {
-        const connection = new WispConnection(wispServer);
-        await connection.connect();
-
+        const epoxy = new EpoxyClient({ wisp: wispServer });
+        
         output.textContent = `Connected! Fetching target: ${targetUrl}...`;
 
-        const response = await connection.fetch(targetUrl, {
+        const response = await epoxy.fetch(targetUrl, {
           method: 'GET',
           headers: { 'Accept': 'application/json' }
         });
@@ -105,12 +107,12 @@
         try {
           formattedContent = JSON.stringify(JSON.parse(content), null, 2);
         } catch (e) {
-          // Keep text as-is if not JSON
         }
 
         output.textContent = `HTTP Status: ${status}\n\n--- Body Output ---\n${formattedContent}`;
       } catch (err) {
         output.textContent = `Error: ${err.message || err}`;
+        console.error("Wisp Fetch Error:", err);
       } finally {
         btn.disabled = false;
       }
