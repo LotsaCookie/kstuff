@@ -8,6 +8,14 @@ function initApp() {
   const reverseUrlMap = Object.entries(urlMap).reduce((acc, [k, v]) => ({ ...acc, [v]: k }), {});
   let history = ['kstuff://home'], historyIndex = 0;
 
+  const iframePages = {
+    mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' },
+    gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' },
+    lessonplanner: { id: 'lessonplanner-iframe', path: 'Assets/pages/ai.html' },
+    studyhall: { id: 'studyhall-iframe', path: 'Assets/pages/chat.html' },
+    vms: { id: 'vms-iframe', path: 'Assets/pages/vms.html' }
+  };
+
   const encodeUv = str => !str ? str : encodeURIComponent(str.toString().split('').map((char, ind) => ind % 2 ? String.fromCharCode(char.charCodeAt(0) ^ 2) : char).join(''));
 
   const formatWebUrl = rawUrl => {
@@ -31,6 +39,8 @@ function initApp() {
 
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
+  const FETCH_TIMEOUT = 10000;        // FIX: every network request now has a hard timeout
+  const IFRAME_SHOW_TIMEOUT = 2500;   // FIX: iframe pages are revealed after this long even if 'load' never fires
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
@@ -38,9 +48,11 @@ function initApp() {
   let commitEtag = null, hashCheckInFlight = null;
   const lastIframeHtml = {};
   const iframeLoadFailed = {};
+  const iframeLoadTokens = {};   // FIX: per-iframe load tokens (a load of one iframe never cancels another's)
+  const iframeInFlight = {};
   let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
-  let activeIframeLoadId = 0, sessionSettingsUpdated = false, initPromise = null;
-  let isNavigating = false, autoRefreshBusy = false;
+  let sessionSettingsUpdated = false, initPromise = null;
+  let isNavigating = false, autoRefreshBusy = false, firstNavStarted = false;
 
   pages.forEach(p => {
     p.style.opacity = p.classList.contains('active') ? '1' : '0';
@@ -106,15 +118,27 @@ function initApp() {
     let rs; window.addEventListener('resize', () => { clearTimeout(rs); rs = setTimeout(() => updateIndicator(document.querySelector('.nav-btn.active')), 120); });
   }
 
+  const timedFetch = async (url, asText = false, ms = FETCH_TIMEOUT) => {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const r = await fetch(url, { cache: 'no-store', signal: ctrl.signal });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return asText ? await r.text() : await r.json();
+    } finally { clearTimeout(timer); }
+  };
+
   async function refreshCommitHash() {
     if (hashCheckInFlight) return hashCheckInFlight;
 
-    hashCheckInFlight = (async () => {
+    const run = (async () => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
       try {
         const headers = commitEtag ? { 'If-None-Match': commitEtag } : {};
         const res = await fetch(
           'https://api.github.com/repos/lotsacookie/kstuff/commits/main',
-          { headers }
+          { headers, signal: ctrl.signal }
         );
 
         if (res.status === 304) return false;
@@ -136,11 +160,13 @@ function initApp() {
         console.error('refreshCommitHash failed', err);
         return false;
       } finally {
-        hashCheckInFlight = null;
+        clearTimeout(timer);
       }
     })();
 
-    return hashCheckInFlight;
+    hashCheckInFlight = run;
+    run.finally(() => { if (hashCheckInFlight === run) hashCheckInFlight = null; });
+    return run;
   }
 
   async function getProxyList() {
@@ -158,11 +184,7 @@ function initApp() {
     const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
     const proxies = await getProxyList();
     try {
-      return await Promise.any(proxies.map(async p => {
-        const r = await fetch(p + path + cb, { cache: 'no-store' });
-        if (!r.ok) throw new Error();
-        return asText ? await r.text() : await r.json();
-      }));
+      return await Promise.any(proxies.map(p => timedFetch(p + path + cb, asText)));
     } catch (err) {
       console.error('All proxies failed for', path, err);
       throw new Error("Proxies failed: " + path);
@@ -306,6 +328,10 @@ function initApp() {
   document.addEventListener('click', () => $$('.custom-select-options.open').forEach(el => el.classList.remove('open')));
   $$('.setting-group select').forEach(applyCustomDropdown);
 
+  const notifyIframesTheme = () => Object.values(iframePages).forEach(p => {
+    try { $(p.id)?.contentWindow?.postMessage('theme-updated', '*'); } catch {}
+  });
+
   const handleThemesLoaded = themes => {
     let css = '', html = '';
     themes.forEach(t => {
@@ -322,6 +348,7 @@ function initApp() {
       body.className = body.className.replace(/\btheme-\S+/g, '').trim() + ' ' + chosen;
       applyCustomDropdown(sel);
     }
+    notifyIframesTheme();
   };
 
   try { handleThemesLoaded(JSON.parse(getStorage('kstuff_themes_cache'))); } catch {}
@@ -339,7 +366,7 @@ function initApp() {
       if (prefix) body.className = body.className.replace(new RegExp(`\\b${prefix}-\\S+`, 'g'), '').trim();
       fn(e.target.value); setStorage(key, e.target.value);
       updateIndicator(navBar?.querySelector('.nav-btn.active'));
-      Object.values(iframePages).forEach(p => $(p.id)?.contentWindow?.postMessage('theme-updated', '*'));
+      notifyIframesTheme();
     });
   });
 
@@ -383,44 +410,79 @@ function initApp() {
     btn.textContent = "Saved!"; btn.style.background = "#4CAF50"; btn.style.color = "#fff";
     setTimeout(() => { btn.textContent = "Save Settings"; btn.style.background = oBg; btn.style.color = oC; }, 1500);
   });
+  const THEME_SYNC_SCRIPT = `<script>(function(){function g(cs,n){return(cs.getPropertyValue(n)||'').trim();}function sT(){try{var p=window.parent;if(!p||p===window)return;var cs=p.getComputedStyle(p.document.body),d=document.documentElement.style;var bg=g(cs,'--background');if(!bg&&cs.backgroundColor!=='rgba(0, 0, 0, 0)'&&cs.backgroundColor!=='transparent')bg=cs.backgroundColor;var tx=g(cs,'--text-color')||cs.color;if(bg&&tx&&bg===tx){bg='';tx='';}var m={'--bg':bg,'--text':tx,'--nav':g(cs,'--nav-bg'),'--card':g(cs,'--card-bg')};for(var k in m){if(m[k])d.setProperty(k,m[k]);else d.removeProperty(k);}}catch(e){}}sT();window.addEventListener('message',function(e){if(e.data==='theme-updated')sT();});})();<\/script>`;
 
-  const iframePages = {
-    mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' },
-    gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' },
-    lessonplanner: { id: 'lessonplanner-iframe', path: 'Assets/pages/ai.html' },
-    studyhall: { id: 'studyhall-iframe', path: 'Assets/pages/chat.html' },
-    vms: { id: 'vms-iframe', path: 'Assets/pages/vms.html' }
-  };
+  const buildErrorHtml = id => `<html style="background:#1b1b1f;margin:0;"><body style="margin:0;color:#f5f5f5;background:#1b1b1f;font-family:sans-serif;display:flex;flex-direction:column;gap:14px;justify-content:center;align-items:center;height:100vh;"><h2 style="margin:0;">Failed to load.</h2><button id="js-iframe-retry" style="padding:8px 18px;border:none;border-radius:6px;background:#4a7dff;color:#fff;cursor:pointer;font-size:0.9rem;">Retry</button><script>document.getElementById('js-iframe-retry').onclick=()=>window.parent.postMessage({type:'retry-iframe',id:'${id}'},'*');<\/script></body></html>`;
+
+  const pageIsHidden = f => { const pg = f.closest('.page'); return !!pg && !pg.classList.contains('active'); };
+  function cancelIframeLoads(id) {
+    iframeLoadTokens[id] = (iframeLoadTokens[id] || 0) + 1;
+    delete iframeInFlight[id];
+    const f = $(id);
+    if (f) {
+      clearTimeout(f.__kShowTimer);
+      if (f.__kLoadHandler) { f.removeEventListener('load', f.__kLoadHandler); f.__kLoadHandler = null; }
+    }
+  }
 
   function loadIframePage(id, path, preFetchedHtml = null, isRetry = false) {
     return new Promise(async resolve => {
-      const loadId = ++activeIframeLoadId;
       const f = $(id);
       if (!f) return resolve();
-      f.removeAttribute('srcdoc'); f.src = 'about:blank';
-      if (loadId !== activeIframeLoadId) return resolve();
+      const token = iframeLoadTokens[id] = (iframeLoadTokens[id] || 0) + 1;
+      iframeInFlight[id] = token;
+      const stale = () => iframeLoadTokens[id] !== token;
+      const done = () => { if (iframeInFlight[id] === token) delete iframeInFlight[id]; resolve(); };
+
+      clearTimeout(f.__kShowTimer);
+      if (f.__kLoadHandler) { f.removeEventListener('load', f.__kLoadHandler); f.__kLoadHandler = null; }
+      const mount = html => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(f.__kShowTimer);
+          if (!stale() && !pageIsHidden(f)) {
+            f.style.display = 'block';
+            toggleLoader(false);
+          }
+          done();
+        };
+        const onLoad = () => {
+          try { if (f.contentWindow.location.href === 'about:blank') return; } catch {}
+          f.removeEventListener('load', onLoad);
+          if (f.__kLoadHandler === onLoad) f.__kLoadHandler = null;
+          if (!stale() && id === 'studyhall-iframe' && currentUser) {
+            try { f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*'); } catch {}
+          }
+          finish();
+        };
+        f.__kLoadHandler = onLoad;
+        f.addEventListener('load', onLoad);
+        f.__kShowTimer = setTimeout(finish, IFRAME_SHOW_TIMEOUT);
+        f.removeAttribute('srcdoc');
+        f.srcdoc = html;
+      };
+
       try {
-        let html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
-        if (loadId !== activeIframeLoadId) return resolve();
+        const html = preFetchedHtml !== null ? preFetchedHtml : await fetchWithProxy(path, true);
+        if (stale() || pageIsHidden(f)) return done();
         iframeLoadFailed[id] = false;
         lastIframeHtml[id] = html;
-        const inj = `<script>function sT(){if(!window.parent)return;const s=window.parent.getComputedStyle(window.parent.document.body),d=document.documentElement.style;d.setProperty('--bg',s.getPropertyValue('--background')||s.backgroundColor);d.setProperty('--text',s.getPropertyValue('--text-color')||s.color);d.setProperty('--nav',s.getPropertyValue('--nav-bg'));d.setProperty('--card',s.getPropertyValue('--card-bg'));}sT();window.addEventListener('message',e=>e.data==='theme-updated'&&sT());<\/script>`;
-        f.onload = () => {
-          toggleLoader(false);
-          resolve();
-          if (id === 'studyhall-iframe' && currentUser) f.contentWindow?.postMessage({ type: 'set_user', username: currentUser.username }, '*');
-        };
-        f.srcdoc = html.includes('</body>') ? html.replace('</body>', inj + '</body>') : html + inj;
+        const i = html.lastIndexOf('</body>');
+        mount(i === -1 ? html + THEME_SYNC_SCRIPT : html.slice(0, i) + THEME_SYNC_SCRIPT + html.slice(i));
       } catch (err) {
         console.error('loadIframePage failed for', path, err);
-        if (loadId !== activeIframeLoadId) return resolve();
+        if (stale() || pageIsHidden(f)) return done();
         if (!isRetry) {
-          setTimeout(() => { loadIframePage(id, path, null, true).then(resolve); }, 900);
+          setTimeout(() => {
+            if (stale()) return done();
+            loadIframePage(id, path, null, true).then(done);
+          }, 900);
           return;
         }
         iframeLoadFailed[id] = true;
-        f.onload = () => resolve();
-        f.srcdoc = `<html style="background:#1b1b1f;margin:0;"><body style="margin:0;color:#f5f5f5;background:#1b1b1f;font-family:sans-serif;display:flex;flex-direction:column;gap:14px;justify-content:center;align-items:center;height:100vh;"><h2 style="margin:0;">Failed to load.</h2><button id="js-iframe-retry" style="padding:8px 18px;border:none;border-radius:6px;background:#4a7dff;color:#fff;cursor:pointer;font-size:0.9rem;">Retry</button><script>document.getElementById('js-iframe-retry').onclick=()=>window.parent.postMessage({type:'retry-iframe',id:'${id}'},'*');<\/script></body></html>`;
+        mount(buildErrorHtml(id));
       }
     });
   }
@@ -456,8 +518,6 @@ function initApp() {
         const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
         modalIframe.src = `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
       } else {
-        // FIX: raw.githack.com and cdn.statically.io removed from this "already
-        // proxied" allow-list check, since we no longer route through them.
         const isProxyUrl = targetUrl.includes(gRep.static) || targetUrl.includes(gRep.scram) || targetUrl.includes(gRep.uv) || targetUrl.includes(gRep.truffled) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
         if (isProxyUrl) modalIframe.src = targetUrl;
         else {
@@ -666,6 +726,7 @@ function initApp() {
   });
 
   const loadContent = async (tId, forceReload = false, customSrc = null) => {
+    firstNavStarted = true;
     isNavigating = true;
     try {
       if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); toggleLoader(false); return; }
@@ -673,8 +734,8 @@ function initApp() {
 
       if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
         const ifr = iframePages[tId];
-        if (ifr && (iframeLoadFailed[ifr.id] || !$(ifr.id)?.srcdoc)) { }
-        else return toggleLoader(false);
+        if (ifr && iframeInFlight[ifr.id]) return;
+        if (!(ifr && (iframeLoadFailed[ifr.id] || !$(ifr.id)?.srcdoc))) return toggleLoader(false);
       }
 
       const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
@@ -682,7 +743,9 @@ function initApp() {
       if (currentActive) {
         currentActive.classList.remove('active'); currentActive.style.display = 'none';
         if (iframePages[currentActive.id]) {
-          const oldIframe = $(iframePages[currentActive.id].id);
+          const oldId = iframePages[currentActive.id].id;
+          cancelIframeLoads(oldId);   // FIX: stop any pending load for the page we are leaving
+          const oldIframe = $(oldId);
           if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
         }
       }
@@ -702,15 +765,17 @@ function initApp() {
       else if (iframePages[tId]) {
         const iframeData = iframePages[tId];
         const iframeEl = $(iframeData.id);
-        if (iframeEl) iframeEl.style.display = 'none';
+        // FIX: the iframe is no longer set to display:none while loading. It used to stay
+        // hidden until 'load' fired, so any load that stalled or never fired left the page
+        // permanently invisible.
+        if (iframeEl) iframeEl.style.display = 'block';
         if (customSrc && iframeEl) {
+          cancelIframeLoads(iframeData.id);   // FIX: a late srcdoc load must not overwrite customSrc
           iframeEl.removeAttribute('srcdoc');
           iframeEl.src = customSrc;
-          iframeEl.style.display = 'block';
           toggleLoader(false);
         } else {
           await loadIframePage(iframeData.id, iframeData.path);
-          if (iframeEl) iframeEl.style.display = 'block';
         }
       }
     } finally {
@@ -731,7 +796,10 @@ function initApp() {
       navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
       btn.classList.add('active'); updateIndicator(btn);
       toggleLoader(true);
-      if (initPromise) await initPromise;
+      if (grids[tId] && initPromise) {
+        await initPromise;
+        if (!btn.classList.contains('active')) return;  
+      }
       loadContent(tId);
     });
   });
@@ -782,7 +850,7 @@ function initApp() {
     return parsed.replace(/^http:\/\//i, 'https://');
   };
 
-  const proc = arr => (arr || []).map(i => {
+  const proc = arr => (Array.isArray(arr) ? arr : []).map(i => {
     let p = { ...i };
     if (p.url?.includes('${truffled}') || !p.image || p.category === 'Truffled') {
       const m = gTruf.get(cleanGameTitle(p.title));
@@ -820,9 +888,6 @@ function initApp() {
     }
   };
 
-  // FIX: single reliable mirror (jsdelivr) instead of racing jsdelivr/githack/github/statically.
-  // The previous version also had a latent bug where the 'html' repo branch always
-  // hardcoded raw.githack.com regardless of which proxy type (pt) was being tried.
   const fetchReadingCornerRaw = async () => {
     const pTypes = ['jsdelivr'];
     const getUrl = (repo, path, pt) => `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
@@ -832,9 +897,8 @@ function initApp() {
     for (const pt of pTypes) {
       try {
         const zUrl = getUrl('assets', 'zones.json', pt) + `?_=${Date.now()}`;
-        const res = await fetch(zUrl, { cache: 'no-store' });
-        if (!res.ok) continue;
-        const json = await res.json();
+        const json = await timedFetch(zUrl, false, 12000);   // FIX: was a bare fetch with no timeout
+        if (!Array.isArray(json)) continue;
         const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
         const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
         const mappedData = [];
@@ -871,7 +935,8 @@ function initApp() {
         return { data: mappedData };
       } catch (e) { console.error('fetchReadingCornerRaw proxy type failed', pt, e); }
     }
-    const fallbackJson = await fetchWithProxy('Assets/json/g.json').catch(()=>[]);
+    const fallbackRaw = await fetchWithProxy('Assets/json/g.json').catch(()=>[]);
+    const fallbackJson = Array.isArray(fallbackRaw) ? fallbackRaw : [];
     const fallbackMapped = [];
     fallbackJson.forEach(item => {
       const titleLower = (item.title || '').toLowerCase().trim();
@@ -933,7 +998,7 @@ function initApp() {
       const proxyIframe = document.createElement('iframe');
       proxyIframe.style.display = 'none';
       const baseUvUrl = cleanUrl(uv.url);
-      proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;    
+      proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;
       document.body.appendChild(proxyIframe);
     }
     gRep = {
@@ -943,9 +1008,9 @@ function initApp() {
       frogiee: fr ? cleanUrl(fr.url) : '',
       truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
     };
-    gTruf.clear(); tr?.games?.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
+    gTruf.clear(); if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
     grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
-  });
+  }).catch(err => console.error('init failed', err));
 
   const updateBrowserNav = () => {
       if (sBack) sBack.disabled = historyIndex <= 0;
@@ -1007,10 +1072,10 @@ function initApp() {
         }
       });
     });
-let activePort = null;
+  let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
-if (mathworksIframe) {
+  if (mathworksIframe) {
     mathworksIframe.addEventListener('load', () => {
       try {
         const channel = new MessageChannel();
@@ -1043,7 +1108,7 @@ if (mathworksIframe) {
       } catch (e) {
       }
     });
-}
+  }
   window.addEventListener('message', (event) => {
     if (event.data && typeof event.data === 'string') {
       const data = event.data.trim();
@@ -1059,6 +1124,7 @@ if (mathworksIframe) {
   });
 
   initPromise.then(async () => {
+    if (firstNavStarted) return;
     let activePg = document.querySelector('.page.active');
     if (!activePg) {
       const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
