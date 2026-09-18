@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
 * {
     box-sizing: border-box;
@@ -21,10 +21,11 @@
 }
 
 :root {
-    --bg-color: #171820;
-    --nav-bg: #1c1e2a;   
-    --card-bg: #252836;    
-    --text-color: #f4b8d9;
+    --bg: #1a1216;
+    --text: #ffb8d9;
+    --card: rgba(255, 255, 255, 0.06);
+    --nav: rgba(26, 18, 22, 0.85);
+
     --border-color: rgba(255, 255, 255, 0.08);
     --header-height: 64px;
     --footer-height: 80px;
@@ -32,22 +33,19 @@
 }
 
 body {
-    background-color: var(--bg-color);
+    background-color: var(--bg);
     background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 40px 40px; 
     background-position: 0 0;
     background-attachment: fixed;
-    color: var(--text-color);
+    color: var(--text);
     min-height: 100vh;
     padding-bottom: var(--footer-height);
     overflow-x: hidden;
 }
 
-/* -------------------------------------- */
-/* Header & Search Bar */
-/* -------------------------------------- */
 .app-header {
     position: sticky;
     top: 0;
@@ -58,9 +56,10 @@ body {
     align-items: center;
     gap: 12px;
     padding: 10px 16px;
-    background: var(--nav-bg);
+    background: var(--nav);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .search-container {
@@ -72,13 +71,13 @@ body {
     padding: 5px 6px 5px 14px;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    background: var(--card-bg);
+    background: var(--card);
     transition: all var(--transition-speed) ease;
 }
 
 .search-container:focus-within {
-    border-color: var(--text-color);
-    box-shadow: 0 0 0 2px rgba(244, 184, 217, 0.2);
+    border-color: var(--text);
+    box-shadow: 0 0 0 2px rgba(255, 184, 217, 0.2);
 }
 
 #searchInput {
@@ -88,7 +87,7 @@ body {
     padding: 8px 0;
     border: 0;
     outline: 0;
-    color: var(--text-color);
+    color: var(--text);
     background: transparent;
     font-size: 1rem;
     user-select: text;
@@ -96,18 +95,22 @@ body {
 }
 
 #searchInput::placeholder {
-    color: var(--text-color);
+    color: var(--text);
     opacity: 0.5;
 }
 
 .btn-primary {
-    background: var(--text-color);
-    color: var(--bg-color);
+    background: var(--text);
+    color: var(--bg);
     border: none;
     border-radius: 8px;
     padding: 9px 16px;
     cursor: pointer;
     font-weight: 900 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -118,9 +121,9 @@ body {
 }
 
 .btn-icon {
-    background: var(--card-bg);
+    background: var(--card);
     border: 1px solid var(--border-color);
-    color: var(--text-color);
+    color: var(--text);
     border-radius: 8px;
     padding: 10px 16px;
     cursor: pointer;
@@ -132,13 +135,24 @@ body {
 }
 
 .btn-icon:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--text-color);
+    background: rgba(255,255,255,0.12);
+    border-color: var(--text);
 }
 
-/* -------------------------------------- */
-/* Video Grid */
-/* -------------------------------------- */
+svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spin-icon {
+    animation: spin 1s linear infinite;
+}
+
 main {
     width: min(100% - 32px, 1100px);
     margin: 24px auto;
@@ -157,7 +171,7 @@ main {
     overflow: hidden;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    background: var(--nav-bg);
+    background: var(--card);
     box-shadow: 0 6px 15px rgba(0,0,0,0.3);
     transition: all 0.2s ease;
     cursor: pointer;
@@ -165,7 +179,7 @@ main {
 
 .video-item:hover {
     transform: translateY(-4px) scale(1.01);
-    border-color: var(--text-color);
+    border-color: var(--text);
     box-shadow: 0 10px 20px rgba(0,0,0,0.4);
 }
 
@@ -173,7 +187,7 @@ main {
     width: 100%;
     height: 150px;
     object-fit: cover;
-    background: var(--card-bg);
+    background: var(--bg);
     pointer-events: none;
 }
 
@@ -185,21 +199,18 @@ main {
 }
 
 .video-title {
-    color: var(--text-color);
+    color: var(--text);
     line-height: 1.35;
     font-size: 1rem;
     font-weight: 900 !important;
 }
 
 .video-author {
-    color: var(--text-color);
+    color: var(--text);
     opacity: 0.6;
     font-size: 0.85rem;
 }
 
-/* -------------------------------------- */
-/* Playback Bar (Audio Dock) */
-/* -------------------------------------- */
 .audio-dock {
     position: fixed;
     right: 0;
@@ -212,7 +223,8 @@ main {
     min-height: var(--footer-height);
     padding: 10px 24px;
     border-top: 1px solid var(--border-color);
-    background: var(--nav-bg);
+    background: var(--nav);
+    backdrop-filter: blur(12px);
     box-shadow: 0 -8px 25px rgba(0,0,0,0.5);
 }
 
@@ -228,7 +240,7 @@ main {
 }
 
 .now-playing-label {
-    color: var(--text-color);
+    color: var(--text);
     opacity: 0.55;
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -237,7 +249,7 @@ main {
 }
 
 #nowPlayingTitle {
-    color: var(--text-color);
+    color: var(--text);
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -254,10 +266,9 @@ main {
 .control-button {
     background: transparent;
     border: none;
-    color: var(--text-color);
+    color: var(--text);
     width: 40px;
     height: 40px;
-    font-size: 1.3rem;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -287,8 +298,8 @@ input[type="range"]::-webkit-slider-runnable-track {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    margin-top: -4px; 
-    background-color: var(--text-color);
+    margin-top: -4px;
+    background-color: var(--text);
     height: 16px;
     width: 16px;
     border-radius: 50%;
@@ -311,16 +322,14 @@ input[type="range"]:active::-webkit-slider-thumb {
     text-align: center;
 }
 
-/* -------------------------------------- */
-/* Playlists Sidebar */
-/* -------------------------------------- */
 .sidebar {
     position: fixed;
     top: var(--header-height);
     right: -360px;
     width: 340px;
     bottom: var(--footer-height);
-    background: var(--nav-bg);
+    background: var(--nav);
+    backdrop-filter: blur(12px);
     border-left: 1px solid var(--border-color);
     z-index: 15;
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -336,23 +345,25 @@ input[type="range"]:active::-webkit-slider-thumb {
 .sidebar h2 {
     font-size: 1.2rem;
     font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* Select inputs styling to match user's custom modern CSS */
 .modern-select {
     width: 100%;
     padding: 10px;
     font-size: 0.95rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-color);
+    background: var(--card);
+    color: var(--text);
     cursor: pointer;
     outline: none;
     transition: border-color 0.2s ease;
 }
 .modern-select:focus {
-    border-color: var(--text-color);
+    border-color: var(--text);
 }
 .modern-input {
     width: 100%;
@@ -360,13 +371,13 @@ input[type="range"]:active::-webkit-slider-thumb {
     font-size: 0.95rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-color);
+    background: var(--card);
+    color: var(--text);
     outline: none;
     user-select: text;
     -webkit-user-select: text;
 }
-.modern-input::placeholder { color: rgba(244, 184, 217, 0.5); }
+.modern-input::placeholder { color: rgba(255, 184, 217, 0.5); }
 
 .playlist-tracks {
     list-style: none;
@@ -378,17 +389,30 @@ input[type="range"]:active::-webkit-slider-thumb {
     padding-right: 5px;
 }
 .playlist-track-item {
-    background: var(--card-bg);
+    background: var(--card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    cursor: grab;
+    transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+}
+.playlist-track-item:active {
+    cursor: grabbing;
+}
+.playlist-track-item.dragging {
+    opacity: 0.3;
+    border-style: dashed;
+    border-color: var(--text);
+}
+.playlist-track-item.drag-over {
+    border-top: 2px solid var(--text);
 }
 .playlist-track-item.active {
-    border-color: var(--text-color);
-    box-shadow: 0 0 5px rgba(244, 184, 217, 0.3);
+    border-color: var(--text);
+    box-shadow: 0 0 5px rgba(255, 184, 217, 0.3);
 }
 .track-title {
     font-size: 0.9rem;
@@ -402,22 +426,21 @@ input[type="range"]:active::-webkit-slider-thumb {
 }
 .track-controls button {
     padding: 6px;
-    font-size: 0.9rem;
     flex: 1;
     border: none;
     border-radius: 6px;
-    background: var(--nav-bg);
-    color: var(--text-color);
+    background: var(--nav);
+    color: var(--text);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: background 0.2s;
 }
 .track-controls button:hover {
     background: rgba(255,255,255,0.15);
 }
 
-/* -------------------------------------- */
-/* Custom Modal Styling */
-/* -------------------------------------- */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -435,8 +458,8 @@ input[type="range"]:active::-webkit-slider-thumb {
     pointer-events: auto;
 }
 .modal-content {
-    background: var(--nav-bg);
-    color: var(--text-color);
+    background: var(--nav);
+    color: var(--text);
     padding: 24px;
     width: 90vw;
     max-width: 400px;
@@ -457,6 +480,9 @@ input[type="range"]:active::-webkit-slider-thumb {
     font-weight: 900 !important;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 .modal-actions {
     display: flex;
@@ -469,14 +495,14 @@ input[type="range"]:active::-webkit-slider-thumb {
     font-size: 1rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-color);
+    background: var(--card);
+    color: var(--text);
     cursor: pointer;
     transition: all 0.2s ease;
 }
 .modal-actions button.btn-primary {
-    background: var(--text-color);
-    color: var(--bg-color);
+    background: var(--text);
+    color: var(--bg);
     border: none;
 }
 .modal-actions button:hover {
@@ -503,16 +529,22 @@ input[type="range"]:active::-webkit-slider-thumb {
 
 <header class="app-header">
     <button id="toggleSidebarBtn" class="btn-icon">
-        <i class="fa-solid fa-list-ul"></i> <span>Playlists</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        <span>Playlists</span>
     </button>
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Search videos or music..." value="open source">
-        <button id="searchBtn" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button id="searchBtn" class="btn-primary">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
     </div>
 </header>
 
 <aside class="sidebar" id="playlistSidebar">
-    <h2><i class="fa-solid fa-music"></i> My Playlists</h2>
+    <h2>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+        My Playlists
+    </h2>
     <select id="sidebarPlaylistSelect" class="modern-select"></select>
     <ul class="playlist-tracks" id="playlistTracks"></ul>
 </aside>
@@ -524,7 +556,10 @@ input[type="range"]:active::-webkit-slider-thumb {
 <div class="modal-overlay" id="playlistModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fa-solid fa-folder-plus"></i> Add to Playlist</h3>
+            <h3>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.9 2-2V8c0-1.11-.89-2-2-2zm-1 8h-3v3h-2v-3h-3v-2h3V9h2v3h3v2z"/></svg>
+                Add to Playlist
+            </h3>
         </div>
         <select id="modalPlaylistSelect" class="modern-select"></select>
         <input type="text" id="newPlaylistInput" class="modern-input" placeholder="Or create new playlist name...">
@@ -543,22 +578,21 @@ input[type="range"]:active::-webkit-slider-thumb {
     
     <div class="audio-controls">
         <button class="control-button" id="playPauseBtn" title="Play/Pause">
-            <i class="fa-solid fa-play"></i>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <!-- The Add to Playlist Button -->
         <button class="control-button" id="addToPlaylistBtn" title="Add to Playlist">
-            <i class="fa-solid fa-plus"></i>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </button>
 
         <span class="time" id="currentTime">0:00 / 0:00</span>
         
         <input type="range" id="progressBar" min="0" max="100" value="0" title="Seek">
         
-        <i class="fa-solid fa-volume-high" style="font-size:0.9rem; opacity:0.8;"></i>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="opacity:0.8;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
         <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="1" title="Volume">
         
         <button class="control-button" id="closePlayerBtn" title="Close">
-            <i class="fa-solid fa-xmark"></i>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
     </div>
     
@@ -566,6 +600,15 @@ input[type="range"]:active::-webkit-slider-thumb {
 </div>
 
 <script>
+const SVG_ICONS = {
+    play: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+    pause: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`,
+    plus: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`,
+    trash: `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`,
+    spinner: `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" class="spin-icon"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>`,
+    warning: `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>`
+};
+
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const resultsList = document.getElementById("resultsList");
@@ -594,7 +637,7 @@ const BASE_URL = "https://invidious.f5.si";
 let playlists = JSON.parse(localStorage.getItem('myPlaylists')) || { "Favorites": [] };
 let activePlayingPlaylist = null;
 let activePlayingIndex = -1;
-let currentTrackInfo = null; 
+let currentTrackInfo = null;
 
 function initPlaylists() {
     updatePlaylistDropdowns();
@@ -629,14 +672,14 @@ addToPlaylistBtn.addEventListener("click", () => {
 async function search() {
     const query = searchInput.value.trim();
     if (!query) return;
-    resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Searching...</li>`;
+    resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;">${SVG_ICONS.spinner} Searching...</li>`;
     try {
         const response = await fetch(`${BASE_URL}/api/v1/search?q=${encodeURIComponent(query)}&type=video`);
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
         const data = await response.json();
         renderResults(data);
     } catch (error) {
-        resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;"><i class="fa-solid fa-triangle-exclamation"></i> Search error: ${escapeHTML(error.message)}</li>`;
+        resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;">${SVG_ICONS.warning} Search error: ${escapeHTML(error.message)}</li>`;
     }
 }
 
@@ -707,7 +750,7 @@ async function playAudio(videoId, title, attempt = 1) {
                 nowPlayingTitle.textContent = title;
                 updatePlayButton();
             }).catch(e => {
-                nowPlayingTitle.textContent = `Error: Cannot load stream.`;
+                nowPlayingTitle.textContent = `Error: Cannot load audio stream.`;
             });
         }
     }
@@ -751,6 +794,8 @@ function renderSidebarTracks() {
     tracks.forEach((track, index) => {
         const li = document.createElement("li");
         li.className = "playlist-track-item";
+        li.setAttribute("draggable", "true");
+        li.dataset.index = index;
         
         if (activePlayingPlaylist === selectedPlaylist && activePlayingIndex === index) {
             li.classList.add("active");
@@ -760,21 +805,64 @@ function renderSidebarTracks() {
             <div class="track-title">${index + 1}. ${escapeHTML(track.title)}</div>
             <div class="track-controls">
                 <button onclick="playFromPlaylist('${escapeHTML(selectedPlaylist)}', ${index})" title="Play">
-                    <i class="fa-solid fa-play"></i>
-                </button>
-                <button onclick="moveTrack('${escapeHTML(selectedPlaylist)}', ${index}, -1)" title="Move Up">
-                    <i class="fa-solid fa-chevron-up"></i>
-                </button>
-                <button onclick="moveTrack('${escapeHTML(selectedPlaylist)}', ${index}, 1)" title="Move Down">
-                    <i class="fa-solid fa-chevron-down"></i>
+                    ${SVG_ICONS.play}
                 </button>
                 <button onclick="removeTrack('${escapeHTML(selectedPlaylist)}', ${index})" title="Remove">
-                    <i class="fa-solid fa-trash-can"></i>
+                    ${SVG_ICONS.trash}
                 </button>
             </div>
         `;
+
+        li.addEventListener("dragstart", (e) => {
+            e.dataTransfer.setData("text/plain", index);
+            li.classList.add("dragging");
+        });
+
+        li.addEventListener("dragend", () => {
+            li.classList.remove("dragging");
+            document.querySelectorAll(".playlist-track-item").forEach(el => el.classList.remove("drag-over"));
+        });
+
+        li.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            li.classList.add("drag-over");
+        });
+
+        li.addEventListener("dragleave", () => {
+            li.classList.remove("drag-over");
+        });
+
+        li.addEventListener("drop", (e) => {
+            e.preventDefault();
+            li.classList.remove("drag-over");
+            const fromIndex = parseInt(e.dataTransfer.getData("text/plain"), 10);
+            const toIndex = index;
+            if (isNaN(fromIndex) || fromIndex === toIndex) return;
+
+            reorderPlaylistTrack(selectedPlaylist, fromIndex, toIndex);
+        });
+
         playlistTracks.appendChild(li);
     });
+}
+
+function reorderPlaylistTrack(playlistName, fromIndex, toIndex) {
+    const arr = playlists[playlistName];
+    const [movedTrack] = arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, movedTrack);
+
+    if (activePlayingPlaylist === playlistName) {
+        if (activePlayingIndex === fromIndex) {
+            activePlayingIndex = toIndex;
+        } else if (fromIndex < activePlayingIndex && toIndex >= activePlayingIndex) {
+            activePlayingIndex--;
+        } else if (fromIndex > activePlayingIndex && toIndex <= activePlayingIndex) {
+            activePlayingIndex++;
+        }
+    }
+
+    savePlaylists();
+    renderSidebarTracks();
 }
 
 window.playFromPlaylist = function(playlistName, index) {
@@ -783,21 +871,6 @@ window.playFromPlaylist = function(playlistName, index) {
     const track = playlists[playlistName][index];
     currentTrackInfo = track;
     playAudio(track.videoId, track.title);
-};
-
-window.moveTrack = function(playlistName, index, direction) {
-    const arr = playlists[playlistName];
-    if (direction === -1 && index > 0) {
-        [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-        if(activePlayingPlaylist === playlistName && activePlayingIndex === index) activePlayingIndex--;
-        else if(activePlayingPlaylist === playlistName && activePlayingIndex === index - 1) activePlayingIndex++;
-    } else if (direction === 1 && index < arr.length - 1) {
-        [arr[index + 1], arr[index]] = [arr[index], arr[index + 1]];
-        if(activePlayingPlaylist === playlistName && activePlayingIndex === index) activePlayingIndex++;
-        else if(activePlayingPlaylist === playlistName && activePlayingIndex === index + 1) activePlayingIndex--;
-    }
-    savePlaylists();
-    renderSidebarTracks();
 };
 
 window.removeTrack = function(playlistName, index) {
@@ -863,7 +936,7 @@ volumeBar.addEventListener("input", () => {
 });
 
 function updatePlayButton() {
-    playPauseBtn.innerHTML = audioPlayer.paused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+    playPauseBtn.innerHTML = audioPlayer.paused ? SVG_ICONS.play : SVG_ICONS.pause;
 }
 
 function updateTime() {
