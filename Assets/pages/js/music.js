@@ -17,6 +17,7 @@ const playPauseBtn = document.getElementById("playPauseBtn");
 const prevTrackBtn = document.getElementById("prevTrackBtn");
 const nextTrackBtn = document.getElementById("nextTrackBtn");
 const addToPlaylistBtn = document.getElementById("addToPlaylistBtn");
+const downloadBtn = document.getElementById("downloadBtn");
 const closePlayerBtn = document.getElementById("closePlayerBtn");
 const pipBtn = document.getElementById("pipBtn");
 const progressBar = document.getElementById("progressBar");
@@ -37,18 +38,14 @@ const BASE_URL = "https://invidious.f5.si";
 
 let playlists = JSON.parse(localStorage.getItem('myPlaylists')) || { "Favorites": [] };
 
-// Playlist queue state
 let activePlayingPlaylist = null;
 let activePlayingIndex = -1;
 
-// Search-results queue state (lets prev/next work even when not playing from a saved playlist)
 let currentSearchResults = [];
 let searchQueueIndex = -1;
 
 let currentTrackInfo = null;
 
-/* ----------------------- Picture-in-Picture setup ----------------------- */
-// Square canvas so the PiP window itself is square.
 const PIP_SIZE = 480;
 const pipCanvas = document.createElement("canvas");
 pipCanvas.width = PIP_SIZE;
@@ -63,8 +60,6 @@ pipVideo.setAttribute("autopictureinpicture", "");
 pipVideo.style.display = "none";
 document.body.appendChild(pipVideo);
 
-// Low base frame rate (theme/thumbnail changes are rare) but we push frames
-// on demand via requestFrame() so updates are instant, not delayed up to 1s.
 let pipStream = null;
 let pipTrack = null;
 try {
@@ -79,8 +74,6 @@ function pushPipFrame() {
     }
 }
 
-// Read the live CSS custom properties instead of hardcoding colors, so the
-// PiP canvas stays in sync when the parent window updates :root dynamically.
 function getThemeColor(varName, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
     return value || fallback;
@@ -94,8 +87,6 @@ function drawPipFrame(track, img) {
     pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
 
     if (img) {
-        // Cover-fit: crop the thumbnail to fill the square instead of
-        // letterboxing it.
         const scale = Math.max(pipCanvas.width / img.width, pipCanvas.height / img.height);
         const drawWidth = img.width * scale;
         const drawHeight = img.height * scale;
@@ -103,7 +94,6 @@ function drawPipFrame(track, img) {
         const dy = (pipCanvas.height - drawHeight) / 2;
         pipCtx.drawImage(img, dx, dy, drawWidth, drawHeight);
 
-        // subtle scrim so the title stays legible over any thumbnail
         const gradient = pipCtx.createLinearGradient(0, pipCanvas.height - 90, 0, pipCanvas.height);
         gradient.addColorStop(0, "rgba(0,0,0,0)");
         gradient.addColorStop(1, "rgba(0,0,0,0.75)");
@@ -137,6 +127,25 @@ function truncateForCanvas(ctx, str, maxWidth) {
 
 let pipThumbCache = { videoId: null, img: null };
 
+function thumbnailUrlsFor(videoId) {
+    return [
+        `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+        `${BASE_URL}/vi/${videoId}/mqdefault.jpg`
+    ];
+}
+
+function loadCoverImage(urls, index, onSuccess, onFail) {
+    if (index >= urls.length) {
+        onFail();
+        return;
+    }
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => onSuccess(img);
+    img.onerror = () => loadCoverImage(urls, index + 1, onSuccess, onFail);
+    img.src = urls[index];
+}
+
 function updatePiPCanvas(track) {
     if (!track) {
         drawPipFrame(null, null);
@@ -148,23 +157,20 @@ function updatePiPCanvas(track) {
         return;
     }
 
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = `${BASE_URL}/vi/${track.videoId}/mqdefault.jpg`;
-
-    img.onload = () => {
-        pipThumbCache = { videoId: track.videoId, img };
-        drawPipFrame(track, img);
-    };
-
-    img.onerror = () => {
-        pipThumbCache = { videoId: null, img: null };
-        drawPipFrame(track, null);
-    };
+    loadCoverImage(
+        thumbnailUrlsFor(track.videoId),
+        0,
+        (img) => {
+            pipThumbCache = { videoId: track.videoId, img };
+            drawPipFrame(track, img);
+        },
+        () => {
+            pipThumbCache = { videoId: null, img: null };
+            drawPipFrame(track, null);
+        }
+    );
 }
 
-// Redraw the PiP canvas (colors only need the cached thumbnail, no refetch)
-// whenever the parent window mutates :root's inline style/class.
 const rootThemeObserver = new MutationObserver(() => {
     if (currentTrackInfo) updatePiPCanvas(currentTrackInfo);
 });
@@ -173,11 +179,6 @@ rootThemeObserver.observe(document.documentElement, {
     attributeFilter: ["style", "class"]
 });
 
-/* ------------------------- Media Session wiring -------------------------- */
-// This is what actually gives the PiP overlay (and OS media controls) a
-// working, draggable scrubber: the canvas-captured stream has no intrinsic
-// duration, but setPositionState()/the 'seekto' handler are independent of
-// that and drive the native seek bar directly against audioPlayer.
 function updatePositionState() {
     if (!('mediaSession' in navigator)) return;
     if (!audioPlayer.duration || !isFinite(audioPlayer.duration)) return;
@@ -233,7 +234,6 @@ function updateMediaSessionMetadata(track) {
     });
 }
 
-/* ---------------------------- Queue navigation --------------------------- */
 function hasPrevious() {
     if (activePlayingPlaylist) return activePlayingIndex > 0;
     if (searchQueueIndex !== -1) return searchQueueIndex > 0;
@@ -276,6 +276,7 @@ function playFromSearchResults(index) {
 function updateNavButtons() {
     prevTrackBtn.disabled = !hasPrevious();
     nextTrackBtn.disabled = !hasNext();
+    downloadBtn.disabled = !audioPlayer.src;
 }
 
 function initPlaylists() {
@@ -310,6 +311,31 @@ addToPlaylistBtn.addEventListener("click", () => {
 
 prevTrackBtn.addEventListener("click", playPrevious);
 nextTrackBtn.addEventListener("click", playNext);
+
+downloadBtn.addEventListener("click", async () => {
+    if (!audioPlayer.src) return;
+    const rawName = (currentTrackInfo && currentTrackInfo.title) ? currentTrackInfo.title : "audio";
+    const filename = rawName.replace(/[^\w\- ]+/g, "").trim().slice(0, 80) + ".m4a";
+
+    downloadBtn.disabled = true;
+    try {
+        const response = await fetch(audioPlayer.src);
+        if (!response.ok) throw new Error("bad response");
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    } catch (e) {
+        window.open(audioPlayer.src, "_blank");
+    } finally {
+        downloadBtn.disabled = !audioPlayer.src;
+    }
+});
 
 pipBtn.addEventListener("click", async () => {
     if (document.pictureInPictureElement) {
@@ -354,7 +380,6 @@ function renderResults(videos) {
     }
     resultsList.innerHTML = "";
 
-    // Keep a flat queue of these results so prev/next work outside playlists too.
     currentSearchResults = videos.map(video => ({
         videoId: video.videoId,
         title: video.title || "Untitled",
