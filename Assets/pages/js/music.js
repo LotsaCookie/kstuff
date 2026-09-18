@@ -574,19 +574,39 @@ async function getStreamCandidates(videoId) {
         const response = await fetchWithTimeout(`${BASE_URL}/api/v1/videos/${videoId}`, 8000);
         if (response.ok) {
             const data = await response.json();
-            const formats = (data.adaptiveFormats || []).concat(data.formatStreams || []);
+            const adaptive = data.adaptiveFormats || [];
+            const formats = data.formatStreams || [];
+            const allFormats = adaptive.concat(formats);
             
-            formats
+            allFormats
                 .filter(f => {
                     const mime = f.mimeType || f.type || "";
                     return mime.includes("audio") && f.url;
                 })
                 .forEach(f => candidates.push(f.url));
-        }
-    } catch (e) {}
 
-    ["140", "251", "250", "249", "171"].forEach(itag => {
-        candidates.push(`${BASE_URL}/latest_version?id=${videoId}&itag=${itag}`);
+
+            allFormats
+                .filter(f => {
+                    const mime = f.mimeType || f.type || "";
+                    const hasAudioCodec = mime.includes("mp4a") || mime.includes("opus") || mime.includes("vorbis");
+                    const isMuxedFormat = formats.includes(f); 
+                    const hasAudioProps = f.audioChannels > 0 || f.audioQuality || f.audioSampleRate;
+                    
+                    return mime.includes("video") && f.url && (hasAudioCodec || isMuxedFormat || hasAudioProps);
+                })
+                .forEach(f => {
+                    if (!candidates.includes(f.url)) candidates.push(f.url);
+                });
+        }
+    } catch (e) {
+        console.error("Stream fetch error:", e);
+    }
+
+    // 3. Fallback itags (Audio-only first, then muxed video+audio)
+    ["140", "251", "250", "249", "171", "18", "22"].forEach(itag => {
+        const url = `${BASE_URL}/latest_version?id=${videoId}&itag=${itag}`;
+        if (!candidates.includes(url)) candidates.push(url);
     });
 
     return candidates;
