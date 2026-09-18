@@ -1,3 +1,4 @@
+
 <html lang="en">
 <!-- it works! -->
 <head>
@@ -290,13 +291,13 @@ async function initBackendIframe() {
         let staticJsonData = [];
         for (let proxyUrl of proxies) {
             try {
-                const res = await fetch(proxyUrl ? `${cleanUrl(proxyUrl)}Assets/json/mirrors/uv.json` : "Assets/json/mirrors/uv.json");
+                const res = await fetch("https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/Assets/json/mirrors/uv.json");
                 if (res.ok) { staticJsonData = await res.json(); break; }
             } catch(e) {}
         }
         const workingProxy = await getWorkingConfig(staticJsonData);
         const proxyBaseUrl = cleanUrl(workingProxy?.url || "https://raw.githack.com/lotsacookie/kstuff/main");
-        const finalPath = workingProxy?.final || "/embed.html#";
+        const finalPath = workingProxy?.final || "/uv.html?site=";
         const iframe = document.getElementById('backend-frame');
         iframe.onload = () => {
             const channel = new MessageChannel();
