@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
+        .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type="text"] { padding: 8px; width: 300px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 400px; white-space: pre-wrap; }
+        #media-container { margin-top: 15px; }
+        audio { max-width: 100%; border-radius: 5px; margin-top: 10px; width: 100%; }
+    </style>
+</head>
+<body>
+    
+    <div class="controls">
+        <input type="text" id="video-id-input" placeholder="Enter YouTube Video ID (e.g. dQw4w9WgXcQ)" />
+        <button id="get-audio">Get Highest Quality Audio</button>
+    </div>
+    
+    <div id="media-container"></div>
+    <pre id="output">Initializing proxy...</pre>
+
+    <script type="module">
+        import { BareMuxConnection, BareClient } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm";
+
+        const output = document.getElementById("output");
+        const mediaContainer = document.getElementById("media-container");
+        const videoIdInput = document.getElementById("video-id-input");
+
+        async function setupProxy() {
+            try {
+                const workerCode = `importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js");`;
+                const blob = new Blob([workerCode], { type: "text/javascript" });
+                const workerUrl = URL.createObjectURL(blob);
+
+                const conn = new BareMuxConnection(workerUrl);
+
+                await conn.setTransport(
+                    "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+                    [{ wisp: "wss://wisp.mercurywork.shop/" }]
+                );
+                
+                output.textContent = "Proxy Ready! Enter a video ID to fetch audio.";
+                return new BareClient();
+            } catch (err) {
+                output.textContent = "Error setting up proxy: " + err;
+                return null;
+            }
+        }
+
+        const clientPromise = setupProxy();
+
+        document.getElementById("get-audio").addEventListener("click", async () => {
+            const client = await clientPromise;
+            if (!client) return;
+
+            const videoId = videoIdInput.value.trim();
+            if (!videoId) {
+                output.textContent = "Please enter a valid YouTube Video ID.";
+                return;
+            }
+
+            output.textContent = `Fetching video info from Invidious API for ID: ${videoId}...`;
+            mediaContainer.innerHTML = '';
+
+            try {
+                const apiUrl = `https://invidious.f5.si/api/v1/videos/${videoId}`;
+                const apiResponse = await client.fetch(apiUrl);
+                
+                if (!apiResponse.ok) {
+                    throw new Error(`API returned ${apiResponse.status} ${apiResponse.statusText}`);
+                }
+                
+                const data = await apiResponse.json();
+
+                if (!data.adaptiveFormats || data.adaptiveFormats.length === 0) {
+                    throw new Error("No adaptiveFormats found in the response.");
+                }
+
+                const audioFormats = data.adaptiveFormats.filter(f => f.type && f.type.includes("audio"));
+                
+                if (audioFormats.length === 0) {
+                    throw new Error("No audio formats found for this video.");
+                }
+
+                audioFormats.sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+                const bestAudio = audioFormats[0];
+                const audioUrl = bestAudio.url;
+
+                output.textContent = `Found audio: ${bestAudio.type} (Bitrate: ${bestAudio.bitrate}).\nFetching media file... (This may take a moment)`;
+
+                const mediaResponse = await client.fetch(audioUrl);
+                
+                if (!mediaResponse.ok) {
+                    throw new Error(`Media fetch failed: ${mediaResponse.status}`);
+                }
+
+                const blob = await mediaResponse.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                
+                const audio = document.createElement("audio");
+                audio.controls = true;
+                audio.src = objectUrl;
+                mediaContainer.appendChild(audio);
+                
+                output.textContent = `Audio loaded successfully!\nFormat: ${bestAudio.type}\nSize: ${(blob.size / 1024 / 1024).toFixed(2)} MB`;
+
+            } catch (err) {
+                output.textContent = "Error: " + err.message;
+            }
+        });
+    </script>
+</body>
+</html>
