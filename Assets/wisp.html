@@ -1,122 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wisp Proxy Fetcher</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      background: #121212;
-      color: #e0e0e0;
-    }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-    label { font-weight: 600; font-size: 0.9rem; color: #aaa; }
-    input {
-      padding: 0.6rem;
-      border-radius: 6px;
-      border: 1px solid #333;
-      background: #1e1e1e;
-      color: #fff;
-      font-size: 1rem;
-    }
-    button {
-      padding: 0.75rem;
-      border: none;
-      border-radius: 6px;
-      background: #3b82f6;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-    }
-    button:hover:not(:disabled) { background: #2563eb; }
-    pre {
-      background: #1e1e1e;
-      padding: 1rem;
-      border-radius: 6px;
-      overflow-x: auto;
-      max-height: 400px;
-      border: 1px solid #333;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wisp Proxy Fetch</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; }
+        .controls { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input[type="text"] { padding: 8px; width: 300px; }
+        button { padding: 8px 16px; cursor: pointer; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 400px; }
+        #media-container { margin-top: 15px; }
+        img, video, audio { max-width: 100%; border-radius: 5px; margin-top: 10px; }
+    </style>
 </head>
 <body>
+    <h1>Wisp Proxy Client</h1>
+    
+    <div class="controls">
+        <input type="text" id="url-input" value="https://example.com" placeholder="Enter URL..." />
+        <button id="run-text">Fetch Text/HTML</button>
+        <button id="run-media">Fetch Media</button>
+        <button id="run-post">Test POST</button>
+    </div>
+    
+    <div id="media-container"></div>
+    <pre id="output">Waiting...</pre>
 
-  <h1>Wisp Fetch Client</h1>
+    <script type="module">
+        import { BareMuxConnection, BareClient } from "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm";
 
-  <div class="form-group">
-    <label for="wispServer">Wisp WebSocket Server URL</label>
-    <input type="text" id="wispServer" value="wss://wisp.mercurywork.shop/" placeholder="wss://your-wisp-server.com/">
-  </div>
+        const output = document.getElementById("output");
+        const mediaContainer = document.getElementById("media-container");
+        const urlInput = document.getElementById("url-input");
 
-  <div class="form-group">
-    <label for="targetUrl">Target Request URL (API / Endpoint)</label>
-    <input type="text" id="targetUrl" value="https://api.invidious.io/api/v1/stats" placeholder="https://api.example.com/endpoint">
-  </div>
+        async function setupProxy() {
+            try {
+                const workerCode = `importScripts("https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js");`;
+                const blob = new Blob([workerCode], { type: "text/javascript" });
+                const workerUrl = URL.createObjectURL(blob);
 
-  <button id="fetchBtn">Fetch via Wisp</button>
+                const conn = new BareMuxConnection(workerUrl);
 
-  <h3>Response</h3>
-  <pre id="output">Enter a Wisp server and target URL, then click fetch.</pre>
-
-  <script type="module">
-    import { EpoxyClient } from 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@3.0.1/dist/index.mjs';
-
-    document.getElementById('fetchBtn').addEventListener('click', async () => {
-      const output = document.getElementById('output');
-      const wispServer = document.getElementById('wispServer').value.trim();
-      const targetUrl = document.getElementById('targetUrl').value.trim();
-      const btn = document.getElementById('fetchBtn');
-
-      if (!wispServer || !targetUrl) {
-        output.textContent = 'Please provide both a valid Wisp server URL and a target request URL.';
-        return;
-      }
-
-      btn.disabled = true;
-      output.textContent = 'Connecting to Wisp proxy backend via Epoxy...';
-
-      try {
-        const epoxy = new EpoxyClient({ wisp: wispServer });
-        
-        output.textContent = `Connected! Fetching target: ${targetUrl}...`;
-
-        const response = await epoxy.fetch(targetUrl, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-
-        const status = `${response.status} ${response.statusText}`;
-        const content = await response.text();
-
-        let formattedContent = content;
-        try {
-          formattedContent = JSON.stringify(JSON.parse(content), null, 2);
-        } catch (e) {
+                await conn.setTransport(
+                    "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs",
+                    [{ wisp: "wss://frogiesarcade.win/1t4un0/" }]
+                );
+                
+                return new BareClient();
+            } catch (err) {
+                output.textContent = err;
+                return null;
+            }
         }
 
-        output.textContent = `HTTP Status: ${status}\n\n--- Body Output ---\n${formattedContent}`;
-      } catch (err) {
-        output.textContent = `Error: ${err.message || err}`;
-        console.error("Wisp Fetch Error:", err);
-      } finally {
-        btn.disabled = false;
-      }
-    });
-  </script>
+        const clientPromise = setupProxy();
+
+        document.getElementById("run-text").addEventListener("click", async () => {
+            const client = await clientPromise;
+            if (!client) return;
+
+            output.textContent = "Fetching text...";
+            mediaContainer.innerHTML = '';
+            
+            try {
+                const response = await client.fetch(urlInput.value);
+                output.textContent = await response.text();
+            } catch (err) {
+                output.textContent = err;
+            }
+        });
+
+        document.getElementById("run-media").addEventListener("click", async () => {
+            const client = await clientPromise;
+            if (!client) return;
+
+            output.textContent = "Fetching media...";
+            mediaContainer.innerHTML = '';
+
+            try {
+                const response = await client.fetch(urlInput.value);
+                const blob = await response.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                const contentType = response.headers.get("content-type") || "";
+
+                if (contentType.startsWith("audio/")) {
+                    const audio = document.createElement("audio");
+                    audio.controls = true;
+                    audio.src = objectUrl;
+                    mediaContainer.appendChild(audio);
+                } else if (contentType.startsWith("video/")) {
+                    const video = document.createElement("video");
+                    video.controls = true;
+                    video.src = objectUrl;
+                    mediaContainer.appendChild(video);
+                } else if (contentType.startsWith("image/")) {
+                    const img = document.createElement("img");
+                    img.src = objectUrl;
+                    mediaContainer.appendChild(img);
+                } else {
+                    const link = document.createElement("a");
+                    link.href = objectUrl;
+                    link.download = "downloaded_file";
+                    link.textContent = `Download File (${contentType})`;
+                    mediaContainer.appendChild(link);
+                }
+                
+                output.textContent = `Media loaded. Type: ${contentType}, Size: ${blob.size} bytes`;
+            } catch (err) {
+                output.textContent = err;
+            }
+        });
+
+        document.getElementById("run-post").addEventListener("click", async () => {
+            const client = await clientPromise;
+            if (!client) return;
+
+            output.textContent = "Sending POST...";
+            mediaContainer.innerHTML = '';
+
+            try {
+                const payload = JSON.stringify({ message: "Hello", wisp: true });
+                const encodedBody = new TextEncoder().encode(payload);
+
+                const response = await client.fetch("https://httpbin.org/post", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json" 
+                    },
+                    body: encodedBody
+                });
+                
+                const json = await response.json();
+                output.textContent = JSON.stringify(json, null, 2);
+            } catch (err) {
+                output.textContent = err;
+            }
+        });
+    </script>
 </body>
 </html>
