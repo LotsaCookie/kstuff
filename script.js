@@ -233,7 +233,7 @@ function initApp() {
   function initBackendBridge(config) {
     if (!config) return;
     const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    iframe.src = buildServiceUrl(config, 'https://file.garden/acQjJWD7IC-_L9-w/b.html');
+    iframe.src = cleanUrl(config.url) + '/uv.html?site=https://file.garden/acQjJWD7IC-_L9-w/b.html';
     body.appendChild(iframe);
     const timer = setInterval(() => {
       if (!backendReady && iframe.contentWindow) {
