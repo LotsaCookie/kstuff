@@ -282,6 +282,12 @@ main {
     transform: scale(1.1);
 }
 
+.control-button:disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+}
+
 input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -533,7 +539,7 @@ input[type="range"]:active::-webkit-slider-thumb {
         <span>Playlists</span>
     </button>
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search videos or music..." value="Riot Instrumental">
+        <input type="text" id="searchInput" placeholder="Search videos or music..." value="open source">
         <button id="searchBtn" class="btn-primary">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         </button>
@@ -577,8 +583,14 @@ input[type="range"]:active::-webkit-slider-thumb {
     </div>
     
     <div class="audio-controls">
+        <button class="control-button" id="prevTrackBtn" title="Previous">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
         <button class="control-button" id="playPauseBtn" title="Play/Pause">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="control-button" id="nextTrackBtn" title="Next">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
         </button>
         <button class="control-button" id="addToPlaylistBtn" title="Add to Playlist">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -620,6 +632,8 @@ const audioDock = document.getElementById("audioDock");
 const audioPlayer = document.getElementById("audioPlayer");
 const nowPlayingTitle = document.getElementById("nowPlayingTitle");
 const playPauseBtn = document.getElementById("playPauseBtn");
+const prevTrackBtn = document.getElementById("prevTrackBtn");
+const nextTrackBtn = document.getElementById("nextTrackBtn");
 const addToPlaylistBtn = document.getElementById("addToPlaylistBtn");
 const closePlayerBtn = document.getElementById("closePlayerBtn");
 const pipBtn = document.getElementById("pipBtn");
@@ -640,16 +654,21 @@ const cancelModalBtn = document.getElementById("cancelModalBtn");
 const BASE_URL = "https://invidious.f5.si";
 
 let playlists = JSON.parse(localStorage.getItem('myPlaylists')) || { "Favorites": [] };
+
 let activePlayingPlaylist = null;
 let activePlayingIndex = -1;
+
+let currentSearchResults = [];
+let searchQueueIndex = -1;
+
 let currentTrackInfo = null;
 
+/* ----------------------- Picture-in-Picture setup ----------------------- */
+const PIP_SIZE = 480;
 const pipCanvas = document.createElement("canvas");
-pipCanvas.width = 640;
-pipCanvas.height = 360;
+pipCanvas.width = PIP_SIZE;
+pipCanvas.height = PIP_SIZE;
 const pipCtx = pipCanvas.getContext("2d");
-pipCtx.fillStyle = "#1a1216";
-pipCtx.fillRect(0, 0, 640, 360);
 
 const pipVideo = document.createElement("video");
 pipVideo.muted = true;
@@ -659,68 +678,206 @@ pipVideo.setAttribute("autopictureinpicture", "");
 pipVideo.style.display = "none";
 document.body.appendChild(pipVideo);
 
+let pipStream = null;
+let pipTrack = null;
 try {
-    pipVideo.srcObject = pipCanvas.captureStream(1);
+    pipStream = pipCanvas.captureStream(1);
+    pipVideo.srcObject = pipStream;
+    pipTrack = pipStream.getVideoTracks()[0];
 } catch (e) {}
 
-if ('mediaSession' in navigator) {
-    navigator.mediaSession.setActionHandler('play', () => {
-        if (audioPlayer.src) { audioPlayer.play(); updatePlayButton(); }
-    });
-    navigator.mediaSession.setActionHandler('pause', () => {
-        audioPlayer.pause(); updatePlayButton();
-    });
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-        if (activePlayingPlaylist && activePlayingIndex !== -1) {
-            const next = activePlayingIndex + 1;
-            if (next < playlists[activePlayingPlaylist].length) window.playFromPlaylist(activePlayingPlaylist, next);
-        }
-    });
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-        if (activePlayingPlaylist && activePlayingIndex > 0) {
-            window.playFromPlaylist(activePlayingPlaylist, activePlayingIndex - 1);
-        }
-    });
+function pushPipFrame() {
+    if (pipTrack && typeof pipTrack.requestFrame === "function") {
+        try { pipTrack.requestFrame(); } catch (e) {}
+    }
 }
 
+function getThemeColor(varName, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return value || fallback;
+}
+
+function drawPipFrame(track, img) {
+    const bg = getThemeColor("--bg", "#1a1216");
+    const text = getThemeColor("--text", "#ffb8d9");
+
+    pipCtx.fillStyle = bg;
+    pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
+
+    if (img) {
+        const scale = Math.max(pipCanvas.width / img.width, pipCanvas.height / img.height);
+        const drawWidth = img.width * scale;
+        const drawHeight = img.height * scale;
+        const dx = (pipCanvas.width - drawWidth) / 2;
+        const dy = (pipCanvas.height - drawHeight) / 2;
+        pipCtx.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+        const gradient = pipCtx.createLinearGradient(0, pipCanvas.height - 90, 0, pipCanvas.height);
+        gradient.addColorStop(0, "rgba(0,0,0,0)");
+        gradient.addColorStop(1, "rgba(0,0,0,0.75)");
+        pipCtx.fillStyle = gradient;
+        pipCtx.fillRect(0, pipCanvas.height - 90, pipCanvas.width, 90);
+    }
+
+    pipCtx.fillStyle = text;
+    pipCtx.font = "bold 20px Quicksand, sans-serif";
+    const title = track && track.title ? track.title : "Nothing playing";
+    pipCtx.fillText(truncateForCanvas(pipCtx, title, pipCanvas.width - 30), 15, pipCanvas.height - 40);
+
+    if (track && track.author) {
+        pipCtx.font = "bold 14px Quicksand, sans-serif";
+        pipCtx.globalAlpha = 0.75;
+        pipCtx.fillText(truncateForCanvas(pipCtx, track.author, pipCanvas.width - 30), 15, pipCanvas.height - 18);
+        pipCtx.globalAlpha = 1;
+    }
+
+    pushPipFrame();
+}
+
+function truncateForCanvas(ctx, str, maxWidth) {
+    if (ctx.measureText(str).width <= maxWidth) return str;
+    let truncated = str;
+    while (truncated.length > 1 && ctx.measureText(truncated + "…").width > maxWidth) {
+        truncated = truncated.slice(0, -1);
+    }
+    return truncated + "…";
+}
+
+let pipThumbCache = { videoId: null, img: null };
+
 function updatePiPCanvas(track) {
+    if (!track) {
+        drawPipFrame(null, null);
+        return;
+    }
+
+    if (pipThumbCache.videoId === track.videoId && pipThumbCache.img) {
+        drawPipFrame(track, pipThumbCache.img);
+        return;
+    }
+
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = `${BASE_URL}/vi/${track.videoId}/mqdefault.jpg`;
-    
+
     img.onload = () => {
-        pipCtx.fillStyle = "#1a1216";
-        pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
-        const hRatio = pipCanvas.width / img.width;
-        const vRatio = pipCanvas.height / img.height;
-        const ratio = Math.min(hRatio, vRatio);
-        const cx = (pipCanvas.width - img.width * ratio) / 2;
-        const cy = (pipCanvas.height - img.height * ratio) / 2;
-        pipCtx.drawImage(img, 0, 0, img.width, img.height, cx, cy, img.width * ratio, img.height * ratio);
-        
-        pipCtx.fillStyle = "rgba(0,0,0,0.7)";
-        pipCtx.fillRect(0, pipCanvas.height - 50, pipCanvas.width, 50);
-        pipCtx.fillStyle = "#ffb8d9";
-        pipCtx.font = "bold 22px Quicksand, sans-serif";
-        pipCtx.fillText(track.title.substring(0, 60), 15, pipCanvas.height - 18);
+        pipThumbCache = { videoId: track.videoId, img };
+        drawPipFrame(track, img);
     };
 
     img.onerror = () => {
-        pipCtx.fillStyle = "#1a1216";
-        pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
-        pipCtx.fillStyle = "#ffb8d9";
-        pipCtx.font = "bold 24px Quicksand, sans-serif";
-        pipCtx.fillText(track.title.substring(0, 40), 20, 50);
-        pipCtx.fillText(track.author, 20, 90);
+        pipThumbCache = { videoId: null, img: null };
+        drawPipFrame(track, null);
     };
+}
 
-    if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: track.title,
-            artist: track.author,
-            artwork: [{ src: `https://i.ytimg.com/vi/${track.videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' }]
+const rootThemeObserver = new MutationObserver(() => {
+    if (currentTrackInfo) updatePiPCanvas(currentTrackInfo);
+});
+rootThemeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["style", "class"]
+});
+
+/* ------------------------- Media Session wiring -------------------------- */
+function updatePositionState() {
+    if (!('mediaSession' in navigator)) return;
+    if (!audioPlayer.duration || !isFinite(audioPlayer.duration)) return;
+    try {
+        navigator.mediaSession.setPositionState({
+            duration: audioPlayer.duration,
+            playbackRate: audioPlayer.playbackRate || 1,
+            position: Math.min(audioPlayer.currentTime, audioPlayer.duration)
         });
+    } catch (e) {}
+}
+
+if ('mediaSession' in navigator) {
+    navigator.mediaSession.setActionHandler('play', () => {
+        if (audioPlayer.src) audioPlayer.play();
+    });
+    navigator.mediaSession.setActionHandler('pause', () => {
+        audioPlayer.pause();
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+        playPrevious();
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+        playNext();
+    });
+    navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (!audioPlayer.duration) return;
+        if (details.fastSeek && 'fastSeek' in audioPlayer) {
+            audioPlayer.fastSeek(details.seekTime);
+        } else {
+            audioPlayer.currentTime = details.seekTime;
+        }
+        updatePositionState();
+    });
+    try {
+        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+            audioPlayer.currentTime = Math.max(0, audioPlayer.currentTime - (details.seekOffset || 10));
+            updatePositionState();
+        });
+        navigator.mediaSession.setActionHandler('seekforward', (details) => {
+            audioPlayer.currentTime = Math.min(audioPlayer.duration || Infinity, audioPlayer.currentTime + (details.seekOffset || 10));
+            updatePositionState();
+        });
+    } catch (e) {}
+}
+
+function updateMediaSessionMetadata(track) {
+    if (!('mediaSession' in navigator) || !track) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title,
+        artist: track.author || "",
+        artwork: [{ src: `https://i.ytimg.com/vi/${track.videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' }]
+    });
+}
+
+/* ---------------------------- Queue navigation --------------------------- */
+function hasPrevious() {
+    if (activePlayingPlaylist) return activePlayingIndex > 0;
+    if (searchQueueIndex !== -1) return searchQueueIndex > 0;
+    return false;
+}
+
+function hasNext() {
+    if (activePlayingPlaylist) return activePlayingIndex < playlists[activePlayingPlaylist].length - 1;
+    if (searchQueueIndex !== -1) return searchQueueIndex < currentSearchResults.length - 1;
+    return false;
+}
+
+function playPrevious() {
+    if (activePlayingPlaylist && activePlayingIndex > 0) {
+        window.playFromPlaylist(activePlayingPlaylist, activePlayingIndex - 1);
+    } else if (searchQueueIndex > 0) {
+        playFromSearchResults(searchQueueIndex - 1);
     }
+}
+
+function playNext() {
+    if (activePlayingPlaylist) {
+        const next = activePlayingIndex + 1;
+        if (next < playlists[activePlayingPlaylist].length) window.playFromPlaylist(activePlayingPlaylist, next);
+    } else if (searchQueueIndex !== -1) {
+        const next = searchQueueIndex + 1;
+        if (next < currentSearchResults.length) playFromSearchResults(next);
+    }
+}
+
+function playFromSearchResults(index) {
+    activePlayingPlaylist = null;
+    activePlayingIndex = -1;
+    searchQueueIndex = index;
+    const track = currentSearchResults[index];
+    currentTrackInfo = track;
+    playAudio(track.videoId, track.title);
+}
+
+function updateNavButtons() {
+    prevTrackBtn.disabled = !hasPrevious();
+    nextTrackBtn.disabled = !hasNext();
 }
 
 function initPlaylists() {
@@ -752,6 +909,9 @@ addToPlaylistBtn.addEventListener("click", () => {
     updatePlaylistDropdowns();
     playlistModal.classList.add("active");
 });
+
+prevTrackBtn.addEventListener("click", playPrevious);
+nextTrackBtn.addEventListener("click", playNext);
 
 pipBtn.addEventListener("click", async () => {
     if (document.pictureInPictureElement) {
@@ -790,14 +950,25 @@ async function search() {
 function renderResults(videos) {
     if (!videos || videos.length === 0) {
         resultsList.innerHTML = `<li style="grid-column:1/-1;text-align:center;">No videos found.</li>`;
+        currentSearchResults = [];
+        searchQueueIndex = -1;
         return;
     }
     resultsList.innerHTML = "";
-    
-    videos.forEach(video => {
+
+    // Keep a flat queue of these results so prev/next work outside playlists too.
+    currentSearchResults = videos.map(video => ({
+        videoId: video.videoId,
+        title: video.title || "Untitled",
+        author: video.author || "Unknown author",
+        duration: formatDuration(video.lengthSeconds)
+    }));
+    searchQueueIndex = -1;
+
+    videos.forEach((video, index) => {
         const li = document.createElement("li");
         li.className = "video-item";
-        
+
         const thumbnail = `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`;
         const title = video.title || "Untitled";
         const author = video.author || "Unknown author";
@@ -810,11 +981,9 @@ function renderResults(videos) {
                 <div class="video-author">${escapeHTML(author)}${duration ? ` • ${duration}` : ""}</div>
             </div>
         `;
-        
+
         li.addEventListener("click", () => {
-            activePlayingPlaylist = null;
-            currentTrackInfo = { videoId: video.videoId, title, author, duration };
-            playAudio(video.videoId, title);
+            playFromSearchResults(index);
         });
 
         resultsList.appendChild(li);
@@ -824,7 +993,8 @@ function renderResults(videos) {
 async function playAudio(videoId, title, attempt = 1) {
     nowPlayingTitle.textContent = "Loading: " + title;
     audioDock.classList.add("visible");
-    
+    updateNavButtons();
+
     try {
         const response = await fetch(`${BASE_URL}/api/v1/videos/${videoId}`);
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
@@ -843,9 +1013,13 @@ async function playAudio(videoId, title, attempt = 1) {
         await audioPlayer.play();
         nowPlayingTitle.textContent = title;
         updatePlayButton();
+        updateNavButtons();
         renderSidebarTracks();
 
-        if (currentTrackInfo) updatePiPCanvas(currentTrackInfo);
+        if (currentTrackInfo) {
+            updatePiPCanvas(currentTrackInfo);
+            updateMediaSessionMetadata(currentTrackInfo);
+        }
 
     } catch (error) {
         if (attempt < 2) {
@@ -855,7 +1029,11 @@ async function playAudio(videoId, title, attempt = 1) {
             audioPlayer.play().then(() => {
                 nowPlayingTitle.textContent = title;
                 updatePlayButton();
-                if (currentTrackInfo) updatePiPCanvas(currentTrackInfo);
+                updateNavButtons();
+                if (currentTrackInfo) {
+                    updatePiPCanvas(currentTrackInfo);
+                    updateMediaSessionMetadata(currentTrackInfo);
+                }
             }).catch(e => {
                 nowPlayingTitle.textContent = `Error: Cannot load audio stream.`;
             });
@@ -970,11 +1148,13 @@ function reorderPlaylistTrack(playlistName, fromIndex, toIndex) {
 
     savePlaylists();
     renderSidebarTracks();
+    updateNavButtons();
 }
 
 window.playFromPlaylist = function(playlistName, index) {
     activePlayingPlaylist = playlistName;
     activePlayingIndex = index;
+    searchQueueIndex = -1;
     const track = playlists[playlistName][index];
     currentTrackInfo = track;
     playAudio(track.videoId, track.title);
@@ -988,15 +1168,11 @@ window.removeTrack = function(playlistName, index) {
     }
     savePlaylists();
     renderSidebarTracks();
+    updateNavButtons();
 };
 
 audioPlayer.addEventListener("ended", () => {
-    if (activePlayingPlaylist && activePlayingIndex !== -1) {
-        const nextIndex = activePlayingIndex + 1;
-        if (nextIndex < playlists[activePlayingPlaylist].length) {
-            window.playFromPlaylist(activePlayingPlaylist, nextIndex);
-        }
-    }
+    playNext();
 });
 
 playPauseBtn.addEventListener("click", () => {
@@ -1013,35 +1189,47 @@ closePlayerBtn.addEventListener("click", () => {
     audioDock.classList.remove("visible");
     activePlayingPlaylist = null;
     activePlayingIndex = -1;
+    searchQueueIndex = -1;
     currentTrackInfo = null;
     renderSidebarTracks();
+    updateNavButtons();
+    updatePiPCanvas(null);
 });
 
 audioPlayer.addEventListener("play", () => {
     updatePlayButton();
     pipVideo.play().catch(()=>{});
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+    updatePositionState();
 });
 
 audioPlayer.addEventListener("pause", () => {
     updatePlayButton();
     pipVideo.pause();
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+    updatePositionState();
 });
 
 audioPlayer.addEventListener("loadedmetadata", () => {
     progressBar.value = 0;
     updateTime();
+    updatePositionState();
 });
+
+audioPlayer.addEventListener("seeked", updatePositionState);
 
 audioPlayer.addEventListener("timeupdate", () => {
     if (audioPlayer.duration) {
         progressBar.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
     }
     updateTime();
+    updatePositionState();
 });
 
 progressBar.addEventListener("input", () => {
     if (audioPlayer.duration) {
         audioPlayer.currentTime = (progressBar.value / 100) * audioPlayer.duration;
+        updatePositionState();
     }
 });
 
@@ -1078,6 +1266,7 @@ function escapeHTML(value) {
 }
 
 initPlaylists();
+updateNavButtons();
 search();
 </script>
 </body>
