@@ -834,7 +834,7 @@ const appB = (s) => {
 
   function loadMirrorsScript() {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js';
+    script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js?ez';
     script.async = true;
     script.onerror = () => console.error('Failed to load mirrors.js');
     document.head.appendChild(script);
