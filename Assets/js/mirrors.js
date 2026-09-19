@@ -1,8 +1,22 @@
-(function initMirrors() {
+(function () {
   const cleanUrl = u => u ? u.replace(/\/+$/, '') : '';
   const trimSlash = u => u ? u.replace(/^\/+/, '') : '';
-  const getStorage = k => localStorage.getItem(k);
-  const setStorage = (k, v) => localStorage.setItem(k, v);
+  const getStorage = k => { try { return localStorage.getItem(k); } catch { return null; } };
+  const setStorage = (k, v) => { try { localStorage.setItem(k, v); } catch { } };
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(label + ' timed out')), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+
+  const STYLE = {
+    info: 'color: #4a7dff; font-weight: bold',
+    warn: 'color: #ffd74a; font-weight: bold',
+    error: 'color: #ff7d4a; font-weight: bold'
+  };
+  const log = (...a) => console.log('%c[MIRRORS.JS]', STYLE.info, ...a);
+  const warn = (...a) => console.warn('%c[MIRRORS.JS]', STYLE.warn, ...a);
+  const fail = (...a) => console.error('%c[MIRRORS.JS]', STYLE.error, ...a);
 
   let FALLBACK_MIRRORS = {
     scram: '',
@@ -25,10 +39,136 @@
 
   const MIRROR_TEST_TIMEOUT = 5000;
   const AUTO_REFRESH_INTERVAL = 120000;
-  const TEST_TIMEOUT_HARD = 15000;
+  const WISP_SETUP_TIMEOUT = 15000;
+  const CLONE_LIST_TIMEOUT = 15000;
+  const CLONE_LIST_RETRIES = 3;
+  const CLONE_RETRY_DELAY = 2000;
+  const CLONE_PASS_DELAY = 3000;
+
   let commitEtag = null;
   let cachedCommitHash = null;
-  let testingTimeoutId = null;
+
+  const CLONE_API = 'https://getwebsiteclones.vercel.app/clones?url=';
+  const WISP_SERVER = 'wss://wisp.mercurywork.shop/';
+  const BARE_MUX_ESM = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm';
+  const BARE_MUX_WORKER = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js';
+  const EPOXY_TRANSPORT = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs';
+  const CLONE_TARGETS = [
+    { domain: 'truffled.lol', testPath: '/favicon.ico', keys: ['truffled'], jsonFile: 'truffled.json' },
+    { domain: 'frogiesarcade.win', testPath: '/stuff/logo.png', keys: ['static', 'frogiee'], jsonFile: 'frogiee.json' }
+  ];
+  const CLONE_KEYS = CLONE_TARGETS.flatMap(t => t.keys);
+
+  function probeImage(url, timeoutMs = MIRROR_TEST_TIMEOUT) {
+    return new Promise(resolve => {
+      let done = false;
+      const img = new Image();
+      const timer = setTimeout(() => finish(false), timeoutMs);
+      function finish(ok) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        img.onload = img.onerror = null;
+        img.src = '';
+        resolve(ok);
+      }
+      img.onload = () => finish(true);
+      img.onerror = () => finish(false);
+      img.referrerPolicy = 'no-referrer';
+      const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      img.src = url + (url.includes('?') ? '&' : '?') + 'cb=' + buster;
+    });
+  }
+
+  const testCloneUrl = (baseUrl, testPath) => probeImage(cleanUrl(baseUrl) + testPath);
+
+  let bareClientPromise = null;
+
+  async function setupBareClient() {
+    try {
+      const { BareMuxConnection, BareClient } = await import(BARE_MUX_ESM);
+      const workerCode = `importScripts("${BARE_MUX_WORKER}");`;
+      const blob = new Blob([workerCode], { type: 'text/javascript' });
+      const workerUrl = URL.createObjectURL(blob);
+      const conn = new BareMuxConnection(workerUrl);
+      await conn.setTransport(EPOXY_TRANSPORT, [{ wisp: WISP_SERVER }]);
+      log('Wisp proxy ready');
+      return new BareClient();
+    } catch (err) {
+      fail('Wisp proxy setup failed:', err?.message || err);
+      return null;
+    }
+  }
+
+  function getBareClient() {
+    if (!bareClientPromise) {
+      bareClientPromise = withTimeout(setupBareClient(), WISP_SETUP_TIMEOUT, 'Wisp setup')
+        .catch(e => { fail(e?.message || e); return null; })
+        .then(client => {
+          if (!client) bareClientPromise = null;   // allow a fresh attempt on the next refresh
+          return client;
+        });
+    }
+    return bareClientPromise;
+  }
+
+  async function fetchCloneList(client, domain) {
+    const load = async () => {
+      const res = await client.fetch(CLONE_API + domain);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    };
+    const text = await withTimeout(load(), CLONE_LIST_TIMEOUT, 'Clone list fetch');
+    return text.split('\n').map(l => l.trim()).filter(l => l.startsWith('http'));
+  }
+
+  function rememberMirror(keys, url) {
+    keys.forEach(k => {
+      setStorage(`kstuff_lastgood_${k}`, url);
+      FALLBACK_MIRRORS[k] = url;
+    });
+  }
+
+  async function findCloneViaWisp(target) {
+    const { domain, testPath, keys } = target;
+
+    const cached = getStorage(`kstuff_lastgood_${keys[0]}`);
+    if (cached && await testCloneUrl(cached, testPath)) return cleanUrl(cached);
+
+    const client = await getBareClient();
+    if (!client) return null;
+
+    for (let pass = 1; ; pass++) {
+      let list = null;
+      for (let attempt = 1; attempt <= CLONE_LIST_RETRIES && !list; attempt++) {
+        try {
+          list = await fetchCloneList(client, domain);
+        } catch (e) {
+          warn(`Clone list fetch for ${domain} failed (attempt ${attempt}/${CLONE_LIST_RETRIES}):`, e?.message || e);
+          if (attempt < CLONE_LIST_RETRIES) await sleep(CLONE_RETRY_DELAY);
+        }
+      }
+      if (!list || !list.length) {
+        warn(`Wisp could not provide a clone list for ${domain}`);
+        return null;
+      }
+
+      keys.forEach(k => { if (!FALLBACK_MIRRORS[k]) FALLBACK_MIRRORS[k] = cleanUrl(list[0]); });
+      log(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
+
+      for (const url of list) {
+        if (await testCloneUrl(url, testPath)) {
+          const found = cleanUrl(url);
+          rememberMirror(keys, found);
+          log(`Found working clone for ${domain}:`, found);
+          return found;
+        }
+      }
+
+      warn(`No working clone for ${domain} in pass ${pass}, trying again`);
+      await sleep(CLONE_PASS_DELAY);
+    }
+  }
 
   const timedFetch = async (url, asText = false, ms = 10000) => {
     const ctrl = new AbortController();
@@ -99,32 +239,11 @@
 
   const mirrorTestCache = new Map();
 
-  function probeMirrorImage(entry, timeoutMs) {
-    return new Promise(resolve => {
-      let done = false;
-      const img = new Image();
-      const timer = setTimeout(() => finish(false), timeoutMs);
-      function finish(ok) {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        img.onload = img.onerror = null;
-        img.src = '';
-        resolve(ok);
-      }
-      img.onload = () => finish(true);
-      img.onerror = () => finish(false);
-      const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
-      const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      img.referrerPolicy = 'no-referrer';
-      img.src = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
-    });
-  }
-
-  async function testMirrorEntry(entry, timeoutMs = 5000) {
+  async function testMirrorEntry(entry) {
     const cacheKey = `${entry.url}|${entry.img}`;
     if (!mirrorTestCache.has(cacheKey)) {
-      mirrorTestCache.set(cacheKey, probeMirrorImage(entry, timeoutMs));
+      const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
+      mirrorTestCache.set(cacheKey, probeImage(base));
     }
     const ok = await mirrorTestCache.get(cacheKey);
     return ok ? entry : null;
@@ -155,16 +274,33 @@
     return table[0];
   }
 
+  async function jsonFallbackFor(target) {
+    const { keys, jsonFile } = target;
+    let table = [];
+    try {
+      table = await fetchWithProxy(`Assets/json/mirrors/${jsonFile}`);
+    } catch (e) {
+      warn(`JSON fallback ${jsonFile} unavailable:`, e?.message || e);
+    }
+    if (!Array.isArray(table) || !table.length) return null;
+
+    const tested = await Promise.all(table.map(e => testMirrorEntry(e)));
+    const hit = tested.find(Boolean);
+    const pick = hit || table[0];
+    const url = cleanUrl(pick.url) + (pick.final || '');
+    if (hit) rememberMirror(keys, url);
+    return url;
+  }
+
   function postMirrorUpdate(mirrors, isInitial = false) {
     window.kstuffMirrors = {
       ...window.kstuffMirrors,
       ...mirrors,
       lastUpdate: Date.now(),
-      status: 'ready',
-      testing: false
+      status: 'ready'
     };
 
-    console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Update:', {
+    log('Update:', {
       timestamp: new Date(window.kstuffMirrors.lastUpdate).toLocaleTimeString(),
       scram: window.kstuffMirrors.scram ? '✓' : '✗',
       static: window.kstuffMirrors.static ? '✓' : '✗',
@@ -179,229 +315,150 @@
     }));
   }
 
+  function buildFallbackResults() {
+    const finalResults = {};
+    Object.keys(FALLBACK_MIRRORS).forEach(key => {
+      if (key === 'scram' || key === 'uv') {
+        try {
+          const cached = JSON.parse(getStorage(`kstuff_lastgood_${key}`));
+          finalResults[key] = cached?.url ? cleanUrl(cached.url) + (cached.final || '') : FALLBACK_MIRRORS[key];
+        } catch {
+          finalResults[key] = FALLBACK_MIRRORS[key];
+        }
+      } else {
+        const cached = getStorage(`kstuff_lastgood_${key}`);
+        finalResults[key] = cached || FALLBACK_MIRRORS[key];
+      }
+    });
+    return finalResults;
+  }
+
+  function fillMissing(results) {
+    const fb = buildFallbackResults();
+    Object.keys(FALLBACK_MIRRORS).forEach(key => {
+      if (results[key]) return;
+      if (CLONE_KEYS.includes(key) && window.kstuffMirrors[key]) return;
+      results[key] = fb[key];
+    });
+    return results;
+  }
+
+  const activeCloneSearches = new Map();
+
+  function startCloneSearch(target, isInitial) {
+    if (activeCloneSearches.has(target.domain)) {
+      log(`Clone search for ${target.domain} is still running, leaving it alone`);
+      return activeCloneSearches.get(target.domain);
+    }
+
+    const search = (async () => {
+      try {
+        let url = null;
+        try {
+          url = await findCloneViaWisp(target);
+        } catch (e) {
+          fail(`Wisp search for ${target.domain} threw:`, e?.message || e);
+        }
+
+        if (!url) {
+          warn(`Wisp path failed for ${target.domain}, using JSON fallback`);
+          url = await jsonFallbackFor(target);
+        }
+
+        if (url) {
+          const update = {};
+          target.keys.forEach(k => { update[k] = url; });
+          postMirrorUpdate(update, isInitial);
+        } else {
+          warn(`No mirror found for ${target.domain}, keeping cached/fallback value`);
+        }
+      } finally {
+        activeCloneSearches.delete(target.domain);
+      }
+    })();
+
+    activeCloneSearches.set(target.domain, search);
+    return search;
+  }
+
   async function testAllMirrors(isInitial = false) {
     if (window.kstuffMirrors.testing) {
-      console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Mirror test already in progress, skipping');
+      log('Mirror test already in progress, skipping');
       return;
     }
 
     window.kstuffMirrors.testing = true;
+    mirrorTestCache.clear();
     const results = {};
-    let testsFailed = 0;
     let testsPassed = 0;
-
-    testingTimeoutId = setTimeout(() => {
-      console.warn('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Hard timeout reached, posting fallback results');
-      window.kstuffMirrors.testing = false;
-
-      const finalResults = {};
-      Object.keys(FALLBACK_MIRRORS).forEach(key => {
-        try {
-          const cached = JSON.parse(getStorage(`kstuff_lastgood_${key}`));
-          finalResults[key] = cached?.url || FALLBACK_MIRRORS[key];
-        } catch {
-          finalResults[key] = FALLBACK_MIRRORS[key];
-        }
-      });
-
-      postMirrorUpdate(finalResults, isInitial);
-    }, TEST_TIMEOUT_HARD);
+    let testsFailed = 0;
 
     try {
-      console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', isInitial ? 'Initial mirror test starting...' : 'Auto-refresh test starting...');
+      log(isInitial ? 'Initial mirror test starting...' : 'Auto-refresh test starting...');
 
-      const [
-        scramJson,
-        staticJson,
-        uvJson,
-        truffledJson,
-        truffledData
-      ] = await Promise.allSettled([
+      CLONE_TARGETS.forEach(t => startCloneSearch(t, isInitial));
+      if (!isInitial) await refreshCommitHash();
+
+      const [scramJson, uvJson] = await Promise.all([
         fetchWithProxy('Assets/json/mirrors/scram.json').catch(() => []),
-        fetchWithProxy('Assets/json/mirrors/static.json').catch(() => []),
-        fetchWithProxy('Assets/json/mirrors/uv.json').catch(() => []),
-        fetchWithProxy('Assets/json/mirrors/truffled.json').catch(() => []),
-        fetchWithProxy('Assets/json/truffled.json').catch(() => null)
-      ]).then(results => results.map(r => r.status === 'fulfilled' ? r.value : null));
+        fetchWithProxy('Assets/json/mirrors/uv.json').catch(() => [])
+      ]);
 
-      if (scramJson?.length) {
-        if (scramJson[0]?.url) {
-          FALLBACK_MIRRORS.scram = cleanUrl(scramJson[0].url) + (scramJson[0].final || '');
+      for (const [key, table] of [['scram', scramJson], ['uv', uvJson]]) {
+        if (!table?.length) {
+          warn(`No ${key} mirrors available`);
+          testsFailed++;
+          continue;
+        }
+        if (table[0]?.url) {
+          FALLBACK_MIRRORS[key] = cleanUrl(table[0].url) + (table[0].final || '');
         }
         try {
-          const scram = await getWorkingConfig(scramJson, 'scram');
-          if (scram?.url) {
-            results.scram = cleanUrl(scram.url) + (scram.final || '');
+          const pick = await getWorkingConfig(table, key);
+          if (pick?.url) {
+            results[key] = cleanUrl(pick.url) + (pick.final || '');
             testsPassed++;
           } else {
-            results.scram = FALLBACK_MIRRORS.scram;
-            testsFailed++;
-          }
-        } catch (e) {
-          console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Scram test failed:', e.message);
-          results.scram = FALLBACK_MIRRORS.scram;
-          testsFailed++;
-        }
-      } else {
-        console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No scram mirrors available');
-        testsFailed++;
-      }
-
-      if (staticJson?.length) {
-        if (staticJson[0]?.url) {
-          FALLBACK_MIRRORS.static = cleanUrl(staticJson[0].url) + (staticJson[0].final || '');
-        }
-        try {
-          const st = await getWorkingConfig(staticJson, 'static');
-          if (st?.url) {
-            results.static = cleanUrl(st.url) + (st.final || '');
-            testsPassed++;
-          } else {
-            results.static = FALLBACK_MIRRORS.static;
-            testsFailed++;
-          }
-        } catch (e) {
-          console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Static test failed:', e.message);
-          results.static = FALLBACK_MIRRORS.static;
-          testsFailed++;
-        }
-      } else {
-        console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No static mirrors available');
-        testsFailed++;
-      }
-
-      if (uvJson?.length) {
-        if (uvJson[0]?.url) {
-          FALLBACK_MIRRORS.uv = cleanUrl(uvJson[0].url) + (uvJson[0].final || '');
-        }
-        try {
-          const uv = await getWorkingConfig(uvJson, 'uv');
-          if (uv?.url) {
-            results.uv = cleanUrl(uv.url) + (uv.final || '');
-            testsPassed++;
-          } else {
-            results.uv = FALLBACK_MIRRORS.uv;
-            testsFailed++;
-          }
-        } catch (e) {
-          console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'UV test failed:', e.message);
-          results.uv = FALLBACK_MIRRORS.uv;
-          testsFailed++;
-        }
-      } else {
-        console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No UV mirrors available');
-        testsFailed++;
-      }
-
-      if (truffledJson?.length) {
-        if (truffledJson[0]?.url) {
-          FALLBACK_MIRRORS.truffled = cleanUrl(truffledJson[0].url);
-        }
-        try {
-          const tr = await getWorkingConfig(truffledJson, 'truffled');
-          if (tr?.url) {
-            results.truffled = cleanUrl(tr.url);
-            testsPassed++;
-          } else {
-            results.truffled = FALLBACK_MIRRORS.truffled;
-            console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No truffled mirrors working, using first table entry');
-            testsFailed++;
-          }
-        } catch (e) {
-          console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Truffled test failed:', e.message);
-          results.truffled = FALLBACK_MIRRORS.truffled;
-          testsFailed++;
-        }
-      } else {
-        console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No truffled mirrors available, using fallback');
-        testsFailed++;
-      }
-
-      if (staticJson?.length) {
-        if (staticJson[0]?.url) {
-          FALLBACK_MIRRORS.frogiee = cleanUrl(staticJson[0].url);
-        }
-        try {
-          const fr = await getWorkingConfig(
-            staticJson.map(i => ({ url: i.url, img: i.img, final: "" })),
-            'frogiee'
-          );
-          if (fr?.url) {
-            results.frogiee = cleanUrl(fr.url);
-            testsPassed++;
-          } else {
-            results.frogiee = FALLBACK_MIRRORS.frogiee;
-            testsFailed++;
-          }
-        } catch (e) {
-          console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Frogiee test failed:', e.message);
-          results.frogiee = FALLBACK_MIRRORS.frogiee;
-          testsFailed++;
-        }
-      } else {
-        testsFailed++;
-      }
-
-      Object.keys(FALLBACK_MIRRORS).forEach(key => {
-        if (!results[key]) {
-          try {
-            const cached = JSON.parse(getStorage(`kstuff_lastgood_${key}`));
-            results[key] = cached?.url || FALLBACK_MIRRORS[key];
-            console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', `${key}: using cached/fallback`);
-          } catch {
             results[key] = FALLBACK_MIRRORS[key];
+            testsFailed++;
           }
+        } catch (e) {
+          fail(`${key} test failed:`, e.message);
+          results[key] = FALLBACK_MIRRORS[key];
+          testsFailed++;
         }
-      });
+      }
 
-      console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', `Tests complete: ${testsPassed} passed, ${testsFailed} failed`);
-
-      postMirrorUpdate(results, isInitial);
+      log(`scram/uv tests complete: ${testsPassed} passed, ${testsFailed} failed`);
+      postMirrorUpdate(fillMissing(results), isInitial);
 
     } catch (err) {
-      console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'testAllMirrors exception:', err);
-
-      const fallbackResults = {};
-      Object.keys(FALLBACK_MIRRORS).forEach(key => {
-        try {
-          const cached = JSON.parse(getStorage(`kstuff_lastgood_${key}`));
-          fallbackResults[key] = cached?.url || FALLBACK_MIRRORS[key];
-        } catch {
-          fallbackResults[key] = FALLBACK_MIRRORS[key];
-        }
-      });
-      postMirrorUpdate(fallbackResults, isInitial);
-
+      fail('testAllMirrors exception:', err);
+      postMirrorUpdate(fillMissing({}), isInitial);
     } finally {
-      clearTimeout(testingTimeoutId);
       window.kstuffMirrors.testing = false;
     }
   }
 
-  async function initMirrors() {
-    console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Initializing mirror system...');
+  async function startMirrors() {
+    log('Initializing mirror system...');
     await testAllMirrors(true);
   }
 
   function startAutoRefresh() {
-    console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Starting auto-refresh (every 2 minutes)');
-
-    setInterval(async () => {
-      const changed = await refreshCommitHash();
-      if (changed) {
-        console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Commit changed, testing mirrors...');
-        await testAllMirrors(false);
-      }
+    log('Starting auto-refresh (every 2 minutes)');
+    setInterval(() => {
+      testAllMirrors(false);
     }, AUTO_REFRESH_INTERVAL);
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
-      await initMirrors();
+      await startMirrors();
       startAutoRefresh();
     });
   } else {
-    initMirrors();
+    startMirrors();
     startAutoRefresh();
   }
 
