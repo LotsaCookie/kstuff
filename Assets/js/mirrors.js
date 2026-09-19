@@ -14,10 +14,10 @@
 
   window.kstuffMirrors = {
     scram: '',
-    static: 'https://frogiesarcade.win',
-    uv: 'https://extrememath.net',
-    truffled: 'https://truffled.lol',
-    frogiee: 'https://frogiesarcade.win',
+    static: '',
+    uv: '',
+    truffled: 'https://boat.strongson.com',
+    frogiee: '',
     lastUpdate: 0,
     testing: false,
     status: 'initializing'
@@ -184,7 +184,7 @@
       console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Mirror test already in progress, skipping');
       return;
     }
-    
+
     window.kstuffMirrors.testing = true;
     const results = {};
     let testsFailed = 0;
@@ -193,7 +193,7 @@
     testingTimeoutId = setTimeout(() => {
       console.warn('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Hard timeout reached, posting fallback results');
       window.kstuffMirrors.testing = false;
-      
+
       const finalResults = {};
       Object.keys(FALLBACK_MIRRORS).forEach(key => {
         try {
@@ -203,7 +203,7 @@
           finalResults[key] = FALLBACK_MIRRORS[key];
         }
       });
-      
+
       postMirrorUpdate(finalResults, isInitial);
     }, TEST_TIMEOUT_HARD);
 
@@ -230,14 +230,16 @@
         }
         try {
           const scram = await getWorkingConfig(scramJson, 'scram');
-          if (scram) {
-            results.scram = cleanUrl(scram.url) + scram.final;
+          if (scram?.url) {
+            results.scram = cleanUrl(scram.url) + (scram.final || '');
             testsPassed++;
           } else {
+            results.scram = FALLBACK_MIRRORS.scram;
             testsFailed++;
           }
         } catch (e) {
           console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Scram test failed:', e.message);
+          results.scram = FALLBACK_MIRRORS.scram;
           testsFailed++;
         }
       } else {
@@ -251,14 +253,16 @@
         }
         try {
           const st = await getWorkingConfig(staticJson, 'static');
-          if (st) {
-            results.static = cleanUrl(st.url) + st.final;
+          if (st?.url) {
+            results.static = cleanUrl(st.url) + (st.final || '');
             testsPassed++;
           } else {
+            results.static = FALLBACK_MIRRORS.static;
             testsFailed++;
           }
         } catch (e) {
           console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Static test failed:', e.message);
+          results.static = FALLBACK_MIRRORS.static;
           testsFailed++;
         }
       } else {
@@ -272,14 +276,16 @@
         }
         try {
           const uv = await getWorkingConfig(uvJson, 'uv');
-          if (uv) {
-            results.uv = cleanUrl(uv.url) + uv.final;
+          if (uv?.url) {
+            results.uv = cleanUrl(uv.url) + (uv.final || '');
             testsPassed++;
           } else {
+            results.uv = FALLBACK_MIRRORS.uv;
             testsFailed++;
           }
         } catch (e) {
           console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'UV test failed:', e.message);
+          results.uv = FALLBACK_MIRRORS.uv;
           testsFailed++;
         }
       } else {
@@ -288,23 +294,25 @@
       }
 
       if (truffledJson?.length) {
+        if (truffledJson[0]?.url) {
+          FALLBACK_MIRRORS.truffled = cleanUrl(truffledJson[0].url);
+        }
         try {
           const tr = await getWorkingConfig(truffledJson, 'truffled');
-          if (tr) {
+          if (tr?.url) {
             results.truffled = cleanUrl(tr.url);
             testsPassed++;
           } else {
-            results.truffled = 'https://boat.strongson.com';
-            console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No truffled mirrors working, using fallback');
+            results.truffled = FALLBACK_MIRRORS.truffled;
+            console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No truffled mirrors working, using first table entry');
             testsFailed++;
           }
         } catch (e) {
           console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Truffled test failed:', e.message);
-          results.truffled = 'https://boat.strongson.com';
+          results.truffled = FALLBACK_MIRRORS.truffled;
           testsFailed++;
         }
       } else {
-        results.truffled = 'https://boat.strongson.com';
         console.warn('%c[MIRRORS.JS]', 'color: #ffd74a; font-weight: bold', 'No truffled mirrors available, using fallback');
         testsFailed++;
       }
@@ -318,14 +326,16 @@
             staticJson.map(i => ({ url: i.url, img: i.img, final: "" })),
             'frogiee'
           );
-          if (fr) {
+          if (fr?.url) {
             results.frogiee = cleanUrl(fr.url);
             testsPassed++;
           } else {
+            results.frogiee = FALLBACK_MIRRORS.frogiee;
             testsFailed++;
           }
         } catch (e) {
           console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'Frogiee test failed:', e.message);
+          results.frogiee = FALLBACK_MIRRORS.frogiee;
           testsFailed++;
         }
       } else {
@@ -350,7 +360,7 @@
 
     } catch (err) {
       console.error('%c[MIRRORS.JS]', 'color: #ff7d4a; font-weight: bold', 'testAllMirrors exception:', err);
-      
+
       const fallbackResults = {};
       Object.keys(FALLBACK_MIRRORS).forEach(key => {
         try {
@@ -361,7 +371,7 @@
         }
       });
       postMirrorUpdate(fallbackResults, isInitial);
-      
+
     } finally {
       clearTimeout(testingTimeoutId);
       window.kstuffMirrors.testing = false;
@@ -375,7 +385,7 @@
 
   function startAutoRefresh() {
     console.log('%c[MIRRORS.JS]', 'color: #4a7dff; font-weight: bold', 'Starting auto-refresh (every 2 minutes)');
-    
+
     setInterval(async () => {
       const changed = await refreshCommitHash();
       if (changed) {
@@ -396,7 +406,7 @@
   }
 
   window.kstuffTestMirrors = () => testAllMirrors(false);
-  
+
   window.kstuffMirrorsDebug = () => {
     console.table({
       scram: window.kstuffMirrors.scram,
