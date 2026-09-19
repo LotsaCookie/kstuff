@@ -690,13 +690,13 @@ function initApp() {
     if (fetchedJsonString !== savedJsonString) { setStorage('kstuff_last_changelog', fetchedJsonString); $('changelog-modal')?.classList.add('active'); }
   }).catch(err => console.error('change-log.json failed', err));
 
-  const appB = s => {
-    if (typeof s !== 'string') return s;
-    for (const [k, v] of Object.entries(gRep)) s = s.split(`\${${k}}`).join(v);
-    let parsed = s.replace(/([^:]\/)\/+/g, '$1');
-    return parsed.replace(/^http:\/\
-
-  };
+const appB = (s) => {
+  if (typeof s !== 'string') return s;
+  for (const [k, v] of Object.entries(gRep)) {
+    s = s.split(`\${${k}}`).join(v); 
+  }  let parsed = s.replace(/([^:]\/)\/+/g, '$1');
+    return parsed.replace(/^http:\/\//i, 'https://');
+};
 
   const proc = arr => (Array.isArray(arr) ? arr : []).map(i => {
     let p = { ...i };
