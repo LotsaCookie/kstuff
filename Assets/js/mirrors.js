@@ -95,7 +95,7 @@
       alert('Wisp proxy ready');
       return new BareClient();
     } catch (err) {
-      fail('Wisp proxy setup failed:', err?.message || err);
+      alert('Wisp proxy setup failed:', err?.message || err);
       return null;
     }
   }
@@ -149,7 +149,7 @@
         }
       }
       if (!list || !list.length) {
-        warn(`Wisp could not provide a clone list for ${domain}`);
+        alert(`Wisp could not provide a clone list for ${domain}`);
         return null;
       }
 
