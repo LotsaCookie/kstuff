@@ -129,6 +129,8 @@ function initApp() {
   };
 
   async function getProxyList() {
+    
+
     return [
       `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
       ""
@@ -692,7 +694,8 @@ function initApp() {
     if (typeof s !== 'string') return s;
     for (const [k, v] of Object.entries(gRep)) s = s.split(`\${${k}}`).join(v);
     let parsed = s.replace(/([^:]\/)\/+/g, '$1');
-    return parsed.replace(/^http:\/\//i, 'https://');
+    return parsed.replace(/^http:\/\
+
   };
 
   const proc = arr => (Array.isArray(arr) ? arr : []).map(i => {
@@ -825,7 +828,10 @@ function initApp() {
 
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
-  // ===== MIRRORS.JS INTEGRATION =====
+  
+
+  
+
   function loadMirrorsScript() {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js';
@@ -833,6 +839,8 @@ function initApp() {
     script.onerror = () => console.error('Failed to load mirrors.js');
     document.head.appendChild(script);
   }
+
+  
 
   function setupMirrorListener() {
     window.addEventListener('kstuff-mirrors-updated', (e) => {
@@ -850,7 +858,8 @@ function initApp() {
     });
   }
 
-  // ===== INITIALIZATION =====
+  
+
   initPromise = Promise.all([
     fetchReadingCornerRaw(),
     fetchWithProxy('Assets/json/a.json').catch(()=>[]),
@@ -860,6 +869,9 @@ function initApp() {
     if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
     grids.readingcorner.data = proc(gResult?.data || []);
     grids.sciencequiz.data = proc(a || []);
+
+    
+
     if (window.kstuffMirrors) {
       gRep = {
         scram: window.kstuffMirrors.scram || '',
@@ -1022,6 +1034,11 @@ function initApp() {
     try {
       const ifr = iframePages[tId];
       const forcedByFailure = ifr && iframeLoadFailed[ifr.id];
+
+      
+
+      
+
       const upstreamChanged = window.kstuffMirrors?.lastUpdate > (window.kstuffLastRefresh || 0);
       if (!upstreamChanged && !forcedByFailure) return;
       window.kstuffLastRefresh = Date.now();
@@ -1039,6 +1056,8 @@ function initApp() {
   }
 
   setInterval(autoRefreshActivePage, 200000);
+
+  
 
   setupMirrorListener();
   loadMirrorsScript();
