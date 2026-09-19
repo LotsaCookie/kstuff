@@ -39,18 +39,18 @@ function initApp() {
 
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
-  const FETCH_TIMEOUT = 10000;        // FIX: every network request now has a hard timeout
-  const IFRAME_SHOW_TIMEOUT = 2500;   // FIX: iframe pages are revealed after this long even if 'load' never fires
+  const FETCH_TIMEOUT = 10000;
+  const IFRAME_SHOW_TIMEOUT = 2500;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
-  let backendPort = null, backendReady = false, syncInterval = null, currentUser = null, cachedCommitHash = null;
-  let commitEtag = null, hashCheckInFlight = null;
+  let backendPort = null, backendReady = false, syncInterval = null, currentUser = null;
+  let gRep = {}, gTruf = new Map();
   const lastIframeHtml = {};
   const iframeLoadFailed = {};
-  const iframeLoadTokens = {};   // FIX: per-iframe load tokens (a load of one iframe never cancels another's)
+  const iframeLoadTokens = {};
   const iframeInFlight = {};
-  let savedWindowScrollY = 0, savedPageScrollTop = 0, gRep = {}, gTruf = new Map();
+  let savedWindowScrollY = 0, savedPageScrollTop = 0;
   let sessionSettingsUpdated = false, initPromise = null;
   let isNavigating = false, autoRefreshBusy = false, firstNavStarted = false;
 
@@ -128,54 +128,10 @@ function initApp() {
     } finally { clearTimeout(timer); }
   };
 
-  async function refreshCommitHash() {
-    if (hashCheckInFlight) return hashCheckInFlight;
-
-    const run = (async () => {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 5000);
-      try {
-        const headers = commitEtag ? { 'If-None-Match': commitEtag } : {};
-        const res = await fetch(
-          'https://api.github.com/repos/lotsacookie/kstuff/commits/main',
-          { headers, signal: ctrl.signal }
-        );
-
-        if (res.status === 304) return false;
-        if (!res.ok) return false;
-
-        const newEtag = res.headers.get('ETag');
-        if (newEtag) commitEtag = newEtag;
-
-        const json = await res.json();
-        const newSha = json?.sha;
-        if (!newSha) return false;
-
-        const isFirstCheck = cachedCommitHash === null;
-        const changed = newSha !== cachedCommitHash;
-        cachedCommitHash = newSha;
-
-        return changed && !isFirstCheck;
-      } catch (err) {
-        console.error('refreshCommitHash failed', err);
-        return false;
-      } finally {
-        clearTimeout(timer);
-      }
-    })();
-
-    hashCheckInFlight = run;
-    run.finally(() => { if (hashCheckInFlight === run) hashCheckInFlight = null; });
-    return run;
-  }
-
   async function getProxyList() {
-    if (!cachedCommitHash) {
-      await refreshCommitHash();
-      if (!cachedCommitHash) cachedCommitHash = 'main';
-    }
+    // This will be replaced with a simpler implementation since mirrors.js handles it
     return [
-      `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`,
+      `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
       ""
     ];
   }
@@ -188,113 +144,6 @@ function initApp() {
     } catch (err) {
       console.error('All proxies failed for', path, err);
       throw new Error("Proxies failed: " + path);
-    }
-  }
-
-  const mirrorTestCache = new Map();
-
-  function probeMirrorImage(entry, timeoutMs) {
-    return new Promise(resolve => {
-      let done = false;
-      const img = new Image();
-      const timer = setTimeout(() => finish(false), timeoutMs);
-      function finish(ok) {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        img.onload = img.onerror = null;
-        img.src = '';
-        resolve(ok);
-      }
-      img.onload = () => finish(true);
-      img.onerror = () => finish(false);
-      const base = `${cleanUrl(entry.url)}/${trimSlash(entry.img)}`;
-      const buster = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      img.referrerPolicy = 'no-referrer';
-      img.src = `${base}${base.includes('?') ? '&' : '?'}bridge=${buster}`;
-    });
-  }
-
-  async function testMirrorEntry(entry, timeoutMs = 5000) {
-    const cacheKey = `${entry.url}|${entry.img}`;
-    if (!mirrorTestCache.has(cacheKey)) {
-      mirrorTestCache.set(cacheKey, probeMirrorImage(entry, timeoutMs));
-    }
-    const ok = await mirrorTestCache.get(cacheKey);
-    return ok ? entry : null;
-  }
-
-  async function getWorkingConfig(table, storageKey = null) {
-    if (!table?.length) return null;
-    const results = await Promise.allSettled(table.map(entry => testMirrorEntry(entry)));
-
-    for (let i = 0; i < results.length; i++) {
-      const r = results[i];
-      if (r.status === 'fulfilled' && r.value) {
-        if (storageKey) {
-          try { setStorage(`kstuff_lastgood_${storageKey}`, JSON.stringify(r.value)); } catch {}
-        }
-        return r.value;
-      }
-    }
-
-    if (storageKey) {
-      try {
-        const cached = JSON.parse(getStorage(`kstuff_lastgood_${storageKey}`));
-        if (cached && table.some(e => e.url === cached.url)) return cached;
-      } catch {}
-    }
-    return table[0];
-  }
-
-  function buildServiceUrl(config, targetUrl) {
-    const base = cleanUrl(config.url) + (config.final ? '/' + trimSlash(config.final) : '');
-    return `${base}/service/${encodeUv(targetUrl)}`;
-  }
-
-  function initBackendBridge(config) {
-    if (!config) return;
-    const iframe = el('iframe', { style: "position:fixed;opacity:0;pointer-events:none;z-index:-1;" });
-    //iframe.src = cleanUrl(config.url) + '/uv.html?site=https://file.garden/acQjJWD7IC-_L9-w/b.html';
-    body.appendChild(iframe);
-    const timer = setInterval(() => {
-      if (!backendReady && iframe.contentWindow) {
-        const chan = new MessageChannel();
-        chan.port1.onmessage = e => handleBackendMessage(e.data, chan.port1);
-        try { iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [chan.port2]); } catch {}
-      } else if (backendReady) clearInterval(timer);
-    }, 1500);
-  }
-
-  function handleBackendMessage(data, port) {
-    if (!data) return;
-    if (data.type === 'ready') {
-      backendReady = true; backendPort = port;
-      if (currentUser) {
-        const sync = () => port.postMessage({ type: 'auto-login', username: currentUser.username });
-        sync(); syncInterval = setInterval(sync, 5000);
-      }
-    } else if (['login', 'auto-login', 'signup'].includes(data.type)) {
-      if (data.type === 'auto-login' && syncInterval) clearInterval(syncInterval);
-      const errEl = $('auth-error-msg');
-      if (data.success) {
-        if (sessionSettingsUpdated && currentUser?.settings) {
-          data.payload.settings = currentUser.settings;
-          port.postMessage({ type: 'update-settings', username: data.payload.username, settings: currentUser.settings });
-        }
-        currentUser = data.payload;
-        const cTheme = currentUser.settings?.theme || currentUser.theme;
-        if (cTheme) setStorage('kstuff_theme', cTheme);
-        setStorage('kstuff_user', JSON.stringify(currentUser));
-        applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
-        updateAuthUI();
-        if (errEl) errEl.style.display = 'none'; $('auth-modal-overlay')?.classList.remove('active');
-      } else if (data.type === 'auto-login') {
-        currentUser = null; localStorage.removeItem('kstuff_user'); updateAuthUI();
-      } else if (errEl) {
-        const msgs = { invalid: 'Fill out all fields.', exists: 'Username taken.', failed: 'Request failed.', not_found: 'Account not found.', invalid_password: 'Bad password.' };
-        errEl.textContent = data.message || msgs[data.reason] || 'Invalid credentials.'; errEl.style.display = 'block';
-      }
     }
   }
 
@@ -744,7 +593,7 @@ function initApp() {
         currentActive.classList.remove('active'); currentActive.style.display = 'none';
         if (iframePages[currentActive.id]) {
           const oldId = iframePages[currentActive.id].id;
-          cancelIframeLoads(oldId); 
+          cancelIframeLoads(oldId);
           const oldIframe = $(oldId);
           if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
         }
@@ -767,7 +616,7 @@ function initApp() {
         const iframeEl = $(iframeData.id);
         if (iframeEl) iframeEl.style.display = 'block';
         if (customSrc && iframeEl) {
-          cancelIframeLoads(iframeData.id); 
+          cancelIframeLoads(iframeData.id);
           iframeEl.removeAttribute('srcdoc');
           iframeEl.src = customSrc;
           toggleLoader(false);
@@ -795,7 +644,7 @@ function initApp() {
       toggleLoader(true);
       if (grids[tId] && initPromise) {
         await initPromise;
-        if (!btn.classList.contains('active')) return;  
+        if (!btn.classList.contains('active')) return;
       }
       loadContent(tId);
     });
@@ -894,7 +743,7 @@ function initApp() {
     for (const pt of pTypes) {
       try {
         const zUrl = getUrl('assets', 'zones.json', pt) + `?_=${Date.now()}`;
-        const json = await timedFetch(zUrl, false, 12000);   // FIX: was a bare fetch with no timeout
+        const json = await timedFetch(zUrl, false, 12000);
         if (!Array.isArray(json)) continue;
         const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
         const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
@@ -977,42 +826,56 @@ function initApp() {
 
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
-  const fCfg = (u, key) => fetchWithProxy(u).catch(()=>[]).then(d => getWorkingConfig(d, key));
-  const sDP = fetchWithProxy('Assets/json/mirrors/static.json').catch(()=>[]);
+  // ===== MIRRORS.JS INTEGRATION =====
+  function loadMirrorsScript() {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js';
+    script.async = true;
+    script.onerror = () => console.error('Failed to load mirrors.js');
+    document.head.appendChild(script);
+  }
 
+  function setupMirrorListener() {
+    window.addEventListener('kstuff-mirrors-updated', (e) => {
+      const mirrors = e.detail || window.kstuffMirrors;
+      if (mirrors) {
+        gRep = {
+          scram: mirrors.scram || '',
+          static: mirrors.static || '',
+          uv: mirrors.uv || '',
+          frogiee: mirrors.frogiee || '',
+          truffled: mirrors.truffled || 'https://boat.strongson.com'
+        };
+        console.log('gRep updated from mirrors:', gRep);
+      }
+    });
+  }
+
+  // ===== INITIALIZATION =====
   initPromise = Promise.all([
     fetchReadingCornerRaw(),
     fetchWithProxy('Assets/json/a.json').catch(()=>[]),
     fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
-    fCfg('Assets/json/mirrors/scram.json', 'scram'),
-    sDP.then(d => getWorkingConfig(d, 'static')),
-    fCfg('Assets/json/mirrors/uv.json', 'uv'),
-    fCfg('Assets/json/mirrors/truffled.json', 'truffled'),
-    sDP.then(d => getWorkingConfig((d||[]).map(i => ({ url: i.url, img: i.img, final: "" })), 'frogiee'))
-  ]).then(async ([gResult, a, tr, sc, st, uv, trCfg, fr]) => {
-    if (uv) {
-      initBackendBridge(uv);
-      const proxyIframe = document.createElement('iframe');
-      proxyIframe.style.display = 'none';
-      const baseUvUrl = cleanUrl(uv.url);
-     // proxyIframe.src = `${baseUvUrl}${uv.final}${encodeURIComponent('https://example.com')}`;
-      document.body.appendChild(proxyIframe);
+  ]).then(async ([gResult, a, tr]) => {
+    gTruf.clear();
+    if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
+    grids.readingcorner.data = proc(gResult?.data || []);
+    grids.sciencequiz.data = proc(a || []);
+    if (window.kstuffMirrors) {
+      gRep = {
+        scram: window.kstuffMirrors.scram || '',
+        static: window.kstuffMirrors.static || '',
+        uv: window.kstuffMirrors.uv || '',
+        frogiee: window.kstuffMirrors.frogiee || '',
+        truffled: window.kstuffMirrors.truffled || 'https://boat.strongson.com'
+      };
     }
-    gRep = {
-      scram: sc ? cleanUrl(sc.url) + sc.final : '',
-      static: st ? cleanUrl(st.url) + st.final : '',
-      uv: uv ? cleanUrl(uv.url) + uv.final : '',
-      frogiee: fr ? cleanUrl(fr.url) : '',
-      truffled: trCfg ? cleanUrl(trCfg.url) : 'https://boat.strongson.com'
-    };
-    gTruf.clear(); if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
-    grids.readingcorner.data = proc(gResult?.data || []); grids.sciencequiz.data = proc(a || []);
   }).catch(err => console.error('init failed', err));
 
   const updateBrowserNav = () => {
-      if (sBack) sBack.disabled = historyIndex <= 0;
-      if (sFwd) sFwd.disabled = historyIndex >= history.length - 1;
-    };
+    if (sBack) sBack.disabled = historyIndex <= 0;
+    if (sFwd) sFwd.disabled = historyIndex >= history.length - 1;
+  };
 
   const loadBrowserUrl = (val, isHistory = false) => {
     const targetUrl = formatWebUrl(val);
@@ -1040,35 +903,36 @@ function initApp() {
       const proxiedUrl = `${baseStatic}/service/${encodeUv('https://lotsacookie.github.io/kstuff/Assets/pages/browser-content.html?site=' + targetUrl)}`;
       loadContent('mathworksheets', true, proxiedUrl);
     }
-    };
+  };
 
-    if (tbInput) {
-      tbInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(e.target.value); });
-      $('study-enter-btn')?.addEventListener('click', () => loadBrowserUrl(tbInput.value));
-    }
+  if (tbInput) {
+    tbInput.addEventListener('keydown', e => { if (e.key === 'Enter') loadBrowserUrl(e.target.value); });
+    $('study-enter-btn')?.addEventListener('click', () => loadBrowserUrl(tbInput.value));
+  }
 
-    sBack?.addEventListener('click', () => { if (historyIndex > 0) { historyIndex--; loadBrowserUrl(history[historyIndex], true); } });
-    sFwd?.addEventListener('click', () => { if (historyIndex < history.length - 1) { historyIndex++; loadBrowserUrl(history[historyIndex], true); } });
-    sReload?.addEventListener('click', () => { if (studyIframe) { try { studyIframe.contentWindow.location.reload(); } catch(e) { studyIframe.src = studyIframe.src; } } });
-    sHome?.addEventListener('click', () => loadBrowserUrl('kstuff://home'));
+  sBack?.addEventListener('click', () => { if (historyIndex > 0) { historyIndex--; loadBrowserUrl(history[historyIndex], true); } });
+  sFwd?.addEventListener('click', () => { if (historyIndex < history.length - 1) { historyIndex++; loadBrowserUrl(history[historyIndex], true); } });
+  sReload?.addEventListener('click', () => { if (studyIframe) { try { studyIframe.contentWindow.location.reload(); } catch(e) { studyIframe.src = studyIframe.src; } } });
+  sHome?.addEventListener('click', () => loadBrowserUrl('kstuff://home'));
 
-    navBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tId = btn.dataset.target;
-        if (urlMap[tId] && tbInput) {
-          const newUrl = `kstuff://${urlMap[tId]}`;
-          if (tbInput.value !== newUrl) {
-            tbInput.value = newUrl;
-            if (history[historyIndex] !== newUrl) {
-              history = history.slice(0, historyIndex + 1);
-              history.push(newUrl);
-              historyIndex++;
-              updateBrowserNav();
-            }
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tId = btn.dataset.target;
+      if (urlMap[tId] && tbInput) {
+        const newUrl = `kstuff://${urlMap[tId]}`;
+        if (tbInput.value !== newUrl) {
+          tbInput.value = newUrl;
+          if (history[historyIndex] !== newUrl) {
+            history = history.slice(0, historyIndex + 1);
+            history.push(newUrl);
+            historyIndex++;
+            updateBrowserNav();
           }
         }
-      });
+      }
     });
+  });
+
   let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
@@ -1106,6 +970,7 @@ function initApp() {
       }
     });
   }
+
   window.addEventListener('message', (event) => {
     if (event.data && typeof event.data === 'string') {
       const data = event.data.trim();
@@ -1158,8 +1023,9 @@ function initApp() {
     try {
       const ifr = iframePages[tId];
       const forcedByFailure = ifr && iframeLoadFailed[ifr.id];
-      const upstreamChanged = await refreshCommitHash();
+      const upstreamChanged = window.kstuffMirrors?.lastUpdate > (window.kstuffLastRefresh || 0);
       if (!upstreamChanged && !forcedByFailure) return;
+      window.kstuffLastRefresh = Date.now();
 
       if (tId === 'readingcorner') {
         await refreshReadingCorner(false, 'updating', true);
@@ -1172,7 +1038,11 @@ function initApp() {
       autoRefreshBusy = false;
     }
   }
+
   setInterval(autoRefreshActivePage, 200000);
+
+  setupMirrorListener();
+  loadMirrorsScript();
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initApp) : initApp();
