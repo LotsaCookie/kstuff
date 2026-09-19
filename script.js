@@ -129,7 +129,6 @@ function initApp() {
   };
 
   async function getProxyList() {
-    // This will be replaced with a simpler implementation since mirrors.js handles it
     return [
       `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
       ""
