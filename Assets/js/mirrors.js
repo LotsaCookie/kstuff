@@ -39,6 +39,7 @@
 
   const MIRROR_TEST_TIMEOUT = 5000;
   const AUTO_REFRESH_INTERVAL = 120000;
+
   const WISP_SETUP_TIMEOUT = 15000;
   const CLONE_LIST_TIMEOUT = 15000;
   const CLONE_LIST_RETRIES = 3;
@@ -53,11 +54,24 @@
   const BARE_MUX_ESM = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm';
   const BARE_MUX_WORKER = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js';
   const EPOXY_TRANSPORT = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs';
+
   const CLONE_TARGETS = [
     { domain: 'truffled.lol', testPath: '/favicon.ico', keys: ['truffled'], jsonFile: 'truffled.json' },
     { domain: 'frogiesarcade.win', testPath: '/stuff/logo.png', keys: ['static', 'frogiee'], jsonFile: 'frogiee.json' }
   ];
   const CLONE_KEYS = CLONE_TARGETS.flatMap(t => t.keys);
+
+  const CACHE_VERSION = '2';
+  (function purgeOldCloneCache() {
+    if (getStorage('kstuff_mirror_cache_version') === CACHE_VERSION) return;
+    CLONE_KEYS.forEach(k => { try { localStorage.removeItem(`kstuff_lastgood_${k}`); } catch { } });
+    setStorage('kstuff_mirror_cache_version', CACHE_VERSION);
+    log('Cleared old clone mirror cache');
+  })();
+
+  const isPlainUrl = s => typeof s === 'string' && /^https?:\/\/[^\s{}"']+$/.test(s);
+  const clearCloneCache = keys => keys.forEach(k => { try { localStorage.removeItem(`kstuff_lastgood_${k}`); } catch { } });
+  const mirrorSources = {};
 
   function probeImage(url, timeoutMs = MIRROR_TEST_TIMEOUT) {
     return new Promise(resolve => {
@@ -92,10 +106,10 @@
       const workerUrl = URL.createObjectURL(blob);
       const conn = new BareMuxConnection(workerUrl);
       await conn.setTransport(EPOXY_TRANSPORT, [{ wisp: WISP_SERVER }]);
-      alert('Wisp proxy ready');
+      log('Wisp proxy ready');
       return new BareClient();
     } catch (err) {
-      alert('Wisp proxy setup failed:', err?.message || err);
+      fail('Wisp proxy setup failed:', err?.message || err);
       return null;
     }
   }
@@ -133,8 +147,16 @@
     const { domain, testPath, keys } = target;
 
     const cached = getStorage(`kstuff_lastgood_${keys[0]}`);
-    if (cached && await testCloneUrl(cached, testPath)) return cleanUrl(cached);
+    if (cached) {
+      if (isPlainUrl(cached) && await testCloneUrl(cached, testPath)) {
+        log(`Cached clone for ${domain} still works:`, cleanUrl(cached));
+        return { url: cleanUrl(cached), via: 'cache' };
+      }
+      warn(`Cached clone for ${domain} is dead or invalid, dropping it`);
+      clearCloneCache(keys);
+    }
 
+    log(`Starting Wisp search for ${domain}`);
     const client = await getBareClient();
     if (!client) return null;
 
@@ -149,19 +171,18 @@
         }
       }
       if (!list || !list.length) {
-        alert(`Wisp could not provide a clone list for ${domain}`);
+        warn(`Wisp could not provide a clone list for ${domain}`);
         return null;
       }
 
-      keys.forEach(k => { if (!FALLBACK_MIRRORS[k]) FALLBACK_MIRRORS[k] = cleanUrl(list[0]); });
-      alert(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
+      log(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
 
       for (const url of list) {
         if (await testCloneUrl(url, testPath)) {
           const found = cleanUrl(url);
           rememberMirror(keys, found);
-          alert(`Found working clone for ${domain}:`, found);
-          return found;
+          log(`Found working clone for ${domain}:`, found);
+          return { url: found, via: 'wisp' };
         }
       }
 
@@ -286,10 +307,13 @@
 
     const tested = await Promise.all(table.map(e => testMirrorEntry(e)));
     const hit = tested.find(Boolean);
-    const pick = hit || table[0];
-    const url = cleanUrl(pick.url) + (pick.final || '');
-    if (hit) rememberMirror(keys, url);
-    return url;
+    if (!hit) {
+      warn(`None of the ${jsonFile} entries passed a probe`);
+      return null;  
+    }
+    const url = cleanUrl(hit.url);
+    rememberMirror(keys, url);
+    return { url, via: 'json' };
   }
 
   function postMirrorUpdate(mirrors, isInitial = false) {
@@ -336,8 +360,7 @@
   function fillMissing(results) {
     const fb = buildFallbackResults();
     Object.keys(FALLBACK_MIRRORS).forEach(key => {
-      if (results[key]) return;
-      if (CLONE_KEYS.includes(key) && window.kstuffMirrors[key]) return;
+      if (results[key] || CLONE_KEYS.includes(key)) return;
       results[key] = fb[key];
     });
     return results;
@@ -353,24 +376,29 @@
 
     const search = (async () => {
       try {
-        let url = null;
+        let found = null;
         try {
-          url = await findCloneViaWisp(target);
+          found = await findCloneViaWisp(target);
         } catch (e) {
           fail(`Wisp search for ${target.domain} threw:`, e?.message || e);
         }
 
-        if (!url) {
+        if (!found) {
           warn(`Wisp path failed for ${target.domain}, using JSON fallback`);
-          url = await jsonFallbackFor(target);
+          found = await jsonFallbackFor(target);
         }
 
-        if (url) {
+        if (found) {
           const update = {};
-          target.keys.forEach(k => { update[k] = url; });
+          target.keys.forEach(k => {
+            update[k] = found.url;
+            mirrorSources[k] = found.via;
+          });
+          update.sources = { ...mirrorSources };
+          log(`${target.domain} -> ${found.url} (via ${found.via})`);
           postMirrorUpdate(update, isInitial);
         } else {
-          warn(`No mirror found for ${target.domain}, keeping cached/fallback value`);
+          warn(`No tested mirror found for ${target.domain}; leaving the current value unchanged`);
         }
       } finally {
         activeCloneSearches.delete(target.domain);
@@ -395,8 +423,8 @@
 
     try {
       log(isInitial ? 'Initial mirror test starting...' : 'Auto-refresh test starting...');
-
       CLONE_TARGETS.forEach(t => startCloneSearch(t, isInitial));
+
       if (!isInitial) await refreshCommitHash();
 
       const [scramJson, uvJson] = await Promise.all([
