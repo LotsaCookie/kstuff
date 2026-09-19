@@ -92,7 +92,7 @@
       const workerUrl = URL.createObjectURL(blob);
       const conn = new BareMuxConnection(workerUrl);
       await conn.setTransport(EPOXY_TRANSPORT, [{ wisp: WISP_SERVER }]);
-      log('Wisp proxy ready');
+      alert('Wisp proxy ready');
       return new BareClient();
     } catch (err) {
       fail('Wisp proxy setup failed:', err?.message || err);
@@ -154,13 +154,13 @@
       }
 
       keys.forEach(k => { if (!FALLBACK_MIRRORS[k]) FALLBACK_MIRRORS[k] = cleanUrl(list[0]); });
-      log(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
+      alert(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
 
       for (const url of list) {
         if (await testCloneUrl(url, testPath)) {
           const found = cleanUrl(url);
           rememberMirror(keys, found);
-          log(`Found working clone for ${domain}:`, found);
+          alert(`Found working clone for ${domain}:`, found);
           return found;
         }
       }
