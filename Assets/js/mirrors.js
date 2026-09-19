@@ -14,10 +14,10 @@
 
   window.kstuffMirrors = {
     scram: '',
-    static: '',
-    uv: '',
-    truffled: 'https://boat.strongson.com',
-    frogiee: '',
+    static: 'https://frogiesarcade.win',
+    uv: 'https://extrememath.net',
+    truffled: 'https://truffled.lol',
+    frogiee: 'https://frogiesarcade.win',
     lastUpdate: 0,
     testing: false,
     status: 'initializing'
