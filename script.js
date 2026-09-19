@@ -129,7 +129,6 @@ function initApp() {
   };
 
   async function getProxyList() {
-    
 
     return [
       `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
@@ -690,13 +689,12 @@ function initApp() {
     if (fetchedJsonString !== savedJsonString) { setStorage('kstuff_last_changelog', fetchedJsonString); $('changelog-modal')?.classList.add('active'); }
   }).catch(err => console.error('change-log.json failed', err));
 
-const appB = (s) => {
-  if (typeof s !== 'string') return s;
-  for (const [k, v] of Object.entries(gRep)) {
-    s = s.split(`\${${k}}`).join(v); 
-  }  let parsed = s.replace(/([^:]\/)\/+/g, '$1');
+  const appB = s => {
+    if (typeof s !== 'string') return s;
+    for (const [k, v] of Object.entries(gRep)) s = s.split(`\${${k}}`).join(v);
+    let parsed = s.replace(/([^:]\/)\/+/g, '$1');
     return parsed.replace(/^http:\/\//i, 'https://');
-};
+  };
 
   const proc = arr => (Array.isArray(arr) ? arr : []).map(i => {
     let p = { ...i };
@@ -828,59 +826,88 @@ const appB = (s) => {
 
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
 
-  
-
-  
+  let rawReadingCornerData = [];
+  let rawSciencequizData = [];
 
   function loadMirrorsScript() {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js?ez';
-    script.async = true;
-    script.onerror = () => console.error('Failed to load mirrors.js');
-    document.head.appendChild(script);
+    return new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => { console.error('Failed to load mirrors.js'); resolve(false); };
+      document.head.appendChild(script);
+    });
   }
 
-  
+  function mirrorsToGRep(mirrors) {
+    return {
+      scram: mirrors?.scram || '',
+      static: mirrors?.static || '',
+      uv: mirrors?.uv || '',
+      frogiee: mirrors?.frogiee || '',
+      truffled: mirrors?.truffled || 'https://boat.strongson.com'
+    };
+  }
+
+  function waitForMirrors(timeoutMs = 10000) {
+    return new Promise(resolve => {
+      if (window.kstuffMirrors && window.kstuffMirrors.status === 'ready') {
+        return resolve(window.kstuffMirrors);
+      }
+      let done = false;
+      const finish = m => {
+        if (done) return;
+        done = true;
+        window.removeEventListener('kstuff-mirrors-updated', onUpdate);
+        clearTimeout(timer);
+        resolve(m);
+      };
+      const onUpdate = e => finish(e.detail || window.kstuffMirrors);
+      window.addEventListener('kstuff-mirrors-updated', onUpdate);
+      const timer = setTimeout(() => finish(window.kstuffMirrors || {}), timeoutMs);
+    });
+  }
+
+  function reprocessGridsWithMirrors() {
+    if (rawReadingCornerData.length) grids.readingcorner.data = proc(rawReadingCornerData);
+    if (rawSciencequizData.length) grids.sciencequiz.data = proc(rawSciencequizData);
+    const activePage = document.querySelector('.page.active');
+    if (activePage && grids[activePage.id]) {
+      buildPool(activePage.id);
+      renderGrid(activePage.id, false, 'updating');
+    }
+  }
 
   function setupMirrorListener() {
     window.addEventListener('kstuff-mirrors-updated', (e) => {
       const mirrors = e.detail || window.kstuffMirrors;
-      if (mirrors) {
-        gRep = {
-          scram: mirrors.scram || '',
-          static: mirrors.static || '',
-          uv: mirrors.uv || '',
-          frogiee: mirrors.frogiee || '',
-          truffled: mirrors.truffled || 'https://boat.strongson.com'
-        };
-        console.log('gRep updated from mirrors:', gRep);
-      }
+      if (!mirrors) return;
+      const newGRep = mirrorsToGRep(mirrors);
+      const changed = JSON.stringify(newGRep) !== JSON.stringify(gRep);
+      gRep = newGRep;
+      if (changed) reprocessGridsWithMirrors();
     });
   }
 
-  
+  setupMirrorListener();
+  loadMirrorsScript();
 
   initPromise = Promise.all([
     fetchReadingCornerRaw(),
     fetchWithProxy('Assets/json/a.json').catch(()=>[]),
     fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
-  ]).then(async ([gResult, a, tr]) => {
+    waitForMirrors()
+  ]).then(async ([gResult, a, tr, mirrors]) => {
     gTruf.clear();
     if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
-    grids.readingcorner.data = proc(gResult?.data || []);
-    grids.sciencequiz.data = proc(a || []);
 
-    
+    gRep = mirrorsToGRep(mirrors);
 
-    if (window.kstuffMirrors) {
-      gRep = {
-        scram: window.kstuffMirrors.scram || '',
-        static: window.kstuffMirrors.static || '',
-        uv: window.kstuffMirrors.uv || '',
-        frogiee: window.kstuffMirrors.frogiee || '',
-        truffled: window.kstuffMirrors.truffled || 'https://boat.strongson.com'
-      };
-    }
+    rawReadingCornerData = gResult?.data || [];
+    rawSciencequizData = a || [];
+    grids.readingcorner.data = proc(rawReadingCornerData);
+    grids.sciencequiz.data = proc(rawSciencequizData);
   }).catch(err => console.error('init failed', err));
 
   const updateBrowserNav = () => {
@@ -1035,10 +1062,6 @@ const appB = (s) => {
       const ifr = iframePages[tId];
       const forcedByFailure = ifr && iframeLoadFailed[ifr.id];
 
-      
-
-      
-
       const upstreamChanged = window.kstuffMirrors?.lastUpdate > (window.kstuffLastRefresh || 0);
       if (!upstreamChanged && !forcedByFailure) return;
       window.kstuffLastRefresh = Date.now();
@@ -1056,11 +1079,6 @@ const appB = (s) => {
   }
 
   setInterval(autoRefreshActivePage, 200000);
-
-  
-
-  setupMirrorListener();
-  loadMirrorsScript();
 }
 
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", initApp) : initApp();
