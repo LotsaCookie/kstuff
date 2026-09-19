@@ -832,7 +832,7 @@ function initApp() {
   function loadMirrorsScript() {
     return new Promise(resolve => {
       const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js?zzz';
+      script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/js/mirrors.js?mirror';
       script.async = true;
       script.onload = () => resolve(true);
       script.onerror = () => { console.error('Failed to load mirrors.js'); resolve(false); };
