@@ -3,6 +3,7 @@
   const trimSlash = u => u ? u.replace(/^\/+/, '') : '';
   const getStorage = k => { try { return localStorage.getItem(k); } catch { return null; } };
   const setStorage = (k, v) => { try { localStorage.setItem(k, v); } catch { } };
+  const removeStorage = k => { try { localStorage.removeItem(k); } catch { } };
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const withTimeout = (promise, ms, label) => new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new Error(label + ' timed out')), ms);
@@ -37,14 +38,20 @@
     status: 'initializing'
   };
 
-  const MIRROR_TEST_TIMEOUT = 5000;
+  // ---------------------------------------------------------------- config
+
+  const MIRROR_TEST_TIMEOUT = 5000;        // one image probe (per URL)
   const AUTO_REFRESH_INTERVAL = 120000;
 
-  const WISP_SETUP_TIMEOUT = 15000;
-  const CLONE_LIST_TIMEOUT = 15000;
-  const CLONE_LIST_RETRIES = 3;
-  const CLONE_RETRY_DELAY = 2000;
-  const CLONE_PASS_DELAY = 3000;
+  // Clone search: none of these limit how long the search runs. The search never gives up.
+  const WISP_SETUP_TIMEOUT = 20000;        // one Wisp setup attempt; a failed one is retried
+  const CLONE_LIST_BASE_TIMEOUT = 10000;   // first clone-list attempt; grows 10s per retry...
+  const CLONE_LIST_MAX_TIMEOUT = 60000;    // ...up to this
+  const CLONE_VALIDATE_TIMEOUT = 8000;     // one page check through Wisp (per candidate)
+  const CLONE_CONCURRENCY = 6;             // candidates tested in parallel
+  const CLONE_PASS_DELAY = 3000;           // pause between full passes of the list
+  const JSON_STOPGAP_DELAY = 8000;         // if no Wisp result by then, try the JSON list meanwhile
+  const MAX_STORED_LIST = 100;
 
   let commitEtag = null;
   let cachedCommitHash = null;
@@ -54,23 +61,24 @@
   const BARE_MUX_ESM = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm';
   const BARE_MUX_WORKER = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js';
   const EPOXY_TRANSPORT = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs';
-
   const CLONE_TARGETS = [
     { domain: 'truffled.lol', testPath: '/favicon.ico', keys: ['truffled'], jsonFile: 'truffled.json' },
     { domain: 'frogiesarcade.win', testPath: '/stuff/logo.png', keys: ['static', 'frogiee'], jsonFile: 'frogiee.json' }
   ];
   const CLONE_KEYS = CLONE_TARGETS.flatMap(t => t.keys);
-
-  const CACHE_VERSION = '2';
+  const CACHE_VERSION = '3';
   (function purgeOldCloneCache() {
     if (getStorage('kstuff_mirror_cache_version') === CACHE_VERSION) return;
-    CLONE_KEYS.forEach(k => { try { localStorage.removeItem(`kstuff_lastgood_${k}`); } catch { } });
+    CLONE_TARGETS.forEach(t => {
+      t.keys.forEach(k => removeStorage(`kstuff_lastgood_${k}`));
+      removeStorage(`kstuff_clonelist_${t.keys[0]}`);
+    });
     setStorage('kstuff_mirror_cache_version', CACHE_VERSION);
     log('Cleared old clone mirror cache');
   })();
 
   const isPlainUrl = s => typeof s === 'string' && /^https?:\/\/[^\s{}"']+$/.test(s);
-  const clearCloneCache = keys => keys.forEach(k => { try { localStorage.removeItem(`kstuff_lastgood_${k}`); } catch { } });
+  const clearCloneCache = keys => keys.forEach(k => removeStorage(`kstuff_lastgood_${k}`));
   const mirrorSources = {};
 
   function probeImage(url, timeoutMs = MIRROR_TEST_TIMEOUT) {
@@ -119,22 +127,114 @@
       bareClientPromise = withTimeout(setupBareClient(), WISP_SETUP_TIMEOUT, 'Wisp setup')
         .catch(e => { fail(e?.message || e); return null; })
         .then(client => {
-          if (!client) bareClientPromise = null;   // allow a fresh attempt on the next refresh
+          if (!client) bareClientPromise = null;
           return client;
         });
     }
     return bareClientPromise;
   }
 
-  async function fetchCloneList(client, domain) {
+  async function fetchTextViaWisp(client, url, ms) {
     const load = async () => {
-      const res = await client.fetch(CLONE_API + domain);
+      const res = await client.fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.text();
     };
-    const text = await withTimeout(load(), CLONE_LIST_TIMEOUT, 'Clone list fetch');
-    return text.split('\n').map(l => l.trim()).filter(l => l.startsWith('http'));
+    return withTimeout(load(), ms, 'Wisp fetch');
   }
+
+  async function fetchCloneList(client, domain, ms) {
+    const text = await fetchTextViaWisp(client, CLONE_API + domain, ms);
+    const list = text.split('\n').map(l => l.trim()).filter(isPlainUrl).map(cleanUrl);
+    return [...new Set(list)];
+  }
+
+  const INCONCLUSIVE_TITLE = /just a moment|attention required|checking your browser|verify you are human/i;
+  const BLOCK_TITLE = /access denied|blocked|forbidden|not found|404|suspended|deployment|parked|for sale|can.t be reached|bad gateway|service unavailable|error/i;
+  const normTitle = t => (t || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const extractTitle = html => {
+    const m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(html || '');
+    return m ? normTitle(m[1]) : '';
+  };
+
+  const referenceTitles = new Map();
+  function getReferenceTitle(client, domain) {
+    if (!referenceTitles.has(domain)) {
+      const p = (async () => {
+        try {
+          const html = await fetchTextViaWisp(client, `https://${domain}/`, CLONE_VALIDATE_TIMEOUT);
+          const t = extractTitle(html);
+          return t && !INCONCLUSIVE_TITLE.test(t) ? t : null;
+        } catch {
+          return null;
+        }
+      })();
+      referenceTitles.set(domain, p);
+      p.then(t => { if (!t) setTimeout(() => referenceTitles.delete(domain), 30000); });
+    }
+    return referenceTitles.get(domain);
+  }
+
+  async function validatePage(target, url, client) {
+    let html;
+    try {
+      html = await fetchTextViaWisp(client, cleanUrl(url) + '/', CLONE_VALIDATE_TIMEOUT);
+    } catch {
+      return false;
+    }
+    if (!html || html.length < 100) return false;
+
+    const title = extractTitle(html);
+    if (INCONCLUSIVE_TITLE.test(title)) return true;   // bot challenge aimed at the proxy; trust the image probe
+
+    const ref = await getReferenceTitle(client, target.domain);
+    if (ref) return !!title && (title.includes(ref) || ref.includes(title));
+    return !BLOCK_TITLE.test(title);
+  }
+
+
+  async function checkCandidate(target, url, { validate = true } = {}) {
+    if (!(await testCloneUrl(url, target.testPath))) return { ok: false, validated: false };
+    if (!validate) return { ok: true, validated: false };
+    const client = await getBareClient();
+    if (!client) return { ok: true, validated: false };  
+    const real = await validatePage(target, url, client);
+    return { ok: real, validated: real };
+  }
+
+  function firstPassing(list, check, concurrency = CLONE_CONCURRENCY) {
+    return new Promise(resolve => {
+      if (!list.length) return resolve(null);
+      let next = 0, active = 0, done = false;
+      const launch = () => {
+        while (!done && active < concurrency && next < list.length) {
+          const url = list[next++];
+          active++;
+          Promise.resolve()
+            .then(() => check(url))
+            .catch(() => null)
+            .then(res => {
+              active--;
+              if (done) return;
+              if (res?.ok) { done = true; resolve({ url, validated: res.validated }); return; }
+              if (next >= list.length && active === 0) { done = true; resolve(null); return; }
+              launch();
+            });
+        }
+      };
+      launch();
+    });
+  }
+
+  const readStoredList = key => {
+    try {
+      const a = JSON.parse(getStorage(`kstuff_clonelist_${key}`));
+      return Array.isArray(a) ? a.filter(isPlainUrl) : [];
+    } catch {
+      return [];
+    }
+  };
+  const storeList = (key, list) => setStorage(`kstuff_clonelist_${key}`, JSON.stringify(list.slice(0, MAX_STORED_LIST)));
 
   function rememberMirror(keys, url) {
     keys.forEach(k => {
@@ -143,51 +243,105 @@
     });
   }
 
-  async function findCloneViaWisp(target) {
-    const { domain, testPath, keys } = target;
+  async function fetchListForever(target, ctx) {
+    for (let attempt = 1; !ctx.cancelled; attempt++) {
+      const client = await getBareClient();
+      if (client) {
+        const ms = Math.min(CLONE_LIST_BASE_TIMEOUT + (attempt - 1) * 10000, CLONE_LIST_MAX_TIMEOUT);
+        try {
+          const list = await fetchCloneList(client, target.domain, ms);
+          if (list.length) {
+            storeList(target.keys[0], list);
+            return list;
+          }
+          warn(`Clone API returned an empty list for ${target.domain} (attempt ${attempt}), retrying`);
+        } catch (e) {
+          warn(`Clone list for ${target.domain} failed (attempt ${attempt}), retrying:`, e?.message || e);
+        }
+      } else {
+        warn(`Wisp not ready for ${target.domain} (attempt ${attempt}), retrying`);
+      }
+      await sleep(Math.min(1000 * attempt, 10000));
+    }
+    return [];
+  }
+
+  async function jsonFallbackFor(target) {
+    let table = [];
+    try {
+      table = await fetchWithProxy(`Assets/json/mirrors/${target.jsonFile}`);
+    } catch (e) {
+      warn(`JSON list ${target.jsonFile} unavailable:`, e?.message || e);
+    }
+    if (!Array.isArray(table) || !table.length) return null;
+
+    const tested = await Promise.all(table.map(e => testMirrorEntry(e)));
+    const hit = tested.find(Boolean);
+    if (!hit) {
+      warn(`None of the ${target.jsonFile} entries passed a probe`);
+      return null;
+    }
+    return cleanUrl(hit.url);
+  }
+
+  async function jsonStopgap(target, isInitial) {
+    if (mirrorSources[target.keys[0]]) return;
+    warn(`Wisp is slow or failing for ${target.domain}, trying the JSON list while it keeps searching`);
+    const url = await jsonFallbackFor(target);
+    if (url && !mirrorSources[target.keys[0]]) postFound(target, url, 'json', isInitial);
+  }
+
+  async function findCloneMirror(target, isInitial) {
+    const { domain, keys } = target;
 
     const cached = getStorage(`kstuff_lastgood_${keys[0]}`);
     if (cached) {
-      if (isPlainUrl(cached) && await testCloneUrl(cached, testPath)) {
-        log(`Cached clone for ${domain} still works:`, cleanUrl(cached));
-        return { url: cleanUrl(cached), via: 'cache' };
+      if (isPlainUrl(cached)) {
+        const r = await checkCandidate(target, cached, { validate: isInitial });
+        if (r.ok) {
+          log(`Cached clone for ${domain} still works:`, cleanUrl(cached));
+          return { url: cleanUrl(cached), via: 'cache', validated: true };
+        }
       }
       warn(`Cached clone for ${domain} is dead or invalid, dropping it`);
       clearCloneCache(keys);
     }
 
-    log(`Starting Wisp search for ${domain}`);
-    const client = await getBareClient();
-    if (!client) return null;
+    const ctx = { cancelled: false };
+    const stopgapTimer = mirrorSources[keys[0]]
+      ? null
+      : setTimeout(() => { jsonStopgap(target, isInitial).catch(() => { }); }, JSON_STOPGAP_DELAY);
 
-    for (let pass = 1; ; pass++) {
-      let list = null;
-      for (let attempt = 1; attempt <= CLONE_LIST_RETRIES && !list; attempt++) {
-        try {
-          list = await fetchCloneList(client, domain);
-        } catch (e) {
-          warn(`Clone list fetch for ${domain} failed (attempt ${attempt}/${CLONE_LIST_RETRIES}):`, e?.message || e);
-          if (attempt < CLONE_LIST_RETRIES) await sleep(CLONE_RETRY_DELAY);
+    try {
+      for (let pass = 1; ; pass++) {
+        const listPromise = fetchListForever(target, ctx);   // runs alongside the tests below
+        const tried = new Set();
+
+        if (pass === 1) {
+          const stored = readStoredList(keys[0]);
+          if (stored.length) {
+            log(`Testing ${stored.length} previously seen clones for ${domain} while the API loads`);
+            stored.forEach(u => tried.add(u));
+            const hit = await firstPassing(stored, u => checkCandidate(target, u));
+            if (hit) return { url: hit.url, via: 'cache-list', validated: hit.validated };
+          }
         }
-      }
-      if (!list || !list.length) {
-        warn(`Wisp could not provide a clone list for ${domain}`);
-        return null;
-      }
 
-      log(`Testing ${list.length} clones for ${domain} (pass ${pass})`);
-
-      for (const url of list) {
-        if (await testCloneUrl(url, testPath)) {
-          const found = cleanUrl(url);
-          rememberMirror(keys, found);
-          log(`Found working clone for ${domain}:`, found);
-          return { url: found, via: 'wisp' };
+        const list = await listPromise;
+        const fresh = list.filter(u => !tried.has(u));
+        log(`Testing ${fresh.length} clones for ${domain} (pass ${pass})`);
+        const hit = await firstPassing(fresh, u => checkCandidate(target, u));
+        if (hit) {
+          log(`Found working clone for ${domain}:`, hit.url);
+          return { url: hit.url, via: 'wisp', validated: hit.validated };
         }
-      }
 
-      warn(`No working clone for ${domain} in pass ${pass}, trying again`);
-      await sleep(CLONE_PASS_DELAY);
+        warn(`No working clone for ${domain} in pass ${pass}, trying again`);
+        await sleep(CLONE_PASS_DELAY);
+      }
+    } finally {
+      ctx.cancelled = true;
+      clearTimeout(stopgapTimer);
     }
   }
 
@@ -295,27 +449,6 @@
     return table[0];
   }
 
-  async function jsonFallbackFor(target) {
-    const { keys, jsonFile } = target;
-    let table = [];
-    try {
-      table = await fetchWithProxy(`Assets/json/mirrors/${jsonFile}`);
-    } catch (e) {
-      warn(`JSON fallback ${jsonFile} unavailable:`, e?.message || e);
-    }
-    if (!Array.isArray(table) || !table.length) return null;
-
-    const tested = await Promise.all(table.map(e => testMirrorEntry(e)));
-    const hit = tested.find(Boolean);
-    if (!hit) {
-      warn(`None of the ${jsonFile} entries passed a probe`);
-      return null;  
-    }
-    const url = cleanUrl(hit.url);
-    rememberMirror(keys, url);
-    return { url, via: 'json' };
-  }
-
   function postMirrorUpdate(mirrors, isInitial = false) {
     window.kstuffMirrors = {
       ...window.kstuffMirrors,
@@ -337,6 +470,17 @@
     window.dispatchEvent(new CustomEvent('kstuff-mirrors-updated', {
       detail: window.kstuffMirrors
     }));
+  }
+
+  function postFound(target, url, via, isInitial) {
+    const update = {};
+    target.keys.forEach(k => {
+      update[k] = url;
+      mirrorSources[k] = via;
+    });
+    update.sources = { ...mirrorSources };
+    log(`${target.domain} -> ${url} (via ${via})`);
+    postMirrorUpdate(update, isInitial);
   }
 
   function buildFallbackResults() {
@@ -376,30 +520,12 @@
 
     const search = (async () => {
       try {
-        let found = null;
-        try {
-          found = await findCloneViaWisp(target);
-        } catch (e) {
-          fail(`Wisp search for ${target.domain} threw:`, e?.message || e);
-        }
-
-        if (!found) {
-          warn(`Wisp path failed for ${target.domain}, using JSON fallback`);
-          found = await jsonFallbackFor(target);
-        }
-
-        if (found) {
-          const update = {};
-          target.keys.forEach(k => {
-            update[k] = found.url;
-            mirrorSources[k] = found.via;
-          });
-          update.sources = { ...mirrorSources };
-          log(`${target.domain} -> ${found.url} (via ${found.via})`);
-          postMirrorUpdate(update, isInitial);
-        } else {
-          warn(`No tested mirror found for ${target.domain}; leaving the current value unchanged`);
-        }
+        const found = await findCloneMirror(target, isInitial);
+        const via = found.validated || found.via === 'cache' ? found.via : found.via + '-unvalidated';
+        if (found.validated && found.via !== 'cache') rememberMirror(target.keys, found.url);
+        postFound(target, found.url, via, isInitial);
+      } catch (e) {
+        fail(`Clone search for ${target.domain} crashed (it will restart on the next refresh):`, e?.message || e);
       } finally {
         activeCloneSearches.delete(target.domain);
       }
