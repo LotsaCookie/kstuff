@@ -79,14 +79,6 @@
   const clearCloneCache = keys => keys.forEach(k => removeStorage(`kstuff_lastgood_${k}`));
   const mirrorSources = {};
 
-  const normalizeCloneUrl = u => {
-    if (typeof u !== 'string') return '';
-    let s = u.trim();
-    if (!s) return '';
-    if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
-    return cleanUrl(s.replace(/^http:\/\//i, 'https://'));
-  };
-
   function probeImage(url, timeoutMs = MIRROR_TEST_TIMEOUT) {
     return new Promise(resolve => {
       let done = false;
@@ -150,14 +142,15 @@
   }
 
   const parseCloneList = text => {
-    let raw;
+    let lines;
     try {
       const data = JSON.parse(text);
-      raw = Array.isArray(data?.domains) ? data.domains : Array.isArray(data) ? data : [];
+      lines = Array.isArray(data?.domains) ? data.domains : Array.isArray(data) ? data : [];
     } catch {
-      raw = String(text || '').split('\n').map(l => l.trim()).filter(l => /^https?:\/\//i.test(l));
+      lines = String(text || '').split('\n');
     }
-    return [...new Set(raw.map(normalizeCloneUrl).filter(isPlainUrl))];
+    const list = lines.filter(l => typeof l === 'string').map(l => l.trim()).filter(isPlainUrl).map(cleanUrl);
+    return [...new Set(list)];
   };
 
   async function fetchCloneList(client, domain, ms) {
