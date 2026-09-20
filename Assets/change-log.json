@@ -1,7 +1,8 @@
 {
-  "timestamp": "September 18th | 💖",
+  "timestamp": "September 20th | 💖",
   "changes": [
-    "Added Music!",
-    "(SOON) Show a mini music player when navigating away from the music page."
+    "Fixed all sources.",
+    "Fixed music, better sources, and CSS!",
+    "Added mini-player when navigating away from music page."
   ]
 }
