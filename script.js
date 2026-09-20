@@ -49,36 +49,55 @@ function initApp() {
 
   let mirrorsScriptFailed = false;
   let mirrorsScriptLoaded = false;
+
   const MIRROR_PH = /\$\{(scram|static|uv|frogiee|truffled)\}/;
 
   const lastGoodMirror = key => {
     try {
-      const v = getStorage('kstuff_lastgood_' + key);
-      return /^https?:\/\/[^\s{}"']+$/i.test(v || '') ? cleanUrl(v) : '';
-    } catch { return ''; }
+      const value = getStorage(`kstuff_lastgood_${key}`);
+      return /^https?:\/\/[^\s{}"']+$/i.test(value || '')
+        ? cleanUrl(value)
+        : '';
+    } catch {
+      return '';
+    }
   };
 
-  const mirrorValue = (mirrors, key) => {
+  const getMirrorValue = (mirrors, key) => {
     const value = mirrors?.[key];
-    if (typeof value === 'string' && /^https?:\/\//i.test(value)) return cleanUrl(value);
+
+    if (
+      typeof value === 'string' &&
+      /^https?:\/\//i.test(value)
+    ) {
+      return cleanUrl(value);
+    }
+
     return lastGoodMirror(key);
   };
 
-  const mirrorsToGRep = mirrors => {
+  function mirrorsToGRep(mirrors = window.kstuffMirrors || {}) {
     const result = {};
-    ['scram', 'static', 'uv', 'frogiee', 'truffled'].forEach(key => {
-      result[key] = mirrorValue(mirrors, key);
-    });
-    if (!result.truffled) result.truffled = 'https://boat.strongson.com';
-    return result;
-  };
 
-  const verifiedMirror = (m, key) => {
-    if (!m) return '';
-    const v = m[key] || '';
-    if (key === 'scram' || key === 'uv') return v;
-    return v || lastGoodMirror(key);
-  };
+    ['scram', 'static', 'uv', 'frogiee', 'truffled'].forEach(key => {
+      result[key] = getMirrorValue(mirrors, key);
+    });
+
+    if (!result.truffled) {
+      result.truffled = 'https://boat.strongson.com';
+    }
+
+    return result;
+  }
+
+  function syncMirrors(mirrors = window.kstuffMirrors || {}) {
+    const next = mirrorsToGRep(mirrors);
+    const changed = JSON.stringify(next) !== JSON.stringify(gRep);
+
+    gRep = next;
+
+    return changed;
+  }
 
   const lastIframeHtml = {};
   const iframeLoadFailed = {};
@@ -393,6 +412,7 @@ function initApp() {
     if (modalOverlay) modalOverlay.classList.add('active');
     if (!modalIframe) return;
     modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank';
+
     if (item.url) {
       let targetUrl = item.url.trim();
 
@@ -401,29 +421,44 @@ function initApp() {
         if (!match) break;
 
         const key = match[1];
+        syncMirrors();
 
-        if (modalTitle) modalTitle.textContent = `${item.title} - finding a mirror...`;
+        let mirror = gRep[key];
 
-        const found = await waitForMirrorKey(key, 30000);
+        if (!mirror) {
+          if (modalTitle) {
+            modalTitle.textContent = `${item.title} - finding a mirror...`;
+          }
+
+          mirror = await waitForMirrorKey(key, 30000);
+        }
 
         if (modalOverlay && !modalOverlay.classList.contains('active')) return;
 
-        syncMirrors(window.kstuffMirrors || {});
-        const replacements = { ...gRep };
-        if (found) replacements[key] = found;
+        if (!mirror) break;
+
+        const replacements = {
+          ...gRep,
+          [key]: mirror
+        };
 
         const next = appB(targetUrl, replacements, true);
 
         if (next === targetUrl) break;
+
         targetUrl = next;
       }
 
-      syncMirrors(window.kstuffMirrors || {});
+      syncMirrors();
 
-      if (modalTitle) modalTitle.textContent = item.title;
+      if (modalTitle) {
+        modalTitle.textContent = item.title;
+      }
 
       if (MIRROR_PH.test(targetUrl)) {
-        modalIframe.srcdoc = '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
+        modalIframe.srcdoc =
+          '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
+
         return;
       }
 
@@ -458,13 +493,35 @@ function initApp() {
     const frag = document.createDocumentFragment();
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
       const card = el('div', { className: 'round-btn' }); card.dataset.index = i;
-      card.innerHTML = `<img alt="" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
+      card.innerHTML = `<img alt="" style="display:none;width:100%;height:100%;object-fit:contain;object-position:center;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
       grid.pool.push({ el: card, img: card.querySelector('img'), t: card.querySelector('h3'), d: card.querySelector('p'), c: card.querySelector('.category-label') });
       frag.appendChild(card);
     }
     grid.gridEl.appendChild(frag);
     grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
   };
+
+  const gridImageStyle = document.createElement('style');
+  gridImageStyle.textContent = `
+    .round-btn {
+      overflow: hidden;
+    }
+
+    .round-btn > img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .round-btn img[src=""] {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(gridImageStyle);
 
   const renderGrid = (type, preload = false, mode = 'loading') => {
     return new Promise(async resolve => {
@@ -495,7 +552,9 @@ function initApp() {
             p.img.dataset.src = item.image || '';
             if (item.image) {
               p.img.style.display = 'block';
-              try { p.img.loading = 'eager'; } catch {}
+              try {
+                p.img.loading = 'eager';
+              } catch (e) {}
               const pr = new Promise(res => {
                 let done = false;
                 const doneFn = () => { if (done) return; done = true; p.img.onload = p.img.onerror = null; res(); };
@@ -757,9 +816,9 @@ function initApp() {
         return;
       }
 
-      navBtns.forEach(item => {
-        if (!['homeworkhelper', 'changelog', 'profile'].includes(item.dataset.target)) {
-          item.classList.remove('active');
+      navBtns.forEach(other => {
+        if (!['homeworkhelper', 'changelog', 'profile'].includes(other.dataset.target)) {
+          other.classList.remove('active');
         }
       });
 
@@ -767,14 +826,14 @@ function initApp() {
       updateIndicator(btn);
       toggleLoader(true);
 
-      loadContent(targetId).catch(err => {
-        console.error('Navigation failed:', err);
+      loadContent(targetId).catch(error => {
+        console.error(`Navigation to ${targetId} failed:`, error);
         toggleLoader(false);
       });
     });
   });
 
-  window.addEventListener('message', (event) => {
+  window.addEventListener('message', event => {
     if (typeof event.data === 'string' && event.data.startsWith('nav: ')) {
       const pageName = event.data.replace('nav: ', '').trim().toLowerCase();
       const targetMap = { 'home': 'mathworksheets', 'games': 'readingcorner', 'apps': 'sciencequiz', 'music': 'gradebook', 'ai': 'lessonplanner', 'vms': 'vms', 'chat': 'studyhall' };
@@ -980,31 +1039,42 @@ function initApp() {
   function loadMirrorsScript() {
     return new Promise(async resolve => {
       const sources = await getMirrorsScriptSources();
-      const tryNext = i => {
-        if (i >= sources.length) {
+
+      const loadNext = index => {
+        if (index >= sources.length) {
           mirrorsScriptFailed = true;
           mirrorsScriptLoaded = false;
           resolve(false);
           return;
         }
+
         const script = document.createElement('script');
-        script.src = `${sources[i]}?cb=${Date.now()}`;
+        script.src = `${sources[index]}?cb=${Date.now()}`;
         script.async = true;
+
         script.onload = () => {
           if (!window.kstuffMirrors || typeof window.kstuffMirrors !== 'object') {
             script.remove();
-            tryNext(i + 1);
+            loadNext(index + 1);
             return;
           }
+
           mirrorsScriptLoaded = true;
           mirrorsScriptFailed = false;
-          syncMirrors(window.kstuffMirrors);
+          syncMirrors();
+
           resolve(true);
         };
-        script.onerror = () => { script.remove(); tryNext(i + 1); };
+
+        script.onerror = () => {
+          script.remove();
+          loadNext(index + 1);
+        };
+
         document.head.appendChild(script);
       };
-      tryNext(0);
+
+      loadNext(0);
     });
   }
 
@@ -1088,43 +1158,69 @@ function initApp() {
   }
 
   function reprocessGridsWithMirrors() {
-    if (rawReadingCornerData.length) grids.readingcorner.data = proc(rawReadingCornerData);
-    if (rawSciencequizData.length) grids.sciencequiz.data = proc(rawSciencequizData);
+    if (rawReadingCornerData.length) {
+      grids.readingcorner.data = proc(rawReadingCornerData);
+    }
+
+    if (rawSciencequizData.length) {
+      grids.sciencequiz.data = proc(rawSciencequizData);
+    }
+
     const activePage = document.querySelector('.page.active');
+
     if (activePage && grids[activePage.id]) {
-      buildPool(activePage.id);
+      const grid = grids[activePage.id];
+
+      if (!grid.pool.length) {
+        buildPool(activePage.id);
+      }
+
       renderGrid(activePage.id, false, 'updating');
     }
   }
 
   function setupMirrorListener() {
     window.addEventListener('kstuff-mirrors-updated', event => {
-      const mirrors = event.detail || window.kstuffMirrors;
+      const mirrors = event.detail || window.kstuffMirrors || {};
       if (!mirrors) return;
-      if (syncMirrors(mirrors)) reprocessGridsWithMirrors();
+
+      const changed = syncMirrors(mirrors);
+
+      if (changed) {
+        reprocessGridsWithMirrors();
+      }
     });
   }
 
   setupMirrorListener();
 
-  initPromise = Promise.all([
-    loadMirrorsScript().catch(() => false),
-    fetchReadingCornerRaw().catch(() => ({ data: [] })),
-    fetchWithProxy('Assets/json/a.json').catch(() => []),
-    fetchWithProxy('Assets/json/truffled.json').catch(() => null)
-  ]).then(async ([mirrorsLoaded, readingResult, scienceData, truffledData]) => {
-    mirrorsScriptLoaded = mirrorsLoaded === true;
-
-    if (!mirrorsScriptLoaded) {
+  const mirrorsPromise = loadMirrorsScript()
+    .catch(error => {
+      console.error('mirrors.js failed:', error);
       mirrorsScriptFailed = true;
-    }
+      return false;
+    });
 
+  initPromise = Promise.all([
+    fetchReadingCornerRaw().catch(error => {
+      console.error('Reading Corner initialization failed:', error);
+      return { data: [] };
+    }),
+    fetchWithProxy('Assets/json/a.json').catch(error => {
+      console.error('Science Quiz initialization failed:', error);
+      return [];
+    }),
+    fetchWithProxy('Assets/json/truffled.json').catch(error => {
+      console.error('Truffled initialization failed:', error);
+      return null;
+    })
+  ]).then(async ([readingResult, scienceData, truffledData]) => {
     gTruf.clear();
 
     if (Array.isArray(truffledData?.games)) {
-      truffledData.games.forEach(item => {
-        if (item?.name) {
-          gTruf.set(cleanGameTitle(item.name), item);
+      truffledData.games.forEach(game => {
+        if (game?.name) {
+          gTruf.set(cleanGameTitle(game.name), game);
         }
       });
     }
@@ -1132,19 +1228,35 @@ function initApp() {
     rawReadingCornerData = readingResult?.data || [];
     rawSciencequizData = Array.isArray(scienceData) ? scienceData : [];
 
-    syncMirrors(window.kstuffMirrors || {});
-
     grids.readingcorner.data = proc(rawReadingCornerData);
     grids.sciencequiz.data = proc(rawSciencequizData);
+
+    Object.keys(grids).forEach(type => {
+      if (!grids[type].gridEl) return;
+
+      if (!grids[type].pool.length) {
+        buildPool(type);
+      }
+    });
 
     const activePage = document.querySelector('.page.active');
 
     if (activePage && grids[activePage.id]) {
-      buildPool(activePage.id);
-      await renderGrid(activePage.id, false);
+      await renderGrid(activePage.id, false, 'loading');
     }
-  }).catch(err => {
-    console.error('Initialization failed:', err);
+
+    toggleLoader(false);
+
+    mirrorsPromise.then(() => {
+      syncMirrors();
+
+      if (gRep.static || gRep.frogiee || gRep.truffled) {
+        reprocessGridsWithMirrors();
+      }
+    });
+  }).catch(error => {
+    console.error('init failed:', error);
+    toggleLoader(false);
   });
 
   const updateBrowserNav = () => {
@@ -1202,11 +1314,14 @@ function initApp() {
         activePort.onmessage = (event) => {
           if (event.data && event.data.type === 'tabData') {
             const reportedUrl = event.data.url;
+
             if (document.activeElement === tbInput) return;
+
             const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
             const currentVal = tbInput ? tbInput.value : '';
             if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
               if (tbInput) tbInput.value = reportedUrl;
+
               if (history[historyIndex] !== reportedUrl) {
                 history = history.slice(0, historyIndex + 1);
                 history.push(reportedUrl);
