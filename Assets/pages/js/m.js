@@ -47,14 +47,21 @@ const cancelModalBtn = document.getElementById("cancelModalBtn");
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 
+const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/search";
+const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
+const STREAM_QUALITY = "lossless";
+const STREAM_SEARCH_LIMIT = 30;  
+const STREAM_MATCH_LIMIT = 15;
+const STREAM_MAX_TRIES = 3;   
+
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_URL = "wss://wisp.mercurywork.shop/";
 const BAREMUX_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm";
 const BAREMUX_WORKER_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js";
 const EPOXY_TRANSPORT_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs";
+
 const DEEZER_API = "https://api.deezer.com";
-const ITUNES_SEARCH_API = "https://itunes.apple.com/search";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
 
 const HOME_SHELVES = [
@@ -74,7 +81,6 @@ const SHELF_SKELETONS = 8;
 const SHELF_CACHE_KEY = "shelfCacheV2"; // bumped: covers are now the smaller size
 const SHELF_TTL_MS = 30 * 60 * 1000;
 
-const MAX_ENRICH_LOOKUPS = 4;
 const MAX_VIDEOS_TRIED = 10;
 
 /* ------------------------------------------------------------------ */
@@ -142,9 +148,9 @@ function createLimiter(max) {
     });
 }
 
-const externalLimiter = createLimiter(3);
+const externalLimiter = createLimiter(3);   // homepage charts
+const musicApiLimiter = createLimiter(4);   // search / matching (kept separate so shelves never slow it down)
 const imageLimiter = createLimiter(6);
-const enrichLimiter = createLimiter(2);
 
 let invidiousDirectSkipUntil = 0;
 const DIRECT_RETRY_MS = 3 * 60 * 1000;
@@ -180,20 +186,19 @@ async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
     return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
 }
 
-
-async function fetchExternalOnce(url) {
+async function fetchExternalOnce(url, wispMs = 10000, directMs = 6000) {
     try {
         return await withTimeout((async () => {
             const client = await getBareClient();
             const response = await client.fetch(url);
             if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
             return await response.json();
-        })(), 10000, "Wisp API fetch");
+        })(), wispMs, "Wisp API fetch");
     } catch (wispError) {
         console.warn("Wisp API fetch failed, trying a direct request:", wispError.message);
     }
 
-    const response = await fetchWithTimeout(url, 6000);
+    const response = await fetchWithTimeout(url, directMs);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
 }
@@ -214,10 +219,19 @@ function fetchExternalJSON(url) {
     });
 }
 
+function fetchMusicApiJSON(url) {
+    return musicApiLimiter(async () => {
+        const data = await fetchExternalOnce(url, 8000, 5000);
+        if (data && data.error) {
+            throw new Error(`API error: ${JSON.stringify(data.error).slice(0, 120)}`);
+        }
+        return data;
+    });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Song matching (pure helpers)                                       */
 /* ------------------------------------------------------------------ */
-
 
 function ytThumbUrls(videoId) {
     return [
@@ -255,27 +269,6 @@ function cleanChannelName(name) {
         .trim();
 }
 
-function cleanVideoTitle(raw) {
-    return String(raw || "")
-        .replace(/[\(\[\{【「『][^\)\]\}】」』]*[\)\]\}】」』]/g, " ")
-        .replace(/\bofficial\s+(?:music\s+|lyric\s+|hd\s+)?(?:video|audio|visuali[sz]er|lyrics?)\b/gi, " ")
-        .replace(/\b(?:lyric|lyrics)\s+video\b/gi, " ")
-        .replace(/\b(?:music\s+video|full\s+video|video\s+oficial|audio\s+oficial)\b/gi, " ")
-        .replace(/\b(?:hd|hq|4k|1080p|720p|explicit)\b/gi, " ")
-        .replace(/\blyrics?\s*$/gi, " ")
-        .replace(/\b(?:feat|ft|featuring)\b\.?.*$/i, " ")
-        .replace(/\s+[|｜]\s+.*$/, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
-function guessArtistTitle(video) {
-    const cleaned = cleanVideoTitle(video.title);
-    const match = cleaned.match(/^(.+?)\s+[-–—―~:]\s+(.+)$/);
-    if (match) return { artist: match[1].trim(), title: match[2].trim() };
-    return { artist: cleanChannelName(video.author), title: cleaned };
-}
-
 const VERSION_PATTERNS = [
     ["live", /\blive\b/],
     ["remix", /\bremix(?:ed)?\b|\brmx\b|\bbootleg\b/],
@@ -301,7 +294,7 @@ function versionFlags(text) {
     return flags;
 }
 
-function makeSong({ source, id, title, titleShort, artist, cover, duration }) {
+function makeSong({ source, id, title, titleShort, artist, cover, duration, streamId }) {
     return {
         key: `${source}:${id}`,
         source,
@@ -312,6 +305,7 @@ function makeSong({ source, id, title, titleShort, artist, cover, duration }) {
         cover: cover || "",
         duration: Number(duration) || 0,
         videoId: null,
+        streamId: streamId || null,
         videos: []
     };
 }
@@ -327,6 +321,7 @@ function rawTrackFromVideo(video) {
         cover: ytThumbUrls(video.videoId)[0],
         duration: Number(video.lengthSeconds) || 0,
         videoId: video.videoId,
+        streamId: null,
         videos: [video]
     };
 }
@@ -344,7 +339,9 @@ function songTokenInfo(song) {
 
 function matchVideoToSong(video, song) {
     const info = songTokenInfo(song);
-    if (!info.title.length) return { score: 0, confident: false };
+    if (!info.title.length) {
+        return { score: 0, confident: false, titleCov: 0, artistCov: 0, mismatch: false };
+    }
 
     const channel = cleanChannelName(video.author);
     const vTokens = tokenize(`${video.title || ""} ${channel}`);
@@ -380,7 +377,7 @@ function matchVideoToSong(video, song) {
         && !mismatch
         && (durDiff === null || durDiff <= 120);
 
-    return { score, confident };
+    return { score, confident, titleCov, artistCov, mismatch };
 }
 
 function rankVideos(videos, song) {
@@ -399,6 +396,30 @@ function rankVideos(videos, song) {
     return { good: good.map(x => x.video), poor: poor.map(x => x.video) };
 }
 
+function streamSongAsVideo(song) {
+    return { title: song.title, author: song.artist, lengthSeconds: song.duration };
+}
+
+function rankStreamSongs(songs, target) {
+    const good = [];
+    const loose = [];
+    const seen = new Set();
+    for (const song of songs) {
+        if (!song || !song.streamId || seen.has(song.streamId)) continue;
+        seen.add(song.streamId);
+        const m = matchVideoToSong(streamSongAsVideo(song), target);
+        if (m.confident) {
+            good.push({ song, score: m.score });
+        } else if (!m.mismatch && m.titleCov >= 0.6 && m.artistCov >= 0.3) {
+            loose.push({ song, score: m.score });
+        }
+    }
+    const byScore = (a, b) => b.score - a.score;
+    good.sort(byScore);
+    loose.sort(byScore);
+    return { good: good.map(x => x.song), loose: loose.map(x => x.song) };
+}
+
 function songSignature(song) {
     const flags = [...versionFlags(song.title)].sort().join(",");
     return `${tokenize(song.artist).join(" ")}|${tokenize(stripFeat(song.titleShort || song.title)).join(" ")}|${flags}`;
@@ -414,57 +435,6 @@ function dedupeSongs(songs) {
     });
 }
 
-function addVideo(track, video) {
-    if (!track.videos.some(v => v.videoId === video.videoId)) track.videos.push(video);
-}
-
-function buildSearchTracks(videos, songs, query = "") {
-    const unique = dedupeSongs(songs);
-    const byKey = new Map();
-    const tracks = [];
-
-    for (const video of videos) {
-        let best = null;
-        let bestScore = -Infinity;
-        for (const song of unique) {
-            const m = matchVideoToSong(video, song);
-            if (m.confident && m.score > bestScore) {
-                best = song;
-                bestScore = m.score;
-            }
-        }
-        if (best) {
-            let track = byKey.get(best.key);
-            if (!track) {
-                track = { ...best, videos: [] };
-                byKey.set(best.key, track);
-                tracks.push(track);
-            }
-            addVideo(track, video);
-        } else {
-            tracks.push(rawTrackFromVideo(video));
-        }
-    }
-
-    if (byKey.size > 0 || videos.length === 0) {
-        const q = new Set(tokenize(query));
-        let extra = 0;
-        for (const song of unique) {
-            if (byKey.has(song.key) || extra >= 8) continue;
-            const info = songTokenInfo(song);
-            const relevant = videos.length === 0
-                || info.title.some(t => q.has(t))
-                || info.artist.some(t => q.has(t));
-            if (relevant) {
-                tracks.push({ ...song, videos: [] });
-                extra++;
-            }
-        }
-    }
-
-    return tracks;
-}
-
 function buildSongQueries(song) {
     const title = stripFeat(song.titleShort || song.title);
     const artist = song.artist || "";
@@ -474,6 +444,16 @@ function buildSongQueries(song) {
         `${title} ${artist} lyrics`,
         `${artist} ${title} topic`
     ].map(q => q.replace(/\s+/g, " ").trim());
+    return [...new Set(queries)];
+}
+
+function buildStreamQueries(song) {
+    const title = stripFeat(song.titleShort || song.title);
+    const artist = song.artist && song.artist !== "Unknown artist" ? song.artist : "";
+    const queries = [
+        `${artist} ${title}`,
+        title
+    ].map(q => q.replace(/\s+/g, " ").trim()).filter(Boolean);
     return [...new Set(queries)];
 }
 
@@ -487,12 +467,49 @@ function serializeTrack(t) {
         artist: t.artist,
         cover: t.cover,
         duration: t.duration,
-        videoId: t.videoId || null
+        videoId: t.videoId || null,
+        streamId: t.streamId || null
     };
 }
 
 /* ------------------------------------------------------------------ */
-/*  External API -> song objects                                       */
+/*  Music API (primary) -> song objects                                */
+/* ------------------------------------------------------------------ */
+
+function songFromStreamItem(item) {
+    if (!item || item.id === undefined || item.id === null || item.id === "" || !item.title) return null;
+    return makeSong({
+        source: "ripple",
+        id: item.id,
+        title: item.title,
+        artist: item.artist,
+        cover: item.artwork || "",
+        duration: item.duration,
+        streamId: String(item.id)
+    });
+}
+
+const streamSearchCache = new Map();
+
+async function searchStreamApi(query, limit = STREAM_SEARCH_LIMIT) {
+    const cacheKey = `${limit}|${query.toLowerCase()}`;
+    if (streamSearchCache.has(cacheKey)) return streamSearchCache.get(cacheKey);
+
+    const data = await fetchMusicApiJSON(`${MUSIC_SEARCH_API}?q=${encodeURIComponent(query)}&limit=${limit}`);
+    const items = Array.isArray(data && data.items) ? data.items : [];
+    const songs = dedupeSongs(items.map(songFromStreamItem).filter(Boolean));
+
+    if (streamSearchCache.size > 100) streamSearchCache.clear();
+    streamSearchCache.set(cacheKey, songs);
+    return songs;
+}
+
+function streamUrlFor(streamId) {
+    return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}?quality=${encodeURIComponent(STREAM_QUALITY)}`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Homepage charts (Deezer / Apple)                                   */
 /* ------------------------------------------------------------------ */
 
 function songFromDeezer(t) {
@@ -533,43 +550,6 @@ function songFromItunes(r) {
     });
 }
 
-async function deezerSearch(query, limit) {
-    const data = await fetchExternalJSON(`${DEEZER_API}/search?q=${encodeURIComponent(query)}&limit=${limit}`);
-    return dedupeSongs(((data && data.data) || []).map(songFromDeezer).filter(Boolean));
-}
-
-async function itunesSearch(query, limit) {
-    const data = await fetchExternalJSON(
-        `${ITUNES_SEARCH_API}?term=${encodeURIComponent(query)}&media=music&entity=song&limit=${limit}`
-    );
-    return dedupeSongs(((data && data.results) || []).map(songFromItunes).filter(Boolean));
-}
-
-const songSearchCache = new Map();
-
-async function searchSongsMeta(query, limit = 25) {
-    const cacheKey = `${limit}|${query.toLowerCase()}`;
-    if (songSearchCache.has(cacheKey)) return songSearchCache.get(cacheKey);
-
-    let songs = [];
-    try {
-        songs = await deezerSearch(query, limit);
-    } catch (e) {
-        console.warn("Deezer search failed:", e.message);
-    }
-    if (songs.length === 0) {
-        try {
-            songs = await itunesSearch(query, limit);
-        } catch (e) {
-            console.warn("iTunes search failed:", e.message);
-        }
-    }
-
-    if (songSearchCache.size > 100) songSearchCache.clear();
-    songSearchCache.set(cacheKey, songs);
-    return songs;
-}
-
 async function fetchDeezerChart(genreId) {
     const data = await fetchExternalJSON(`${DEEZER_API}/chart/${genreId}/tracks?limit=${SHELF_SIZE}`);
     return dedupeSongs(((data && data.data) || []).map(songFromDeezer).filter(Boolean));
@@ -582,7 +562,7 @@ async function fetchAppleTrending() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  YouTube search through Invidious                                   */
+/*  YouTube search through Invidious (fallback)                        */
 /* ------------------------------------------------------------------ */
 
 const videoSearchCache = new Map();
@@ -607,6 +587,7 @@ function normalizeTrack(t) {
     if (!t.key) t.key = `yt:${t.videoId}`;
     if (!t.titleShort) t.titleShort = t.title;
     if (!t.cover && t.videoId) t.cover = ytThumbUrls(t.videoId)[0];
+    if (!t.streamId && t.source === "ripple") t.streamId = String(t.id);
     if (!Array.isArray(t.videos)) t.videos = [];
     return t;
 }
@@ -619,6 +600,7 @@ try {
 }
 Object.values(playlists).forEach(list => list.forEach(normalizeTrack));
 
+// song key -> Invidious video id that worked
 let workingVideos = {};
 try {
     workingVideos = JSON.parse(localStorage.getItem("songVideoMap")) || {};
@@ -640,13 +622,34 @@ function forgetWorkingVideo(key) {
     try { localStorage.setItem("songVideoMap", JSON.stringify(workingVideos)); } catch (e) {}
 }
 
+// song key -> new-API stream id that worked
+let workingStreams = {};
+try {
+    workingStreams = JSON.parse(localStorage.getItem("songStreamMap")) || {};
+} catch (e) {
+    workingStreams = {};
+}
+
+function rememberWorkingStream(key, streamId) {
+    delete workingStreams[key];
+    workingStreams[key] = streamId;
+    const keys = Object.keys(workingStreams);
+    if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(k => delete workingStreams[k]);
+    try { localStorage.setItem("songStreamMap", JSON.stringify(workingStreams)); } catch (e) {}
+}
+
+function forgetWorkingStream(key) {
+    if (!(key in workingStreams)) return;
+    delete workingStreams[key];
+    try { localStorage.setItem("songStreamMap", JSON.stringify(workingStreams)); } catch (e) {}
+}
+
 let activePlayingPlaylist = null;
 let activePlayingIndex = -1;
 let activeList = null;
 
 let currentSearchResults = [];
 let searchToken = 0;
-const tileEls = new Map();
 
 let currentTrackInfo = null;
 let playRequestToken = 0;
@@ -713,21 +716,22 @@ function idbSet(storeName, key, value) {
 
 const audioObjectUrlCache = new Map();
 
-async function getCachedAudioObjectURL(videoId) {
-    if (audioObjectUrlCache.has(videoId)) return audioObjectUrlCache.get(videoId);
-    const blob = await idbGet(AUDIO_STORE, videoId);
+// Cache keys: Invidious audio uses the bare video id, new-API audio uses "ripple:<streamId>"
+async function getCachedAudioObjectURL(cacheKey) {
+    if (audioObjectUrlCache.has(cacheKey)) return audioObjectUrlCache.get(cacheKey);
+    const blob = await idbGet(AUDIO_STORE, cacheKey);
     if (!blob) return null;
     const url = URL.createObjectURL(blob);
-    audioObjectUrlCache.set(videoId, url);
+    audioObjectUrlCache.set(cacheKey, url);
     return url;
 }
 
-async function cacheAudioBlob(videoId, blob) {
+async function cacheAudioBlob(cacheKey, blob) {
     try {
-        await idbSet(AUDIO_STORE, videoId, blob);
+        await idbSet(AUDIO_STORE, cacheKey, blob);
     } catch (e) {}
     const url = URL.createObjectURL(blob);
-    audioObjectUrlCache.set(videoId, url);
+    audioObjectUrlCache.set(cacheKey, url);
     return url;
 }
 
@@ -824,7 +828,6 @@ function setImage(img, urls, lazy = false) {
         return;
     }
 
-    // Already fetched this session: show it instantly
     const ready = thumbObjectUrlCache.get(list[0]);
     if (ready) {
         img.src = ready;
@@ -892,10 +895,10 @@ function getThemeColor(varName, fallback) {
 function truncateForCanvas(ctx, str, maxWidth) {
     if (ctx.measureText(str).width <= maxWidth) return str;
     let truncated = str;
-    while (truncated.length > 1 && ctx.measureText(truncated + "…").width > maxWidth) {
+    while (truncated.length > 1 && ctx.measureText(truncated + "...").width > maxWidth) {
         truncated = truncated.slice(0, -1);
     }
-    return truncated + "…";
+    return truncated + "...";
 }
 
 function drawPipFrame(track, img) {
@@ -1042,7 +1045,6 @@ async function updateMediaSessionMetadata(track) {
         } catch (e) {}
     };
 
-    // Text first; artwork is added once the Wisp copy is ready
     setMeta(null);
 
     for (const url of trackCoverUrls(track, true)) {
@@ -1149,19 +1151,45 @@ addToPlaylistBtn.addEventListener("click", () => {
 prevTrackBtn.addEventListener("click", playPrevious);
 nextTrackBtn.addEventListener("click", playNext);
 
+function extensionForBlob(blob) {
+    const type = (blob.type || "").toLowerCase();
+    if (type.includes("flac")) return "flac";
+    if (type.includes("webm")) return "webm";
+    if (type.includes("mpeg") || type.includes("mp3")) return "mp3";
+    if (type.includes("ogg")) return "ogg";
+    if (type.includes("wav")) return "wav";
+    return "m4a";
+}
+
 if (downloadBtn) {
     downloadBtn.addEventListener("click", async () => {
         if (!audioPlayer.src) return;
+        const src = audioPlayer.src;
         const track = currentTrackInfo;
         const rawName = track ? `${track.artist ? track.artist + " - " : ""}${track.title}` : "audio";
 
         downloadBtn.disabled = true;
         try {
-            const response = await fetch(audioPlayer.src);
-            if (!response.ok) throw new Error("bad response");
-            const blob = await response.blob();
-            const ext = (blob.type || "").includes("webm") ? "webm" : "m4a";
-            const filename = rawName.replace(/[^\w\- ]+/g, "").trim().slice(0, 80) + "." + ext;
+            let blob = null;
+
+            try {
+                const response = await fetch(src);
+                if (!response.ok) throw new Error("bad response");
+                blob = await response.blob();
+            } catch (e) {
+                if (!src.startsWith("blob:")) {
+                    try {
+                        blob = await fetchBlobViaWisp(src, null, 120000);
+                    } catch (e2) {}
+                }
+            }
+
+            if (!blob) {
+                window.open(src, "_blank");
+                return;
+            }
+
+            const filename = rawName.replace(/[^\w\- ]+/g, "").trim().slice(0, 80) + "." + extensionForBlob(blob);
             const blobUrl = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = blobUrl;
@@ -1170,8 +1198,6 @@ if (downloadBtn) {
             link.click();
             link.remove();
             setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-        } catch (e) {
-            window.open(audioPlayer.src, "_blank");
         } finally {
             downloadBtn.disabled = !audioPlayer.src;
         }
@@ -1368,11 +1394,10 @@ function showHome() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Search                                                             */
+/*  Search (new music API first, Invidious as fallback)                */
 /* ------------------------------------------------------------------ */
 
 function showMessage(html) {
-    tileEls.clear();
     currentSearchResults = [];
     resultsList.innerHTML = `<div class="grid-message">${html}</div>`;
 }
@@ -1389,137 +1414,49 @@ async function search() {
     resultsList.hidden = false;
     showMessage(`${SVG_ICONS.spinner} Searching...`);
 
-    // Both lookups start together, but the songs don't wait on Invidious.
-    // (searchSongsMeta catches its own errors, so it always resolves.)
-    let videoError = null;
-    const songsPromise = searchSongsMeta(query, 25);
-    const videosPromise = searchVideosCached(query).catch(e => {
-        videoError = e;
-        return [];
-    });
-
-    const songs = await songsPromise;
+    let songs = [];
+    try {
+        songs = await searchStreamApi(query, STREAM_SEARCH_LIMIT);
+    } catch (e) {
+        console.warn("Music API search failed, falling back to Invidious:", e.message);
+    }
     if (myToken !== searchToken) return;
 
     if (songs.length > 0) {
         renderSearchResults(songs.map(song => ({ ...song, videos: [] })));
-    }
-
-    const videos = await videosPromise;
-    if (myToken !== searchToken) return;
-
-    if (songs.length === 0) {
-        if (videos.length === 0) {
-            if (videoError) {
-                console.error("Search failed:", videoError);
-                showMessage(`${SVG_ICONS.warning} Search error: Unable to connect to streaming network.`);
-            } else {
-                showMessage("No results found.");
-            }
-            return;
-        }
-        renderSearchResults(buildSearchTracks(videos, [], query));
-    } else if (videos.length > 0) {
-        appendSearchTracks(attachVideosToTracks(currentSearchResults, videos));
-    }
-
-    enrichRawTracks(currentSearchResults, myToken);
-}
-
-function renderSearchResults(tracks) {
-    tileEls.clear();
-    currentSearchResults = tracks;
-    resultsList.innerHTML = "";
-    appendTiles(tracks);
-}
-
-function appendTiles(tracks) {
-    tracks.forEach(track => {
-        const tile = createTile(track, () => playFromList(currentSearchResults, track));
-        tileEls.set(track, tile);
-        resultsList.appendChild(tile);
-    });
-}
-
-// Adds to the list that's already on screen (same array, so prev/next keep working)
-function appendSearchTracks(extra) {
-    if (extra.length === 0) return;
-    currentSearchResults.push(...extra);
-    appendTiles(extra);
-}
-
-// Attach each video to the song it matches; anything left over becomes its own raw tile
-function attachVideosToTracks(tracks, videos) {
-    const extras = [];
-    for (const video of videos) {
-        let best = null;
-        let bestScore = -Infinity;
-        for (const track of tracks) {
-            if (track.source === "youtube") continue;
-            const m = matchVideoToSong(video, track);
-            if (m.confident && m.score > bestScore) {
-                best = track;
-                bestScore = m.score;
-            }
-        }
-        if (best) addVideo(best, video);
-        else extras.push(rawTrackFromVideo(video));
-    }
-    return extras;
-}
-
-async function enrichRawTracks(tracks, myToken) {
-    const candidates = tracks
-        .filter(t => t.source === "youtube" && (!t.duration || (t.duration >= 60 && t.duration <= 900)))
-        .slice(0, MAX_ENRICH_LOOKUPS);
-
-    await Promise.all(candidates.map(raw => enrichLimiter(async () => {
-        // Queued by a search the user has already left: skip the network call
-        if (myToken !== searchToken || currentSearchResults !== tracks) return;
-
-        const video = raw.videos[0];
-        if (!video) return;
-        const { artist, title } = guessArtistTitle(video);
-        if (!title) return;
-
-        let songs = [];
-        try {
-            songs = await searchSongsMeta(`${artist} ${title}`.trim(), 5);
-        } catch (e) {
-            return;
-        }
-        if (myToken !== searchToken || currentSearchResults !== tracks) return;
-
-        let best = null;
-        let bestScore = -Infinity;
-        for (const song of songs) {
-            const m = matchVideoToSong(video, song);
-            if (m.confident && m.score > bestScore) {
-                best = song;
-                bestScore = m.score;
-            }
-        }
-        if (best) upgradeRawTrack(raw, best);
-    })));
-}
-
-function upgradeRawTrack(raw, song) {
-    const list = currentSearchResults;
-    const tile = tileEls.get(raw);
-    const existing = list.find(t => t !== raw && t.key === song.key);
-
-    if (existing && raw !== currentTrackInfo) {
-        raw.videos.forEach(v => addVideo(existing, v));
-        const index = list.indexOf(raw);
-        if (index !== -1) list.splice(index, 1);
-        if (tile) tile.remove();
-        tileEls.delete(raw);
         return;
     }
 
-    const videos = raw.videos;
-    Object.assign(raw, song, { videos, videoId: null });
-    if (tile) fillTile(tile, raw);
+    showMessage(`${SVG_ICONS.spinner} Searching backup source...`);
+
+    let videos = [];
+    let videoError = null;
+    try {
+        videos = await searchVideosCached(query);
+    } catch (e) {
+        videoError = e;
+    }
+    if (myToken !== searchToken) return;
+
+    if (videos.length === 0) {
+        if (videoError) {
+            console.error("Search failed:", videoError);
+            showMessage(`${SVG_ICONS.warning} Search error: Unable to connect to streaming network.`);
+        } else {
+            showMessage("No results found.");
+        }
+        return;
+    }
+
+    renderSearchResults(videos.map(rawTrackFromVideo));
+}
+
+function renderSearchResults(tracks) {
+    currentSearchResults = tracks;
+    resultsList.innerHTML = "";
+    tracks.forEach(track => {
+        resultsList.appendChild(createTile(track, () => playFromList(currentSearchResults, track)));
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -1546,6 +1483,103 @@ function attemptToPlay(audio, timeoutMs = 12000) {
         audio.play().catch(err => { cleanup(); reject(err); });
     });
 }
+
+async function tryPlayStream(streamId, myToken) {
+    const cacheKey = `ripple:${streamId}`;
+
+    const cachedUrl = await getCachedAudioObjectURL(cacheKey);
+    if (myToken !== playRequestToken) return "stale";
+    if (cachedUrl) {
+        try {
+            audioPlayer.src = cachedUrl;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer);
+            return myToken === playRequestToken ? "ok" : "stale";
+        } catch (e) {}
+    }
+
+    const url = streamUrlFor(streamId);
+
+    try {
+        audioPlayer.src = url;
+        audioPlayer.volume = volumeBar.value;
+        await attemptToPlay(audioPlayer, 12000);
+        return myToken === playRequestToken ? "ok" : "stale";
+    } catch (e) {
+        console.warn(`Direct stream failed for ${streamId}:`, e && e.message ? e.message : e);
+    }
+    if (myToken !== playRequestToken) return "stale";
+
+    try {
+        const blob = await fetchBlobViaWisp(url, null, 90000);
+        if (myToken !== playRequestToken) return "stale";
+
+        const objectUrl = await cacheAudioBlob(cacheKey, blob);
+        audioPlayer.src = objectUrl;
+        audioPlayer.volume = volumeBar.value;
+        await attemptToPlay(audioPlayer, 10000);
+        return myToken === playRequestToken ? "ok" : "stale";
+    } catch (err) {
+        console.warn(`Wisp stream fallback failed for ${streamId}:`, err && err.message ? err.message : err);
+    }
+
+    return "fail";
+}
+
+async function playViaStreamApi(track, myToken) {
+    const tried = new Set();
+
+    const attempt = async (streamId) => {
+        if (!streamId) return "fail";
+        streamId = String(streamId);
+        if (tried.has(streamId)) return "fail";
+        tried.add(streamId);
+        if (tried.size > 1) setLoadingHint(track, `trying stream ${tried.size}`);
+
+        const result = await tryPlayStream(streamId, myToken);
+        if (result === "ok") onPlaybackStarted(track, { type: "stream", id: streamId });
+        return result;
+    };
+
+    const remembered = workingStreams[track.key];
+    for (const id of [track.streamId, remembered]) {
+        const result = await attempt(id);
+        if (result !== "fail") return result;
+        if (id && String(id) === String(remembered)) forgetWorkingStream(track.key);
+    }
+    if (myToken !== playRequestToken) return "stale";
+
+    const leftovers = [];
+    for (const query of buildStreamQueries(track)) {
+        if (tried.size >= STREAM_MAX_TRIES) break;
+        setLoadingHint(track, "finding stream");
+
+        let found = [];
+        try {
+            found = await searchStreamApi(query, STREAM_MATCH_LIMIT);
+        } catch (e) {
+            console.warn("Stream match search failed:", e.message);
+            break; 
+        }
+        if (myToken !== playRequestToken) return "stale";
+
+        const ranked = rankStreamSongs(found, track);
+        for (const song of ranked.good) {
+            if (tried.size >= STREAM_MAX_TRIES) break;
+            const result = await attempt(song.streamId);
+            if (result !== "fail") return result;
+        }
+        leftovers.push(...ranked.loose);
+    }
+
+    if (tried.size < STREAM_MAX_TRIES && leftovers.length > 0) {
+        const result = await attempt(leftovers[0].streamId);
+        if (result !== "fail") return result;
+    }
+
+    return "fail";
+}
+
 
 async function getAudioFormats(videoId) {
     const data = await fetchInvidiousJSON(`/api/v1/videos/${encodeURIComponent(videoId)}`, 8000, 25000);
@@ -1632,33 +1666,7 @@ async function tryPlayVideo(videoId, myToken) {
     return "fail";
 }
 
-function showTrackInDock(track, loading) {
-    nowPlayingTitle.innerHTML = loading
-        ? `${SVG_ICONS.spinner} ${escapeHTML(track.title)}`
-        : escapeHTML(track.title);
-    nowPlayingArtist.textContent = track.artist || "";
-    setImage(nowPlayingCover, trackCoverUrls(track));
-}
-
-function setLoadingHint(track, hint) {
-    if (track !== currentTrackInfo) return;
-    nowPlayingArtist.textContent = `${track.artist || ""}${hint ? " • " + hint : ""}`;
-}
-
-function onPlaybackStarted(track, videoId) {
-    if (track.source !== "youtube") {
-        track.videoId = videoId;
-        rememberWorkingVideo(track.key, videoId);
-    }
-    showTrackInDock(track, false);
-    updatePlayButton();
-    updateNavButtons();
-    renderSidebarTracks();
-    updatePiPCanvas(track);
-    updateMediaSessionMetadata(track);
-}
-
-async function resolveAndPlay(track, myToken) {
+async function playViaInvidious(track, myToken) {
     const tried = new Set();
     let attempts = 0;
 
@@ -1666,10 +1674,10 @@ async function resolveAndPlay(track, myToken) {
         if (!videoId || tried.has(videoId)) return "fail";
         tried.add(videoId);
         attempts++;
-        if (attempts > 1) setLoadingHint(track, `trying source ${attempts}`);
+        if (attempts > 1) setLoadingHint(track, `trying backup source ${attempts}`);
 
         const result = await tryPlayVideo(videoId, myToken);
-        if (result === "ok") onPlaybackStarted(track, videoId);
+        if (result === "ok") onPlaybackStarted(track, { type: "video", id: videoId });
         return result;
     };
 
@@ -1682,6 +1690,7 @@ async function resolveAndPlay(track, myToken) {
         return "fail";
     };
 
+    // Raw YouTube results already know their video
     if (track.source === "youtube") {
         return attempt(track.videoId);
     }
@@ -1700,7 +1709,7 @@ async function resolveAndPlay(track, myToken) {
     const leftovers = [...initial.poor];
     for (const query of buildSongQueries(track)) {
         if (tried.size >= MAX_VIDEOS_TRIED) break;
-        setLoadingHint(track, "searching for a source");
+        setLoadingHint(track, "searching backup source");
 
         let found = [];
         try {
@@ -1718,6 +1727,47 @@ async function resolveAndPlay(track, myToken) {
 
     result = await attemptAll(leftovers.slice(0, 3));
     return result;
+}
+
+
+function showTrackInDock(track, loading) {
+    nowPlayingTitle.innerHTML = loading
+        ? `${SVG_ICONS.spinner} ${escapeHTML(track.title)}`
+        : escapeHTML(track.title);
+    nowPlayingArtist.textContent = track.artist || "";
+    setImage(nowPlayingCover, trackCoverUrls(track));
+}
+
+function setLoadingHint(track, hint) {
+    if (track !== currentTrackInfo) return;
+    nowPlayingArtist.textContent = `${track.artist || ""}${hint ? " • " + hint : ""}`;
+}
+
+function onPlaybackStarted(track, via) {
+    if (via.type === "stream") {
+        track.streamId = via.id;
+        if (track.source !== "ripple") rememberWorkingStream(track.key, via.id);
+    } else if (track.source !== "youtube") {
+        track.videoId = via.id;
+        rememberWorkingVideo(track.key, via.id);
+    }
+    showTrackInDock(track, false);
+    updatePlayButton();
+    updateNavButtons();
+    renderSidebarTracks();
+    updatePiPCanvas(track);
+    updateMediaSessionMetadata(track);
+}
+
+async function resolveAndPlay(track, myToken) {
+    if (track.source !== "youtube") {
+        const result = await playViaStreamApi(track, myToken);
+        if (result !== "fail") return result;
+        if (myToken !== playRequestToken) return "stale";
+        setLoadingHint(track, "using backup source");
+    }
+
+    return playViaInvidious(track, myToken);
 }
 
 async function playTrack(track) {
@@ -1766,6 +1816,7 @@ confirmAddBtn.addEventListener("click", () => {
     if (targetPlaylist && playlists[targetPlaylist] && currentTrackInfo) {
         const entry = serializeTrack(currentTrackInfo);
         if (!entry.videoId) entry.videoId = workingVideos[currentTrackInfo.key] || null;
+        if (!entry.streamId) entry.streamId = workingStreams[currentTrackInfo.key] || null;
         playlists[targetPlaylist].push(normalizeTrack({ ...entry, videos: [] }));
         savePlaylists();
         updatePlaylistDropdowns();
