@@ -49,8 +49,20 @@ function initApp() {
 
   let mirrorsScriptFailed = false;
   const MIRROR_PH = /\$\{(scram|static|uv|frogiee|truffled)\}/;
-  const verifiedMirror = (m, key) =>
-    m?.[key] && (key === 'scram' || key === 'uv' || m.sources?.[key]) ? m[key] : '';
+  const mirrorRank = src => !src ? 0 : src === 'json' ? 1 : /-unvalidated$/.test(src) ? 2 : 3;
+  const lastGoodMirror = key => {
+    try {
+      const v = getStorage('kstuff_lastgood_' + key);
+      return /^https?:\/\/[^\s{}"']+$/.test(v || '') ? cleanUrl(v) : '';
+    } catch { return ''; }
+  };
+  const verifiedMirror = (m, key) => {
+    const v = m?.[key] || '';
+    if (key === 'scram' || key === 'uv') return v;
+    const rank = v ? mirrorRank(m.sources?.[key]) : 0;
+    if (rank >= 3) return v;
+    return lastGoodMirror(key) || (rank === 2 ? v : '');
+  };
 
   const lastIframeHtml = {};
   const iframeLoadFailed = {};
@@ -953,7 +965,7 @@ function initApp() {
       poll = setInterval(check, 1000);
       timer = setTimeout(() => {
         console.warn(`No verified ${key} mirror after ${timeoutMs / 1000}s`, window.kstuffMirrors);
-        finish(window.kstuffMirrors?.[key] || '');
+        finish(verifiedMirror(window.kstuffMirrors, key));
       }, timeoutMs);
       check();
     });
