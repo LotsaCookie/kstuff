@@ -374,7 +374,7 @@ function initApp() {
         if (modalTitle) modalTitle.textContent = item.title + ' - finding a mirror...';
         await waitForMirrorKey(key);
         if (modalOverlay && !modalOverlay.classList.contains('active')) return;   // closed while waiting
-        const next = appB(targetUrl, mirrorsToGRep(window.kstuffMirrors));
+        const next = appB(targetUrl, mirrorsToGRep(window.kstuffMirrors), true);
         if (next === targetUrl) break;
         targetUrl = next;
       }
@@ -712,11 +712,15 @@ function initApp() {
     if (fetchedJsonString !== savedJsonString) { setStorage('kstuff_last_changelog', fetchedJsonString); $('changelog-modal')?.classList.add('active'); }
   }).catch(err => console.error('change-log.json failed', err));
 
-  const appB = (s, rep = gRep) => {
+  const appB = (s, rep = gRep, isPage = false) => {
     if (typeof s !== 'string') return s;
-    for (const [k, v] of Object.entries(rep)) { if (v) s = s.split(`\${${k}}`).join(v); }
+    for (const [k, v] of Object.entries(rep)) {
+      if (!v) continue;
+      if (k === 'static' && isPage) s = s.replace(/\$\{static\}(?!\/?embed\.html)/g, () => cleanUrl(v) + '/embed.html#');
+      s = s.split(`\${${k}}`).join(v);
+    }
     if (MIRROR_PH.test(s)) return s;
-    return s.replace(/([^:]\/)\/+/g, '$1').replace(/^http:\/\//i, 'https://');
+    return s.replace(/([^:]\/)\/+/g, '$1').replace(/(\/embed\.html#)\/+/g, '$1').replace(/^http:\/\//i, 'https://');
   };
 
   const proc = arr => (Array.isArray(arr) ? arr : []).map(i => {
@@ -731,7 +735,7 @@ function initApp() {
         p.category = p.category || 'Truffled';
       }
     }
-    p.url = appB(p.url); p.image = appB(p.image);
+    p.url = appB(p.url, gRep, true); p.image = appB(p.image);
     if (MIRROR_PH.test(p.image || '')) p.image = '';
     return p;
   }).sort((a, b) => (a.title||"").localeCompare(b.title||"", undefined, { sensitivity: 'base' }));
