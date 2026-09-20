@@ -372,12 +372,15 @@ function initApp() {
       for (let i = 0; i < 5 && MIRROR_PH.test(targetUrl); i++) {
         const key = MIRROR_PH.exec(targetUrl)[1];
         if (modalTitle) modalTitle.textContent = item.title + ' - finding a mirror...';
-        await waitForMirrorKey(key);
+        const found = await waitForMirrorKey(key);
         if (modalOverlay && !modalOverlay.classList.contains('active')) return;   // closed while waiting
-        const next = appB(targetUrl, mirrorsToGRep(window.kstuffMirrors), true);
+        const rep = mirrorsToGRep(window.kstuffMirrors);
+        if (!rep[key] && found) rep[key] = found;
+        const next = appB(targetUrl, rep, true);
         if (next === targetUrl) break;
         targetUrl = next;
       }
+      syncMirrors();
       if (modalTitle) modalTitle.textContent = item.title;
       if (MIRROR_PH.test(targetUrl)) {
         modalIframe.srcdoc = '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
@@ -855,19 +858,45 @@ function initApp() {
 
   $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshReadingCorner());
 
-  $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Json/a.json'));
+  $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Assets/json/a.json'));
 
   let rawReadingCornerData = [];
   let rawSciencequizData = [];
 
+  async function getMirrorsScriptSources() {
+    const path = 'Assets/js/mirrors.js';
+    const list = [];
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 4000);
+      const res = await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main', { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        const sha = (await res.json())?.sha;
+        if (sha) list.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/${path}`);
+      }
+    } catch {}
+    list.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/${path}`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/${path}`);
+    return list;
+  }
+
   function loadMirrorsScript() {
-    return new Promise(resolve => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/Assets/js/mirrors.js';
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => { console.error('Failed to load mirrors.js'); mirrorsScriptFailed = true; resolve(false); };
-      document.head.appendChild(script);
+    return new Promise(async resolve => {
+      const sources = await getMirrorsScriptSources();
+      const tryNext = i => {
+        if (i >= sources.length) { console.error('Failed to load mirrors.js'); mirrorsScriptFailed = true; resolve(false); return; }
+        const script = document.createElement('script');
+        script.src = sources[i];
+        script.async = true;
+        script.onload = () => {
+          if (!window.kstuffMirrors) { script.remove(); return tryNext(i + 1); }
+          console.log('[script.js] mirrors.js loaded from', sources[i]);
+          resolve(true);
+        };
+        script.onerror = () => { script.remove(); tryNext(i + 1); };
+        document.head.appendChild(script);
+      };
+      tryNext(0);
     });
   }
 
@@ -898,15 +927,34 @@ function initApp() {
       const timer = setTimeout(finish, timeoutMs);
     });
   }
-  function waitForMirrorKey(key) {
+  function syncMirrors(mirrors = window.kstuffMirrors) {
+    const next = mirrorsToGRep(mirrors);
+    if (JSON.stringify(next) === JSON.stringify(gRep)) return false;
+    gRep = next;
+    return true;
+  }
+
+  function waitForMirrorKey(key, timeoutMs = 20000) {
     return new Promise(resolve => {
-      const check = () => {
-        const g = mirrorsToGRep(window.kstuffMirrors);
-        if (!g[key] && !mirrorsScriptFailed) return;
+      let done = false, poll = null, timer = null;
+      const finish = value => {
+        if (done) return;
+        done = true;
         window.removeEventListener('kstuff-mirrors-updated', check);
-        resolve(g[key] || '');
+        clearInterval(poll);
+        clearTimeout(timer);
+        resolve(value);
       };
+      function check() {
+        const g = mirrorsToGRep(window.kstuffMirrors);
+        if (g[key] || mirrorsScriptFailed) finish(g[key] || '');
+      }
       window.addEventListener('kstuff-mirrors-updated', check);
+      poll = setInterval(check, 1000);
+      timer = setTimeout(() => {
+        console.warn(`No verified ${key} mirror after ${timeoutMs / 1000}s`, window.kstuffMirrors);
+        finish(window.kstuffMirrors?.[key] || '');
+      }, timeoutMs);
       check();
     });
   }
@@ -925,15 +973,17 @@ function initApp() {
     window.addEventListener('kstuff-mirrors-updated', (e) => {
       const mirrors = e.detail || window.kstuffMirrors;
       if (!mirrors) return;
-      const newGRep = mirrorsToGRep(mirrors);
-      const changed = JSON.stringify(newGRep) !== JSON.stringify(gRep);
-      gRep = newGRep;
-      if (changed) reprocessGridsWithMirrors();
+      if (syncMirrors(mirrors)) reprocessGridsWithMirrors();
     });
   }
 
   setupMirrorListener();
   loadMirrorsScript();
+
+  const mirrorPoll = setInterval(() => {
+    if (syncMirrors()) reprocessGridsWithMirrors();
+    if ((gRep.static && gRep.truffled) || mirrorsScriptFailed) clearInterval(mirrorPoll);
+  }, 1500);
 
   initPromise = Promise.all([
     fetchReadingCornerRaw(),
@@ -944,7 +994,7 @@ function initApp() {
     gTruf.clear();
     if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
 
-    gRep = mirrorsToGRep(mirrors);
+    syncMirrors();
 
     rawReadingCornerData = gResult?.data || [];
     rawSciencequizData = a || [];
@@ -1111,7 +1161,7 @@ function initApp() {
       if (tId === 'readingcorner') {
         await refreshReadingCorner(false, 'updating', true);
       } else if (tId === 'sciencequiz') {
-        await rData('sciencequiz', 'Json/a.json', false, 'updating', true);
+        await rData('sciencequiz', 'Assets/json/a.json', false, 'updating', true);
       } else if (ifr) {
         await maybeReloadIframe(ifr.id, ifr.path);
       }
