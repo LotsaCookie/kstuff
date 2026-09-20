@@ -50,9 +50,9 @@ const cancelModalBtn = document.getElementById("cancelModalBtn");
 const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/search";
 const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
 const STREAM_QUALITY = "lossless";
-const STREAM_SEARCH_LIMIT = 30;  
+const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
-const STREAM_MAX_TRIES = 3;   
+const STREAM_MAX_TRIES = 3;
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
@@ -186,6 +186,7 @@ async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
     return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
 }
 
+// Wisp first, then a plain request
 async function fetchExternalOnce(url, wispMs = 10000, directMs = 6000) {
     try {
         return await withTimeout((async () => {
@@ -600,7 +601,6 @@ try {
 }
 Object.values(playlists).forEach(list => list.forEach(normalizeTrack));
 
-// song key -> Invidious video id that worked
 let workingVideos = {};
 try {
     workingVideos = JSON.parse(localStorage.getItem("songVideoMap")) || {};
@@ -622,7 +622,6 @@ function forgetWorkingVideo(key) {
     try { localStorage.setItem("songVideoMap", JSON.stringify(workingVideos)); } catch (e) {}
 }
 
-// song key -> new-API stream id that worked
 let workingStreams = {};
 try {
     workingStreams = JSON.parse(localStorage.getItem("songStreamMap")) || {};
@@ -828,6 +827,7 @@ function setImage(img, urls, lazy = false) {
         return;
     }
 
+    // Already fetched this session: show it instantly
     const ready = thumbObjectUrlCache.get(list[0]);
     if (ready) {
         img.src = ready;
@@ -1045,6 +1045,7 @@ async function updateMediaSessionMetadata(track) {
         } catch (e) {}
     };
 
+    // Text first; artwork is added once the Wisp copy is ready
     setMeta(null);
 
     for (const url of trackCoverUrls(track, true)) {
@@ -1106,7 +1107,89 @@ function updateNavButtons() {
     prevTrackBtn.disabled = !hasPrevious();
     nextTrackBtn.disabled = !hasNext();
     if (downloadBtn) downloadBtn.disabled = !audioPlayer.src;
+    postPlayerState();
 }
+
+/* ------------------------------------------------------------------ */
+/*  Mini player bridge (talks to the main app's header player)         */
+/* ------------------------------------------------------------------ */
+
+const MINI_STATE_MSG = "kstuff-music-state";
+const MINI_CMD_MSG = "kstuff-music-cmd";
+
+let trackStatus = "idle";
+let bridgeCover = { key: null, data: "" };
+
+function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+    });
+}
+
+async function loadBridgeCover(track) {
+    const key = track.key;
+    bridgeCover = { key, data: "" };
+
+    for (const url of trackCoverUrls(track)) {
+        try {
+            const objectUrl = await getImageBlobURL(url);
+            const blob = await (await fetch(objectUrl)).blob();
+            const data = await blobToDataURL(blob);
+            if (bridgeCover.key !== key) return;
+            bridgeCover.data = data;
+            if (currentTrackInfo && currentTrackInfo.key === key) postPlayerState();
+            return;
+        } catch (e) {}
+    }
+}
+
+function postPlayerState() {
+    if (window.parent === window) return;
+
+    const track = currentTrackInfo;
+    if (track && bridgeCover.key !== track.key) loadBridgeCover(track);
+
+    let status = "idle";
+    if (track) {
+        if (trackStatus === "loading" || trackStatus === "error") status = trackStatus;
+        else status = audioPlayer.paused ? "paused" : "playing";
+    }
+
+    try {
+        window.parent.postMessage({
+            type: MINI_STATE_MSG,
+            state: {
+                hasTrack: !!track,
+                status,
+                title: track ? track.title : "",
+                artist: track ? (track.artist || "") : "",
+                cover: track && bridgeCover.key === track.key ? bridgeCover.data : "",
+                hasPrev: hasPrevious(),
+                hasNext: hasNext()
+            }
+        }, "*");
+    } catch (e) {}
+}
+
+window.addEventListener("message", event => {
+    const msg = event.data;
+    if (!msg || msg.type !== MINI_CMD_MSG || event.source !== window.parent) return;
+
+    if (msg.action === "toggle") {
+        if (!audioPlayer.src) return;
+        if (audioPlayer.paused) audioPlayer.play().catch(() => {});
+        else audioPlayer.pause();
+    } else if (msg.action === "prev") {
+        playPrevious();
+    } else if (msg.action === "next") {
+        playNext();
+    } else if (msg.action === "state") {
+        postPlayerState();
+    }
+});
 
 function initPlaylists() {
     updatePlaylistDropdowns();
@@ -1540,7 +1623,6 @@ async function playViaStreamApi(track, myToken) {
         if (result === "ok") onPlaybackStarted(track, { type: "stream", id: streamId });
         return result;
     };
-
     const remembered = workingStreams[track.key];
     for (const id of [track.streamId, remembered]) {
         const result = await attempt(id);
@@ -1548,7 +1630,6 @@ async function playViaStreamApi(track, myToken) {
         if (id && String(id) === String(remembered)) forgetWorkingStream(track.key);
     }
     if (myToken !== playRequestToken) return "stale";
-
     const leftovers = [];
     for (const query of buildStreamQueries(track)) {
         if (tried.size >= STREAM_MAX_TRIES) break;
@@ -1579,7 +1660,6 @@ async function playViaStreamApi(track, myToken) {
 
     return "fail";
 }
-
 
 async function getAudioFormats(videoId) {
     const data = await fetchInvidiousJSON(`/api/v1/videos/${encodeURIComponent(videoId)}`, 8000, 25000);
@@ -1689,8 +1769,6 @@ async function playViaInvidious(track, myToken) {
         }
         return "fail";
     };
-
-    // Raw YouTube results already know their video
     if (track.source === "youtube") {
         return attempt(track.videoId);
     }
@@ -1729,7 +1807,6 @@ async function playViaInvidious(track, myToken) {
     return result;
 }
 
-
 function showTrackInDock(track, loading) {
     nowPlayingTitle.innerHTML = loading
         ? `${SVG_ICONS.spinner} ${escapeHTML(track.title)}`
@@ -1744,6 +1821,7 @@ function setLoadingHint(track, hint) {
 }
 
 function onPlaybackStarted(track, via) {
+    trackStatus = "ready";
     if (via.type === "stream") {
         track.streamId = via.id;
         if (track.source !== "ripple") rememberWorkingStream(track.key, via.id);
@@ -1773,6 +1851,7 @@ async function resolveAndPlay(track, myToken) {
 async function playTrack(track) {
     const myToken = ++playRequestToken;
     currentTrackInfo = track;
+    trackStatus = "loading";
 
     audioPlayer.pause();
     audioDock.classList.add("visible");
@@ -1784,6 +1863,7 @@ async function playTrack(track) {
     if (myToken !== playRequestToken || result === "stale") return;
 
     if (result !== "ok") {
+        trackStatus = "error";
         nowPlayingTitle.textContent = "Error: Cannot load audio stream.";
         nowPlayingArtist.textContent = `${track.title} • ${track.artist || ""}`;
         updateNavButtons();
@@ -1950,6 +2030,7 @@ closePlayerBtn.addEventListener("click", () => {
     activePlayingIndex = -1;
     activeList = null;
     currentTrackInfo = null;
+    trackStatus = "idle";
     renderSidebarTracks();
     updateNavButtons();
     updatePiPCanvas(null);
@@ -1957,6 +2038,7 @@ closePlayerBtn.addEventListener("click", () => {
 
 audioPlayer.addEventListener("play", () => {
     updatePlayButton();
+    postPlayerState();
     pipVideo.play().catch(() => {});
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
     updatePositionState();
@@ -1964,6 +2046,7 @@ audioPlayer.addEventListener("play", () => {
 
 audioPlayer.addEventListener("pause", () => {
     updatePlayButton();
+    postPlayerState();
     pipVideo.pause();
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "paused";
     updatePositionState();
