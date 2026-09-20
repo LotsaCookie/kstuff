@@ -38,22 +38,23 @@
     status: 'initializing'
   };
 
-  const MIRROR_TEST_TIMEOUT = 5000;        
+  const MIRROR_TEST_TIMEOUT = 5000;
   const AUTO_REFRESH_INTERVAL = 120000;
 
-  const WISP_SETUP_TIMEOUT = 20000;        
-  const CLONE_LIST_BASE_TIMEOUT = 10000; 
-  const CLONE_LIST_MAX_TIMEOUT = 60000;    
-  const CLONE_VALIDATE_TIMEOUT = 8000;     
-  const CLONE_CONCURRENCY = 6;             
-  const CLONE_PASS_DELAY = 3000;           
-  const JSON_STOPGAP_DELAY = 8000;         
+  const WISP_SETUP_TIMEOUT = 20000;
+  const CLONE_LIST_BASE_TIMEOUT = 10000;
+  const CLONE_LIST_MAX_TIMEOUT = 60000;
+  const CLONE_VALIDATE_TIMEOUT = 8000;
+  const CLONE_CONCURRENCY = 6;
+  const CLONE_PASS_DELAY = 3000;
+  const JSON_STOPGAP_DELAY = 8000;
   const MAX_STORED_LIST = 100;
 
   let commitEtag = null;
   let cachedCommitHash = null;
 
-  const CLONE_API = 'https://getwebsiteclones.vercel.app/api?url=';
+  const CLONE_API = 'https://getwebsiteclones.vercel.app/clones?url=';
+  const CLONE_API_JSON = 'https://getwebsiteclones.vercel.app/api?url=';
   const WISP_SERVER = 'wss://wisp.mercurywork.shop/';
   const BARE_MUX_ESM = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm';
   const BARE_MUX_WORKER = 'https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js';
@@ -148,12 +149,27 @@
     return withTimeout(load(), ms, 'Wisp fetch');
   }
 
+  const parseCloneList = text => {
+    let raw;
+    try {
+      const data = JSON.parse(text);
+      raw = Array.isArray(data?.domains) ? data.domains : Array.isArray(data) ? data : [];
+    } catch {
+      raw = String(text || '').split('\n').map(l => l.trim()).filter(l => /^https?:\/\//i.test(l));
+    }
+    return [...new Set(raw.map(normalizeCloneUrl).filter(isPlainUrl))];
+  };
+
   async function fetchCloneList(client, domain, ms) {
-    const text = await fetchTextViaWisp(client, CLONE_API + encodeURIComponent(domain), ms);
-    const data = JSON.parse(text);
-    const raw = Array.isArray(data?.domains) ? data.domains : [];
-    const list = raw.map(normalizeCloneUrl).filter(isPlainUrl);
-    return [...new Set(list)];
+    let primaryErr = null;
+    try {
+      const list = parseCloneList(await fetchTextViaWisp(client, CLONE_API + domain, ms));
+      if (list.length) return list;
+    } catch (e) {
+      primaryErr = e;
+    }
+    warn(`/clones list for ${domain} ${primaryErr ? 'failed (' + (primaryErr?.message || primaryErr) + ')' : 'was empty'}, trying /api`);
+    return parseCloneList(await fetchTextViaWisp(client, CLONE_API_JSON + encodeURIComponent(domain), ms));
   }
 
   const INCONCLUSIVE_TITLE = /just a moment|attention required|checking your browser|verify you are human/i;
@@ -192,13 +208,12 @@
     if (!html || html.length < 100) return false;
 
     const title = extractTitle(html);
-    if (INCONCLUSIVE_TITLE.test(title)) return true;   // bot challenge aimed at the proxy; trust the image probe
+    if (INCONCLUSIVE_TITLE.test(title)) return true;
 
     const ref = await getReferenceTitle(client, target.domain);
     if (ref) return !!title && (title.includes(ref) || ref.includes(title));
     return !BLOCK_TITLE.test(title);
   }
-
 
   async function checkCandidate(target, url, { validate = true } = {}) {
     if (!(await testCloneUrl(url, target.testPath))) return { ok: false, validated: false };
@@ -321,7 +336,7 @@
 
     try {
       for (let pass = 1; ; pass++) {
-        const listPromise = fetchListForever(target, ctx);   // runs alongside the tests below
+        const listPromise = fetchListForever(target, ctx);
         const tried = new Set();
 
         if (pass === 1) {
