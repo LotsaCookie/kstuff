@@ -139,11 +139,11 @@ function initApp() {
 
   const miniPlayer = el('div', {
     className: 'mini-player',
-    hidden: true,
+    hidden: false,
     innerHTML: `
       <img class="mini-player-cover no-art" alt="">
       <div class="mini-player-text">
-        <div class="mini-player-title"></div>
+        <div class="mini-player-title">Nothing playing</div>
         <div class="mini-player-artist"></div>
       </div>
       <button type="button" class="study-nav-btn" data-act="prev" title="Previous song">${MINI_ICONS.prev}</button>
@@ -163,7 +163,7 @@ function initApp() {
   function renderMiniPlayer(state) {
     musicState = state && state.hasTrack ? state : null;
     if (!musicState) {
-      miniPlayer.hidden = true;
+      miniPlayer.hidden = false;
       return;
     }
 
