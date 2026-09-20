@@ -104,6 +104,24 @@
                     <svg viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
                 </button>
             </div>
+
+            <div class="mini-player" id="mini-player" hidden>
+                <img class="mini-player-cover no-art" id="mini-player-cover" alt="">
+                <div class="mini-player-text">
+                    <div class="mini-player-title" id="mini-player-title"></div>
+                    <div class="mini-player-artist" id="mini-player-artist"></div>
+                </div>
+                <button type="button" class="study-nav-btn" id="mini-player-prev" data-act="prev" title="Previous song" disabled>
+                    <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button type="button" class="study-nav-btn" id="mini-player-toggle" data-act="toggle" title="Play / Pause">
+                    <svg class="mini-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="mini-icon-pause" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button type="button" class="study-nav-btn" id="mini-player-next" data-act="next" title="Next song" disabled>
+                    <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
         </header>
 
         <main id="studymaterial-area">
