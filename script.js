@@ -465,6 +465,15 @@ function initApp() {
     return new Promise(async resolve => {
       const f = $(id);
       if (!f) return resolve();
+
+      if (isKeepAliveLoaded(id)) {
+           if (!pageIsHidden(f)) {
+             f.style.display = 'block';
+            toggleLoader(false);
+           }
+      return resolve();
+      }
+      
       const token = iframeLoadTokens[id] = (iframeLoadTokens[id] || 0) + 1;
       iframeInFlight[id] = token;
       const stale = () => iframeLoadTokens[id] !== token;
