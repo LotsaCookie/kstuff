@@ -9,18 +9,30 @@
   const EPOXY_TRANSPORT =
     'https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs';
 
-  const CLONES_ENDPOINT =
+  const CLONES_API =
     'https://getwebsiteclones.vercel.app/clones?url=';
-  const API_ENDPOINT =
+  const JSON_API =
     'https://getwebsiteclones.vercel.app/api?url=';
 
-  const MIRROR_TEST_TIMEOUT = 10000;
-  const WISP_SETUP_TIMEOUT = 30000;
-  const CLONE_FETCH_TIMEOUT = 120000;
-  const AUTO_REFRESH_INTERVAL = 120000;
-  const JSON_STOPGAP_DELAY = 10000;
+  const MIRROR_TIMEOUT = 10000;
+  const PROXY_TIMEOUT = 30000;
+  const FETCH_TIMEOUT = 120000;
+  const REFRESH_INTERVAL = 120000;
 
-  const FALLBACK_MIRRORS = {
+  const targets = [
+    {
+      domain: 'frogiesarcade.win',
+      path: '/stuff/logo.png',
+      keys: ['static', 'frogiee']
+    },
+    {
+      domain: 'truffled.lol',
+      path: '/favicon.ico',
+      keys: ['truffled']
+    }
+  ];
+
+  const fallback = {
     scram: '',
     static: '',
     uv: '',
@@ -28,51 +40,31 @@
     frogiee: ''
   };
 
-  const CLONE_TARGETS = [
-    {
-      domain: 'truffled.lol',
-      testPath: '/favicon.ico',
-      keys: ['truffled'],
-      jsonFile: 'truffled.json'
-    },
-    {
-      domain: 'frogiesarcade.win',
-      testPath: '/stuff/logo.png',
-      keys: ['static', 'frogiee'],
-      jsonFile: 'frogiee.json'
-    }
-  ];
-
-  const CLONE_KEYS = CLONE_TARGETS.flatMap(target => target.keys);
-
-  const STYLE = {
+  const style = {
     info: 'color:#4a7dff;font-weight:bold',
     warn: 'color:#ffd74a;font-weight:bold',
     error: 'color:#ff7d4a;font-weight:bold'
   };
 
   const log = (...args) =>
-    console.log('%c[MIRRORS.JS]', STYLE.info, ...args);
+    console.log('%c[MIRRORS.JS]', style.info, ...args);
 
   const warn = (...args) =>
-    console.warn('%c[MIRRORS.JS]', STYLE.warn, ...args);
+    console.warn('%c[MIRRORS.JS]', style.warn, ...args);
 
-  const fail = (...args) =>
-    console.error('%c[MIRRORS.JS]', STYLE.error, ...args);
+  const error = (...args) =>
+    console.error('%c[MIRRORS.JS]', style.error, ...args);
 
-  const sleep = ms =>
-    new Promise(resolve => setTimeout(resolve, ms));
-
-  const cleanUrl = value => {
+  const clean = value => {
     if (typeof value !== 'string') return '';
     return value.trim().replace(/\/+$/, '');
   };
 
-  const isHttpUrl = value =>
+  const validUrl = value =>
     typeof value === 'string' &&
     /^https?:\/\/[^\s"'{}<>]+$/i.test(value.trim());
 
-  const getStorage = key => {
+  const storageGet = key => {
     try {
       return localStorage.getItem(key);
     } catch {
@@ -80,68 +72,74 @@
     }
   };
 
-  const setStorage = (key, value) => {
+  const storageSet = (key, value) => {
     try {
       localStorage.setItem(key, value);
     } catch {
+      return false;
     }
+
+    return true;
   };
 
-  const removeStorage = key => {
+  const storageRemove = key => {
     try {
       localStorage.removeItem(key);
     } catch {
+      return false;
     }
+
+    return true;
   };
 
-  window.kstuffMirrors = {
-    scram: '',
-    static: '',
-    uv: '',
-    truffled: FALLBACK_MIRRORS.truffled,
-    frogiee: '',
-    lastUpdate: 0,
-    testing: false,
-    status: 'initializing'
-  };
-
-  function withTimeout(promise, milliseconds, label) {
-    return new Promise((resolve, reject) => {
-      let finished = false;
+  const timeout = (promise, milliseconds, label) =>
+    new Promise((resolve, reject) => {
+      let complete = false;
 
       const timer = setTimeout(() => {
-        if (finished) return;
-        finished = true;
-        reject(
-          new Error(`${label} timed out after ${milliseconds}ms`)
-        );
+        if (complete) return;
+        complete = true;
+        reject(new Error(`${label} timed out`));
       }, milliseconds);
 
       Promise.resolve(promise).then(
         value => {
-          if (finished) return;
-          finished = true;
+          if (complete) return;
+          complete = true;
           clearTimeout(timer);
           resolve(value);
         },
-        error => {
-          if (finished) return;
-          finished = true;
+        reason => {
+          if (complete) return;
+          complete = true;
           clearTimeout(timer);
-          reject(error);
+          reject(reason);
         }
       );
     });
-  }
+
+  window.kstuffMirrors = {
+    ...fallback,
+    lastUpdate: 0,
+    testing: false,
+    status: 'initializing',
+    sources: {}
+  };
 
   let clientPromise = null;
+  let running = false;
 
-  async function setupBareClient() {
+  async function setupProxy() {
     try {
-      const {
-        BareMuxConnection,
-        BareClient
-      } = await import(BARE_MUX_ESM);
+      log('Loading BareMux...');
+
+      const module = await import(BARE_MUX_ESM);
+      const BareMuxConnection = module.BareMuxConnection;
+      const BareClient = module.BareClient;
+
+      if (!BareMuxConnection || !BareClient) {
+        throw new Error('BareMux exports were not found');
+      }
 
       const workerCode =
         `importScripts("${BARE_MUX_WORKER}");`;
@@ -153,57 +151,59 @@
       const workerUrl = URL.createObjectURL(blob);
       const connection = new BareMuxConnection(workerUrl);
 
-      await connection.setTransport(
-        EPOXY_TRANSPORT,
-        [{ wisp: WISP_SERVER }]
+      await timeout(
+        connection.setTransport(
+          EPOXY_TRANSPORT,
+          [{ wisp: WISP_SERVER }]
+        ),
+        PROXY_TIMEOUT,
+        'Proxy setup'
       );
+
+      const client = new BareClient();
 
       log('Proxy Ready');
 
-      return new BareClient();
-    } catch (error) {
-      fail(
-        'Proxy setup failed:',
-        error?.message || error
-      );
-
+      return client;
+    } catch (err) {
+      error('Proxy setup failed:', err?.message || err);
       return null;
     }
   }
 
-  function getBareClient() {
+  function getClient() {
     if (!clientPromise) {
-      clientPromise = withTimeout(
-        setupBareClient(),
-        WISP_SETUP_TIMEOUT,
-        'Wisp setup'
-      ).catch(error => {
-        fail(error?.message || error);
-        clientPromise = null;
-        return null;
+      clientPromise = setupProxy().then(client => {
+        if (!client) {
+          clientPromise = null;
+        }
+
+        return client;
       });
     }
 
     return clientPromise;
   }
 
-  async function fetchThroughWisp(client, url) {
-    const response = await withTimeout(
+  async function fetchText(client, url) {
+    log(`Fetching: ${url}`);
+
+    const response = await timeout(
       client.fetch(url),
-      CLONE_FETCH_TIMEOUT,
-      'Wisp request'
+      FETCH_TIMEOUT,
+      'Proxy fetch'
     );
 
     if (!response || !response.ok) {
       throw new Error(
-        `Proxy returned ${response?.status || 'no response'}`
+        `Proxy returned HTTP ${response?.status || 'unknown'}`
       );
     }
 
     return response.text();
   }
 
-  function parseCloneList(text) {
+  function parseDomains(text) {
     const raw = String(text || '').trim();
 
     if (!raw) {
@@ -232,68 +232,59 @@
       ...new Set(
         values
           .filter(value => typeof value === 'string')
-          .map(value => value.trim())
-          .filter(isHttpUrl)
-          .map(cleanUrl)
+          .map(value => clean(value))
+          .filter(validUrl)
       )
     ];
   }
 
-  async function getCloneList(client, domain) {
-    const endpoints = [
-      `${CLONES_ENDPOINT}${domain}`,
-      `${API_ENDPOINT}${encodeURIComponent(domain)}`
+  async function getDomains(client, domain) {
+    const urls = [
+      `${CLONES_API}${domain}`,
+      `${JSON_API}${encodeURIComponent(domain)}`
     ];
 
     let lastError = null;
 
-    for (const endpoint of endpoints) {
+    for (const url of urls) {
       try {
-        log(`Fetching clone list: ${endpoint}`);
+        const text = await fetchText(client, url);
+        const domains = parseDomains(text);
 
-        const text = await fetchThroughWisp(
-          client,
-          endpoint
-        );
-
-        const list = parseCloneList(text);
-
-        if (list.length > 0) {
+        if (domains.length) {
           log(
-            `Received ${list.length} clone URLs for ${domain}`
+            `Received ${domains.length} mirrors for ${domain}`
           );
 
-          return list;
+          return domains;
         }
 
-        warn(`Empty clone list received from ${endpoint}`);
-      } catch (error) {
-        lastError = error;
-
+        warn(`No domains returned from ${url}`);
+      } catch (err) {
+        lastError = err;
         warn(
-          `Clone-list request failed: ${endpoint}`,
-          error?.message || error
+          `Request failed for ${url}:`,
+          err?.message || err
         );
       }
     }
 
     throw (
       lastError ||
-      new Error(`No clone URLs were returned for ${domain}`)
+      new Error(`No mirrors returned for ${domain}`)
     );
   }
 
   function testMirror(baseUrl, testPath) {
     return new Promise(resolve => {
       const image = new Image();
-      let completed = false;
+      let finished = false;
 
       const finish = result => {
-        if (completed) return;
+        if (finished) return;
 
-        completed = true;
+        finished = true;
         clearTimeout(timer);
-
         image.onload = null;
         image.onerror = null;
         image.src = '';
@@ -303,273 +294,66 @@
 
       const timer = setTimeout(() => {
         finish(false);
-      }, MIRROR_TEST_TIMEOUT);
+      }, MIRROR_TIMEOUT);
 
       image.onload = () => finish(true);
       image.onerror = () => finish(false);
 
       const cacheBuster =
-        `${Date.now()}${Math.random().toString(36).slice(2)}`;
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
       const path = testPath.startsWith('/')
         ? testPath
         : `/${testPath}`;
 
       image.src =
-        `${cleanUrl(baseUrl)}${path}?cb=${cacheBuster}`;
+        `${clean(baseUrl)}${path}?cb=${cacheBuster}`;
     });
   }
 
-  function readStoredMirror(target) {
+  function getSavedMirror(target) {
     for (const key of target.keys) {
-      const value = getStorage(
-        `kstuff_lastgood_${key}`
-      );
+      const saved = storageGet(`kstuff_lastgood_${key}`);
 
-      if (value && isHttpUrl(value)) {
-        return cleanUrl(value);
+      if (saved && validUrl(saved)) {
+        return clean(saved);
       }
     }
 
     return null;
   }
 
-  function storeMirror(target, url) {
-    const clean = cleanUrl(url);
+  function saveMirror(target, url) {
+    const value = clean(url);
 
     target.keys.forEach(key => {
-      setStorage(
-        `kstuff_lastgood_${key}`,
-        clean
-      );
-    });
-
-    target.keys.forEach(key => {
-      FALLBACK_MIRRORS[key] = clean;
+      storageSet(`kstuff_lastgood_${key}`, value);
+      fallback[key] = value;
     });
   }
 
-  function removeStoredMirror(target) {
+  function removeSavedMirror(target) {
     target.keys.forEach(key => {
-      removeStorage(
-        `kstuff_lastgood_${key}`
-      );
+      storageRemove(`kstuff_lastgood_${key}`);
     });
   }
 
-  async function findWorkingMirror(target) {
-    const savedMirror = readStoredMirror(target);
-
-    if (savedMirror) {
-      log(`Found saved mirror: ${savedMirror}`);
-      log('Testing saved mirror...');
-
-      if (
-        await testMirror(
-          savedMirror,
-          target.testPath
-        )
-      ) {
-        log('Saved mirror is still working');
-        return {
-          url: savedMirror,
-          via: 'cache'
-        };
-      }
-
-      warn(
-        'Saved mirror failed; removing it from storage'
-      );
-
-      removeStoredMirror(target);
-    }
-
-    const client = await getBareClient();
-
-    if (!client) {
-      throw new Error('Proxy failed to initialize');
-    }
-
-    let cloneList;
-
-    try {
-      log(`Fetching URL list for ${target.domain}...`);
-      cloneList = await getCloneList(
-        client,
-        target.domain
-      );
-
-      log(
-        `Successfully fetched ${cloneList.length} URLs ` +
-        `for ${target.domain}`
-      );
-    } catch (error) {
-      throw new Error(
-        `Failed to fetch clone list: ` +
-        `${error?.message || error}`
-      );
-    }
-
-    for (const url of cloneList) {
-      log(`Testing: ${url}`);
-
-      const working = await testMirror(
-        url,
-        target.testPath
-      );
-
-      if (working) {
-        log(`Found working mirror: ${url}`);
-
-        storeMirror(target, url);
-
-        return {
-          url,
-          via: 'wisp'
-        };
-      }
-
-      log(`Mirror failed: ${url}`);
-    }
-
-    throw new Error(
-      `Exhausted all ${cloneList.length} URLs; ` +
-      `no working mirror was found`
-    );
-  }
-
-  let commitHash = 'main';
-
-  async function refreshCommitHash() {
-    try {
-      const response = await fetch(
-        'https://api.github.com/repos/lotsacookie/kstuff/commits/main',
-        {
-          cache: 'no-store'
-        }
-      );
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data?.sha) {
-        commitHash = data.sha;
-      }
-    } catch (error) {
-      warn(
-        'Could not refresh repository commit:',
-        error?.message || error
-      );
-    }
-  }
-
-  async function fetchJsonAsset(path) {
-    await refreshCommitHash();
-
-    const urls = [
-      `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitHash}/${path}`,
-      path
-    ];
-
-    for (const url of urls) {
-      try {
-        const response = await fetch(
-          `${url}${url.includes('?') ? '&' : '?'}cb=${Date.now()}`,
-          {
-            cache: 'no-store'
-          }
-        );
-
-        if (!response.ok) {
-          continue;
-        }
-
-        return await response.json();
-      } catch {
-      }
-    }
-
-    throw new Error(`Unable to fetch ${path}`);
-  }
-
-  async function tryLocalJsonFallback(target, isInitial) {
-    if (window.kstuffMirrors[target.keys[0]]) {
-      return;
-    }
-
-    try {
-      warn(
-        `Trying local JSON fallback for ${target.domain}`
-      );
-
-      const table = await fetchJsonAsset(
-        `Assets/json/mirrors/${target.jsonFile}`
-      );
-
-      if (!Array.isArray(table)) {
-        return;
-      }
-
-      for (const entry of table) {
-        if (!entry || !isHttpUrl(entry.url)) {
-          continue;
-        }
-
-        const working = await testMirror(
-          entry.url,
-          entry.img || target.testPath
-        );
-
-        if (working) {
-          const url = cleanUrl(entry.url);
-
-          storeMirror(target, url);
-          publishMirror(target, url, 'json', isInitial);
-
-          return;
-        }
-      }
-    } catch (error) {
-      warn(
-        `Local JSON fallback failed for ${target.domain}:`,
-        error?.message || error
-      );
-    }
-  }
-
-  function publishMirror(
-    target,
-    url,
-    via,
-    isInitial
-  ) {
-    const clean = cleanUrl(url);
-    const update = {};
-
-    target.keys.forEach(key => {
-      update[key] = clean;
-    });
-
+  function publish(target, url, source) {
+    const value = clean(url);
     const sources = {
       ...(window.kstuffMirrors.sources || {})
     };
 
     target.keys.forEach(key => {
-      sources[key] = via;
+      window.kstuffMirrors[key] = value;
+      sources[key] = source;
     });
 
-    window.kstuffMirrors = {
-      ...window.kstuffMirrors,
-      ...update,
-      sources,
-      lastUpdate: Date.now(),
-      status: 'ready'
-    };
+    window.kstuffMirrors.sources = sources;
+    window.kstuffMirrors.lastUpdate = Date.now();
+    window.kstuffMirrors.status = 'ready';
 
-    log(`${target.domain} -> ${clean} (${via})`);
+    log(`${target.domain}: ${value}`);
 
     window.dispatchEvent(
       new CustomEvent('kstuff-mirrors-updated', {
@@ -578,184 +362,116 @@
     );
   }
 
-  function publishGeneralMirrors(
-    mirrors,
-    isInitial
-  ) {
-    const update = {
-      ...mirrors,
-      lastUpdate: Date.now(),
-      status: 'ready'
-    };
+  async function findMirror(target) {
+    const saved = getSavedMirror(target);
 
-    window.kstuffMirrors = {
-      ...window.kstuffMirrors,
-      ...update
-    };
+    if (saved) {
+      log(`Testing saved mirror: ${saved}`);
 
-    log('General mirror update:', {
-      scram: Boolean(window.kstuffMirrors.scram),
-      uv: Boolean(window.kstuffMirrors.uv),
-      isInitial
-    });
+      if (await testMirror(saved, target.path)) {
+        log(`Saved mirror works: ${saved}`);
+        return {
+          url: saved,
+          source: 'cache'
+        };
+      }
 
-    window.dispatchEvent(
-      new CustomEvent('kstuff-mirrors-updated', {
-        detail: window.kstuffMirrors
-      })
+      warn(`Saved mirror failed: ${saved}`);
+      removeSavedMirror(target);
+    }
+
+    const client = await getClient();
+
+    if (!client) {
+      throw new Error('Proxy client unavailable');
+    }
+
+    const domains = await getDomains(
+      client,
+      target.domain
+    );
+
+    for (const domain of domains) {
+      log(`Testing mirror: ${domain}`);
+
+      if (await testMirror(domain, target.path)) {
+        log(`Working mirror found: ${domain}`);
+
+        saveMirror(target, domain);
+
+        return {
+          url: domain,
+          source: 'wisp'
+        };
+      }
+
+      log(`Mirror failed: ${domain}`);
+    }
+
+    throw new Error(
+      `No working mirror found for ${target.domain}`
     );
   }
 
-  async function updateGeneralMirror(
-    key,
-    fileName
-  ) {
+  async function findTarget(target) {
     try {
-      const table = await fetchJsonAsset(
-        `Assets/json/mirrors/${fileName}`
+      const result = await findMirror(target);
+
+      publish(
+        target,
+        result.url,
+        result.source
+      );
+    } catch (err) {
+      error(
+        `${target.domain} search failed:`,
+        err?.message || err
       );
 
-      if (!Array.isArray(table) || !table.length) {
-        return '';
-      }
-
-      for (const entry of table) {
-        if (!entry || !isHttpUrl(entry.url)) {
-          continue;
-        }
-
-        const working = await testMirror(
-          entry.url,
-          entry.img || '/favicon.ico'
-        );
-
-        if (working) {
-          const result =
-            cleanUrl(entry.url) +
-            (entry.final || '');
-
-          setStorage(
-            `kstuff_lastgood_${key}`,
-            JSON.stringify(entry)
-          );
-
-          FALLBACK_MIRRORS[key] = result;
-
-          return result;
-        }
-      }
-
-      return cleanUrl(table[0].url) +
-        (table[0].final || '');
-    } catch (error) {
-      warn(
-        `${key} mirror update failed:`,
-        error?.message || error
-      );
-
-      return FALLBACK_MIRRORS[key] || '';
-    }
-  }
-
-  let activeSearches = new Map();
-
-  function startCloneSearch(target, isInitial) {
-    if (activeSearches.has(target.domain)) {
-      return activeSearches.get(target.domain);
-    }
-
-    const search = (async () => {
-      let fallbackTimer = null;
-
-      try {
-        fallbackTimer = setTimeout(() => {
-          tryLocalJsonFallback(
-            target,
-            isInitial
-          ).catch(() => {});
-        }, JSON_STOPGAP_DELAY);
-
-        const result = await findWorkingMirror(target);
-
-        publishMirror(
+      if (fallback[target.keys[0]]) {
+        publish(
           target,
-          result.url,
-          result.via,
-          isInitial
+          fallback[target.keys[0]],
+          'fallback'
         );
-      } catch (error) {
-        fail(
-          `${target.domain} mirror search failed:`,
-          error?.message || error
-        );
-      } finally {
-        clearTimeout(fallbackTimer);
-        activeSearches.delete(target.domain);
       }
-    })();
-
-    activeSearches.set(target.domain, search);
-
-    return search;
+    }
   }
 
-  async function testAllMirrors(isInitial = false) {
-    if (window.kstuffMirrors.testing) {
-      log('Mirror test already running');
+  async function update() {
+    if (running) {
+      log('Search already running');
       return;
     }
 
+    running = true;
     window.kstuffMirrors.testing = true;
 
     try {
-      log(
-        isInitial
-          ? 'Initial mirror search starting...'
-          : 'Mirror refresh starting...'
-      );
+      log('Starting mirror search');
 
-      CLONE_TARGETS.forEach(target => {
-        startCloneSearch(target, isInitial);
-      });
+      await getClient();
 
-      const [scram, uv] = await Promise.all([
-        updateGeneralMirror('scram', 'scram.json'),
-        updateGeneralMirror('uv', 'uv.json')
-      ]);
+      for (const target of targets) {
+        await findTarget(target);
+      }
 
-      publishGeneralMirrors(
-        {
-          scram,
-          uv
-        },
-        isInitial
-      );
-    } catch (error) {
-      fail(
-        'Mirror update failed:',
-        error?.message || error
+      window.kstuffMirrors.status = 'ready';
+      window.kstuffMirrors.lastUpdate = Date.now();
+
+      log('Mirror search complete');
+    } catch (err) {
+      error(
+        'Mirror search crashed:',
+        err?.message || err
       );
     } finally {
+      running = false;
       window.kstuffMirrors.testing = false;
     }
   }
 
-  function start() {
-    log('Initializing mirror system...');
-
-    testAllMirrors(true).catch(error => {
-      fail(error?.message || error);
-    });
-
-    setInterval(() => {
-      testAllMirrors(false).catch(error => {
-        fail(error?.message || error);
-      });
-    }, AUTO_REFRESH_INTERVAL);
-  }
-
-  window.kstuffTestMirrors = () =>
-    testAllMirrors(false);
+  window.kstuffTestMirrors = update;
 
   window.kstuffMirrorsDebug = () => {
     console.table({
@@ -775,6 +491,24 @@
 
     return window.kstuffMirrors;
   };
+
+  function start() {
+    update().catch(err => {
+      error(
+        'Startup failed:',
+        err?.message || err
+      );
+    });
+
+    setInterval(() => {
+      update().catch(err => {
+        error(
+          'Refresh failed:',
+          err?.message || err
+        );
+      });
+    }, REFRESH_INTERVAL);
+  }
 
   if (document.readyState === 'loading') {
     document.addEventListener(
