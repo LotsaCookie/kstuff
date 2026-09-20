@@ -33,6 +33,8 @@ function initApp() {
   const sFwd = $('study-forward-btn') || $('browser-forward');
   const sReload = $('reload-study-btn') || $('browser-refresh');
   const sHome = $('home-study-btn') || $('browser-home');
+  const pageAddress = id => 'kstuff://' + (urlMap[id] || id);
+  const setAddress = value => { if (tbInput) tbInput.value = value; };
   const body = document.body, navBar = $('teachertouchbar'), navBtns = $$('.nav-btn'), pages = $$('.page');
   const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
   const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
@@ -40,6 +42,8 @@ function initApp() {
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
   const FETCH_TIMEOUT = 10000;
+  const SHA_FETCH_TIMEOUT = 6000;
+  const SHA_TTL = 30000;
   const IFRAME_SHOW_TIMEOUT = 2500;
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
@@ -112,6 +116,9 @@ function initApp() {
     if (!p.classList.contains('active')) p.style.display = 'none';
   });
 
+  const initialActivePage = document.querySelector('.page.active');
+  if (initialActivePage && urlMap[initialActivePage.id]) setAddress(pageAddress(initialActivePage.id));
+
   try {
     currentUser = JSON.parse(getStorage('kstuff_user'));
     const uTheme = currentUser?.settings?.theme || currentUser?.theme;
@@ -181,22 +188,49 @@ function initApp() {
     } finally { clearTimeout(timer); }
   };
 
-  async function getProxyList() {
-    return [
-      `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
-      ""
-    ];
+  const shaState = { sha: '', at: 0, pending: null };
+
+  async function getLatestSha(force = false) {
+    const now = Date.now();
+    if (!force && shaState.sha && now - shaState.at < SHA_TTL) return shaState.sha;
+    if (shaState.pending) return shaState.pending;
+    shaState.pending = (async () => {
+      try {
+        const data = await timedFetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main', false, SHA_FETCH_TIMEOUT);
+        const sha = data?.sha;
+        if (typeof sha === 'string' && /^[0-9a-f]{40}$/i.test(sha)) {
+          shaState.sha = sha;
+          shaState.at = Date.now();
+          return sha;
+        }
+      } catch {}
+      shaState.sha = '';
+      return '';
+    })();
+    try {
+      return await shaState.pending;
+    } finally {
+      shaState.pending = null;
+    }
   }
 
   async function fetchWithProxy(path, asText = false) {
     const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
-    const proxies = await getProxyList();
-    try {
-      return await Promise.any(proxies.map(p => timedFetch(p + path + cb, asText)));
-    } catch (err) {
-      console.error('All proxies failed for', path, err);
-      throw new Error("Proxies failed: " + path);
+    const sha = await getLatestSha();
+    const sources = [];
+    if (sha) sources.push([`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/`, SHA_FETCH_TIMEOUT]);
+    sources.push(['', FETCH_TIMEOUT]);
+    sources.push([`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`, FETCH_TIMEOUT]);
+    let lastErr = null;
+    for (const [base, ms] of sources) {
+      try {
+        return await timedFetch(base + path + cb, asText, ms);
+      } catch (err) {
+        lastErr = err;
+      }
     }
+    console.error('All sources failed for', path, lastErr);
+    throw new Error("Proxies failed: " + path);
   }
 
   function applyCustomDropdown(selectEl) {
@@ -465,7 +499,9 @@ function initApp() {
       const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
       if (isHtmlRepo) {
         const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
-        modalIframe.src = `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+        const launchSha = await getLatestSha();
+        const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
+        modalIframe.src = `${launchBase}Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
       } else {
         const hasMirror = v => !!v && targetUrl.includes(v);
         const isProxyUrl = hasMirror(gRep.static) || hasMirror(gRep.scram) || hasMirror(gRep.uv) || hasMirror(gRep.truffled) || hasMirror(gRep.frogiee) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
@@ -713,6 +749,8 @@ function initApp() {
         toggleLoader(false);
         return;
       }
+
+      if (!customSrc) setAddress(pageAddress(tId));
 
       if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
         const ifr = iframePages[tId];
@@ -1022,16 +1060,8 @@ function initApp() {
   async function getMirrorsScriptSources() {
     const path = 'Assets/js/mirrors.js';
     const sources = [];
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 4000);
-      const res = await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main', { signal: ctrl.signal });
-      clearTimeout(timer);
-      if (res.ok) {
-        const sha = (await res.json())?.sha;
-        if (sha) sources.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/${path}`);
-      }
-    } catch {}
+    const sha = await getLatestSha();
+    if (sha) sources.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/${path}`);
     sources.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/${path}`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/${path}`);
     return [...new Set(sources)];
   }
@@ -1316,6 +1346,7 @@ function initApp() {
             const reportedUrl = event.data.url;
 
             if (document.activeElement === tbInput) return;
+            if (document.querySelector('.page.active')?.id !== 'mathworksheets') return;
 
             const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
             const currentVal = tbInput ? tbInput.value : '';
@@ -1392,6 +1423,9 @@ function initApp() {
     try {
       const html = await fetchWithProxy(path, true);
       if (!iframeLoadFailed[id] && lastIframeHtml[id] === html) return false;
+      const currentIfr = Object.values(iframePages).find(p => p.id === id);
+      const currentPage = currentIfr && document.querySelector('.page.active');
+      if (!currentPage || !$(id) || pageIsHidden($(id))) return false;
       toggleLoader(true, 'updating');
       await loadIframePage(id, path, html);
       toggleLoader(false);
@@ -1403,7 +1437,7 @@ function initApp() {
   }
 
   async function autoRefreshActivePage() {
-    if (autoRefreshBusy || isNavigating || isAnyModalActive()) return;
+    if (autoRefreshBusy || isNavigating || isAnyModalActive() || document.hidden) return;
     const activePage = document.querySelector('.page.active');
     if (!activePage) return;
     const tId = activePage.id;
@@ -1413,23 +1447,29 @@ function initApp() {
     autoRefreshBusy = true;
     try {
       const ifr = iframePages[tId];
-      const forcedByFailure = ifr && iframeLoadFailed[ifr.id];
+
+      if (ifr) {
+        await maybeReloadIframe(ifr.id, ifr.path);
+        return;
+      }
 
       const upstreamChanged = window.kstuffMirrors?.lastUpdate > (window.kstuffLastRefresh || 0);
-      if (!upstreamChanged && !forcedByFailure) return;
+      if (!upstreamChanged) return;
       window.kstuffLastRefresh = Date.now();
 
       if (tId === 'readingcorner') {
         await refreshReadingCorner(false, 'updating', true);
       } else if (tId === 'sciencequiz') {
         await rData('sciencequiz', 'Assets/json/a.json', false, 'updating', true);
-      } else if (ifr) {
-        await maybeReloadIframe(ifr.id, ifr.path);
       }
     } finally {
       autoRefreshBusy = false;
     }
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) autoRefreshActivePage();
+  });
 
   setInterval(autoRefreshActivePage, 200000);
 }
