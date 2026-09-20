@@ -71,10 +71,10 @@ const HOME_SHELVES = [
 ];
 const SHELF_SIZE = 30;
 const SHELF_SKELETONS = 8;
-const SHELF_CACHE_KEY = "shelfCacheV1";
+const SHELF_CACHE_KEY = "shelfCacheV2"; // bumped: covers are now the smaller size
 const SHELF_TTL_MS = 30 * 60 * 1000;
 
-const MAX_ENRICH_LOOKUPS = 8;
+const MAX_ENRICH_LOOKUPS = 4;
 const MAX_VIDEOS_TRIED = 10;
 
 /* ------------------------------------------------------------------ */
@@ -143,18 +143,26 @@ function createLimiter(max) {
 }
 
 const externalLimiter = createLimiter(3);
-const imageLimiter = createLimiter(3);
+const imageLimiter = createLimiter(6);
+const enrichLimiter = createLimiter(2);
 
+let invidiousDirectSkipUntil = 0;
+const DIRECT_RETRY_MS = 3 * 60 * 1000;
 
 async function fetchInvidiousJSON(path, directTimeout = 8000, proxyTimeout = 20000) {
     const url = `${INVIDIOUS_BASE}${path}`;
 
-    try {
-        const response = await fetchWithTimeout(url, directTimeout);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return await response.json();
-    } catch (directError) {
-        console.warn("Direct fetch failed, falling back to Wisp:", directError.message);
+    if (Date.now() >= invidiousDirectSkipUntil) {
+        try {
+            const response = await fetchWithTimeout(url, directTimeout);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } catch (directError) {
+            if (directError.name === "AbortError" || directError instanceof TypeError) {
+                invidiousDirectSkipUntil = Date.now() + DIRECT_RETRY_MS;
+            }
+            console.warn("Direct fetch failed, falling back to Wisp:", directError.message);
+        }
     }
 
     const client = await withTimeout(getBareClient(), proxyTimeout, "Wisp setup");
@@ -180,12 +188,12 @@ async function fetchExternalOnce(url) {
             const response = await client.fetch(url);
             if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
             return await response.json();
-        })(), 15000, "Wisp API fetch");
+        })(), 10000, "Wisp API fetch");
     } catch (wispError) {
         console.warn("Wisp API fetch failed, trying a direct request:", wispError.message);
     }
 
-    const response = await fetchWithTimeout(url, 8000);
+    const response = await fetchWithTimeout(url, 6000);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
 }
@@ -483,8 +491,6 @@ function serializeTrack(t) {
     };
 }
 
-/* @@pure-end */
-
 /* ------------------------------------------------------------------ */
 /*  External API -> song objects                                       */
 /* ------------------------------------------------------------------ */
@@ -498,13 +504,19 @@ function songFromDeezer(t) {
         title: t.title,
         titleShort: t.title_short || t.title,
         artist: t.artist && t.artist.name,
-        cover: album.cover_big || album.cover_medium || album.cover || "",
+        cover: album.cover_medium || album.cover_big || album.cover || "",
         duration: t.duration
     });
 }
 
 function hiResArtwork(url) {
-    return String(url || "").replace(/\/\d+x\d+(bb)?\./, "/600x600bb.");
+    return String(url || "").replace(/\/\d+x\d+(bb)?\./, "/300x300bb.");
+}
+
+function upscaleCover(url, px = 500) {
+    return String(url || "")
+        .replace(/\/\d+x\d+-/, `/${px}x${px}-`)            // Deezer
+        .replace(/\/\d+x\d+(bb)?\./, `/${px}x${px}bb.`);   // Apple
 }
 
 function songFromItunes(r) {
@@ -535,7 +547,6 @@ async function itunesSearch(query, limit) {
 
 const songSearchCache = new Map();
 
-// Deezer first, iTunes as a backup; always via Wisp
 async function searchSongsMeta(query, limit = 25) {
     const cacheKey = `${limit}|${query.toLowerCase()}`;
     if (songSearchCache.has(cacheKey)) return songSearchCache.get(cacheKey);
@@ -721,7 +732,7 @@ async function cacheAudioBlob(videoId, blob) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Images (direct first, Wisp fallback, cached as blobs)              */
+/*  Images (always through Wisp, cached as blobs, loaded lazily)       */
 /* ------------------------------------------------------------------ */
 
 const thumbObjectUrlCache = new Map();
@@ -730,83 +741,115 @@ const thumbInflight = new Map();
 async function fetchImageBlobViaWisp(url) {
     return imageLimiter(async () => {
         const client = await withTimeout(getBareClient(), 20000, "Wisp setup");
-        const response = await withTimeout(client.fetch(url), 20000, "Wisp image fetch");
+        const response = await withTimeout(client.fetch(url), 15000, "Wisp image fetch");
         if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
-        const blob = await withTimeout(response.blob(), 20000, "Wisp image body");
+        const blob = await withTimeout(response.blob(), 15000, "Wisp image body");
         if (!blob || blob.size === 0) throw new Error("Empty image");
+        if (blob.type && blob.type.startsWith("text/")) throw new Error("Not an image");
         return blob;
     });
 }
 
-function getImageBlobURL(url, wispOnly = false) {
-    if (thumbObjectUrlCache.has(url)) return Promise.resolve(thumbObjectUrlCache.get(url));
-    const inflightKey = `${wispOnly ? "w" : "d"}|${url}`;
-    if (thumbInflight.has(inflightKey)) return thumbInflight.get(inflightKey);
+function getImageBlobURL(url) {
+    const known = thumbObjectUrlCache.get(url);
+    if (known) return Promise.resolve(known);
+    if (thumbInflight.has(url)) return thumbInflight.get(url);
 
     const job = (async () => {
         let blob = await idbGet(THUMB_STORE, url);
 
-        if (!blob && !wispOnly) {
-            try {
-                const response = await fetchWithTimeout(url, 8000);
-                if (response.ok) blob = await response.blob();
-            } catch (e) {}
+        if (!blob || blob.size === 0) {
+            blob = await fetchImageBlobViaWisp(url);
+            blob = new Blob([blob], { type: blob.type || "image/jpeg" });
+            idbSet(THUMB_STORE, url, blob);
         }
-        if (!blob || blob.size === 0) blob = await fetchImageBlobViaWisp(url);
-        if (!blob || blob.size === 0) throw new Error("No image data");
 
-        blob = new Blob([blob], { type: blob.type || "image/jpeg" });
-        try { await idbSet(THUMB_STORE, url, blob); } catch (e) {}
         const objectUrl = URL.createObjectURL(blob);
         thumbObjectUrlCache.set(url, objectUrl);
         return objectUrl;
     })();
 
-    thumbInflight.set(inflightKey, job);
-    job.finally(() => thumbInflight.delete(inflightKey)).catch(() => {});
+    thumbInflight.set(url, job);
+    job.then(() => thumbInflight.delete(url), () => thumbInflight.delete(url));
     return job;
 }
 
-function trackCoverUrls(track) {
+function trackCoverUrls(track, big = false) {
     const urls = [];
-    if (track.cover) urls.push(track.cover);
+    if (track.cover) {
+        if (big) urls.push(upscaleCover(track.cover));
+        urls.push(track.cover);
+    }
     const videoId = track.videoId || (track.videos && track.videos[0] && track.videos[0].videoId);
     if (videoId) urls.push(...ytThumbUrls(videoId));
     return [...new Set(urls)];
 }
 
-function setImage(img, urls) {
+let imageObserver = null;
+
+function getImageObserver() {
+    if (!imageObserver) {
+        imageObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                const img = entry.target;
+                imageObserver.unobserve(img);
+                const start = img._startLoad;
+                img._startLoad = null;
+                if (start) start();
+            });
+        }, { rootMargin: "300px" });
+    }
+    return imageObserver;
+}
+
+function decodeInto(img, src) {
+    return new Promise((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Image failed to decode"));
+        img.src = src;
+    });
+}
+
+function setImage(img, urls, lazy = false) {
     const list = urls.filter(Boolean);
     const token = (img._imgToken = (img._imgToken || 0) + 1);
-    let index = 0;
 
+    if (imageObserver) imageObserver.unobserve(img);
+    img._startLoad = null;
     img.classList.remove("no-art");
-    img.onload = () => {
-        if (img._imgToken === token) img.classList.remove("no-art");
-    };
 
-    const tryNext = () => {
-        if (img._imgToken !== token) return;
-        if (index >= list.length) {
-            img.classList.add("no-art");
-            return;
-        }
-        const url = list[index++];
+    if (list.length === 0) {
+        img.classList.add("no-art");
+        return;
+    }
 
-        img.onerror = async () => {
+    // Already fetched this session: show it instantly
+    const ready = thumbObjectUrlCache.get(list[0]);
+    if (ready) {
+        img.src = ready;
+        return;
+    }
+
+    const load = async () => {
+        for (const url of list) {
+            if (img._imgToken !== token) return;
             try {
-                const objectUrl = await getImageBlobURL(url, true);
+                const objectUrl = await getImageBlobURL(url);
                 if (img._imgToken !== token) return;
-                img.onerror = tryNext;
-                img.src = objectUrl;
-            } catch (e) {
-                tryNext();
-            }
-        };
-        img.src = url;
+                await decodeInto(img, objectUrl);
+                return;
+            } catch (e) {}
+        }
+        if (img._imgToken === token) img.classList.add("no-art");
     };
 
-    tryNext();
+    if (lazy && "IntersectionObserver" in window) {
+        img._startLoad = load;
+        getImageObserver().observe(img);
+    } else {
+        load();
+    }
 }
 
 /* ------------------------------------------------------------------ */
@@ -916,7 +959,7 @@ async function updatePiPCanvas(track) {
 
     drawPipFrame(track, null);
 
-    for (const url of trackCoverUrls(track)) {
+    for (const url of trackCoverUrls(track, true)) {
         try {
             const objectUrl = await getImageBlobURL(url);
             const img = await loadImageElement(objectUrl);
@@ -988,7 +1031,6 @@ if ("mediaSession" in navigator) {
 
 async function updateMediaSessionMetadata(track) {
     if (!("mediaSession" in navigator) || !track) return;
-    const urls = trackCoverUrls(track);
 
     const setMeta = (src) => {
         try {
@@ -1000,9 +1042,10 @@ async function updateMediaSessionMetadata(track) {
         } catch (e) {}
     };
 
-    setMeta(urls[0]);
+    // Text first; artwork is added once the Wisp copy is ready
+    setMeta(null);
 
-    for (const url of urls) {
+    for (const url of trackCoverUrls(track, true)) {
         try {
             const blobUrl = await getImageBlobURL(url);
             if (currentTrackInfo === track) setMeta(blobUrl);
@@ -1163,7 +1206,7 @@ function fillTile(button, track) {
     button.querySelector(".tile-title").textContent = track.title;
     button.querySelector(".tile-artist").textContent = track.artist;
     button.setAttribute("aria-label", `${track.title} by ${track.artist}`);
-    setImage(button.querySelector("img"), trackCoverUrls(track));
+    setImage(button.querySelector("img"), trackCoverUrls(track), true);
 }
 
 function createTile(track, onClick) {
@@ -1171,7 +1214,7 @@ function createTile(track, onClick) {
     button.type = "button";
     button.className = "tile";
     button.innerHTML = `
-        <img alt="" loading="lazy" decoding="async">
+        <img alt="" decoding="async">
         <div class="tile-overlay">
             <div class="tile-title"></div>
             <div class="tile-artist"></div>
@@ -1227,7 +1270,6 @@ async function getShelfTracks(shelf) {
     }
 
     if (songs.length === 0) {
-        // Stale data beats an empty shelf
         if (cached && Array.isArray(cached.tracks) && cached.tracks.length) return hydrate(cached.tracks);
         throw lastError || new Error("Empty shelf");
     }
@@ -1347,35 +1389,51 @@ async function search() {
     resultsList.hidden = false;
     showMessage(`${SVG_ICONS.spinner} Searching...`);
 
-    const [videosResult, songsResult] = await Promise.allSettled([
-        searchVideosCached(query),
-        searchSongsMeta(query, 25)
-    ]);
+    // Both lookups start together, but the songs don't wait on Invidious.
+    // (searchSongsMeta catches its own errors, so it always resolves.)
+    let videoError = null;
+    const songsPromise = searchSongsMeta(query, 25);
+    const videosPromise = searchVideosCached(query).catch(e => {
+        videoError = e;
+        return [];
+    });
+
+    const songs = await songsPromise;
     if (myToken !== searchToken) return;
 
-    const videos = videosResult.status === "fulfilled" ? videosResult.value : [];
-    const songs = songsResult.status === "fulfilled" ? songsResult.value : [];
-
-    if (videos.length === 0 && songs.length === 0) {
-        if (videosResult.status === "rejected") {
-            console.error("Search failed:", videosResult.reason);
-            showMessage(`${SVG_ICONS.warning} Search error: Unable to connect to streaming network.`);
-        } else {
-            showMessage("No results found.");
-        }
-        return;
+    if (songs.length > 0) {
+        renderSearchResults(songs.map(song => ({ ...song, videos: [] })));
     }
 
-    const tracks = buildSearchTracks(videos, songs, query);
-    renderSearchResults(tracks);
-    enrichRawTracks(tracks, myToken);
+    const videos = await videosPromise;
+    if (myToken !== searchToken) return;
+
+    if (songs.length === 0) {
+        if (videos.length === 0) {
+            if (videoError) {
+                console.error("Search failed:", videoError);
+                showMessage(`${SVG_ICONS.warning} Search error: Unable to connect to streaming network.`);
+            } else {
+                showMessage("No results found.");
+            }
+            return;
+        }
+        renderSearchResults(buildSearchTracks(videos, [], query));
+    } else if (videos.length > 0) {
+        appendSearchTracks(attachVideosToTracks(currentSearchResults, videos));
+    }
+
+    enrichRawTracks(currentSearchResults, myToken);
 }
 
 function renderSearchResults(tracks) {
     tileEls.clear();
     currentSearchResults = tracks;
     resultsList.innerHTML = "";
+    appendTiles(tracks);
+}
 
+function appendTiles(tracks) {
     tracks.forEach(track => {
         const tile = createTile(track, () => playFromList(currentSearchResults, track));
         tileEls.set(track, tile);
@@ -1383,12 +1441,42 @@ function renderSearchResults(tracks) {
     });
 }
 
+// Adds to the list that's already on screen (same array, so prev/next keep working)
+function appendSearchTracks(extra) {
+    if (extra.length === 0) return;
+    currentSearchResults.push(...extra);
+    appendTiles(extra);
+}
+
+// Attach each video to the song it matches; anything left over becomes its own raw tile
+function attachVideosToTracks(tracks, videos) {
+    const extras = [];
+    for (const video of videos) {
+        let best = null;
+        let bestScore = -Infinity;
+        for (const track of tracks) {
+            if (track.source === "youtube") continue;
+            const m = matchVideoToSong(video, track);
+            if (m.confident && m.score > bestScore) {
+                best = track;
+                bestScore = m.score;
+            }
+        }
+        if (best) addVideo(best, video);
+        else extras.push(rawTrackFromVideo(video));
+    }
+    return extras;
+}
+
 async function enrichRawTracks(tracks, myToken) {
     const candidates = tracks
         .filter(t => t.source === "youtube" && (!t.duration || (t.duration >= 60 && t.duration <= 900)))
         .slice(0, MAX_ENRICH_LOOKUPS);
 
-    await Promise.all(candidates.map(async raw => {
+    await Promise.all(candidates.map(raw => enrichLimiter(async () => {
+        // Queued by a search the user has already left: skip the network call
+        if (myToken !== searchToken || currentSearchResults !== tracks) return;
+
         const video = raw.videos[0];
         if (!video) return;
         const { artist, title } = guessArtistTitle(video);
@@ -1412,7 +1500,7 @@ async function enrichRawTracks(tracks, myToken) {
             }
         }
         if (best) upgradeRawTrack(raw, best);
-    }));
+    })));
 }
 
 function upgradeRawTrack(raw, song) {
