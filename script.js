@@ -399,19 +399,29 @@ function initApp() {
       for (let i = 0; i < 5 && MIRROR_PH.test(targetUrl); i++) {
         const match = targetUrl.match(MIRROR_PH);
         if (!match) break;
+
         const key = match[1];
+
         if (modalTitle) modalTitle.textContent = `${item.title} - finding a mirror...`;
+
         const found = await waitForMirrorKey(key, 30000);
+
         if (modalOverlay && !modalOverlay.classList.contains('active')) return;
-        syncMirrors();
+
+        syncMirrors(window.kstuffMirrors || {});
         const replacements = { ...gRep };
         if (found) replacements[key] = found;
+
         const next = appB(targetUrl, replacements, true);
+
         if (next === targetUrl) break;
         targetUrl = next;
       }
-      syncMirrors();
+
+      syncMirrors(window.kstuffMirrors || {});
+
       if (modalTitle) modalTitle.textContent = item.title;
+
       if (MIRROR_PH.test(targetUrl)) {
         modalIframe.srcdoc = '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
         return;
@@ -631,27 +641,47 @@ function initApp() {
   const loadContent = async (tId, forceReload = false, customSrc = null) => {
     firstNavStarted = true;
     isNavigating = true;
+
     try {
-      if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); toggleLoader(false); return; }
-      const targetPage = $(tId); if (!targetPage) return toggleLoader(false);
+      if (tId === 'studyhall' && !currentUser) {
+        authMod?.classList.add('active');
+        toggleLoader(false);
+        return;
+      }
+
+      const targetPage = $(tId);
+      if (!targetPage) {
+        toggleLoader(false);
+        return;
+      }
 
       if (targetPage.classList.contains('active') && !forceReload && !customSrc) {
         const ifr = iframePages[tId];
         if (ifr && iframeInFlight[ifr.id]) return;
-        if (!(ifr && (iframeLoadFailed[ifr.id] || !$(ifr.id)?.srcdoc))) return toggleLoader(false);
+        if (!(ifr && (iframeLoadFailed[ifr.id] || !$(ifr.id)?.srcdoc))) {
+          toggleLoader(false);
+          return;
+        }
       }
 
       const currentActive = document.querySelector('.page.active:not(#' + tId + ')');
       toggleLoader(true);
+
       if (currentActive) {
-        currentActive.classList.remove('active'); currentActive.style.display = 'none';
+        currentActive.classList.remove('active');
+        currentActive.style.display = 'none';
+
         if (iframePages[currentActive.id]) {
           const oldId = iframePages[currentActive.id].id;
           cancelIframeLoads(oldId);
           const oldIframe = $(oldId);
-          if (oldIframe) { oldIframe.removeAttribute('srcdoc'); oldIframe.src = 'about:blank'; }
+          if (oldIframe) {
+            oldIframe.removeAttribute('srcdoc');
+            oldIframe.src = 'about:blank';
+          }
         }
       }
+
       Object.keys(grids).forEach(k => {
         if (k !== tId && grids[k].gridEl) {
           if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
@@ -659,13 +689,14 @@ function initApp() {
         }
       });
 
-      targetPage.style.display = 'block'; targetPage.style.opacity = '1'; targetPage.classList.add('active');
+      targetPage.style.display = 'block';
+      targetPage.style.opacity = '1';
+      targetPage.classList.add('active');
 
       if (grids[tId]) {
         buildPool(tId);
         await renderGrid(tId, false);
-      }
-      else if (iframePages[tId]) {
+      } else if (iframePages[tId]) {
         const iframeData = iframePages[tId];
         const iframeEl = $(iframeData.id);
         if (iframeEl) iframeEl.style.display = 'block';
@@ -684,23 +715,62 @@ function initApp() {
   };
 
   navBtns.forEach(btn => {
-    const lDivs = btn.querySelectorAll('.label-data div');
-    btn.dataset.tooltip = lDivs.length ? Array.from(lDivs).map(d => d.textContent).reverse().join('') : (btn.title || btn.dataset.target);
-    btn.addEventListener('click', async () => {
+    const labelDivs = btn.querySelectorAll('.label-data div');
+
+    btn.dataset.tooltip = labelDivs.length
+      ? Array.from(labelDivs)
+          .map(item => item.textContent)
+          .reverse()
+          .join('')
+      : (btn.title || btn.dataset.target);
+
+    btn.addEventListener('click', event => {
+      event.preventDefault();
+
       tooltipEl.style.display = 'none';
-      const tId = btn.dataset.target;
-      if (tId === 'profile') return !currentUser ? authMod?.classList.add('active') : (updateAuthUI(), profMod?.classList.add('active'));
-      if (tId === 'homeworkhelper') return $('homeworkhelper-modal')?.classList.add('active');
-      if (tId === 'changelog') return $('changelog-modal')?.classList.add('active');
-      if (tId === 'studyhall' && !currentUser) { authMod?.classList.add('active'); return; }
-      navBtns.forEach(b => !['homeworkhelper','changelog','profile'].includes(b.dataset.target) && b.classList.remove('active'));
-      btn.classList.add('active'); updateIndicator(btn);
-      toggleLoader(true);
-      if (grids[tId] && initPromise) {
-        await initPromise;
-        if (!btn.classList.contains('active')) return;
+
+      const targetId = btn.dataset.target;
+
+      if (targetId === 'profile') {
+        if (!currentUser) {
+          authMod?.classList.add('active');
+        } else {
+          updateAuthUI();
+          profMod?.classList.add('active');
+        }
+
+        return;
       }
-      loadContent(tId);
+
+      if (targetId === 'homeworkhelper') {
+        $('homeworkhelper-modal')?.classList.add('active');
+        return;
+      }
+
+      if (targetId === 'changelog') {
+        $('changelog-modal')?.classList.add('active');
+        return;
+      }
+
+      if (targetId === 'studyhall' && !currentUser) {
+        authMod?.classList.add('active');
+        return;
+      }
+
+      navBtns.forEach(item => {
+        if (!['homeworkhelper', 'changelog', 'profile'].includes(item.dataset.target)) {
+          item.classList.remove('active');
+        }
+      });
+
+      btn.classList.add('active');
+      updateIndicator(btn);
+      toggleLoader(true);
+
+      loadContent(targetId).catch(err => {
+        console.error('Navigation failed:', err);
+        toggleLoader(false);
+      });
     });
   });
 
@@ -885,7 +955,6 @@ function initApp() {
   };
 
   $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshReadingCorner());
-
   $('sciencequiz-refresh-btn')?.addEventListener('click', () => rData('sciencequiz', 'Assets/json/a.json'));
 
   let rawReadingCornerData = [];
@@ -1039,30 +1108,43 @@ function initApp() {
   setupMirrorListener();
 
   initPromise = Promise.all([
-    loadMirrorsScript(),
-    fetchReadingCornerRaw(),
+    loadMirrorsScript().catch(() => false),
+    fetchReadingCornerRaw().catch(() => ({ data: [] })),
     fetchWithProxy('Assets/json/a.json').catch(() => []),
     fetchWithProxy('Assets/json/truffled.json').catch(() => null)
-  ]).then(async ([mirrorsLoaded, gResult, a, tr]) => {
-    if (!mirrorsLoaded) mirrorsScriptFailed = true;
-    await waitForMirrors(30000);
+  ]).then(async ([mirrorsLoaded, readingResult, scienceData, truffledData]) => {
+    mirrorsScriptLoaded = mirrorsLoaded === true;
+
+    if (!mirrorsScriptLoaded) {
+      mirrorsScriptFailed = true;
+    }
 
     gTruf.clear();
-    if (Array.isArray(tr?.games)) {
-      tr.games.forEach(item => {
-        gTruf.set(cleanGameTitle(item.name), item);
+
+    if (Array.isArray(truffledData?.games)) {
+      truffledData.games.forEach(item => {
+        if (item?.name) {
+          gTruf.set(cleanGameTitle(item.name), item);
+        }
       });
     }
 
-    syncMirrors(window.kstuffMirrors || {});
+    rawReadingCornerData = readingResult?.data || [];
+    rawSciencequizData = Array.isArray(scienceData) ? scienceData : [];
 
-    rawReadingCornerData = gResult?.data || [];
-    rawSciencequizData = Array.isArray(a) ? a : [];
+    syncMirrors(window.kstuffMirrors || {});
 
     grids.readingcorner.data = proc(rawReadingCornerData);
     grids.sciencequiz.data = proc(rawSciencequizData);
+
+    const activePage = document.querySelector('.page.active');
+
+    if (activePage && grids[activePage.id]) {
+      buildPool(activePage.id);
+      await renderGrid(activePage.id, false);
+    }
   }).catch(err => {
-    console.error('init failed', err);
+    console.error('Initialization failed:', err);
   });
 
   const updateBrowserNav = () => {
@@ -1108,24 +1190,6 @@ function initApp() {
   sReload?.addEventListener('click', () => { if (studyIframe) { try { studyIframe.contentWindow.location.reload(); } catch(e) { studyIframe.src = studyIframe.src; } } });
   sHome?.addEventListener('click', () => loadBrowserUrl('kstuff://home'));
 
-  navBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tId = btn.dataset.target;
-      if (urlMap[tId] && tbInput) {
-        const newUrl = `kstuff://${urlMap[tId]}`;
-        if (tbInput.value !== newUrl) {
-          tbInput.value = newUrl;
-          if (history[historyIndex] !== newUrl) {
-            history = history.slice(0, historyIndex + 1);
-            history.push(newUrl);
-            historyIndex++;
-            updateBrowserNav();
-          }
-        }
-      }
-    });
-  });
-
   let activePort = null;
   const mathworksIframe = $('mathworksheets-iframe');
 
@@ -1138,14 +1202,11 @@ function initApp() {
         activePort.onmessage = (event) => {
           if (event.data && event.data.type === 'tabData') {
             const reportedUrl = event.data.url;
-
             if (document.activeElement === tbInput) return;
-
             const normalize = u => u ? u.replace(/\/$/, '').trim().toLowerCase() : '';
             const currentVal = tbInput ? tbInput.value : '';
             if (reportedUrl && normalize(reportedUrl) !== normalize(currentVal) && reportedUrl !== 'about:blank') {
               if (tbInput) tbInput.value = reportedUrl;
-
               if (history[historyIndex] !== reportedUrl) {
                 history = history.slice(0, historyIndex + 1);
                 history.push(reportedUrl);
@@ -1178,15 +1239,37 @@ function initApp() {
     }
   });
 
-  initPromise.then(async () => {
-    if (firstNavStarted) return;
-    let activePg = document.querySelector('.page.active');
-    if (!activePg) {
-      const defaultHomeBtn = Array.from(navBtns).find(b => b.dataset.target === 'mathworksheets');
-      if (defaultHomeBtn) { navBtns.forEach(b => b.classList.remove('active')); defaultHomeBtn.classList.add('active'); updateIndicator(defaultHomeBtn); activePg = { id: 'mathworksheets' }; }
-    }
-    if (activePg) await loadContent(activePg.id, true); else toggleLoader(false);
-  }).catch(err => { console.error('initPromise failed', err); toggleLoader(false); });
+  initPromise
+    .then(async () => {
+      if (firstNavStarted) return;
+
+      let activePage = document.querySelector('.page.active');
+
+      if (!activePage) {
+        const defaultHomeButton = Array.from(navBtns).find(button => button.dataset.target === 'mathworksheets');
+
+        if (defaultHomeButton) {
+          navBtns.forEach(button => {
+            button.classList.remove('active');
+          });
+
+          defaultHomeButton.classList.add('active');
+          updateIndicator(defaultHomeButton);
+
+          activePage = { id: 'mathworksheets' };
+        }
+      }
+
+      if (activePage) {
+        await loadContent(activePage.id, true);
+      } else {
+        toggleLoader(false);
+      }
+    })
+    .catch(error => {
+      console.error('Initial page load failed:', error);
+      toggleLoader(false);
+    });
 
   const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
 
