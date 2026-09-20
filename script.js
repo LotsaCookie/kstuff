@@ -48,20 +48,36 @@ function initApp() {
   let gRep = {}, gTruf = new Map();
 
   let mirrorsScriptFailed = false;
+  let mirrorsScriptLoaded = false;
   const MIRROR_PH = /\$\{(scram|static|uv|frogiee|truffled)\}/;
-  const mirrorRank = src => !src ? 0 : src === 'json' ? 1 : /-unvalidated$/.test(src) ? 2 : 3;
+
   const lastGoodMirror = key => {
     try {
       const v = getStorage('kstuff_lastgood_' + key);
-      return /^https?:\/\/[^\s{}"']+$/.test(v || '') ? cleanUrl(v) : '';
+      return /^https?:\/\/[^\s{}"']+$/i.test(v || '') ? cleanUrl(v) : '';
     } catch { return ''; }
   };
+
+  const mirrorValue = (mirrors, key) => {
+    const value = mirrors?.[key];
+    if (typeof value === 'string' && /^https?:\/\//i.test(value)) return cleanUrl(value);
+    return lastGoodMirror(key);
+  };
+
+  const mirrorsToGRep = mirrors => {
+    const result = {};
+    ['scram', 'static', 'uv', 'frogiee', 'truffled'].forEach(key => {
+      result[key] = mirrorValue(mirrors, key);
+    });
+    if (!result.truffled) result.truffled = 'https://boat.strongson.com';
+    return result;
+  };
+
   const verifiedMirror = (m, key) => {
-    const v = m?.[key] || '';
+    if (!m) return '';
+    const v = m[key] || '';
     if (key === 'scram' || key === 'uv') return v;
-    const rank = v ? mirrorRank(m.sources?.[key]) : 0;
-    if (rank >= 3) return v;
-    return lastGoodMirror(key) || (rank === 2 ? v : '');
+    return v || lastGoodMirror(key);
   };
 
   const lastIframeHtml = {};
@@ -147,7 +163,6 @@ function initApp() {
   };
 
   async function getProxyList() {
-
     return [
       `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`,
       ""
@@ -382,13 +397,16 @@ function initApp() {
       let targetUrl = item.url.trim();
 
       for (let i = 0; i < 5 && MIRROR_PH.test(targetUrl); i++) {
-        const key = MIRROR_PH.exec(targetUrl)[1];
-        if (modalTitle) modalTitle.textContent = item.title + ' - finding a mirror...';
-        const found = await waitForMirrorKey(key);
-        if (modalOverlay && !modalOverlay.classList.contains('active')) return;   // closed while waiting
-        const rep = mirrorsToGRep(window.kstuffMirrors);
-        if (!rep[key] && found) rep[key] = found;
-        const next = appB(targetUrl, rep, true);
+        const match = targetUrl.match(MIRROR_PH);
+        if (!match) break;
+        const key = match[1];
+        if (modalTitle) modalTitle.textContent = `${item.title} - finding a mirror...`;
+        const found = await waitForMirrorKey(key, 30000);
+        if (modalOverlay && !modalOverlay.classList.contains('active')) return;
+        syncMirrors();
+        const replacements = { ...gRep };
+        if (found) replacements[key] = found;
+        const next = appB(targetUrl, replacements, true);
         if (next === targetUrl) break;
         targetUrl = next;
       }
@@ -467,9 +485,7 @@ function initApp() {
             p.img.dataset.src = item.image || '';
             if (item.image) {
               p.img.style.display = 'block';
-              try {
-                p.img.loading = 'eager';
-              } catch (e) {}
+              try { p.img.loading = 'eager'; } catch {}
               const pr = new Promise(res => {
                 let done = false;
                 const doneFn = () => { if (done) return; done = true; p.img.onload = p.img.onerror = null; res(); };
@@ -877,7 +893,7 @@ function initApp() {
 
   async function getMirrorsScriptSources() {
     const path = 'Assets/js/mirrors.js';
-    const list = [];
+    const sources = [];
     try {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 4000);
@@ -885,24 +901,35 @@ function initApp() {
       clearTimeout(timer);
       if (res.ok) {
         const sha = (await res.json())?.sha;
-        if (sha) list.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/${path}`);
+        if (sha) sources.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/${path}`);
       }
     } catch {}
-    list.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/${path}`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/${path}`);
-    return list;
+    sources.push(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/${path}`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/${path}`);
+    return [...new Set(sources)];
   }
 
   function loadMirrorsScript() {
     return new Promise(async resolve => {
       const sources = await getMirrorsScriptSources();
       const tryNext = i => {
-        if (i >= sources.length) { console.error('Failed to load mirrors.js'); mirrorsScriptFailed = true; resolve(false); return; }
+        if (i >= sources.length) {
+          mirrorsScriptFailed = true;
+          mirrorsScriptLoaded = false;
+          resolve(false);
+          return;
+        }
         const script = document.createElement('script');
-        script.src = sources[i];
+        script.src = `${sources[i]}?cb=${Date.now()}`;
         script.async = true;
         script.onload = () => {
-          if (!window.kstuffMirrors) { script.remove(); return tryNext(i + 1); }
-          console.log('[script.js] mirrors.js loaded from', sources[i]);
+          if (!window.kstuffMirrors || typeof window.kstuffMirrors !== 'object') {
+            script.remove();
+            tryNext(i + 1);
+            return;
+          }
+          mirrorsScriptLoaded = true;
+          mirrorsScriptFailed = false;
+          syncMirrors(window.kstuffMirrors);
           resolve(true);
         };
         script.onerror = () => { script.remove(); tryNext(i + 1); };
@@ -912,61 +939,81 @@ function initApp() {
     });
   }
 
-  function mirrorsToGRep(mirrors) {
-    const g = {};
-    ['scram', 'static', 'uv', 'frogiee', 'truffled'].forEach(k => { g[k] = verifiedMirror(mirrors, k); });
-    if (mirrorsScriptFailed && !g.truffled) g.truffled = 'https://boat.strongson.com';
-    return g;
-  }
-
-  function waitForMirrors(timeoutMs = 8000) {
+  function waitForMirrors(timeoutMs = 30000) {
     return new Promise(resolve => {
-      const ready = () => {
-        const m = window.kstuffMirrors;
-        return mirrorsScriptFailed || (m?.status === 'ready' && ['static', 'truffled'].every(k => verifiedMirror(m, k)));
-      };
-      if (ready()) return resolve(window.kstuffMirrors || {});
       let done = false;
+      let timer = null;
+      let poll = null;
+
       const finish = () => {
         if (done) return;
         done = true;
-        window.removeEventListener('kstuff-mirrors-updated', onUpdate);
         clearTimeout(timer);
+        clearInterval(poll);
+        window.removeEventListener('kstuff-mirrors-updated', check);
+        syncMirrors(window.kstuffMirrors || {});
         resolve(window.kstuffMirrors || {});
       };
-      const onUpdate = () => { if (ready()) finish(); };
-      window.addEventListener('kstuff-mirrors-updated', onUpdate);
-      const timer = setTimeout(finish, timeoutMs);
+
+      const check = () => {
+        const mirrors = window.kstuffMirrors || {};
+        syncMirrors(mirrors);
+
+        const hasRelevantMirror =
+          Boolean(gRep.static) ||
+          Boolean(gRep.frogiee) ||
+          Boolean(gRep.truffled) ||
+          Boolean(gRep.scram) ||
+          Boolean(gRep.uv);
+
+        if (mirrorsScriptFailed || (mirrorsScriptLoaded && hasRelevantMirror)) {
+          finish();
+        }
+      };
+
+      window.addEventListener('kstuff-mirrors-updated', check);
+      poll = setInterval(check, 250);
+      timer = setTimeout(finish, timeoutMs);
+      check();
     });
   }
-  function syncMirrors(mirrors = window.kstuffMirrors) {
-    const next = mirrorsToGRep(mirrors);
-    if (JSON.stringify(next) === JSON.stringify(gRep)) return false;
-    gRep = next;
-    return true;
-  }
 
-  function waitForMirrorKey(key, timeoutMs = 20000) {
+  function waitForMirrorKey(key, timeoutMs = 30000) {
     return new Promise(resolve => {
-      let done = false, poll = null, timer = null;
+      let done = false;
+      let timer = null;
+      let poll = null;
+
       const finish = value => {
         if (done) return;
         done = true;
-        window.removeEventListener('kstuff-mirrors-updated', check);
-        clearInterval(poll);
         clearTimeout(timer);
-        resolve(value);
+        clearInterval(poll);
+        window.removeEventListener('kstuff-mirrors-updated', check);
+        resolve(value || '');
       };
-      function check() {
-        const g = mirrorsToGRep(window.kstuffMirrors);
-        if (g[key] || mirrorsScriptFailed) finish(g[key] || '');
-      }
+
+      const check = () => {
+        syncMirrors(window.kstuffMirrors || {});
+        const value = gRep[key] || lastGoodMirror(key);
+
+        if (value) {
+          finish(value);
+          return;
+        }
+
+        if (mirrorsScriptFailed) {
+          finish('');
+        }
+      };
+
       window.addEventListener('kstuff-mirrors-updated', check);
-      poll = setInterval(check, 1000);
+      poll = setInterval(check, 250);
       timer = setTimeout(() => {
-        console.warn(`No verified ${key} mirror after ${timeoutMs / 1000}s`, window.kstuffMirrors);
-        finish(verifiedMirror(window.kstuffMirrors, key));
+        syncMirrors(window.kstuffMirrors || {});
+        finish(gRep[key] || lastGoodMirror(key));
       }, timeoutMs);
+
       check();
     });
   }
@@ -982,37 +1029,41 @@ function initApp() {
   }
 
   function setupMirrorListener() {
-    window.addEventListener('kstuff-mirrors-updated', (e) => {
-      const mirrors = e.detail || window.kstuffMirrors;
+    window.addEventListener('kstuff-mirrors-updated', event => {
+      const mirrors = event.detail || window.kstuffMirrors;
       if (!mirrors) return;
       if (syncMirrors(mirrors)) reprocessGridsWithMirrors();
     });
   }
 
   setupMirrorListener();
-  loadMirrorsScript();
-
-  const mirrorPoll = setInterval(() => {
-    if (syncMirrors()) reprocessGridsWithMirrors();
-    if ((gRep.static && gRep.truffled) || mirrorsScriptFailed) clearInterval(mirrorPoll);
-  }, 1500);
 
   initPromise = Promise.all([
+    loadMirrorsScript(),
     fetchReadingCornerRaw(),
-    fetchWithProxy('Assets/json/a.json').catch(()=>[]),
-    fetchWithProxy('Assets/json/truffled.json').catch(()=>null),
-    waitForMirrors()
-  ]).then(async ([gResult, a, tr, mirrors]) => {
-    gTruf.clear();
-    if (Array.isArray(tr?.games)) tr.games.forEach(x => gTruf.set(cleanGameTitle(x.name), x));
+    fetchWithProxy('Assets/json/a.json').catch(() => []),
+    fetchWithProxy('Assets/json/truffled.json').catch(() => null)
+  ]).then(async ([mirrorsLoaded, gResult, a, tr]) => {
+    if (!mirrorsLoaded) mirrorsScriptFailed = true;
+    await waitForMirrors(30000);
 
-    syncMirrors();
+    gTruf.clear();
+    if (Array.isArray(tr?.games)) {
+      tr.games.forEach(item => {
+        gTruf.set(cleanGameTitle(item.name), item);
+      });
+    }
+
+    syncMirrors(window.kstuffMirrors || {});
 
     rawReadingCornerData = gResult?.data || [];
-    rawSciencequizData = a || [];
+    rawSciencequizData = Array.isArray(a) ? a : [];
+
     grids.readingcorner.data = proc(rawReadingCornerData);
     grids.sciencequiz.data = proc(rawSciencequizData);
-  }).catch(err => console.error('init failed', err));
+  }).catch(err => {
+    console.error('init failed', err);
+  });
 
   const updateBrowserNav = () => {
     if (sBack) sBack.disabled = historyIndex <= 0;
