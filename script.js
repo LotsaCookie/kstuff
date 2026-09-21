@@ -45,17 +45,22 @@ function initApp() {
   const SHA_FETCH_TIMEOUT = 6000;
   const SHA_TTL = 30000;
   const IFRAME_SHOW_TIMEOUT = 2500;
-  const BACKEND_READY_TIMEOUT = 50000;
-  const AUTH_TIMEOUT = 45000;
+  const BACKEND_LINK_TIMEOUT = 15000;
+  const BACKEND_WATCHDOG_INTERVAL = 4000;
+  const BACKEND_CACHE_KEY = 'kstuff_backend_html';
+  const AUTH_TIMEOUT = 90000;
   const BACKEND_URLS = [
     'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.html',
-    'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset@main/backend.html'
+    'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset@main/backend.html',
+    'https://fastly.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.html',
+    'https://gcore.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.html',
+    'https://testingcf.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.html'
   ];
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
-  let backendPort = null, backendReady = false, syncInterval = null, currentUser = null;
-  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendReadyTimer = null, backendAttempts = 0;
+  let backendPort = null, backendLinked = false, backendReady = false, syncInterval = null, currentUser = null;
+  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendLinkTimer = null, backendAttempts = 0;
   let authBusyTimer = null;
   const backendQueue = [];
   let gRep = {}, gTruf = new Map();
@@ -862,7 +867,15 @@ function initApp() {
   };
 
   const flushBackendQueue = () => {
-    while (backendQueue.length && backendReady && backendPort) backendPort.postMessage(backendQueue.shift());
+    while (backendQueue.length && backendLinked && backendPort) {
+      const message = backendQueue.shift();
+      try {
+        backendPort.postMessage(message);
+      } catch (err) {
+        backendQueue.unshift(message);
+        break;
+      }
+    }
   };
 
   const handleBackendMessage = data => {
@@ -871,7 +884,6 @@ function initApp() {
     if (data.type === 'ready') {
       backendReady = true;
       backendAttempts = 0;
-      clearTimeout(backendReadyTimer);
       flushBackendQueue();
       return;
     }
@@ -893,82 +905,100 @@ function initApp() {
     }
   };
 
+  const isBackendDoc = html => typeof html === 'string' && html.includes('init_cable') && html.includes('<script');
+
+  const fetchBackendDoc = async url => {
+    const html = await timedFetch(url + '?_=' + Date.now(), true, FETCH_TIMEOUT);
+    if (!isBackendDoc(html)) throw new Error('Unexpected backend document');
+    return html;
+  };
+
   const loadBackendHtml = async () => {
-    let lastErr = null;
-    for (const url of BACKEND_URLS) {
-      try {
-        const html = await timedFetch(url, true, FETCH_TIMEOUT);
-        if (typeof html === 'string' && html.includes('init_cable')) return html;
-        lastErr = new Error('Unexpected backend document');
-      } catch (err) {
-        lastErr = err;
-      }
+    try {
+      const html = await Promise.any(BACKEND_URLS.map(fetchBackendDoc));
+      try { setStorage(BACKEND_CACHE_KEY, html); } catch {}
+      return html;
+    } catch (err) {
+      console.error('backend fetch failed, trying cached copy', err);
     }
-    throw lastErr || new Error('Backend document unavailable');
+    let cached = '';
+    try { cached = getStorage(BACKEND_CACHE_KEY) || ''; } catch {}
+    if (isBackendDoc(cached)) return cached;
+    throw new Error('Backend document unavailable');
   };
 
-  const scheduleBackendRetry = () => {
-    clearTimeout(backendRetryTimer);
-    backendRetryTimer = setTimeout(startBackend, Math.min(30000, 1500 * 2 ** backendAttempts));
-    backendAttempts++;
-  };
-
-  function startBackend() {
-    if (backendStarting) return;
-    backendStarting = true;
+  const closeBackendPort = () => {
+    backendLinked = false;
     backendReady = false;
-    clearTimeout(backendRetryTimer);
-    clearTimeout(backendReadyTimer);
-
     if (backendPort) {
       backendPort.onmessage = null;
       try { backendPort.close(); } catch {}
       backendPort = null;
     }
+  };
+
+  const scheduleBackendRetry = () => {
+    clearTimeout(backendRetryTimer);
+    backendRetryTimer = setTimeout(startBackend, Math.min(30000, 1500 * 2 ** backendAttempts));
+    backendAttempts = Math.min(backendAttempts + 1, 6);
+  };
+
+  const linkBackend = frame => {
+    if (frame !== backendFrame) return;
+    try { if (frame.contentWindow.location.href === 'about:blank') return; } catch {}
+
+    closeBackendPort();
+
+    const channel = new MessageChannel();
+    backendPort = channel.port1;
+    backendPort.onmessage = e => handleBackendMessage(e.data);
+    backendPort.start();
+
+    try {
+      frame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
+    } catch (err) {
+      console.error('backend init_cable failed', err);
+      closeBackendPort();
+      return;
+    }
+
+    backendLinked = true;
+    backendAttempts = 0;
+    clearTimeout(backendLinkTimer);
+    flushBackendQueue();
+  };
+
+  const mountBackendFrame = html => {
+    clearTimeout(backendLinkTimer);
+    closeBackendPort();
+
+    if (backendFrame) {
+      backendFrame.remove();
+      backendFrame = null;
+    }
+
+    const frame = el('iframe', { title: 'kstuff-backend', tabIndex: -1 });
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+    frame.addEventListener('load', () => linkBackend(frame));
+    frame.srcdoc = html;
+    backendFrame = frame;
+    body.appendChild(frame);
+
+    backendLinkTimer = setTimeout(() => {
+      if (backendLinked) return;
+      backendAttempts = Math.min(backendAttempts + 1, 6);
+      startBackend();
+    }, BACKEND_LINK_TIMEOUT);
+  };
+
+  function startBackend() {
+    if (backendStarting) return;
+    backendStarting = true;
+    clearTimeout(backendRetryTimer);
 
     loadBackendHtml()
-      .then(html => {
-        if (backendFrame) backendFrame.remove();
-
-        const frame = el('iframe', { title: 'kstuff-backend', tabIndex: -1 });
-        frame.setAttribute('aria-hidden', 'true');
-        frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
-
-        frame.addEventListener('load', () => {
-          try { if (frame.contentWindow.location.href === 'about:blank') return; } catch {}
-
-          const channel = new MessageChannel();
-
-          if (backendPort) {
-            backendPort.onmessage = null;
-            try { backendPort.close(); } catch {}
-          }
-
-          backendReady = false;
-          backendPort = channel.port1;
-          backendPort.onmessage = e => handleBackendMessage(e.data);
-          backendPort.start();
-
-          try {
-            frame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
-          } catch (err) {
-            console.error('backend init_cable failed', err);
-          }
-        });
-
-        frame.srcdoc = html;
-        backendFrame = frame;
-        body.appendChild(frame);
-
-        backendReadyTimer = setTimeout(() => {
-          if (backendReady) return;
-          if (backendFrame) {
-            backendFrame.remove();
-            backendFrame = null;
-          }
-          scheduleBackendRetry();
-        }, BACKEND_READY_TIMEOUT);
-      })
+      .then(mountBackendFrame)
       .catch(err => {
         console.error('backend failed to load', err);
         scheduleBackendRetry();
@@ -978,17 +1008,32 @@ function initApp() {
       });
   }
 
+  function ensureBackend() {
+    if (backendStarting) return;
+    if (!backendFrame || !backendFrame.isConnected || !backendFrame.contentWindow) {
+      closeBackendPort();
+      backendFrame = null;
+      startBackend();
+    }
+  }
+
   function sendBackend(message) {
-    if (backendReady && backendPort) {
-      backendPort.postMessage(message);
-      return true;
+    if (backendLinked && backendPort) {
+      try {
+        backendPort.postMessage(message);
+        return true;
+      } catch {}
     }
     if (backendQueue.length < 20) backendQueue.push(message);
-    if (!backendFrame && !backendStarting) startBackend();
+    ensureBackend();
     return false;
   }
 
   startBackend();
+  setInterval(ensureBackend, BACKEND_WATCHDOG_INTERVAL);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) ensureBackend();
+  });
 
   const handleAuth = t => () => {
     const u = ($('auth-user')?.value || '').trim(), p = ($('auth-pass')?.value || '').trim();
