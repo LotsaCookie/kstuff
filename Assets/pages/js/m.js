@@ -745,10 +745,70 @@ function idbSet(storeName, key, value) {
     });
 }
 
-const audioObjectUrlCache = new Map();
+function idbDelete(storeName, key) {
+    return cacheDBPromise.then(db => {
+        if (!db) return;
+        return new Promise(resolve => {
+            try {
+                const tx = db.transaction(storeName, "readwrite");
+                tx.objectStore(storeName).delete(key);
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => resolve();
+            } catch (e) {
+                resolve();
+            }
+        });
+    });
+}
+
+function trackDiskCacheOrder(storageKey, cacheKey, maxEntries, storeName) {
+    let order = [];
+    try { order = JSON.parse(localStorage.getItem(storageKey)) || []; } catch (e) {}
+    order = order.filter(k => k !== cacheKey);
+    order.push(cacheKey);
+    while (order.length > maxEntries) {
+        const evictKey = order.shift();
+        idbDelete(storeName, evictKey);
+    }
+    try { localStorage.setItem(storageKey, JSON.stringify(order)); } catch (e) {}
+}
+
+const AUDIO_DISK_CACHE_MAX = 20;
+const THUMB_DISK_CACHE_MAX = 300;
+
+function createObjectUrlCache(maxEntries) {
+    const map = new Map();
+    return {
+        get(key) {
+            if (!map.has(key)) return undefined;
+            const url = map.get(key);
+            map.delete(key);
+            map.set(key, url);
+            return url;
+        },
+        has(key) {
+            return map.has(key);
+        },
+        set(key, url) {
+            if (map.has(key)) map.delete(key);
+            map.set(key, url);
+            while (map.size > maxEntries) {
+                const oldestKey = map.keys().next().value;
+                const oldestUrl = map.get(oldestKey);
+                map.delete(oldestKey);
+                try { URL.revokeObjectURL(oldestUrl); } catch (e) {}
+            }
+        }
+    };
+}
+
+const audioObjectUrlCache = createObjectUrlCache(6);
+const thumbObjectUrlCache = createObjectUrlCache(220);
+const thumbInflight = new Map();
 
 async function getCachedAudioObjectURL(cacheKey) {
-    if (audioObjectUrlCache.has(cacheKey)) return audioObjectUrlCache.get(cacheKey);
+    const known = audioObjectUrlCache.get(cacheKey);
+    if (known) return known;
     const blob = await idbGet(AUDIO_STORE, cacheKey);
     if (!blob) return null;
     const url = URL.createObjectURL(blob);
@@ -759,14 +819,12 @@ async function getCachedAudioObjectURL(cacheKey) {
 async function cacheAudioBlob(cacheKey, blob) {
     try {
         await idbSet(AUDIO_STORE, cacheKey, blob);
+        trackDiskCacheOrder("audioCacheOrder", cacheKey, AUDIO_DISK_CACHE_MAX, AUDIO_STORE);
     } catch (e) {}
     const url = URL.createObjectURL(blob);
     audioObjectUrlCache.set(cacheKey, url);
     return url;
 }
-
-const thumbObjectUrlCache = new Map();
-const thumbInflight = new Map();
 
 async function fetchImageBlobViaWisp(url) {
     return imageLimiter(async () => {
@@ -800,6 +858,7 @@ function getImageBlobURL(url) {
             blob = await fetchImageBlobViaWisp(url);
             blob = new Blob([blob], { type: blob.type || "image/jpeg" });
             idbSet(THUMB_STORE, url, blob);
+            trackDiskCacheOrder("thumbCacheOrder", url, THUMB_DISK_CACHE_MAX, THUMB_STORE);
         }
 
         const objectUrl = URL.createObjectURL(blob);
@@ -919,6 +978,59 @@ function setImage(img, urls, lazy = false, track = null) {
         getImageObserver().observe(img);
     } else {
         load();
+    }
+}
+
+// Lightweight image loader for grid tiles (home shelves, search results).
+// Unlike setImage(), this assigns the URL straight to img.src instead of
+// routing every thumbnail through the Wisp proxy + blob + IndexedDB pipeline.
+// A plain <img> doesn't need CORS-safe pixel data (that's only required for
+// canvas drawImage, used by the PiP frame), so proxying hundreds of grid
+// thumbnails on every home-page load was pure overhead and the single
+// biggest contributor to page lag.
+function setImageDirect(img, urls, track = null) {
+    const list = urls.filter(Boolean);
+    const token = (img._imgToken = (img._imgToken || 0) + 1);
+
+    if (imageObserver) imageObserver.unobserve(img);
+    img._startLoad = null;
+    img.classList.remove("no-art");
+
+    let i = 0;
+    const tryNext = async () => {
+        if (img._imgToken !== token) return;
+        if (i >= list.length) {
+            if (track) {
+                try {
+                    const fallbackUrl = await lookupArtworkUrl(track);
+                    if (img._imgToken !== token) return;
+                    if (fallbackUrl) {
+                        img.onerror = () => {
+                            if (img._imgToken !== token) return;
+                            img.classList.add("no-art");
+                            img.src = DEFAULT_ART_DATA_URI;
+                        };
+                        img.onload = null;
+                        img.src = fallbackUrl;
+                        return;
+                    }
+                } catch (e) {}
+            }
+            img.classList.add("no-art");
+            img.src = DEFAULT_ART_DATA_URI;
+            return;
+        }
+        const url = list[i++];
+        img.onerror = tryNext;
+        img.onload = () => { if (img._imgToken === token) img.onerror = null; };
+        img.src = url;
+    };
+
+    if ("IntersectionObserver" in window) {
+        img._startLoad = tryNext;
+        getImageObserver().observe(img);
+    } else {
+        tryNext();
     }
 }
 
@@ -1371,7 +1483,7 @@ function fillTile(button, track) {
     button.querySelector(".tile-title").textContent = track.title;
     button.querySelector(".tile-artist").textContent = track.artist;
     button.setAttribute("aria-label", `${track.title} by ${track.artist}`);
-    setImage(button.querySelector("img"), trackCoverUrls(track), true, track);
+    setImageDirect(button.querySelector("img"), trackCoverUrls(track), track);
 }
 
 function createTile(track, onClick) {
