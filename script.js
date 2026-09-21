@@ -45,7 +45,7 @@ function initApp() {
   const SHA_FETCH_TIMEOUT = 6000;
   const SHA_TTL = 30000;
   const IFRAME_SHOW_TIMEOUT = 2500;
-  const BACKEND_READY_TIMEOUT = 20000;
+  const BACKEND_READY_TIMEOUT = 50000;
   const AUTH_TIMEOUT = 45000;
   const BACKEND_URLS = [
     'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.html',
