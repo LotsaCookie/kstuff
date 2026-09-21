@@ -879,15 +879,17 @@ function initApp() {
         currentActive.style.display = 'none';
 
         if (iframePages[currentActive.id]) {
-          const oldId = iframePages[currentActive.id].id;
-          cancelIframeLoads(oldId);
-          const oldIframe = $(oldId);
-          if (oldIframe) {
-            oldIframe.removeAttribute('srcdoc');
-            oldIframe.src = 'about:blank';
+        const oldId = iframePages[currentActive.id].id;
+           if (!isKeepAliveLoaded(oldId)) {
+           cancelIframeLoads(oldId);
+           const oldIframe = $(oldId);
+           if (oldIframe) {
+           oldIframe.removeAttribute('srcdoc');
+           oldIframe.src = 'about:blank';
           }
         }
       }
+      
 
       Object.keys(grids).forEach(k => {
         if (k !== tId && grids[k].gridEl) {
@@ -1530,6 +1532,7 @@ function initApp() {
   const isAnyModalActive = () => !!document.querySelector('.modal-overlay.active');
 
   async function maybeReloadIframe(id, path) {
+    if (isKeepAliveLoaded(id)) return false;
     try {
       const html = await fetchWithProxy(path, true);
       if (!iframeLoadFailed[id] && lastIframeHtml[id] === html) return false;
