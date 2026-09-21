@@ -47,7 +47,6 @@ function initApp() {
   const IFRAME_SHOW_TIMEOUT = 2500;
   const BACKEND_LINK_TIMEOUT = 15000;
   const BACKEND_WATCHDOG_INTERVAL = 4000;
-  const BACKEND_CACHE_KEY = 'kstuff_backend_html';
   const AUTH_TIMEOUT = 90000;
   const BACKEND_URLS = [
     'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.svg',
@@ -61,7 +60,7 @@ function initApp() {
   const dbg = (...args) => console.log('[kstuff-backend]', ...args);
 
   let backendPort = null, backendLinked = false, backendReady = false, syncInterval = null, currentUser = null;
-  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendLinkTimer = null, backendLinkPoll = null, backendAttempts = 0;
+  let backendFrame = null, backendLinkTimer = null, backendAttempts = 0, backendUrlIndex = 0;
   let authBusyTimer = null;
   const backendQueue = [];
   let gRep = {}, gTruf = new Map();
@@ -908,29 +907,6 @@ function initApp() {
     }
   };
 
-  const isBackendDoc = html => typeof html === 'string' && html.includes('init_cable') && html.includes('<script');
-
-  const fetchBackendDoc = async url => {
-    const html = await timedFetch(url + '?_=' + Date.now(), true, FETCH_TIMEOUT);
-    if (!isBackendDoc(html)) throw new Error('Unexpected backend document');
-    return html;
-  };
-
-  const loadBackendHtml = async () => {
-    try {
-      const html = await Promise.any(BACKEND_URLS.map(fetchBackendDoc));
-      dbg('backend html fetched', html.length);
-      try { setStorage(BACKEND_CACHE_KEY, html); } catch {}
-      return html;
-    } catch (err) {
-      console.error('backend fetch failed, trying cached copy', err);
-    }
-    let cached = '';
-    try { cached = getStorage(BACKEND_CACHE_KEY) || ''; } catch {}
-    if (isBackendDoc(cached)) return cached;
-    throw new Error('Backend document unavailable');
-  };
-
   const closeBackendPort = () => {
     backendLinked = false;
     backendReady = false;
@@ -941,22 +917,8 @@ function initApp() {
     }
   };
 
-  const scheduleBackendRetry = () => {
-    clearTimeout(backendRetryTimer);
-    backendRetryTimer = setTimeout(startBackend, Math.min(30000, 1500 * 2 ** backendAttempts));
-    backendAttempts = Math.min(backendAttempts + 1, 6);
-  };
-
   const linkBackend = frame => {
     if (frame !== backendFrame) return;
-
-    let doc = null;
-    try {
-      if (frame.contentWindow.location.href === 'about:blank') return;
-      doc = frame.contentDocument;
-    } catch {}
-
-    if (backendLinked && frame.__kDoc && frame.__kDoc === doc) return;
 
     closeBackendPort();
 
@@ -973,18 +935,15 @@ function initApp() {
       return;
     }
 
-    frame.__kDoc = doc;
     backendLinked = true;
     backendAttempts = 0;
     clearTimeout(backendLinkTimer);
-    clearInterval(backendLinkPoll);
     dbg('linked, init_cable sent, queued messages:', backendQueue.length);
     flushBackendQueue();
   };
 
-  const mountBackendFrame = html => {
+  const mountBackendFrame = url => {
     clearTimeout(backendLinkTimer);
-    clearInterval(backendLinkPoll);
     closeBackendPort();
 
     if (backendFrame) {
@@ -1000,50 +959,26 @@ function initApp() {
     frame.setAttribute('hidden', '');
     frame.style.setProperty('display', 'none', 'important');
     frame.addEventListener('load', () => linkBackend(frame));
+    frame.src = url;
 
     backendFrame = frame;
     body.appendChild(frame);
-    frame.srcdoc = html;
-    dbg('iframe mounted');
-
-    backendLinkPoll = setInterval(() => {
-      if (backendLinked || frame !== backendFrame) {
-        clearInterval(backendLinkPoll);
-        return;
-      }
-      try {
-        if (frame.contentDocument?.readyState === 'complete' && frame.contentWindow.location.href !== 'about:blank') {
-          linkBackend(frame);
-        }
-      } catch {}
-    }, 400);
+    dbg('iframe mounted', url);
 
     backendLinkTimer = setTimeout(() => {
-      if (backendLinked) return;
-      dbg('link timeout, rebuilding iframe');
+      if (backendLinked || frame !== backendFrame) return;
+      dbg('link timeout, trying next backend url');
       backendAttempts = Math.min(backendAttempts + 1, 6);
+      backendUrlIndex++;
       startBackend();
     }, BACKEND_LINK_TIMEOUT);
   };
 
   function startBackend() {
-    if (backendStarting) return;
-    backendStarting = true;
-    clearTimeout(backendRetryTimer);
-
-    loadBackendHtml()
-      .then(mountBackendFrame)
-      .catch(err => {
-        console.error('backend failed to load', err);
-        scheduleBackendRetry();
-      })
-      .finally(() => {
-        backendStarting = false;
-      });
+    mountBackendFrame(BACKEND_URLS[backendUrlIndex % BACKEND_URLS.length]);
   }
 
   function ensureBackend() {
-    if (backendStarting) return;
     if (!backendFrame || !backendFrame.isConnected || !backendFrame.contentWindow) {
       closeBackendPort();
       backendFrame = null;
