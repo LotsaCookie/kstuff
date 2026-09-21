@@ -889,6 +889,7 @@ function initApp() {
           }
         }
       }
+      }
       
 
       Object.keys(grids).forEach(k => {
