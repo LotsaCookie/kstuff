@@ -45,10 +45,19 @@ function initApp() {
   const SHA_FETCH_TIMEOUT = 6000;
   const SHA_TTL = 30000;
   const IFRAME_SHOW_TIMEOUT = 2500;
+  const BACKEND_READY_TIMEOUT = 20000;
+  const AUTH_TIMEOUT = 45000;
+  const BACKEND_URLS = [
+    'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset-deobf/11.html',
+    'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset-deobf@main/11.html'
+  ];
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
 
   let backendPort = null, backendReady = false, syncInterval = null, currentUser = null;
+  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendReadyTimer = null, backendAttempts = 0;
+  let authBusyTimer = null;
+  const backendQueue = [];
   let gRep = {}, gTruf = new Map();
 
   let mirrorsScriptFailed = false;
@@ -110,7 +119,7 @@ function initApp() {
 
   const MUSIC_IFRAME_ID = 'gradebook-iframe';
   const KEEP_ALIVE_IFRAMES = new Set([MUSIC_IFRAME_ID]);
-  let musicState = null; 
+  let musicState = null;
 
   const isKeepAliveLoaded = id =>
     KEEP_ALIVE_IFRAMES.has(id) && !!$(id)?.srcdoc && !iframeLoadFailed[id] && !iframeInFlight[id];
@@ -171,7 +180,7 @@ function initApp() {
     miniTitle.textContent = state.title || '';
     miniTitle.title = state.title || '';
     miniArtist.textContent =
-      state.status === 'loading' ? 'Loading…' :
+      state.status === 'loading' ? 'Loading...' :
       state.status === 'error' ? "Couldn't load audio" :
       (state.artist || '');
 
@@ -222,6 +231,14 @@ function initApp() {
 
   try {
     currentUser = JSON.parse(getStorage('kstuff_user'));
+    if (currentUser && !currentUser.username) {
+      currentUser = null;
+      localStorage.removeItem('kstuff_user');
+    }
+    if (currentUser?.password) {
+      delete currentUser.password;
+      setStorage('kstuff_user', JSON.stringify(currentUser));
+    }
     const uTheme = currentUser?.settings?.theme || currentUser?.theme;
     if (uTheme) setStorage('kstuff_theme', uTheme);
   } catch { localStorage.removeItem('kstuff_user'); }
@@ -427,6 +444,39 @@ function initApp() {
     });
   }
 
+  const userSettings = u => u?.settings || { theme: u?.theme, navPos: u?.navPos, navSize: u?.navSize, textVis: u?.textVis };
+
+  const AUTH_ERRORS = {
+    invalid: 'Fill out all fields.',
+    exists: 'That username is already taken.',
+    not_found: 'No account with that username.',
+    invalid_password: 'Incorrect password.',
+    failed: 'Something went wrong. Please try again.'
+  };
+
+  const showAuthError = msg => {
+    const errEl = $('auth-error-msg');
+    if (!errEl) return;
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  };
+
+  const setAuthBusy = (busy, label = '', which = '') => {
+    clearTimeout(authBusyTimer);
+    [['login', $('do-login-btn')], ['signup', $('do-signup-btn')]].forEach(([kind, btn]) => {
+      if (!btn) return;
+      if (!btn.dataset.label) btn.dataset.label = btn.textContent;
+      btn.disabled = busy;
+      btn.textContent = busy && kind === which ? label : btn.dataset.label;
+    });
+    if (busy) {
+      authBusyTimer = setTimeout(() => {
+        setAuthBusy(false);
+        showAuthError('The server took too long to respond. Please try again.');
+      }, AUTH_TIMEOUT);
+    }
+  };
+
   $('save-settings-btn')?.addEventListener('click', e => {
     const btn = e.target;
     const p = {
@@ -437,11 +487,13 @@ function initApp() {
       lastUpdated: Date.now()
     };
     if (p.theme) setStorage('kstuff_theme', p.theme);
-    if (!currentUser) currentUser = { settings: {} };
-    currentUser.settings = p; setStorage('kstuff_user', JSON.stringify(currentUser));
+    if (currentUser) {
+      currentUser.settings = p;
+      setStorage('kstuff_user', JSON.stringify(currentUser));
+    }
     applyCloudSettings(p);
     sessionSettingsUpdated = true;
-    if (currentUser.username && backendReady && backendPort) backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: p });
+    if (currentUser?.username) sendBackend({ type: 'update-settings', username: currentUser.username, settings: p });
     const oBg = btn.style.background, oC = btn.style.color;
     btn.textContent = "Saved!"; btn.style.background = "#4CAF50"; btn.style.color = "#fff";
     setTimeout(() => { btn.textContent = "Save Settings"; btn.style.background = oBg; btn.style.color = oC; }, 1500);
@@ -467,13 +519,13 @@ function initApp() {
       if (!f) return resolve();
 
       if (isKeepAliveLoaded(id)) {
-           if (!pageIsHidden(f)) {
-             f.style.display = 'block';
-            toggleLoader(false);
-           }
-      return resolve();
+        if (!pageIsHidden(f)) {
+          f.style.display = 'block';
+          toggleLoader(false);
+        }
+        return resolve();
       }
-      
+
       const token = iframeLoadTokens[id] = (iframeLoadTokens[id] || 0) + 1;
       iframeInFlight[id] = token;
       const stale = () => iframeLoadTokens[id] !== token;
@@ -787,7 +839,7 @@ function initApp() {
   };
 
   updateAuthUI();
-  if (currentUser) applyCloudSettings(currentUser.settings || { theme: currentUser.theme });
+  if (currentUser) applyCloudSettings(userSettings(currentUser));
 
   [['auth-modal-overlay', 'auth-close-btn'], ['profile-modal-overlay', 'profile-close-btn'], ['homeworkhelper-modal', 'homeworkhelper-close-btn'], ['changelog-modal', 'changelog-close-btn']]
     .forEach(([mId, bId]) => {
@@ -797,16 +849,157 @@ function initApp() {
     });
 
   const authMod = $('auth-modal-overlay'), profMod = $('profile-modal-overlay');
-  const handleAuth = t => () => {
-    const u = $('auth-user')?.value.trim(), p = $('auth-pass')?.value.trim();
-    const errEl = $('auth-error-msg');
-    if (t === 'signup') {
-      if (u.length > MAX_USERNAME_LENGTH) return errEl && (errEl.textContent = "Username cannot exceed 20 characters.", errEl.style.display = 'block');
-      if (!/^[a-zA-Z0-9_]+$/.test(u)) return errEl && (errEl.textContent = "Username can only contain letters, numbers, and underscores.", errEl.style.display = 'block');
-      if ((u.match(/_/g) || []).length > MAX_UNDERSCORES) return errEl && (errEl.textContent = `Username can only contain up to ${MAX_UNDERSCORES} underscores.`, errEl.style.display = 'block');
+
+  const applyBackendUser = (payload, isAuto) => {
+    const { password, ...safeUser } = payload;
+    const keepLocalSettings = isAuto && sessionSettingsUpdated;
+    const localSettings = currentUser?.settings;
+    currentUser = safeUser;
+    if (keepLocalSettings && localSettings) currentUser.settings = localSettings;
+    setStorage('kstuff_user', JSON.stringify(currentUser));
+    updateAuthUI();
+    if (!keepLocalSettings) applyCloudSettings(userSettings(currentUser));
+  };
+
+  const flushBackendQueue = () => {
+    while (backendQueue.length && backendReady && backendPort) backendPort.postMessage(backendQueue.shift());
+  };
+
+  const handleBackendMessage = data => {
+    if (!data || typeof data !== 'object') return;
+
+    if (data.type === 'ready') {
+      backendReady = true;
+      backendAttempts = 0;
+      clearTimeout(backendReadyTimer);
+      flushBackendQueue();
+      return;
     }
-    if (u && p && backendPort) backendPort.postMessage({ type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) });
-    else if (!u || !p) errEl && (errEl.textContent = "Fill out all fields.", errEl.style.display = 'block');
+
+    if (data.type === 'auto-login') {
+      if (data.success && data.payload) applyBackendUser(data.payload, true);
+      return;
+    }
+
+    if (data.type === 'login' || data.type === 'signup') {
+      setAuthBusy(false);
+      if (data.success && data.payload) {
+        applyBackendUser(data.payload, false);
+        if ($('auth-pass')) $('auth-pass').value = '';
+        authMod?.classList.remove('active');
+      } else {
+        showAuthError(AUTH_ERRORS[data.reason] || AUTH_ERRORS.failed);
+      }
+    }
+  };
+
+  const loadBackendHtml = async () => {
+    let lastErr = null;
+    for (const url of BACKEND_URLS) {
+      try {
+        const html = await timedFetch(url, true, FETCH_TIMEOUT);
+        if (typeof html === 'string' && html.includes('init_cable')) return html;
+        lastErr = new Error('Unexpected backend document');
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    throw lastErr || new Error('Backend document unavailable');
+  };
+
+  const scheduleBackendRetry = () => {
+    clearTimeout(backendRetryTimer);
+    backendRetryTimer = setTimeout(startBackend, Math.min(30000, 1500 * 2 ** backendAttempts));
+    backendAttempts++;
+  };
+
+  function startBackend() {
+    if (backendStarting) return;
+    backendStarting = true;
+    backendReady = false;
+    clearTimeout(backendRetryTimer);
+    clearTimeout(backendReadyTimer);
+
+    if (backendPort) {
+      backendPort.onmessage = null;
+      try { backendPort.close(); } catch {}
+      backendPort = null;
+    }
+
+    loadBackendHtml()
+      .then(html => {
+        if (backendFrame) backendFrame.remove();
+
+        const frame = el('iframe', { title: 'kstuff-backend', tabIndex: -1 });
+        frame.setAttribute('aria-hidden', 'true');
+        frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+
+        frame.addEventListener('load', () => {
+          try { if (frame.contentWindow.location.href === 'about:blank') return; } catch {}
+
+          const channel = new MessageChannel();
+
+          if (backendPort) {
+            backendPort.onmessage = null;
+            try { backendPort.close(); } catch {}
+          }
+
+          backendReady = false;
+          backendPort = channel.port1;
+          backendPort.onmessage = e => handleBackendMessage(e.data);
+          backendPort.start();
+
+          try {
+            frame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
+          } catch (err) {
+            console.error('backend init_cable failed', err);
+          }
+        });
+
+        frame.srcdoc = html;
+        backendFrame = frame;
+        body.appendChild(frame);
+
+        backendReadyTimer = setTimeout(() => {
+          if (backendReady) return;
+          if (backendFrame) {
+            backendFrame.remove();
+            backendFrame = null;
+          }
+          scheduleBackendRetry();
+        }, BACKEND_READY_TIMEOUT);
+      })
+      .catch(err => {
+        console.error('backend failed to load', err);
+        scheduleBackendRetry();
+      })
+      .finally(() => {
+        backendStarting = false;
+      });
+  }
+
+  function sendBackend(message) {
+    if (backendReady && backendPort) {
+      backendPort.postMessage(message);
+      return true;
+    }
+    if (backendQueue.length < 20) backendQueue.push(message);
+    if (!backendFrame && !backendStarting) startBackend();
+    return false;
+  }
+
+  startBackend();
+
+  const handleAuth = t => () => {
+    const u = ($('auth-user')?.value || '').trim(), p = ($('auth-pass')?.value || '').trim();
+    if (!u || !p) return showAuthError(AUTH_ERRORS.invalid);
+    if (t === 'signup') {
+      if (u.length > MAX_USERNAME_LENGTH) return showAuthError('Username cannot exceed 20 characters.');
+      if (!/^[a-zA-Z0-9_]+$/.test(u)) return showAuthError('Username can only contain letters, numbers, and underscores.');
+      if ((u.match(/_/g) || []).length > MAX_UNDERSCORES) return showAuthError(`Username can only contain up to ${MAX_UNDERSCORES} underscores.`);
+    }
+    setAuthBusy(true, t === 'signup' ? 'Signing up...' : 'Logging in...', t);
+    sendBackend({ type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) });
   };
 
   $('do-login-btn')?.addEventListener('click', handleAuth('login'));
@@ -814,8 +1007,10 @@ function initApp() {
   ['auth-user', 'auth-pass'].forEach(id => $(id)?.addEventListener('input', () => $('auth-error-msg') && ($('auth-error-msg').style.display = 'none')));
 
   $('do-logout-btn')?.addEventListener('click', () => {
-    currentUser = null; localStorage.removeItem('kstuff_user');
-    backendPort?.postMessage({ type: 'logout' });
+    currentUser = null;
+    localStorage.removeItem('kstuff_user');
+    localStorage.removeItem('neocities_last_user');
+    sendBackend({ type: 'logout' });
     updateAuthUI(); profMod?.classList.remove('active');
   });
 
@@ -834,12 +1029,12 @@ function initApp() {
   });
 
   $('save-profile-changes-btn')?.addEventListener('click', e => {
-    if (!currentUser || !backendPort) return;
+    if (!currentUser) return;
     const btn = e.target, oT = btn.textContent; btn.textContent = "Saving...";
     currentUser.profilePicture = $('profile-edit-pic-url').value.trim() || "https://kstuff.neocities.org/assets/default-profile.png";
     currentUser.description = $('profile-edit-desc').value.trim() || "No bio provided yet.";
     setStorage('kstuff_user', JSON.stringify(currentUser)); updateAuthUI();
-    backendPort.postMessage({ type: 'update-settings', username: currentUser.username, settings: { profilePicture: currentUser.profilePicture, description: currentUser.description } });
+    sendBackend({ type: 'update-settings', username: currentUser.username, settings: { profilePicture: currentUser.profilePicture, description: currentUser.description } });
     setTimeout(() => { btn.textContent = oT; toggleProfEdit(false); }, 600);
   });
 
@@ -879,18 +1074,17 @@ function initApp() {
         currentActive.style.display = 'none';
 
         if (iframePages[currentActive.id]) {
-        const oldId = iframePages[currentActive.id].id;
-           if (!isKeepAliveLoaded(oldId)) {
-           cancelIframeLoads(oldId);
-           const oldIframe = $(oldId);
-           if (oldIframe) {
-           oldIframe.removeAttribute('srcdoc');
-           oldIframe.src = 'about:blank';
+          const oldId = iframePages[currentActive.id].id;
+          if (!isKeepAliveLoaded(oldId)) {
+            cancelIframeLoads(oldId);
+            const oldIframe = $(oldId);
+            if (oldIframe) {
+              oldIframe.removeAttribute('srcdoc');
+              oldIframe.src = 'about:blank';
+            }
           }
         }
       }
-      }
-      
 
       Object.keys(grids).forEach(k => {
         if (k !== tId && grids[k].gridEl) {
