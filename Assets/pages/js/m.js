@@ -43,10 +43,6 @@ const newPlaylistInput = document.getElementById("newPlaylistInput");
 const confirmAddBtn = document.getElementById("confirmAddBtn");
 const cancelModalBtn = document.getElementById("cancelModalBtn");
 
-/* ------------------------------------------------------------------ */
-/*  Config                                                             */
-/* ------------------------------------------------------------------ */
-
 const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/search";
 const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
 const STREAM_QUALITY = "lossless";
@@ -63,6 +59,7 @@ const EPOXY_TRANSPORT_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy
 
 const DEEZER_API = "https://api.deezer.com";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
+const ITUNES_SEARCH_API = "https://itunes.apple.com/search";
 
 const HOME_SHELVES = [
     { id: "trending", title: "Trending Now", genre: 0 },
@@ -78,37 +75,16 @@ const HOME_SHELVES = [
 ];
 const SHELF_SIZE = 30;
 const SHELF_SKELETONS = 8;
-const SHELF_CACHE_KEY = "shelfCacheV2"; // bumped: covers are now the smaller size
+const SHELF_CACHE_KEY = "shelfCacheV3";
 const SHELF_TTL_MS = 30 * 60 * 1000;
 
 const MAX_VIDEOS_TRIED = 10;
 
-/* ------------------------------------------------------------------ */
-/*  Wisp client + fetch helpers                                        */
-/* ------------------------------------------------------------------ */
+const DEFAULT_ART_DATA_URI = "data:image/svg+xml;utf8," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#2a1c22"/><circle cx="100" cy="78" r="32" fill="#57323f"/><rect x="42" y="128" width="116" height="42" rx="10" fill="#57323f"/></svg>`
+);
 
 let bareClientPromise = null;
-
-function getBareClient() {
-    if (bareClientPromise) return bareClientPromise;
-
-    bareClientPromise = (async () => {
-        const { BareMuxConnection, BareClient } = await import(BAREMUX_URL);
-
-        const workerCode = `importScripts("${BAREMUX_WORKER_URL}");`;
-        const workerBlob = new Blob([workerCode], { type: "text/javascript" });
-        const workerUrl = URL.createObjectURL(workerBlob);
-
-        const conn = new BareMuxConnection(workerUrl);
-        await conn.setTransport(EPOXY_TRANSPORT_URL, [{ wisp: WISP_URL }]);
-
-        return new BareClient();
-    })();
-
-    bareClientPromise.catch(() => { bareClientPromise = null; });
-
-    return bareClientPromise;
-}
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -130,6 +106,80 @@ function fetchWithTimeout(url, ms = 8000) {
     return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
+async function createBareClient() {
+    const { BareMuxConnection, BareClient } = await import(BAREMUX_URL);
+
+    const workerCode = `importScripts("${BAREMUX_WORKER_URL}");`;
+    const workerBlob = new Blob([workerCode], { type: "text/javascript" });
+    const workerUrl = URL.createObjectURL(workerBlob);
+
+    const conn = new BareMuxConnection(workerUrl);
+
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            await withTimeout(conn.setTransport(EPOXY_TRANSPORT_URL, [{ wisp: WISP_URL }]), 15000, "Wisp transport setup");
+            return new BareClient();
+        } catch (e) {
+            lastErr = e;
+            await sleep(350 * (attempt + 1));
+        }
+    }
+    throw lastErr || new Error("Failed to set up Wisp transport");
+}
+
+function getBareClient(forceNew = false) {
+    if (forceNew) bareClientPromise = null;
+    if (bareClientPromise) return bareClientPromise;
+
+    bareClientPromise = createBareClient();
+    bareClientPromise.catch(() => { bareClientPromise = null; });
+    return bareClientPromise;
+}
+
+function isConnectionError(err) {
+    const msg = (err && err.message ? err.message : String(err || "")).toLowerCase();
+    return err instanceof TypeError
+        || msg.includes("websocket")
+        || msg.includes("closed")
+        || msg.includes("network")
+        || msg.includes("failed to fetch")
+        || msg.includes("not ready")
+        || msg.includes("wisp")
+        || msg.includes("setup");
+}
+
+async function wispFetch(url, timeoutMs = 15000) {
+    let lastErr = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+            const client = await withTimeout(getBareClient(attempt > 0), 20000, "Wisp setup");
+            return await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
+        } catch (err) {
+            lastErr = err;
+            if (isConnectionError(err)) {
+                bareClientPromise = null;
+                await sleep(250 * (attempt + 1));
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw lastErr || new Error("Wisp fetch failed");
+}
+
+getBareClient().catch(() => {});
+
+setInterval(() => {
+    if (!bareClientPromise) {
+        getBareClient().catch(() => {});
+        return;
+    }
+    getBareClient().then(client =>
+        withTimeout(client.fetch(`${INVIDIOUS_BASE}/api/v1/stats`), 8000, "Wisp keepalive")
+    ).catch(() => { bareClientPromise = null; getBareClient().catch(() => {}); });
+}, 4 * 60 * 1000);
+
 function createLimiter(max) {
     let active = 0;
     const waiting = [];
@@ -148,8 +198,8 @@ function createLimiter(max) {
     });
 }
 
-const externalLimiter = createLimiter(3);   // homepage charts
-const musicApiLimiter = createLimiter(4);   // search / matching (kept separate so shelves never slow it down)
+const externalLimiter = createLimiter(3);
+const musicApiLimiter = createLimiter(4);
 const imageLimiter = createLimiter(6);
 
 let invidiousDirectSkipUntil = 0;
@@ -171,30 +221,24 @@ async function fetchInvidiousJSON(path, directTimeout = 8000, proxyTimeout = 200
         }
     }
 
-    const client = await withTimeout(getBareClient(), proxyTimeout, "Wisp setup");
-    const proxyResponse = await withTimeout(client.fetch(url), proxyTimeout, "Wisp fetch");
+    const proxyResponse = await wispFetch(url, proxyTimeout);
     if (!proxyResponse.ok) throw new Error(`Proxy HTTP ${proxyResponse.status}`);
     return await proxyResponse.json();
 }
 
 async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
-    const client = await withTimeout(getBareClient(), 20000, "Wisp setup");
-    const response = await withTimeout(client.fetch(url), timeoutMs, "Wisp audio fetch");
+    const response = await wispFetch(url, timeoutMs);
     if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
     const blob = await response.blob();
     if (!blob || blob.size === 0) throw new Error("Empty audio blob");
     return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
 }
 
-// Wisp first, then a plain request
 async function fetchExternalOnce(url, wispMs = 10000, directMs = 6000) {
     try {
-        return await withTimeout((async () => {
-            const client = await getBareClient();
-            const response = await client.fetch(url);
-            if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
-            return await response.json();
-        })(), wispMs, "Wisp API fetch");
+        const response = await wispFetch(url, wispMs);
+        if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
+        return await response.json();
     } catch (wispError) {
         console.warn("Wisp API fetch failed, trying a direct request:", wispError.message);
     }
@@ -229,10 +273,6 @@ function fetchMusicApiJSON(url) {
         return data;
     });
 }
-
-/* ------------------------------------------------------------------ */
-/*  Song matching (pure helpers)                                       */
-/* ------------------------------------------------------------------ */
 
 function ytThumbUrls(videoId) {
     return [
@@ -473,10 +513,6 @@ function serializeTrack(t) {
     };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Music API (primary) -> song objects                                */
-/* ------------------------------------------------------------------ */
-
 function songFromStreamItem(item) {
     if (!item || item.id === undefined || item.id === null || item.id === "" || !item.title) return null;
     return makeSong({
@@ -509,10 +545,6 @@ function streamUrlFor(streamId) {
     return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}?quality=${encodeURIComponent(STREAM_QUALITY)}`;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Homepage charts (Deezer / Apple)                                   */
-/* ------------------------------------------------------------------ */
-
 function songFromDeezer(t) {
     if (!t || !t.id || !t.title) return null;
     const album = t.album || {};
@@ -533,8 +565,8 @@ function hiResArtwork(url) {
 
 function upscaleCover(url, px = 500) {
     return String(url || "")
-        .replace(/\/\d+x\d+-/, `/${px}x${px}-`)            // Deezer
-        .replace(/\/\d+x\d+(bb)?\./, `/${px}x${px}bb.`);   // Apple
+        .replace(/\/\d+x\d+-/, `/${px}x${px}-`)
+        .replace(/\/\d+x\d+(bb)?\./, `/${px}x${px}bb.`);
 }
 
 function songFromItunes(r) {
@@ -556,15 +588,23 @@ async function fetchDeezerChart(genreId) {
     return dedupeSongs(((data && data.data) || []).map(songFromDeezer).filter(Boolean));
 }
 
+async function fetchDeezerChartAlt(genreId) {
+    const data = await fetchExternalJSON(`${DEEZER_API}/chart/${genreId}`);
+    const tracks = (data && data.tracks && data.tracks.data) || [];
+    return dedupeSongs(tracks.map(songFromDeezer).filter(Boolean));
+}
+
 async function fetchAppleTrending() {
     const data = await fetchExternalJSON(`${APPLE_CHARTS_API}/${SHELF_SIZE}/songs.json`);
     const results = (data && data.feed && data.feed.results) || [];
     return dedupeSongs(results.map(songFromItunes).filter(Boolean));
 }
 
-/* ------------------------------------------------------------------ */
-/*  YouTube search through Invidious (fallback)                        */
-/* ------------------------------------------------------------------ */
+async function fetchItunesSearchChart(term) {
+    const data = await fetchExternalJSON(`${ITUNES_SEARCH_API}?media=music&entity=song&limit=${SHELF_SIZE}&term=${encodeURIComponent(term)}`);
+    const results = (data && data.results) || [];
+    return dedupeSongs(results.map(songFromItunes).filter(Boolean));
+}
 
 const videoSearchCache = new Map();
 
@@ -576,10 +616,6 @@ async function searchVideosCached(query) {
     videoSearchCache.set(query, videos);
     return videos;
 }
-
-/* ------------------------------------------------------------------ */
-/*  State                                                              */
-/* ------------------------------------------------------------------ */
 
 function normalizeTrack(t) {
     if (!t) return t;
@@ -653,10 +689,6 @@ let searchToken = 0;
 let currentTrackInfo = null;
 let playRequestToken = 0;
 
-/* ------------------------------------------------------------------ */
-/*  IndexedDB cache                                                    */
-/* ------------------------------------------------------------------ */
-
 const CACHE_DB_NAME = "musicAppCache";
 const CACHE_DB_VERSION = 1;
 const AUDIO_STORE = "audio";
@@ -715,7 +747,6 @@ function idbSet(storeName, key, value) {
 
 const audioObjectUrlCache = new Map();
 
-// Cache keys: Invidious audio uses the bare video id, new-API audio uses "ripple:<streamId>"
 async function getCachedAudioObjectURL(cacheKey) {
     if (audioObjectUrlCache.has(cacheKey)) return audioObjectUrlCache.get(cacheKey);
     const blob = await idbGet(AUDIO_STORE, cacheKey);
@@ -734,22 +765,26 @@ async function cacheAudioBlob(cacheKey, blob) {
     return url;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Images (always through Wisp, cached as blobs, loaded lazily)       */
-/* ------------------------------------------------------------------ */
-
 const thumbObjectUrlCache = new Map();
 const thumbInflight = new Map();
 
 async function fetchImageBlobViaWisp(url) {
     return imageLimiter(async () => {
-        const client = await withTimeout(getBareClient(), 20000, "Wisp setup");
-        const response = await withTimeout(client.fetch(url), 15000, "Wisp image fetch");
-        if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
-        const blob = await withTimeout(response.blob(), 15000, "Wisp image body");
-        if (!blob || blob.size === 0) throw new Error("Empty image");
-        if (blob.type && blob.type.startsWith("text/")) throw new Error("Not an image");
-        return blob;
+        let lastErr = null;
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                const response = await wispFetch(url, 15000);
+                if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
+                const blob = await withTimeout(response.blob(), 15000, "Wisp image body");
+                if (!blob || blob.size === 0) throw new Error("Empty image");
+                if (blob.type && blob.type.startsWith("text/")) throw new Error("Not an image");
+                return blob;
+            } catch (e) {
+                lastErr = e;
+                await sleep(200);
+            }
+        }
+        throw lastErr;
     });
 }
 
@@ -788,6 +823,29 @@ function trackCoverUrls(track, big = false) {
     return [...new Set(urls)];
 }
 
+const artworkLookupCache = new Map();
+
+function lookupArtworkUrl(track) {
+    const cacheKey = `${track.artist || ""}|${track.titleShort || track.title || ""}`.toLowerCase();
+    if (artworkLookupCache.has(cacheKey)) return artworkLookupCache.get(cacheKey);
+
+    const job = (async () => {
+        const term = `${track.artist || ""} ${stripFeat(track.titleShort || track.title || "")}`.trim();
+        if (!term) return null;
+        try {
+            const data = await fetchExternalJSON(`${ITUNES_SEARCH_API}?media=music&entity=song&limit=1&term=${encodeURIComponent(term)}`);
+            const hit = data && data.results && data.results[0];
+            return hit ? hiResArtwork(hit.artworkUrl100) : null;
+        } catch (e) {
+            return null;
+        }
+    })();
+
+    if (artworkLookupCache.size > 200) artworkLookupCache.clear();
+    artworkLookupCache.set(cacheKey, job);
+    return job;
+}
+
 let imageObserver = null;
 
 function getImageObserver() {
@@ -814,7 +872,7 @@ function decodeInto(img, src) {
     });
 }
 
-function setImage(img, urls, lazy = false) {
+function setImage(img, urls, lazy = false, track = null) {
     const list = urls.filter(Boolean);
     const token = (img._imgToken = (img._imgToken || 0) + 1);
 
@@ -822,13 +880,7 @@ function setImage(img, urls, lazy = false) {
     img._startLoad = null;
     img.classList.remove("no-art");
 
-    if (list.length === 0) {
-        img.classList.add("no-art");
-        return;
-    }
-
-    // Already fetched this session: show it instantly
-    const ready = thumbObjectUrlCache.get(list[0]);
+    const ready = list.length && thumbObjectUrlCache.get(list[0]);
     if (ready) {
         img.src = ready;
         return;
@@ -844,7 +896,22 @@ function setImage(img, urls, lazy = false) {
                 return;
             } catch (e) {}
         }
-        if (img._imgToken === token) img.classList.add("no-art");
+        if (track) {
+            try {
+                const fallbackUrl = await lookupArtworkUrl(track);
+                if (img._imgToken !== token) return;
+                if (fallbackUrl) {
+                    const objectUrl = await getImageBlobURL(fallbackUrl);
+                    if (img._imgToken !== token) return;
+                    await decodeInto(img, objectUrl);
+                    return;
+                }
+            } catch (e) {}
+        }
+        if (img._imgToken === token) {
+            img.classList.add("no-art");
+            img.src = DEFAULT_ART_DATA_URI;
+        }
     };
 
     if (lazy && "IntersectionObserver" in window) {
@@ -854,10 +921,6 @@ function setImage(img, urls, lazy = false) {
         load();
     }
 }
-
-/* ------------------------------------------------------------------ */
-/*  Picture-in-Picture canvas                                          */
-/* ------------------------------------------------------------------ */
 
 const PIP_SIZE = 480;
 const pipCanvas = document.createElement("canvas");
@@ -962,9 +1025,14 @@ async function updatePiPCanvas(track) {
 
     drawPipFrame(track, null);
 
-    for (const url of trackCoverUrls(track, true)) {
+    const urls = trackCoverUrls(track, true);
+    const fallback = await lookupArtworkUrl(track).catch(() => null);
+    if (fallback) urls.push(fallback);
+    urls.push(DEFAULT_ART_DATA_URI);
+
+    for (const url of urls) {
         try {
-            const objectUrl = await getImageBlobURL(url);
+            const objectUrl = url.startsWith("data:") ? url : await getImageBlobURL(url);
             const img = await loadImageElement(objectUrl);
             if (currentTrackInfo !== track) return;
             pipThumbCache = { key: track.key, img };
@@ -981,10 +1049,6 @@ rootThemeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["style", "class"]
 });
-
-/* ------------------------------------------------------------------ */
-/*  Media Session                                                      */
-/* ------------------------------------------------------------------ */
 
 function updatePositionState() {
     if (!("mediaSession" in navigator)) return;
@@ -1045,21 +1109,21 @@ async function updateMediaSessionMetadata(track) {
         } catch (e) {}
     };
 
-    // Text first; artwork is added once the Wisp copy is ready
     setMeta(null);
 
-    for (const url of trackCoverUrls(track, true)) {
+    const urls = trackCoverUrls(track, true);
+    const fallback = await lookupArtworkUrl(track).catch(() => null);
+    if (fallback) urls.push(fallback);
+
+    for (const url of urls) {
         try {
             const blobUrl = await getImageBlobURL(url);
             if (currentTrackInfo === track) setMeta(blobUrl);
             return;
         } catch (e) {}
     }
+    if (currentTrackInfo === track) setMeta(DEFAULT_ART_DATA_URI);
 }
-
-/* ------------------------------------------------------------------ */
-/*  Queue navigation                                                   */
-/* ------------------------------------------------------------------ */
 
 function getQueue() {
     if (activePlayingPlaylist && playlists[activePlayingPlaylist]) {
@@ -1110,10 +1174,6 @@ function updateNavButtons() {
     postPlayerState();
 }
 
-/* ------------------------------------------------------------------ */
-/*  Mini player bridge (talks to the main app's header player)         */
-/* ------------------------------------------------------------------ */
-
 const MINI_STATE_MSG = "kstuff-music-state";
 const MINI_CMD_MSG = "kstuff-music-cmd";
 
@@ -1133,7 +1193,11 @@ async function loadBridgeCover(track) {
     const key = track.key;
     bridgeCover = { key, data: "" };
 
-    for (const url of trackCoverUrls(track)) {
+    const urls = trackCoverUrls(track);
+    const fallback = await lookupArtworkUrl(track).catch(() => null);
+    if (fallback) urls.push(fallback);
+
+    for (const url of urls) {
         try {
             const objectUrl = await getImageBlobURL(url);
             const blob = await (await fetch(objectUrl)).blob();
@@ -1201,10 +1265,6 @@ function savePlaylists() {
     for (const [name, tracks] of Object.entries(playlists)) plain[name] = tracks.map(serializeTrack);
     localStorage.setItem("myPlaylists", JSON.stringify(plain));
 }
-
-/* ------------------------------------------------------------------ */
-/*  UI events                                                          */
-/* ------------------------------------------------------------------ */
 
 searchBtn.addEventListener("click", search);
 searchInput.addEventListener("keydown", event => {
@@ -1307,15 +1367,11 @@ document.addEventListener("visibilitychange", async () => {
     }
 });
 
-/* ------------------------------------------------------------------ */
-/*  Tiles                                                              */
-/* ------------------------------------------------------------------ */
-
 function fillTile(button, track) {
     button.querySelector(".tile-title").textContent = track.title;
     button.querySelector(".tile-artist").textContent = track.artist;
     button.setAttribute("aria-label", `${track.title} by ${track.artist}`);
-    setImage(button.querySelector("img"), trackCoverUrls(track), true);
+    setImage(button.querySelector("img"), trackCoverUrls(track), true, track);
 }
 
 function createTile(track, onClick) {
@@ -1333,10 +1389,6 @@ function createTile(track, onClick) {
     button.addEventListener("click", onClick);
     return button;
 }
-
-/* ------------------------------------------------------------------ */
-/*  Home page shelves                                                  */
-/* ------------------------------------------------------------------ */
 
 let shelfObserver = null;
 
@@ -1362,17 +1414,19 @@ async function getShelfTracks(shelf) {
         return hydrate(cached.tracks);
     }
 
+    const sources = [
+        () => fetchDeezerChart(shelf.genre),
+        () => fetchDeezerChartAlt(shelf.genre),
+        () => fetchAppleTrending(),
+        () => fetchItunesSearchChart(shelf.title)
+    ];
+
     let songs = [];
     let lastError = null;
-    try {
-        songs = await fetchDeezerChart(shelf.genre);
-    } catch (e) {
-        lastError = e;
-    }
-
-    if (songs.length === 0 && shelf.genre === 0) {
+    for (const source of sources) {
         try {
-            songs = await fetchAppleTrending();
+            songs = await source();
+            if (songs.length > 0) break;
         } catch (e) {
             lastError = e;
         }
@@ -1476,10 +1530,6 @@ function showHome() {
     window.scrollTo({ top: 0 });
 }
 
-/* ------------------------------------------------------------------ */
-/*  Search (new music API first, Invidious as fallback)                */
-/* ------------------------------------------------------------------ */
-
 function showMessage(html) {
     currentSearchResults = [];
     resultsList.innerHTML = `<div class="grid-message">${html}</div>`;
@@ -1541,10 +1591,6 @@ function renderSearchResults(tracks) {
         resultsList.appendChild(createTile(track, () => playFromList(currentSearchResults, track)));
     });
 }
-
-/* ------------------------------------------------------------------ */
-/*  Audio playback                                                     */
-/* ------------------------------------------------------------------ */
 
 function attemptToPlay(audio, timeoutMs = 12000) {
     return new Promise((resolve, reject) => {
@@ -1640,7 +1686,7 @@ async function playViaStreamApi(track, myToken) {
             found = await searchStreamApi(query, STREAM_MATCH_LIMIT);
         } catch (e) {
             console.warn("Stream match search failed:", e.message);
-            break; 
+            break;
         }
         if (myToken !== playRequestToken) return "stale";
 
@@ -1812,7 +1858,7 @@ function showTrackInDock(track, loading) {
         ? `${SVG_ICONS.spinner} ${escapeHTML(track.title)}`
         : escapeHTML(track.title);
     nowPlayingArtist.textContent = track.artist || "";
-    setImage(nowPlayingCover, trackCoverUrls(track));
+    setImage(nowPlayingCover, trackCoverUrls(track), false, track);
 }
 
 function setLoadingHint(track, hint) {
@@ -1869,10 +1915,6 @@ async function playTrack(track) {
         updateNavButtons();
     }
 }
-
-/* ------------------------------------------------------------------ */
-/*  Playlists                                                          */
-/* ------------------------------------------------------------------ */
 
 function updatePlaylistDropdowns() {
     const playlistNames = Object.keys(playlists);
@@ -2005,10 +2047,6 @@ window.removeTrack = function (playlistName, index) {
     updateNavButtons();
 };
 
-/* ------------------------------------------------------------------ */
-/*  Player controls                                                    */
-/* ------------------------------------------------------------------ */
-
 audioPlayer.addEventListener("ended", () => {
     playNext();
 });
@@ -2099,10 +2137,6 @@ function escapeHTML(value) {
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
     }[character]));
 }
-
-/* ------------------------------------------------------------------ */
-/*  Start                                                              */
-/* ------------------------------------------------------------------ */
 
 initPlaylists();
 updateNavButtons();
