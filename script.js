@@ -58,9 +58,23 @@ function initApp() {
   ];
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
-  const dbg = (...args) => console.log('[kstuff-backend]', ...args);
+  const DEBUG = /debug/i.test(location.search + location.hash);
+  let debugPanel = null;
+  const dbg = (...args) => {
+    console.log('[kstuff-backend]', ...args);
+    if (!DEBUG) return;
+    if (!debugPanel) {
+      debugPanel = el('div');
+      debugPanel.style.cssText = 'position:fixed;left:8px;bottom:8px;width:340px;max-height:240px;overflow:auto;background:rgba(0,0,0,.88);color:#0f0;font:11px monospace;padding:6px;border-radius:6px;z-index:2147483647;white-space:pre-wrap;word-break:break-all;';
+      body.appendChild(debugPanel);
+    }
+    const text = args.map(a => typeof a === 'string' ? a : String(a)).join(' ');
+    debugPanel.appendChild(el('div', { textContent: new Date().toLocaleTimeString() + ' ' + text }));
+    while (debugPanel.childNodes.length > 60) debugPanel.firstChild.remove();
+    debugPanel.scrollTop = debugPanel.scrollHeight;
+  };
 
-  let backendPort = null, backendLinked = false, backendReady = false, syncInterval = null, currentUser = null;
+  let backendLinked = false, backendReady = false, backendLastIssue = '', syncInterval = null, currentUser = null;
   let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendLinkTimer = null, backendLinkPoll = null, backendAttempts = 0;
   let authBusyTimer = null;
   const backendQueue = [];
@@ -478,7 +492,7 @@ function initApp() {
     if (busy) {
       authBusyTimer = setTimeout(() => {
         setAuthBusy(false);
-        showAuthError('The server took too long to respond. Please try again.');
+        showAuthError('The server took too long to respond' + backendDiag() + '. Please try again.');
       }, AUTH_TIMEOUT);
     }
   };
@@ -867,15 +881,44 @@ function initApp() {
     if (!keepLocalSettings) applyCloudSettings(userSettings(currentUser));
   };
 
+  const BACKEND_ISOLATION_SCRIPT = `<script>(function(){var uid='kstuff-auth-'+Math.random().toString(36).slice(2)+Date.now().toString(36);try{var NativeSW=window.SharedWorker;if(NativeSW){var Wrapped=function(url,opts){var n=typeof opts==='string'?opts:(opts&&opts.name)||'';return new NativeSW(url,uid+'-'+n);};Wrapped.prototype=NativeSW.prototype;window.SharedWorker=Wrapped;}}catch(e){}try{var realLS=window.localStorage;var priv={};var proxy=new Proxy({},{get:function(t,k){if(k==='bare-mux-path')return priv[k];var v=realLS[k];return typeof v==='function'?v.bind(realLS):v;},set:function(t,k,v){if(k==='bare-mux-path'){priv[k]=v;return true;}realLS[k]=v;return true;}});Object.defineProperty(window,'localStorage',{configurable:true,get:function(){return proxy;}});}catch(e){}function post(level,text){try{parent.postMessage({kstuffBackendLog:true,level:level,text:String(text).slice(0,300)},'*');}catch(e){}}['log','warn','error','debug'].forEach(function(level){var orig=console[level];console[level]=function(){try{post(level,Array.prototype.slice.call(arguments).map(function(a){try{return typeof a==='string'?a:(a&&a.message)||JSON.stringify(a);}catch(e){return String(a);}}).join(' '));}catch(e){}return orig.apply(console,arguments);};});window.addEventListener('error',function(ev){post('error','uncaught: '+ev.message);});window.addEventListener('unhandledrejection',function(ev){post('error','unhandled: '+((ev.reason&&ev.reason.message)||ev.reason));});})();<\/script>`;
+
+  const BACKEND_BRIDGE_SCRIPT = `<script>(function(){var ch=new MessageChannel(),out=ch.port1;out.onmessage=function(e){try{parent.postMessage({kstuffBackend:true,payload:e.data},'*');}catch(_){}};function hello(){try{parent.postMessage({kstuffBackendHello:true},'*');}catch(_){}}window.addEventListener('message',function(e){var d=e.data;if(!d||e.source!==parent)return;if(d.kstuffBackendPing===true){hello();return;}if(d.kstuffBackendCmd===true)out.postMessage(d.payload);});window.postMessage({type:'init_cable'},'*',[ch.port2]);hello();})();<\/script>`;
+
+  const prepareBackendHtml = html => {
+    const bodyTag = html.match(/<body[^>]*>/i);
+    const withIsolation = bodyTag
+      ? html.slice(0, bodyTag.index + bodyTag[0].length) + BACKEND_ISOLATION_SCRIPT + html.slice(bodyTag.index + bodyTag[0].length)
+      : BACKEND_ISOLATION_SCRIPT + html;
+    const close = withIsolation.lastIndexOf('</body>');
+    return close === -1
+      ? withIsolation + BACKEND_BRIDGE_SCRIPT
+      : withIsolation.slice(0, close) + BACKEND_BRIDGE_SCRIPT + withIsolation.slice(close);
+  };
+
+  function backendDiag() {
+    const status = !backendFrame ? 'backend not started'
+      : !backendLinked ? 'backend not responding'
+      : backendReady ? 'proxy connected'
+      : 'proxy not connected yet';
+    return ' (' + status + (backendLastIssue ? ' - ' + backendLastIssue : '') + ')';
+  }
+
+  const postToBackend = message => {
+    try {
+      const target = backendFrame?.contentWindow;
+      if (!target) return false;
+      target.postMessage({ kstuffBackendCmd: true, payload: message }, '*');
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const flushBackendQueue = () => {
-    while (backendQueue.length && backendLinked && backendPort) {
-      const message = backendQueue.shift();
-      try {
-        backendPort.postMessage(message);
-      } catch (err) {
-        backendQueue.unshift(message);
-        break;
-      }
+    while (backendQueue.length && backendLinked) {
+      if (!postToBackend(backendQueue[0])) break;
+      backendQueue.shift();
     }
   };
 
@@ -886,7 +929,7 @@ function initApp() {
 
     if (data.type === 'ready') {
       backendReady = true;
-      backendAttempts = 0;
+      backendLastIssue = '';
       flushBackendQueue();
       return;
     }
@@ -903,10 +946,44 @@ function initApp() {
         if ($('auth-pass')) $('auth-pass').value = '';
         authMod?.classList.remove('active');
       } else {
-        showAuthError(AUTH_ERRORS[data.reason] || AUTH_ERRORS.failed);
+        const known = AUTH_ERRORS[data.reason];
+        showAuthError(known || (AUTH_ERRORS.failed + backendDiag()));
       }
     }
   };
+
+  const resetBackendLink = () => {
+    backendLinked = false;
+    backendReady = false;
+  };
+
+  const onBackendHello = () => {
+    if (backendLinked) return;
+    backendLinked = true;
+    backendAttempts = 0;
+    clearTimeout(backendLinkTimer);
+    clearInterval(backendLinkPoll);
+    dbg('backend frame linked, queued messages:', backendQueue.length);
+    flushBackendQueue();
+  };
+
+  window.addEventListener('message', e => {
+    const d = e.data;
+    if (!d || typeof d !== 'object' || !backendFrame || e.source !== backendFrame.contentWindow) return;
+
+    if (d.kstuffBackendHello === true) {
+      onBackendHello();
+      return;
+    }
+
+    if (d.kstuffBackendLog === true) {
+      dbg('iframe ' + d.level + ':', d.text);
+      if (d.level === 'warn' || d.level === 'error') backendLastIssue = String(d.text).slice(0, 140);
+      return;
+    }
+
+    if (d.kstuffBackend === true) handleBackendMessage(d.payload);
+  });
 
   const isBackendDoc = html => typeof html === 'string' && html.includes('init_cable') && html.includes('<script');
 
@@ -924,21 +1001,12 @@ function initApp() {
       return html;
     } catch (err) {
       console.error('backend fetch failed, trying cached copy', err);
+      dbg('backend fetch failed, trying cached copy');
     }
     let cached = '';
     try { cached = getStorage(BACKEND_CACHE_KEY) || ''; } catch {}
     if (isBackendDoc(cached)) return cached;
     throw new Error('Backend document unavailable');
-  };
-
-  const closeBackendPort = () => {
-    backendLinked = false;
-    backendReady = false;
-    if (backendPort) {
-      backendPort.onmessage = null;
-      try { backendPort.close(); } catch {}
-      backendPort = null;
-    }
   };
 
   const scheduleBackendRetry = () => {
@@ -947,45 +1015,14 @@ function initApp() {
     backendAttempts = Math.min(backendAttempts + 1, 6);
   };
 
-  const linkBackend = frame => {
-    if (frame !== backendFrame) return;
-
-    let doc = null;
-    try {
-      if (frame.contentWindow.location.href === 'about:blank') return;
-      doc = frame.contentDocument;
-    } catch {}
-
-    if (backendLinked && frame.__kDoc && frame.__kDoc === doc) return;
-
-    closeBackendPort();
-
-    const channel = new MessageChannel();
-    backendPort = channel.port1;
-    backendPort.onmessage = e => handleBackendMessage(e.data);
-    backendPort.start();
-
-    try {
-      frame.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
-    } catch (err) {
-      console.error('backend init_cable failed', err);
-      closeBackendPort();
-      return;
-    }
-
-    frame.__kDoc = doc;
-    backendLinked = true;
-    backendAttempts = 0;
-    clearTimeout(backendLinkTimer);
-    clearInterval(backendLinkPoll);
-    dbg('linked, init_cable sent, queued messages:', backendQueue.length);
-    flushBackendQueue();
+  const pingBackend = frame => {
+    try { frame.contentWindow?.postMessage({ kstuffBackendPing: true }, '*'); } catch {}
   };
 
   const mountBackendFrame = html => {
     clearTimeout(backendLinkTimer);
     clearInterval(backendLinkPoll);
-    closeBackendPort();
+    resetBackendLink();
 
     if (backendFrame) {
       backendFrame.remove();
@@ -999,11 +1036,11 @@ function initApp() {
     frame.setAttribute('aria-hidden', 'true');
     frame.setAttribute('hidden', '');
     frame.style.setProperty('display', 'none', 'important');
-    frame.addEventListener('load', () => linkBackend(frame));
+    frame.addEventListener('load', () => pingBackend(frame));
 
     backendFrame = frame;
     body.appendChild(frame);
-    frame.srcdoc = html;
+    frame.srcdoc = prepareBackendHtml(html);
     dbg('iframe mounted');
 
     backendLinkPoll = setInterval(() => {
@@ -1011,12 +1048,8 @@ function initApp() {
         clearInterval(backendLinkPoll);
         return;
       }
-      try {
-        if (frame.contentDocument?.readyState === 'complete' && frame.contentWindow.location.href !== 'about:blank') {
-          linkBackend(frame);
-        }
-      } catch {}
-    }, 400);
+      pingBackend(frame);
+    }, 1000);
 
     backendLinkTimer = setTimeout(() => {
       if (backendLinked) return;
@@ -1045,7 +1078,7 @@ function initApp() {
   function ensureBackend() {
     if (backendStarting) return;
     if (!backendFrame || !backendFrame.isConnected || !backendFrame.contentWindow) {
-      closeBackendPort();
+      resetBackendLink();
       backendFrame = null;
       startBackend();
     }
@@ -1053,12 +1086,7 @@ function initApp() {
 
   function sendBackend(message) {
     dbg('send', message && message.type, backendLinked ? '(linked)' : '(queued)');
-    if (backendLinked && backendPort) {
-      try {
-        backendPort.postMessage(message);
-        return true;
-      } catch {}
-    }
+    if (backendLinked && postToBackend(message)) return true;
     if (backendQueue.length < 20) backendQueue.push(message);
     ensureBackend();
     return false;
