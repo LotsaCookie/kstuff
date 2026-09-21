@@ -4,13 +4,14 @@ function initApp() {
   const getStorage = k => localStorage.getItem(k), setStorage = (k, v) => localStorage.setItem(k, v);
   const cleanUrl = u => u ? u.replace(/\/+$/, '') : '', trimSlash = u => u ? u.replace(/^\/+/, '') : '';
   const cleanGameTitle = t => (t || '').toLowerCase().replace(/,\s*webport/gi, '').trim();
-  const urlMap = { 'mathworksheets': 'home', 'readingcorner': 'games', 'sciencequiz': 'apps', 'gradebook': 'music', 'lessonplanner': 'ai', 'vms': 'vms', 'studyhall': 'chat' };
+  const urlMap = { 'mathworksheets': 'home', 'readingcorner': 'games', 'sciencequiz': 'apps', 'gradebook': 'music', 'civics': 'tv', 'lessonplanner': 'ai', 'vms': 'vms', 'studyhall': 'chat' };
   const reverseUrlMap = Object.entries(urlMap).reduce((acc, [k, v]) => ({ ...acc, [v]: k }), {});
   let history = ['kstuff://home'], historyIndex = 0;
 
   const iframePages = {
     mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' },
     gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' },
+    civics: { id: 'civics-iframe', path: 'Assets/pages/tv.html' },
     lessonplanner: { id: 'lessonplanner-iframe', path: 'Assets/pages/ai.html' },
     studyhall: { id: 'studyhall-iframe', path: 'Assets/pages/chat.html' },
     vms: { id: 'vms-iframe', path: 'Assets/pages/vms.html' }
