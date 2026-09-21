@@ -665,7 +665,8 @@ body.text-hide .nav-right .nav-divider {
 #gradebook.page.active,
 #lessonplanner.page.active,
 #studyhall.page.active,
-#vms.page.active {
+#vms.page.active,
+#civics.page.active {
     display: flex;
     flex-direction: column;
     height: 100%;
