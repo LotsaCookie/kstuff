@@ -58,9 +58,10 @@ function initApp() {
   ];
   const DEFAULT_PIC = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
   const MAX_UNDERSCORES = 2, MAX_USERNAME_LENGTH = 20;
+  const dbg = (...args) => console.log('[kstuff-backend]', ...args);
 
   let backendPort = null, backendLinked = false, backendReady = false, syncInterval = null, currentUser = null;
-  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendLinkTimer = null, backendAttempts = 0;
+  let backendFrame = null, backendStarting = false, backendRetryTimer = null, backendLinkTimer = null, backendLinkPoll = null, backendAttempts = 0;
   let authBusyTimer = null;
   const backendQueue = [];
   let gRep = {}, gTruf = new Map();
@@ -881,6 +882,8 @@ function initApp() {
   const handleBackendMessage = data => {
     if (!data || typeof data !== 'object') return;
 
+    dbg('received', data.type, data.reason || '');
+
     if (data.type === 'ready') {
       backendReady = true;
       backendAttempts = 0;
@@ -916,6 +919,7 @@ function initApp() {
   const loadBackendHtml = async () => {
     try {
       const html = await Promise.any(BACKEND_URLS.map(fetchBackendDoc));
+      dbg('backend html fetched', html.length);
       try { setStorage(BACKEND_CACHE_KEY, html); } catch {}
       return html;
     } catch (err) {
@@ -945,7 +949,14 @@ function initApp() {
 
   const linkBackend = frame => {
     if (frame !== backendFrame) return;
-    try { if (frame.contentWindow.location.href === 'about:blank') return; } catch {}
+
+    let doc = null;
+    try {
+      if (frame.contentWindow.location.href === 'about:blank') return;
+      doc = frame.contentDocument;
+    } catch {}
+
+    if (backendLinked && frame.__kDoc && frame.__kDoc === doc) return;
 
     closeBackendPort();
 
@@ -962,14 +973,18 @@ function initApp() {
       return;
     }
 
+    frame.__kDoc = doc;
     backendLinked = true;
     backendAttempts = 0;
     clearTimeout(backendLinkTimer);
+    clearInterval(backendLinkPoll);
+    dbg('linked, init_cable sent, queued messages:', backendQueue.length);
     flushBackendQueue();
   };
 
   const mountBackendFrame = html => {
     clearTimeout(backendLinkTimer);
+    clearInterval(backendLinkPoll);
     closeBackendPort();
 
     if (backendFrame) {
@@ -977,16 +992,35 @@ function initApp() {
       backendFrame = null;
     }
 
-    const frame = el('iframe', { title: 'kstuff-backend', tabIndex: -1 });
+    const frame = document.createElement('iframe');
+    frame.id = 'kstuff-backend-frame';
+    frame.title = 'kstuff-backend';
+    frame.tabIndex = -1;
     frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;border:0;opacity:0;pointer-events:none;';
+    frame.setAttribute('hidden', '');
+    frame.style.setProperty('display', 'none', 'important');
     frame.addEventListener('load', () => linkBackend(frame));
-    frame.srcdoc = html;
+
     backendFrame = frame;
     body.appendChild(frame);
+    frame.srcdoc = html;
+    dbg('iframe mounted');
+
+    backendLinkPoll = setInterval(() => {
+      if (backendLinked || frame !== backendFrame) {
+        clearInterval(backendLinkPoll);
+        return;
+      }
+      try {
+        if (frame.contentDocument?.readyState === 'complete' && frame.contentWindow.location.href !== 'about:blank') {
+          linkBackend(frame);
+        }
+      } catch {}
+    }, 400);
 
     backendLinkTimer = setTimeout(() => {
       if (backendLinked) return;
+      dbg('link timeout, rebuilding iframe');
       backendAttempts = Math.min(backendAttempts + 1, 6);
       startBackend();
     }, BACKEND_LINK_TIMEOUT);
@@ -1018,6 +1052,7 @@ function initApp() {
   }
 
   function sendBackend(message) {
+    dbg('send', message && message.type, backendLinked ? '(linked)' : '(queued)');
     if (backendLinked && backendPort) {
       try {
         backendPort.postMessage(message);
