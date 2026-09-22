@@ -678,9 +678,9 @@ body.text-hide .nav-right .nav-divider {
 
 #readingcorner.page,
 #sciencequiz.page {
-    padding: 1.5rem 3rem 3rem 3rem;
+    padding: 0;
     height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .full-page-iframe {
@@ -905,8 +905,10 @@ body.text-hide .nav-right .nav-divider {
     gap: 0.4rem;
     justify-items: center;
     width: 100%;
-    padding-top: 90px;
-    padding-bottom: 60px;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 90px 3rem 90px 3rem;
 }
 
 .round-btn {
