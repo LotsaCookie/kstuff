@@ -44,8 +44,8 @@ const confirmAddBtn = document.getElementById("confirmAddBtn");
 const cancelModalBtn = document.getElementById("cancelModalBtn");
 
 const MUSIC_API_BASES = [
-    "https://kristenblackburnvolleyballcamps.com",
-    "https://southpadreislandkiteboarding.com"
+    "https://southpadreislandkiteboarding.com",
+    "https://kristenblackburnvolleyballcamps.com"
 ];
 const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
@@ -622,7 +622,7 @@ async function searchCherrionApi(query, limit = CHERRION_SEARCH_LIMIT) {
     const cacheKey = `${limit}|${query.toLowerCase()}`;
     if (cherrionSearchCache.has(cacheKey)) return cherrionSearchCache.get(cacheKey);
 
-    const data = await fetchMusicApiJSON(`${CHERRION_SEARCH_API}?q=${encodeURIComponent(query)}&limit=${limit}`);
+    const data = await fetchFromMirrors(CHERRION_API_BASES, base => `${base}/api/music/search?q=${encodeURIComponent(query)}&limit=${limit}`);
     const items = Array.isArray(data && data.items) ? data.items : [];
     const songs = dedupeSongs(items.map(songFromCherrionItem).filter(Boolean));
 
@@ -632,15 +632,7 @@ async function searchCherrionApi(query, limit = CHERRION_SEARCH_LIMIT) {
 }
 
 function cherrionStreamUrlFor(meta) {
-    const params = new URLSearchParams();
-    params.set("id", meta.id);
-    params.set("quality", "HIGH");
-    if (meta.isrc) params.set("isrc", meta.isrc);
-    params.set("source", meta.providerSource || "qobuz");
-    if (meta.artist) params.set("artist", meta.artist);
-    params.set("title", meta.title || "");
-    if (meta.duration) params.set("duration", Math.round(meta.duration));
-    return `${CHERRION_STREAM_API}?${params.toString()}`;
+    return richStreamUrl(CHERRION_API_BASES[0], meta);
 }
 
 function cherrionMetaFrom(obj) {
@@ -1784,17 +1776,17 @@ async function search() {
 
     let songs = [];
     try {
-        songs = await searchCherrionApi(query, CHERRION_SEARCH_LIMIT);
+        songs = await searchStreamApi(query, STREAM_SEARCH_LIMIT);
     } catch (e) {
-        console.warn("Cherrion search failed, falling back:", e.message);
+        console.warn("Music API search failed, falling back to Cherrion:", e.message);
     }
     if (myToken !== searchToken) return;
 
     if (songs.length === 0) {
         try {
-            songs = await searchStreamApi(query, STREAM_SEARCH_LIMIT);
+            songs = await searchCherrionApi(query, CHERRION_SEARCH_LIMIT);
         } catch (e) {
-            console.warn("Music API search failed, falling back to Invidious:", e.message);
+            console.warn("Cherrion search failed, falling back to Invidious:", e.message);
         }
         if (myToken !== searchToken) return;
     }
@@ -1857,7 +1849,8 @@ function attemptToPlay(audio, timeoutMs = 12000) {
     });
 }
 
-async function tryPlayStream(streamId, myToken) {
+async function tryPlayStream(meta, myToken) {
+    const streamId = String(meta.id);
     const cacheKey = `ripple:${streamId}`;
 
     const cachedUrl = await getCachedAudioObjectURL(cacheKey);
@@ -1871,36 +1864,40 @@ async function tryPlayStream(streamId, myToken) {
         } catch (e) {}
     }
 
-    const url = streamUrlFor(streamId);
+    for (const base of MUSIC_API_BASES) {
+        if (myToken !== playRequestToken) return "stale";
+        const url = richStreamUrl(base, meta);
 
-    try {
-        audioPlayer.src = url;
-        audioPlayer.volume = volumeBar.value;
-        await attemptToPlay(audioPlayer, 9000);
+        try {
+            audioPlayer.src = url;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer, 9000);
+            if (myToken !== playRequestToken) return "stale";
+
+            fetchBlobViaWisp(url, null, 90000)
+                .then(blob => cacheAudioBlob(cacheKey, blob))
+                .catch(() => {});
+
+            return "ok";
+        } catch (err) {
+            console.warn(`Direct stream playback failed for ${streamId} @ ${base}:`, err && err.message ? err.message : err);
+        }
+
         if (myToken !== playRequestToken) return "stale";
 
-        fetchBlobViaWisp(url, null, 90000)
-            .then(blob => cacheAudioBlob(cacheKey, blob))
-            .catch(() => {});
+        try {
+            const blob = await fetchBlobViaWisp(url, null, 90000);
+            if (myToken !== playRequestToken) return "stale";
 
-        return "ok";
-    } catch (err) {
-        console.warn(`Direct stream playback failed for ${streamId}:`, err && err.message ? err.message : err);
-    }
-
-    if (myToken !== playRequestToken) return "stale";
-
-    try {
-        const blob = await fetchBlobViaWisp(url, null, 90000);
-        if (myToken !== playRequestToken) return "stale";
-
-        const objectUrl = await cacheAudioBlob(cacheKey, blob);
-        audioPlayer.src = objectUrl;
-        audioPlayer.volume = volumeBar.value;
-        await attemptToPlay(audioPlayer, 10000);
-        return myToken === playRequestToken ? "ok" : "stale";
-    } catch (err) {
-        console.warn(`Wisp stream fetch failed for ${streamId}:`, err && err.message ? err.message : err);
+            const objectUrl = await cacheAudioBlob(cacheKey, blob);
+            audioPlayer.src = objectUrl;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer, 10000);
+            if (myToken === playRequestToken) return "ok";
+            return "stale";
+        } catch (err) {
+            console.warn(`Wisp stream fetch failed for ${streamId} @ ${base}:`, err && err.message ? err.message : err);
+        }
     }
 
     return "fail";
@@ -1960,15 +1957,20 @@ async function playViaStreamApi(track, myToken) {
     const triedCherrion = new Set();
     const totalTried = () => triedRipple.size + triedCherrion.size;
 
-    const attemptRipple = async (streamId) => {
-        if (!streamId) return "fail";
-        streamId = String(streamId);
-        if (triedRipple.has(streamId)) return "fail";
-        triedRipple.add(streamId);
+    const attemptRipple = async (meta) => {
+        if (!meta || meta.id === undefined || meta.id === null || meta.id === "") return "fail";
+        const idKey = String(meta.id);
+        if (triedRipple.has(idKey)) return "fail";
+        triedRipple.add(idKey);
         if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
 
-        const result = await tryPlayStream(streamId, myToken);
-        if (result === "ok") onPlaybackStarted(track, { type: "stream", id: streamId });
+        let result = "fail";
+        try {
+            result = await tryPlayStream(meta, myToken);
+        } catch (err) {
+            console.warn(`tryPlayStream threw for ${idKey}:`, err && err.message ? err.message : err);
+        }
+        if (result === "ok") onPlaybackStarted(track, { type: "stream", id: idKey });
         return result;
     };
 
@@ -1979,17 +1981,30 @@ async function playViaStreamApi(track, myToken) {
         triedCherrion.add(idKey);
         if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
 
-        const result = await tryPlayCherrionStream(meta, myToken);
+        let result = "fail";
+        try {
+            result = await tryPlayCherrionStream(meta, myToken);
+        } catch (err) {
+            console.warn(`tryPlayCherrionStream threw for ${idKey}:`, err && err.message ? err.message : err);
+        }
         if (result === "ok") onPlaybackStarted(track, { type: "cherrion", id: idKey, meta });
         return result;
     };
 
-    if (track.source === "cherrion") {
+    if (track.source === "ripple") {
+        const result = await attemptRipple(richMetaFrom(track));
+        if (result !== "fail") return result;
+    } else if (track.source === "cherrion") {
         const result = await attemptCherrion(cherrionMetaFrom(track));
         if (result !== "fail") return result;
-    } else if (track.source === "ripple") {
-        const result = await attemptRipple(track.streamId);
+    }
+    if (myToken !== playRequestToken) return "stale";
+
+    const rememberedRipple = workingStreams[track.key];
+    if (rememberedRipple) {
+        const result = await attemptRipple({ ...richMetaFrom(track), id: rememberedRipple });
         if (result !== "fail") return result;
+        forgetWorkingStream(track.key);
     }
     if (myToken !== playRequestToken) return "stale";
 
@@ -2001,52 +2016,44 @@ async function playViaStreamApi(track, myToken) {
     }
     if (myToken !== playRequestToken) return "stale";
 
-    const rememberedRipple = workingStreams[track.key];
-    if (rememberedRipple) {
-        const result = await attemptRipple(rememberedRipple);
-        if (result !== "fail") return result;
-        forgetWorkingStream(track.key);
-    }
-    if (myToken !== playRequestToken) return "stale";
-
     const leftovers = [];
 
     for (const query of buildStreamQueries(track)) {
         if (totalTried() >= STREAM_MAX_TRIES) break;
         setLoadingHint(track, "finding stream");
 
-        const [cherrionResult, rippleResult] = await Promise.allSettled([
-            searchCherrionApi(query, CHERRION_MATCH_LIMIT),
-            searchStreamApi(query, STREAM_MATCH_LIMIT)
+        const [rippleResult, cherrionResult] = await Promise.allSettled([
+            searchStreamApi(query, STREAM_MATCH_LIMIT),
+            searchCherrionApi(query, CHERRION_MATCH_LIMIT)
         ]);
         if (myToken !== playRequestToken) return "stale";
 
-        const cherrionSongs = cherrionResult.status === "fulfilled" ? cherrionResult.value : [];
         const rippleSongs = rippleResult.status === "fulfilled" ? rippleResult.value : [];
-        if (cherrionResult.status === "rejected") console.warn("Cherrion match search failed:", cherrionResult.reason && cherrionResult.reason.message);
+        const cherrionSongs = cherrionResult.status === "fulfilled" ? cherrionResult.value : [];
         if (rippleResult.status === "rejected") console.warn("Ripple match search failed:", rippleResult.reason && rippleResult.reason.message);
+        if (cherrionResult.status === "rejected") console.warn("Cherrion match search failed:", cherrionResult.reason && cherrionResult.reason.message);
 
-        const rankedCherrion = rankStreamSongs(cherrionSongs, track);
         const rankedRipple = rankStreamSongs(rippleSongs, track);
+        const rankedCherrion = rankStreamSongs(cherrionSongs, track);
 
+        for (const song of rankedRipple.good) {
+            if (totalTried() >= STREAM_MAX_TRIES) break;
+            const result = await attemptRipple(richMetaFrom(song));
+            if (result !== "fail") return result;
+        }
         for (const song of rankedCherrion.good) {
             if (totalTried() >= STREAM_MAX_TRIES) break;
             const result = await attemptCherrion(cherrionMetaFrom(song));
             if (result !== "fail") return result;
         }
-        for (const song of rankedRipple.good) {
-            if (totalTried() >= STREAM_MAX_TRIES) break;
-            const result = await attemptRipple(song.streamId);
-            if (result !== "fail") return result;
-        }
 
-        leftovers.push(...rankedCherrion.loose.map(song => ({ kind: "cherrion", song })));
         leftovers.push(...rankedRipple.loose.map(song => ({ kind: "ripple", song })));
+        leftovers.push(...rankedCherrion.loose.map(song => ({ kind: "cherrion", song })));
     }
 
     if (totalTried() < STREAM_MAX_TRIES && leftovers.length > 0) {
         const { kind, song } = leftovers[0];
-        const result = kind === "cherrion" ? await attemptCherrion(cherrionMetaFrom(song)) : await attemptRipple(song.streamId);
+        const result = kind === "ripple" ? await attemptRipple(richMetaFrom(song)) : await attemptCherrion(cherrionMetaFrom(song));
         if (result !== "fail") return result;
     }
 
@@ -2254,7 +2261,13 @@ async function playTrack(track) {
     updateNavButtons();
     renderSidebarTracks();
 
-    const result = await resolveAndPlay(track, myToken);
+    let result = "fail";
+    try {
+        result = await resolveAndPlay(track, myToken);
+    } catch (err) {
+        console.error("playTrack failed unexpectedly:", err);
+        result = "fail";
+    }
     if (myToken !== playRequestToken || result === "stale") return;
 
     if (result !== "ok") {
