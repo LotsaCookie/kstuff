@@ -7,6 +7,9 @@ function initApp() {
   const urlMap = { 'mathworksheets': 'home', 'readingcorner': 'games', 'sciencequiz': 'apps', 'gradebook': 'music', 'civics': 'tv', 'lessonplanner': 'ai', 'vms': 'vms', 'studyhall': 'chat' };
   const reverseUrlMap = Object.entries(urlMap).reduce((acc, [k, v]) => ({ ...acc, [v]: k }), {});
   let history = ['kstuff://home'], historyIndex = 0;
+  const pendingResourceOpen = {};
+  const resourceOpenFor = {};
+  const resourceTokens = {};
 
   const iframePages = {
     mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' },
@@ -37,8 +40,8 @@ function initApp() {
   const pageAddress = id => 'kstuff://' + (urlMap[id] || id);
   const setAddress = value => { if (tbInput) tbInput.value = value; };
   const body = document.body, navBar = $('teachertouchbar'), navBtns = $$('.nav-btn'), pages = $$('.page');
-  const loader = document.querySelector('.section-loader'), modalOverlay = $('resource-modal');
-  const modalIframe = $('resource-modal-iframe'), modalTitle = $('resource-modal-title'), pContainer = $('profile-edit-container');
+  const loader = document.querySelector('.section-loader');
+  const pContainer = $('profile-edit-container');
 
   const ITEMS_PER_PAGE = 48;
   const IMAGE_LOAD_TIMEOUT = 5000;
@@ -605,89 +608,139 @@ function initApp() {
     sciencequiz: { data: [], pool: [], gridEl: $('sciencequiz-grid'), pageEl: $('sciencequiz-pagination'), category: "All", search: "", page: 1, id: 'sciencequiz', renderId: 0 }
   };
 
-  const openResource = async item => {
+  const resourceIframeFor = pageId => $(`${pageId}-resource-iframe`);
+
+  const showResourceGrid = (pageId, show) => {
+    const grid = grids[pageId];
+    const section = $(pageId);
+    const filterBar = section?.querySelector('.filter-bar');
+    if (filterBar) filterBar.style.display = show ? '' : 'none';
+    if (grid?.gridEl) grid.gridEl.style.display = show ? '' : 'none';
+    if (grid?.pageEl) grid.pageEl.style.display = show ? '' : 'none';
+  };
+
+  const closeResourceInline = pageId => {
+    const ifr = resourceIframeFor(pageId);
+    if (ifr) {
+      if (ifr.__resourceLoadHandler) { ifr.removeEventListener('load', ifr.__resourceLoadHandler); ifr.__resourceLoadHandler = null; }
+      ifr.style.display = 'none'; ifr.removeAttribute('srcdoc'); ifr.src = 'about:blank';
+    }
+    resourceOpenFor[pageId] = null;
+    showResourceGrid(pageId, true);
+    if (grids[pageId]) { buildPool(pageId); renderGrid(pageId, false); }
+  };
+
+  const openResource = async (item, opts = {}) => {
     if (!item) return;
+    const pageId = opts.pageId || document.querySelector('.page.active')?.id;
+    if (!pageId || !grids[pageId]) return;
+    const ifr = resourceIframeFor(pageId);
+    if (!ifr) return;
+
     tooltipEl.style.display = 'none';
-    savedWindowScrollY = window.scrollY || document.documentElement.scrollTop;
-    savedPageScrollTop = document.querySelector('.page.active')?.scrollTop || 0;
-    if (modalTitle) modalTitle.textContent = item.title;
-    if (modalOverlay) modalOverlay.classList.add('active');
-    if (!modalIframe) return;
-    modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank';
 
-    if (item.url) {
-      let targetUrl = item.url.trim();
+    const token = resourceTokens[pageId] = (resourceTokens[pageId] || 0) + 1;
+    const stale = () => resourceTokens[pageId] !== token;
 
-      for (let i = 0; i < 5 && MIRROR_PH.test(targetUrl); i++) {
-        const match = targetUrl.match(MIRROR_PH);
-        if (!match) break;
+    resourceOpenFor[pageId] = item;
 
-        const key = match[1];
-        syncMirrors();
+    const plainAddr = pageAddress(pageId);
+    const addr = plainAddr + '/' + (item.title || '');
 
-        let mirror = gRep[key];
-
-        if (!mirror) {
-          if (modalTitle) {
-            modalTitle.textContent = `${item.title} - finding a mirror...`;
-          }
-
-          mirror = await waitForMirrorKey(key, 30000);
-        }
-
-        if (modalOverlay && !modalOverlay.classList.contains('active')) return;
-
-        if (!mirror) break;
-
-        const replacements = {
-          ...gRep,
-          [key]: mirror
-        };
-
-        const next = appB(targetUrl, replacements, true);
-
-        if (next === targetUrl) break;
-
-        targetUrl = next;
+    if (!opts.isHistory) {
+      if (history[historyIndex] !== plainAddr && history[historyIndex] !== addr) {
+        history = history.slice(0, historyIndex + 1);
+        history.push(plainAddr);
+        historyIndex++;
       }
+      if (history[historyIndex] !== addr) {
+        history = history.slice(0, historyIndex + 1);
+        history.push(addr);
+        historyIndex++;
+      }
+    }
 
+    setAddress(addr);
+    updateBrowserNav();
+
+    toggleLoader(true);
+    showResourceGrid(pageId, false);
+
+    if (ifr.__resourceLoadHandler) { ifr.removeEventListener('load', ifr.__resourceLoadHandler); ifr.__resourceLoadHandler = null; }
+    ifr.style.display = 'block';
+    ifr.removeAttribute('srcdoc'); ifr.src = 'about:blank';
+
+    const onLoad = () => {
+      ifr.removeEventListener('load', onLoad);
+      if (ifr.__resourceLoadHandler === onLoad) ifr.__resourceLoadHandler = null;
+      if (!stale()) toggleLoader(false);
+    };
+    ifr.__resourceLoadHandler = onLoad;
+    ifr.addEventListener('load', onLoad);
+
+    if (!item.url) {
+      ifr.removeEventListener('load', onLoad);
+      ifr.__resourceLoadHandler = null;
+      toggleLoader(false);
+      return;
+    }
+
+    let targetUrl = item.url.trim();
+
+    for (let i = 0; i < 5 && MIRROR_PH.test(targetUrl); i++) {
+      const match = targetUrl.match(MIRROR_PH);
+      if (!match) break;
+
+      const key = match[1];
       syncMirrors();
 
-      if (modalTitle) {
-        modalTitle.textContent = item.title;
-      }
+      let mirror = gRep[key];
 
-      if (MIRROR_PH.test(targetUrl)) {
-        modalIframe.srcdoc =
-          '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
+      if (!mirror) mirror = await waitForMirrorKey(key, 30000);
 
-        return;
-      }
+      if (stale()) return;
 
-      const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
-      if (isHtmlRepo) {
-        const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
-        const launchSha = await getLatestSha();
-        const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
-        modalIframe.src = `${launchBase}Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+      if (!mirror) break;
+
+      const replacements = { ...gRep, [key]: mirror };
+      const next = appB(targetUrl, replacements, true);
+      if (next === targetUrl) break;
+      targetUrl = next;
+    }
+
+    syncMirrors();
+
+    if (stale()) return;
+
+    if (MIRROR_PH.test(targetUrl)) {
+      ifr.srcdoc = '<body style="font-family:sans-serif;background:#1b1b1f;color:#f5f5f5;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">No mirror is available right now.</body>';
+      return;
+    }
+
+    const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
+    if (isHtmlRepo) {
+      const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
+      const launchSha = await getLatestSha();
+      const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
+      if (stale()) return;
+      ifr.src = `${launchBase}Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+    } else {
+      const hasMirror = v => !!v && targetUrl.includes(v);
+      const isProxyUrl = hasMirror(gRep.static) || hasMirror(gRep.scram) || hasMirror(gRep.uv) || hasMirror(gRep.truffled) || hasMirror(gRep.frogiee) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
+      if (isProxyUrl) {
+        ifr.src = targetUrl;
       } else {
-        const hasMirror = v => !!v && targetUrl.includes(v);
-        const isProxyUrl = hasMirror(gRep.static) || hasMirror(gRep.scram) || hasMirror(gRep.uv) || hasMirror(gRep.truffled) || hasMirror(gRep.frogiee) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
-        if (isProxyUrl) modalIframe.src = targetUrl;
-        else {
-          try {
-            const res = await fetch(targetUrl, { cache: 'no-store' });
-            if (res.ok) modalIframe.srcdoc = await res.text(); else modalIframe.src = targetUrl;
-          } catch { modalIframe.src = targetUrl; }
+        try {
+          const res = await fetch(targetUrl, { cache: 'no-store' });
+          if (stale()) return;
+          if (res.ok) ifr.srcdoc = await res.text();
+          else ifr.src = targetUrl;
+        } catch {
+          if (stale()) return;
+          ifr.src = targetUrl;
         }
       }
     }
-    setTimeout(() => Object.values(grids).forEach(g => {
-      if (g.gridEl && g.pool) {
-        g.pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
-        g.gridEl.innerHTML = ''; g.pool = [];
-      }
-    }), 50);
   };
 
   const buildPool = type => {
@@ -702,7 +755,7 @@ function initApp() {
       frag.appendChild(card);
     }
     grid.gridEl.appendChild(frag);
-    grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index]); };
+    grid.gridEl.onclick = e => { const c = e.target.closest('.round-btn'); if (c && c.style.display !== 'none') openResource(grid.paginatedData?.[c.dataset.index], { pageId: type }); };
   };
 
   const gridImageStyle = document.createElement('style');
@@ -1103,9 +1156,17 @@ function initApp() {
       }
 
       Object.keys(grids).forEach(k => {
-        if (k !== tId && grids[k].gridEl) {
-          if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
-          grids[k].gridEl.innerHTML = ''; grids[k].pool = [];
+        if (k !== tId) {
+          if (grids[k].gridEl) {
+            if (grids[k].pool) grids[k].pool.forEach(p => { if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; } });
+            grids[k].gridEl.innerHTML = ''; grids[k].pool = [];
+          }
+          if (resourceOpenFor[k]) {
+            const rIfr = resourceIframeFor(k);
+            if (rIfr) { rIfr.style.display = 'none'; rIfr.removeAttribute('srcdoc'); rIfr.src = 'about:blank'; }
+            resourceOpenFor[k] = null;
+            showResourceGrid(k, true);
+          }
         }
       });
 
@@ -1187,7 +1248,17 @@ function initApp() {
       updateIndicator(btn);
       toggleLoader(true);
 
-      loadContent(targetId).catch(error => {
+      loadContent(targetId).then(() => {
+        const pendingTitle = pendingResourceOpen[targetId];
+        if (pendingTitle) {
+          pendingResourceOpen[targetId] = null;
+          const grid = grids[targetId];
+          if (grid) {
+            const match = (grid.data || []).find(i => i.title === pendingTitle) || (grid.data || []).find(i => (i.title || '').toLowerCase() === pendingTitle.toLowerCase());
+            if (match) openResource(match, { pageId: targetId, isHistory: true });
+          }
+        }
+      }).catch(error => {
         console.error(`Navigation to ${targetId} failed:`, error);
         toggleLoader(false);
       });
@@ -1203,18 +1274,6 @@ function initApp() {
       if (targetBtn) targetBtn.click();
     }
   });
-
-  const closeRes = () => {
-    modalOverlay?.classList.remove('active');
-    if (modalIframe) { modalIframe.removeAttribute('srcdoc'); modalIframe.src = 'about:blank'; }
-    const aPg = document.querySelector('.page.active');
-    if (aPg && grids[aPg.id]) { buildPool(aPg.id); renderGrid(aPg.id, false); }
-    setTimeout(() => { window.scrollTo(0, savedWindowScrollY); if (aPg) aPg.scrollTop = savedPageScrollTop; }, 50);
-  };
-
-  $('resource-close-btn')?.addEventListener('click', closeRes);
-  modalOverlay?.addEventListener('click', e => e.target === modalOverlay && closeRes());
-  $('resource-fullscreen-btn')?.addEventListener('click', () => !document.fullscreenElement ? modalIframe?.requestFullscreen().catch(()=>{}) : document.exitFullscreen());
 
   fetchWithProxy('Assets/json/categories.json').then(c => {
     const setC = (id, opts, type) => {
@@ -1622,9 +1681,31 @@ function initApp() {
     if (!targetUrl) return;
 
     if (targetUrl.startsWith('kstuff://')) {
-      const pageName = targetUrl.replace('kstuff://', '').toLowerCase();
-      const targetId = reverseUrlMap[pageName] || pageName;
+      const rest = targetUrl.slice('kstuff://'.length);
+      const slashIdx = rest.indexOf('/');
+      const pageSeg = (slashIdx === -1 ? rest : rest.slice(0, slashIdx)).toLowerCase();
+      const titleSeg = slashIdx === -1 ? '' : rest.slice(slashIdx + 1);
+      const targetId = reverseUrlMap[pageSeg] || pageSeg;
       const btn = Array.from(navBtns).find(b => b.dataset.target === targetId);
+
+      if (!isHistory && history[historyIndex] !== targetUrl) {
+        history = history.slice(0, historyIndex + 1);
+        history.push(targetUrl);
+        historyIndex++;
+      }
+      setAddress(targetUrl);
+      updateBrowserNav();
+
+      if (!titleSeg) {
+        pendingResourceOpen[targetId] = null;
+        if (grids[targetId] && resourceOpenFor[targetId] && document.querySelector('.page.active')?.id === targetId) {
+          closeResourceInline(targetId);
+        }
+        if (btn) btn.click();
+        return;
+      }
+
+      pendingResourceOpen[targetId] = titleSeg;
       if (btn) btn.click();
       return;
     }
