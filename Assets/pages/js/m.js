@@ -43,17 +43,52 @@ const newPlaylistInput = document.getElementById("newPlaylistInput");
 const confirmAddBtn = document.getElementById("confirmAddBtn");
 const cancelModalBtn = document.getElementById("cancelModalBtn");
 
-const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/search";
-const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
+const MUSIC_API_BASES = [
+    "https://kristenblackburnvolleyballcamps.com",
+    "https://southpadreislandkiteboarding.com"
+];
 const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
 const STREAM_MAX_TRIES = 4;
 
-const CHERRION_SEARCH_API = "https://cherrion.top/api/music/search";
-const CHERRION_STREAM_API = "https://cherrion.top/api/music/stream";
+const CHERRION_API_BASES = ["https://cherrion.top"];
 const CHERRION_SEARCH_LIMIT = 60;
 const CHERRION_MATCH_LIMIT = 15;
-const CHERRION_MAX_TRIES = 3;
+
+async function fetchFromMirrors(bases, pathBuilder) {
+    let lastErr = null;
+    for (const base of bases) {
+        try {
+            return await fetchMusicApiJSON(pathBuilder(base));
+        } catch (e) {
+            lastErr = e;
+        }
+    }
+    throw lastErr || new Error("All mirrors failed");
+}
+
+function richStreamUrl(base, meta) {
+    const params = new URLSearchParams();
+    params.set("id", meta.id);
+    params.set("quality", "HIGH");
+    if (meta.isrc) params.set("isrc", meta.isrc);
+    params.set("source", meta.providerSource || "qobuz");
+    if (meta.artist) params.set("artist", meta.artist);
+    params.set("title", meta.title || "");
+    if (meta.duration) params.set("duration", Math.round(meta.duration));
+    return `${base}/api/music/stream?${params.toString()}`;
+}
+
+function richMetaFrom(obj) {
+    return {
+        id: obj.id,
+        isrc: obj.isrc || null,
+        providerSource: obj.providerSource || "qobuz",
+        artist: obj.artist,
+        title: obj.title,
+        duration: obj.duration
+    };
+}
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
@@ -545,7 +580,9 @@ function songFromStreamItem(item) {
         artist: item.artist,
         cover: item.artwork || "",
         duration: item.duration,
-        streamId: String(item.id)
+        streamId: String(item.id),
+        isrc: item.isrc || null,
+        providerSource: item.source || "qobuz"
     });
 }
 
@@ -555,17 +592,13 @@ async function searchStreamApi(query, limit = STREAM_SEARCH_LIMIT) {
     const cacheKey = `${limit}|${query.toLowerCase()}`;
     if (streamSearchCache.has(cacheKey)) return streamSearchCache.get(cacheKey);
 
-    const data = await fetchMusicApiJSON(`${MUSIC_SEARCH_API}?q=${encodeURIComponent(query)}&limit=${limit}`);
+    const data = await fetchFromMirrors(MUSIC_API_BASES, base => `${base}/api/music/search?q=${encodeURIComponent(query)}&limit=${limit}`);
     const items = Array.isArray(data && data.items) ? data.items : [];
     const songs = dedupeSongs(items.map(songFromStreamItem).filter(Boolean));
 
     if (streamSearchCache.size > 100) streamSearchCache.clear();
     streamSearchCache.set(cacheKey, songs);
     return songs;
-}
-
-function streamUrlFor(streamId) {
-    return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}`;
 }
 
 function songFromCherrionItem(item) {
