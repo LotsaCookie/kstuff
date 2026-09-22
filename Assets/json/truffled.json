@@ -115,6 +115,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Ages Of Conflict, Webport",
+      "url": "/games/agesofconflict/index.html",
+      "thumbnail": "/png/games/aoc.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Alien Hominid",
       "url": "/games/alien/index.html",
       "thumbnail": "/png/games/alien.webp",
@@ -197,6 +203,15 @@
       "url": "/games/AVHPort/index.html",
       "thumbnail": "/png/games/avh.webp",
       "frameType": "unity"
+    },
+    {
+      "name": "Apotheon, Webport",
+      "altNames": [
+        "Apotheon"
+      ],
+      "url": "/games/Apotheon/index.html",
+      "thumbnail": "/png/games/apotheon.webp",
+      "frameType": "iframe"
     },
     {
       "name": "Arthur's Nightmare, Webport",
@@ -409,6 +424,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Black Hole Fishing",
+      "url": "/games/bhf/single.html",
+      "thumbnail": "/png/games/bhf.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Black Jack",
       "url": "/gamefile/BlackJack.html",
       "thumbnail": "/png/games/blackjack.webp",
@@ -491,6 +512,13 @@
       "frameType": "iframe"
     },
     {
+      "name": "Bonk.io",
+      "url": "https://bonk.io/",
+      "thumbnail": "png/games/bonkio.webp",
+      "frameType": "proxy",
+      "category": "proxied"
+    },
+    {
       "name": "Boxing Random",
       "url": "/gamefile/boxing.html",
       "thumbnail": "png/games/boxing.webp",
@@ -534,6 +562,12 @@
       "category": "proxied"
     },
     {
+      "name": "Call of Duty 4 Modern Warfare",
+      "url": "/games/cod4mw/index.html",
+      "thumbnail": "png/games/cod4mw.webp",
+      "frameType": "iframe"    
+    },
+    {
       "name": "Capuchin, Webport",
       "url": "/games/CapuchinBog/index.html",
       "thumbnail": "/png/games/capuchin.webp",
@@ -546,10 +580,22 @@
       "frameType": "unity"
     },
     {
+      "name": "Cat Goes Fishing",
+      "url": "/games/catfish/index.html",
+      "thumbnail": "png/games/catgoesfishing.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Celeste, Webport",
       "url": "/games/celeste/index.html",
       "thumbnail": "/png/games/celeste.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Celeste 3D, Webport",
+      "url": "/games/celeste3d/index.html",
+      "thumbnail": "/png/games/celeste3d.webp",
+      "frameType": "iframe"    
     },
     {
       "name": "Celeste 64, Webport",
@@ -563,6 +609,13 @@
       "url": "/gamefile/cheese.html",
       "thumbnail": "/png/games/cheeser.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Chess.com",
+      "url": "https://chess.com",
+      "thumbnail": "/png/games/chess.webp",
+      "frameType": "proxy",
+      "category": "proxied"
     },
     {
       "name": "Christmas Massacre, Webport",
@@ -604,10 +657,10 @@
       "frameType": "iframe"
     },
     {
-      "name": "Cluster Rush",
-      "url": "/games/cluster/index.html",
+      "name": "Cluster Truck, Webport",
+      "url": "/games/clustertruck/index.html",
       "thumbnail": "/png/games/cluster.webp",
-      "frameType": "iframe"
+      "frameType": "unity"
     },
     {
       "name": "Coffee Talk",
@@ -675,6 +728,12 @@
       "url": "/gamefile/balls.html",
       "thumbnail": "/png/games/balls.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Crashout Crew, Webport",
+      "url": "/games/crashout/index.html",
+      "thumbnail": "/png/games/crash.webp",
+      "frameType": "unity"
     },
     {
       "name": "CrazyCattle3D, Webport",
@@ -824,6 +883,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Dewdrop Dynasty, Webport",
+      "url": "/games/dewdrop/index.html",
+      "thumbnail": "/png/games/dewrop.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Diablo",
       "url": "/games/diablo/index.html",
       "thumbnail": "/png/games/diablo.webp",
@@ -867,6 +932,15 @@
       "url": "/games/domekeeper/index.html",
       "thumbnail": "/png/games/domekeeper.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Dont Bite Me Bro!, Webport",
+      "altNames": [
+        "Dont Bite Me Bro!"
+      ],
+      "url": "/games/dbmb/index.html",
+      "thumbnail": "png/games/dbmb.webp",
+      "frameType": "unity"
     },
     {
       "name": "Doodle Jump",
@@ -999,6 +1073,24 @@
       "name": "Emily Is Away",
       "url": "/games/emily/index.html",
       "thumbnail": "/png/games/emily.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Endacopia, Webport",
+      "url": "/games/endacopia/index.html",
+      "thumbnail": "/png/games/endacopia.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Endoparasitic",
+      "url": "/games/endoparasitic/index.html",
+      "thumbnail": "/png/games/endo1.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Endoparasitic 2",
+      "url": "/games/endoparasitic2/index.html",
+      "thumbnail": "/png/games/endo2.webp",
       "frameType": "iframe"
     },
     {
@@ -1435,6 +1527,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Gamble With Your Friends, Webport",
+      "url": "/games/gamble/index.html",
+      "thumbnail": "/png/games/gamble.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Genshin Impact",
       "url": "https://nowgg.fun/apps/cognosphere-pte-ltd-/1773/genshin-impact.html",
       "thumbnail": "/png/games/genshin.webp",
@@ -1448,8 +1546,16 @@
       "frameType": "iframe"
     },
     {
+      "name": "Geoguessr",
+      "url": "https://www.geoguessr.com/",
+      "thumbnail": "/png/games/geoguess.webp",
+      "frameType": "proxy",
+      "category": "proxied"
+
+    },
+    {
       "name": "Geometry Dash, Webport",
-      "url": "/gamefile/gd.html",
+      "url": "/games/geo/index.html",
       "thumbnail": "/png/games/gd.webp",
       "frameType": "iframe"
     },
@@ -1473,6 +1579,13 @@
       "url": "/games/GTB/index.html",
       "thumbnail": "/png/games/gotobed.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Goober Dash",
+      "url": "https://gooberdash.winterpixel.io/",
+      "thumbnail": "/png/games/goober.webp",
+      "frameType": "proxy",
+      "category": "proxied"
     },
     {
       "name": "Google Baseball",
@@ -1644,7 +1757,7 @@
       "altNames": [
         "Hollow Knight"
       ],
-      "url": "/games/hollowknight/index.html",
+      "url": "/games/newesthk/index.html",
       "thumbnail": "png/games/hollow.webp",
       "frameType": "iframe"
     },
@@ -1671,6 +1784,15 @@
       "frameType": "iframe"
     },
     {
+      "name": "How To Fish, Webport",
+      "altNames": [
+        "How To Fish"
+      ],
+      "url": "/games/htf/index.html",
+      "thumbnail": "png/games/htf.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "HUMAN EXPENDITURE PROGRAM, Webport",
       "altNames": [
         "HUMAN EXPENDITURE PROGRAM"
@@ -1692,12 +1814,36 @@
       "frameType": "iframe"
     },
     {
+      "name": "Into Space 1",
+      "url": "/games/is1/index.html",
+      "thumbnail": "png/games/intospace1.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Into Space 2",
+      "url": "/games/is2/index.html",
+      "thumbnail": "png/games/intospace2.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Into Space 3",
+      "url": "/games/is3/index.html",
+      "thumbnail": "png/games/intospace3.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Iron Lung, Webport",
       "url": "/games/ironlung/index.html",
       "thumbnail": "png/games/iroonlung.webp",
       "frameType": "iframe"
     },
-      {
+    {
+      "name": "I Wanna Be The Guy, Webport",
+      "url": "/games/iwbtg/index.html",
+      "thumbnail": "png/games/iwbtg.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Jeffrey Epstein Basics In Education And Kidnapping, Webport",
       "url": "/gamefile/jeb.html",
       "thumbnail": "/png/games/jeb.webp",
@@ -1800,10 +1946,22 @@
       "frameType": "unity"
     },
     {
+      "name": "Knife Hit",
+      "url": "/games/knifehit/index.html",
+      "thumbnail": "/png/games/knife.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Krunker",
       "url": "/games/krunker/index.html",
       "thumbnail": "/png/games/krunker.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "La Madriguera",
+      "url": "/games/lamadriguera/index.html",
+      "thumbnail": "/png/games/labear.webp",
+      "frameType": "unity"
     },
     {
       "name": "Lacey's Flash Games, Webport",
@@ -1845,6 +2003,18 @@
       "frameType": "iframe"
     },
     {
+      "name": "Lethal Company, Webport",
+      "url": "/games/lethal/index.html",
+      "thumbnail": "/png/games/lethal.webp",
+      "frameType": "unity"
+    },
+    {
+      "name": "Lethal Ape, Webport",
+      "url": "/games/lethalape/index.html",
+      "thumbnail": "/png/games/lethalape.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Level Devil",
       "url": "/games/lvldevil/index.html",
       "thumbnail": "/png/games/level.webp",
@@ -1875,10 +2045,23 @@
       "frameType": "iframe"
     },
     {
+      "name": "Lolbeans.io",
+      "url": "https://lolbeans.io/",
+      "thumbnail": "/png/games/lolbeans.webp",
+      "frameType": "proxy",
+      "category": "proxied"
+    },
+    {
       "name": "Lobotomy Corporation, Webport",
       "url": "/games/lobcorp/index.html",
       "thumbnail": "/png/games/lobotomycorp.webp",
       "frameType": "unity"
+    },
+    {
+      "name": "Machine Party",
+      "url": "/games/mp/index.html",
+      "thumbnail": "/png/games/machineparty.webp",
+      "frameType": "iframe"
     },
     {
       "name": "Madden NFL 24 Mobile Football",
@@ -2024,6 +2207,15 @@
       "frameType": "unity"
     },
     {
+      "name": "Mindustry, Webport",
+      "altNames": [
+        "Mindustry"
+      ],
+      "url": "/gamefile/mindustry.html",
+      "thumbnail": "png/games/mindustry.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Minecraft",
       "url": "/games/wispcraft/eag.html",
       "thumbnail": "/png/games/mc.webp",
@@ -2104,6 +2296,12 @@
       "thumbnail": "png/games/msm.webp",
       "frameType": "proxy",
       "category": "proxied"
+    },
+    {
+      "name": "My Talking Baby Hippo, Webport",
+      "url": "/games/mtbh/index.html",
+      "thumbnail": "png/games/hippo.webp",
+      "frameType": "unity"
     },
     {
       "name": "My teardrop, daniel",
@@ -2307,6 +2505,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Peak, Webport",
+      "url": "/games/peak/index.html",
+      "thumbnail": "png/games/peak.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Peaks of Yore, Webport",
       "url": "/gamefile/peaksofyore.html",
       "thumbnail": "png/games/peaksofyore.webp",
@@ -2436,6 +2640,12 @@
       "name": "Portal",
       "url": "/games/portal/index.html",
       "thumbnail": "png/games/portal.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Portal 2",
+      "url": "/games/portal2/portal2/index.html",
+      "thumbnail": "png/games/p2.webp",
       "frameType": "iframe"
     },
     {
@@ -2645,6 +2855,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Rimworld, Webport",
+      "url": "/games/rimworld/index.html",
+      "thumbnail": "/png/games/rimword.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Rocket League Sideswipe",
       "url": "https://nowgg.fun/apps/psyonix-studios/4656/rocket-league.html",
       "thumbnail": "/png/games/rrs.webp",
@@ -2740,10 +2956,22 @@
       "frameType": "unity"
     },
     {
+      "name": "SCP: Secret Laboratory, Webport",
+      "url": "/games/scp/scp.html",
+      "thumbnail": "png/games/scp.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Shift At Midnight, Webport",
       "url": "/gamefile/shift.html",
       "thumbnail": "/png/games/shift.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Shrimp.io, Webport",
+      "url": "/games/shrimpio/index.html",
+      "thumbnail": "png/games/shrimpio.webp",
+      "frameType": "unity"
     },
     {
       "name": "Silksong, Webport",
@@ -2762,6 +2990,13 @@
       "url": "/games/skiing/index.html",
       "thumbnail": "/png/games/skiing.webp",
       "frameType": "unity"
+    },
+    {
+      "name": "Skribbl.io",
+      "url": "https://skribbl.io/",
+      "thumbnail": "/png/games/skribblio.webp",
+      "frameType": "proxy",
+      "category": "proxied"
     },
     {
       "name": "Slender: The 8 Pages, Webport",
@@ -3013,9 +3248,9 @@
        "altNames": [
         "Spaceflight Simulator"
       ],
-      "url": "/gamefile/spaceflight.html",
+      "url": "/games/spaceflightsim/index.html",
       "thumbnail": "png/games/ssim.webp",
-      "frameType": "iframe"
+      "frameType": "unity"
     },
     {
       "name": "Spank the monkey, bogs favorites",
@@ -3199,6 +3434,15 @@
       "frameType": "iframe"
     },
     {
+      "name": "The Binding Of Issac: Repentance, Webport",
+      "altNames": [
+        "The Binding Of Issac: Repentance"
+      ],
+      "url": "/games/boir/index.html",
+      "thumbnail": "/png/games/boir.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "The Impossible Quiz",
       "url": "/games/theimpossiblequiz/index.html",
       "thumbnail": "/png/games/quiz.webp",
@@ -3262,6 +3506,7 @@
       "thumbnail": "png/games/tiny.webp",
       "frameType": "iframe"
     },
+    
     {
       "name": "To The Core, Webport",
       "altNames": [
@@ -3288,6 +3533,12 @@
       "url": "/games/tosstheturtle/index.html",
       "thumbnail": "/png/games/ttt.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Totally Acturate Battle Simulator, Webport",
+      "url": "/games/tabs/index.html",
+      "thumbnail": "/png/games/tabs.webp",
+      "frameType": "unity"
     },
     {
       "name": "Touhou 1 Touhou-Reiiden",
@@ -3329,6 +3580,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Tree Hates You, Webport",
+      "url": "/games/treehatesyou/index.html",
+      "thumbnail": "/png/games/treehatesyou.webp",
+      "frameType": "unity"
+    },
+    {
       "name": "Trombone Champ, Webport",
       "url": "/games/tchamp/index.html",
       "thumbnail": "/png/games/tchamp.webp",
@@ -3357,7 +3614,7 @@
       "altNames": [
         "Ultrakill"
       ],
-      "url": "/games/ultrakill/ultrakill/index.html",
+      "url": "/games/thkill/index.html",
       "thumbnail": "png/games/ultra.webp",
       "frameType": "iframe"
     },
@@ -3503,6 +3760,12 @@
       "frameType": "iframe"
     },
     {
+      "name": "Webdashers",
+      "url": "/gamefile/gd.html",
+      "thumbnail": "/png/games/webdashers.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Webfishing, Webport",
       "altNames": [
         "Webfishing"
@@ -3521,6 +3784,15 @@
       "frameType": "unity"
     },
     {
+      "name": "Windowkill, Webport",
+      "altNames": [
+        "Windowkill"
+      ],
+      "url": "/games/windowkill/",
+      "thumbnail": "/png/games/windowkill.webp",
+      "frameType": "iframe"
+    },
+    {
       "name": "Witch's Heart, Webport",
       "altNames": [
         "Witch's Heart"
@@ -3528,6 +3800,12 @@
       "url": "/gamefile/witches.html",
       "thumbnail": "png/games/witches.webp",
       "frameType": "iframe"
+    },
+    {
+      "name": "Worldbox, Webport",
+      "url": "/games/worldbox/index.html",
+      "thumbnail": "/png/games/worldbox.webp",
+      "frameType": "unity"
     },
     {
       "name": "Wordle",
@@ -3551,6 +3829,12 @@
       "name": "Worlds Hardest Game 3",
       "url": "/games/worlds-hardest-game-3/index.html",
       "thumbnail": "/png/games/3.webp",
+      "frameType": "iframe"
+    },
+    {
+      "name": "Worlds Hardest Game 4",
+      "url": "/games/worlds-hardest-game-4/index.html",
+      "thumbnail": "/png/games/whg4.webp",
       "frameType": "iframe"
     },
     {
