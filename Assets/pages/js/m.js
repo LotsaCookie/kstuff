@@ -45,7 +45,7 @@ const cancelModalBtn = document.getElementById("cancelModalBtn");
 
 const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/search";
 const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
-const STREAM_QUALITY = "lossless";
+const STREAM_QUALITIES = ["lossless", "high", "320", "128"];
 const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
 const STREAM_MAX_TRIES = 3;
@@ -149,11 +149,11 @@ function isConnectionError(err) {
         || msg.includes("setup");
 }
 
-async function wispFetch(url, timeoutMs = 15000) {
+async function wispFetch(url, timeoutMs = 15000, forceNew = false) {
     let lastErr = null;
     for (let attempt = 0; attempt < 3; attempt++) {
         try {
-            const client = await withTimeout(getBareClient(attempt > 0), 20000, "Wisp setup");
+            const client = await withTimeout(getBareClient(forceNew || attempt > 0), 20000, "Wisp setup");
             return await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
         } catch (err) {
             lastErr = err;
@@ -227,11 +227,25 @@ async function fetchInvidiousJSON(path, directTimeout = 8000, proxyTimeout = 200
 }
 
 async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
-    const response = await wispFetch(url, timeoutMs);
-    if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
-    const blob = await response.blob();
-    if (!blob || blob.size === 0) throw new Error("Empty audio blob");
-    return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
+    let lastErr = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+            const response = await wispFetch(url, timeoutMs, attempt > 0);
+            if (!response.ok) {
+                let bodyText = "";
+                try { bodyText = (await response.text()).slice(0, 200); } catch (e) {}
+                throw new Error(`Proxy HTTP ${response.status} ${response.statusText || ""} ${bodyText}`.trim());
+            }
+            const blob = await response.blob();
+            if (!blob || blob.size === 0) throw new Error("Empty audio blob");
+            return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
+        } catch (err) {
+            lastErr = err;
+            console.warn(`fetchBlobViaWisp attempt ${attempt + 1}/2 failed for ${url}:`, err && err.message ? err.message : err);
+            bareClientPromise = null;
+        }
+    }
+    throw lastErr || new Error("fetchBlobViaWisp failed");
 }
 
 async function fetchExternalOnce(url, wispMs = 10000, directMs = 6000) {
@@ -541,8 +555,8 @@ async function searchStreamApi(query, limit = STREAM_SEARCH_LIMIT) {
     return songs;
 }
 
-function streamUrlFor(streamId) {
-    return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}?quality=${encodeURIComponent(STREAM_QUALITY)}`;
+function streamUrlFor(streamId, quality) {
+    return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}?quality=${encodeURIComponent(quality)}`;
 }
 
 function songFromDeezer(t) {
@@ -1718,7 +1732,7 @@ function attemptToPlay(audio, timeoutMs = 12000) {
     });
 }
 
-async function tryPlayStream(streamId, myToken) {
+async function tryPlayStream(streamId, myToken, onQualityHint) {
     const cacheKey = `ripple:${streamId}`;
 
     const cachedUrl = await getCachedAudioObjectURL(cacheKey);
@@ -1732,10 +1746,32 @@ async function tryPlayStream(streamId, myToken) {
         } catch (e) {}
     }
 
-    const url = streamUrlFor(streamId);
+    for (const quality of STREAM_QUALITIES) {
+        if (myToken !== playRequestToken) return "stale";
+        if (onQualityHint) onQualityHint(quality);
+        const url = streamUrlFor(streamId, quality);
 
+        try {
+            const blob = await fetchBlobViaWisp(url, null, 90000);
+            if (myToken !== playRequestToken) return "stale";
+
+            const objectUrl = await cacheAudioBlob(cacheKey, blob);
+            audioPlayer.src = objectUrl;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer, 10000);
+            return myToken === playRequestToken ? "ok" : "stale";
+        } catch (err) {
+            console.warn(`Wisp stream fetch failed for ${streamId} at quality "${quality}":`, err && err.message ? err.message : err);
+        }
+    }
+
+    if (myToken !== playRequestToken) return "stale";
     try {
-        const blob = await fetchBlobViaWisp(url, null, 90000);
+        const directUrl = streamUrlFor(streamId, STREAM_QUALITIES[0]);
+        const response = await fetchWithTimeout(directUrl, 20000);
+        if (!response.ok) throw new Error(`Direct HTTP ${response.status}`);
+        const blob = await response.blob();
+        if (!blob || blob.size === 0) throw new Error("Empty audio blob");
         if (myToken !== playRequestToken) return "stale";
 
         const objectUrl = await cacheAudioBlob(cacheKey, blob);
@@ -1744,7 +1780,7 @@ async function tryPlayStream(streamId, myToken) {
         await attemptToPlay(audioPlayer, 10000);
         return myToken === playRequestToken ? "ok" : "stale";
     } catch (err) {
-        console.warn(`Wisp stream fetch failed for ${streamId}:`, err && err.message ? err.message : err);
+        console.warn(`Direct stream fetch failed for ${streamId}:`, err && err.message ? err.message : err);
     }
 
     return "fail";
@@ -1760,7 +1796,7 @@ async function playViaStreamApi(track, myToken) {
         tried.add(streamId);
         if (tried.size > 1) setLoadingHint(track, `trying stream ${tried.size}`);
 
-        const result = await tryPlayStream(streamId, myToken);
+        const result = await tryPlayStream(streamId, myToken, quality => setLoadingHint(track, `trying ${quality} quality`));
         if (result === "ok") onPlaybackStarted(track, { type: "stream", id: streamId });
         return result;
     };
