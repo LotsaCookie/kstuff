@@ -49,6 +49,12 @@ const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
 const STREAM_MAX_TRIES = 3;
 
+const CHERRION_SEARCH_API = "https://cherrion.top/api/music/search";
+const CHERRION_STREAM_API = "https://cherrion.top/api/music/stream";
+const CHERRION_SEARCH_LIMIT = 60;
+const CHERRION_MATCH_LIMIT = 15;
+const CHERRION_MAX_TRIES = 3;
+
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_URL = "wss://girlspreples.org/wi/";
@@ -348,7 +354,7 @@ function versionFlags(text) {
     return flags;
 }
 
-function makeSong({ source, id, title, titleShort, artist, cover, duration, streamId }) {
+function makeSong({ source, id, title, titleShort, artist, cover, duration, streamId, isrc, providerSource }) {
     return {
         key: `${source}:${id}`,
         source,
@@ -360,6 +366,8 @@ function makeSong({ source, id, title, titleShort, artist, cover, duration, stre
         duration: Number(duration) || 0,
         videoId: null,
         streamId: streamId || null,
+        isrc: isrc || null,
+        providerSource: providerSource || null,
         videos: []
     };
 }
@@ -522,7 +530,9 @@ function serializeTrack(t) {
         cover: t.cover,
         duration: t.duration,
         videoId: t.videoId || null,
-        streamId: t.streamId || null
+        streamId: t.streamId || null,
+        isrc: t.isrc || null,
+        providerSource: t.providerSource || null
     };
 }
 
@@ -556,6 +566,48 @@ async function searchStreamApi(query, limit = STREAM_SEARCH_LIMIT) {
 
 function streamUrlFor(streamId) {
     return `${MUSIC_STREAM_API}/${encodeURIComponent(streamId)}`;
+}
+
+function songFromCherrionItem(item) {
+    if (!item || item.id === undefined || item.id === null || item.id === "" || !item.title) return null;
+    return makeSong({
+        source: "cherrion",
+        id: item.id,
+        title: item.title,
+        artist: item.artist,
+        cover: item.artwork || "",
+        duration: item.duration,
+        streamId: String(item.id),
+        isrc: item.isrc || null,
+        providerSource: item.source || "qobuz"
+    });
+}
+
+const cherrionSearchCache = new Map();
+
+async function searchCherrionApi(query, limit = CHERRION_SEARCH_LIMIT) {
+    const cacheKey = `${limit}|${query.toLowerCase()}`;
+    if (cherrionSearchCache.has(cacheKey)) return cherrionSearchCache.get(cacheKey);
+
+    const data = await fetchMusicApiJSON(`${CHERRION_SEARCH_API}?q=${encodeURIComponent(query)}&limit=${limit}`);
+    const items = Array.isArray(data && data.items) ? data.items : [];
+    const songs = dedupeSongs(items.map(songFromCherrionItem).filter(Boolean));
+
+    if (cherrionSearchCache.size > 100) cherrionSearchCache.clear();
+    cherrionSearchCache.set(cacheKey, songs);
+    return songs;
+}
+
+function cherrionStreamUrlFor(meta) {
+    const params = new URLSearchParams();
+    params.set("id", meta.id);
+    params.set("quality", "HIGH");
+    if (meta.isrc) params.set("isrc", meta.isrc);
+    params.set("source", meta.providerSource || "qobuz");
+    if (meta.artist) params.set("artist", meta.artist);
+    params.set("title", meta.title || "");
+    if (meta.duration) params.set("duration", Math.round(meta.duration));
+    return `${CHERRION_STREAM_API}?${params.toString()}`;
 }
 
 function songFromDeezer(t) {
@@ -690,6 +742,27 @@ function forgetWorkingStream(key) {
     if (!(key in workingStreams)) return;
     delete workingStreams[key];
     try { localStorage.setItem("songStreamMap", JSON.stringify(workingStreams)); } catch (e) {}
+}
+
+let workingCherrion = {};
+try {
+    workingCherrion = JSON.parse(localStorage.getItem("songCherrionMap")) || {};
+} catch (e) {
+    workingCherrion = {};
+}
+
+function rememberWorkingCherrion(key, meta) {
+    delete workingCherrion[key];
+    workingCherrion[key] = meta;
+    const keys = Object.keys(workingCherrion);
+    if (keys.length > 800) keys.slice(0, keys.length - 800).forEach(k => delete workingCherrion[k]);
+    try { localStorage.setItem("songCherrionMap", JSON.stringify(workingCherrion)); } catch (e) {}
+}
+
+function forgetWorkingCherrion(key) {
+    if (!(key in workingCherrion)) return;
+    delete workingCherrion[key];
+    try { localStorage.setItem("songCherrionMap", JSON.stringify(workingCherrion)); } catch (e) {}
 }
 
 let activePlayingPlaylist = null;
@@ -1667,11 +1740,20 @@ async function search() {
 
     let songs = [];
     try {
-        songs = await searchStreamApi(query, STREAM_SEARCH_LIMIT);
+        songs = await searchCherrionApi(query, CHERRION_SEARCH_LIMIT);
     } catch (e) {
-        console.warn("Music API search failed, falling back to Invidious:", e.message);
+        console.warn("Cherrion search failed, falling back:", e.message);
     }
     if (myToken !== searchToken) return;
+
+    if (songs.length === 0) {
+        try {
+            songs = await searchStreamApi(query, STREAM_SEARCH_LIMIT);
+        } catch (e) {
+            console.warn("Music API search failed, falling back to Invidious:", e.message);
+        }
+        if (myToken !== searchToken) return;
+    }
 
     if (songs.length > 0) {
         renderSearchResults(songs.map(song => ({ ...song, videos: [] })));
@@ -1795,7 +1877,8 @@ async function playViaStreamApi(track, myToken) {
         return result;
     };
     const remembered = workingStreams[track.key];
-    for (const id of [track.streamId, remembered]) {
+    const initialIds = track.source === "ripple" ? [track.streamId, remembered] : [remembered];
+    for (const id of initialIds) {
         const result = await attempt(id);
         if (result !== "fail") return result;
         if (id && String(id) === String(remembered)) forgetWorkingStream(track.key);
