@@ -981,13 +981,6 @@ function setImage(img, urls, lazy = false, track = null) {
     }
 }
 
-// Lightweight image loader for grid tiles (home shelves, search results).
-// Unlike setImage(), this assigns the URL straight to img.src instead of
-// routing every thumbnail through the Wisp proxy + blob + IndexedDB pipeline.
-// A plain <img> doesn't need CORS-safe pixel data (that's only required for
-// canvas drawImage, used by the PiP frame), so proxying hundreds of grid
-// thumbnails on every home-page load was pure overhead and the single
-// biggest contributor to page lag.
 function setImageDirect(img, urls, track = null) {
     const list = urls.filter(Boolean);
     const token = (img._imgToken = (img._imgToken || 0) + 1);
@@ -1742,16 +1735,6 @@ async function tryPlayStream(streamId, myToken) {
     const url = streamUrlFor(streamId);
 
     try {
-        audioPlayer.src = url;
-        audioPlayer.volume = volumeBar.value;
-        await attemptToPlay(audioPlayer, 12000);
-        return myToken === playRequestToken ? "ok" : "stale";
-    } catch (e) {
-        console.warn(`Direct stream failed for ${streamId}:`, e && e.message ? e.message : e);
-    }
-    if (myToken !== playRequestToken) return "stale";
-
-    try {
         const blob = await fetchBlobViaWisp(url, null, 90000);
         if (myToken !== playRequestToken) return "stale";
 
@@ -1761,7 +1744,7 @@ async function tryPlayStream(streamId, myToken) {
         await attemptToPlay(audioPlayer, 10000);
         return myToken === playRequestToken ? "ok" : "stale";
     } catch (err) {
-        console.warn(`Wisp stream fallback failed for ${streamId}:`, err && err.message ? err.message : err);
+        console.warn(`Wisp stream fetch failed for ${streamId}:`, err && err.message ? err.message : err);
     }
 
     return "fail";
