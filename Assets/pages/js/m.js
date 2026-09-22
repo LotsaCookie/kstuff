@@ -47,7 +47,7 @@ const MUSIC_SEARCH_API = "https://kristenblackburnvolleyballcamps.com/api/music/
 const MUSIC_STREAM_API = "https://galxy.it.com/ripple/API/stream";
 const STREAM_SEARCH_LIMIT = 60;
 const STREAM_MATCH_LIMIT = 15;
-const STREAM_MAX_TRIES = 3;
+const STREAM_MAX_TRIES = 4;
 
 const CHERRION_SEARCH_API = "https://cherrion.top/api/music/search";
 const CHERRION_STREAM_API = "https://cherrion.top/api/music/stream";
@@ -608,6 +608,17 @@ function cherrionStreamUrlFor(meta) {
     params.set("title", meta.title || "");
     if (meta.duration) params.set("duration", Math.round(meta.duration));
     return `${CHERRION_STREAM_API}?${params.toString()}`;
+}
+
+function cherrionMetaFrom(obj) {
+    return {
+        id: obj.id,
+        isrc: obj.isrc || null,
+        providerSource: obj.providerSource || "qobuz",
+        artist: obj.artist,
+        title: obj.title,
+        duration: obj.duration
+    };
 }
 
 function songFromDeezer(t) {
@@ -1862,53 +1873,147 @@ async function tryPlayStream(streamId, myToken) {
     return "fail";
 }
 
-async function playViaStreamApi(track, myToken) {
-    const tried = new Set();
+async function tryPlayCherrionStream(meta, myToken) {
+    const cacheKey = `cherrion:${meta.id}`;
 
-    const attempt = async (streamId) => {
+    const cachedUrl = await getCachedAudioObjectURL(cacheKey);
+    if (myToken !== playRequestToken) return "stale";
+    if (cachedUrl) {
+        try {
+            audioPlayer.src = cachedUrl;
+            audioPlayer.volume = volumeBar.value;
+            await attemptToPlay(audioPlayer);
+            return myToken === playRequestToken ? "ok" : "stale";
+        } catch (e) {}
+    }
+
+    const url = cherrionStreamUrlFor(meta);
+
+    try {
+        audioPlayer.src = url;
+        audioPlayer.volume = volumeBar.value;
+        await attemptToPlay(audioPlayer, 9000);
+        if (myToken !== playRequestToken) return "stale";
+
+        fetchBlobViaWisp(url, null, 90000)
+            .then(blob => cacheAudioBlob(cacheKey, blob))
+            .catch(() => {});
+
+        return "ok";
+    } catch (err) {
+        console.warn(`Direct cherrion playback failed for ${meta.id}:`, err && err.message ? err.message : err);
+    }
+
+    if (myToken !== playRequestToken) return "stale";
+
+    try {
+        const blob = await fetchBlobViaWisp(url, null, 90000);
+        if (myToken !== playRequestToken) return "stale";
+
+        const objectUrl = await cacheAudioBlob(cacheKey, blob);
+        audioPlayer.src = objectUrl;
+        audioPlayer.volume = volumeBar.value;
+        await attemptToPlay(audioPlayer, 10000);
+        return myToken === playRequestToken ? "ok" : "stale";
+    } catch (err) {
+        console.warn(`Wisp cherrion fetch failed for ${meta.id}:`, err && err.message ? err.message : err);
+    }
+
+    return "fail";
+}
+
+async function playViaStreamApi(track, myToken) {
+    const triedRipple = new Set();
+    const triedCherrion = new Set();
+    const totalTried = () => triedRipple.size + triedCherrion.size;
+
+    const attemptRipple = async (streamId) => {
         if (!streamId) return "fail";
         streamId = String(streamId);
-        if (tried.has(streamId)) return "fail";
-        tried.add(streamId);
-        if (tried.size > 1) setLoadingHint(track, `trying stream ${tried.size}`);
+        if (triedRipple.has(streamId)) return "fail";
+        triedRipple.add(streamId);
+        if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
 
         const result = await tryPlayStream(streamId, myToken);
         if (result === "ok") onPlaybackStarted(track, { type: "stream", id: streamId });
         return result;
     };
-    const remembered = workingStreams[track.key];
-    const initialIds = track.source === "ripple" ? [track.streamId, remembered] : [remembered];
-    for (const id of initialIds) {
-        const result = await attempt(id);
+
+    const attemptCherrion = async (meta) => {
+        if (!meta || meta.id === undefined || meta.id === null || meta.id === "") return "fail";
+        const idKey = String(meta.id);
+        if (triedCherrion.has(idKey)) return "fail";
+        triedCherrion.add(idKey);
+        if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
+
+        const result = await tryPlayCherrionStream(meta, myToken);
+        if (result === "ok") onPlaybackStarted(track, { type: "cherrion", id: idKey, meta });
+        return result;
+    };
+
+    if (track.source === "cherrion") {
+        const result = await attemptCherrion(cherrionMetaFrom(track));
         if (result !== "fail") return result;
-        if (id && String(id) === String(remembered)) forgetWorkingStream(track.key);
+    } else if (track.source === "ripple") {
+        const result = await attemptRipple(track.streamId);
+        if (result !== "fail") return result;
     }
     if (myToken !== playRequestToken) return "stale";
+
+    const rememberedCherrion = workingCherrion[track.key];
+    if (rememberedCherrion) {
+        const result = await attemptCherrion(rememberedCherrion);
+        if (result !== "fail") return result;
+        forgetWorkingCherrion(track.key);
+    }
+    if (myToken !== playRequestToken) return "stale";
+
+    const rememberedRipple = workingStreams[track.key];
+    if (rememberedRipple) {
+        const result = await attemptRipple(rememberedRipple);
+        if (result !== "fail") return result;
+        forgetWorkingStream(track.key);
+    }
+    if (myToken !== playRequestToken) return "stale";
+
     const leftovers = [];
+
     for (const query of buildStreamQueries(track)) {
-        if (tried.size >= STREAM_MAX_TRIES) break;
+        if (totalTried() >= STREAM_MAX_TRIES) break;
         setLoadingHint(track, "finding stream");
 
-        let found = [];
-        try {
-            found = await searchStreamApi(query, STREAM_MATCH_LIMIT);
-        } catch (e) {
-            console.warn("Stream match search failed:", e.message);
-            break;
-        }
+        const [cherrionResult, rippleResult] = await Promise.allSettled([
+            searchCherrionApi(query, CHERRION_MATCH_LIMIT),
+            searchStreamApi(query, STREAM_MATCH_LIMIT)
+        ]);
         if (myToken !== playRequestToken) return "stale";
 
-        const ranked = rankStreamSongs(found, track);
-        for (const song of ranked.good) {
-            if (tried.size >= STREAM_MAX_TRIES) break;
-            const result = await attempt(song.streamId);
+        const cherrionSongs = cherrionResult.status === "fulfilled" ? cherrionResult.value : [];
+        const rippleSongs = rippleResult.status === "fulfilled" ? rippleResult.value : [];
+        if (cherrionResult.status === "rejected") console.warn("Cherrion match search failed:", cherrionResult.reason && cherrionResult.reason.message);
+        if (rippleResult.status === "rejected") console.warn("Ripple match search failed:", rippleResult.reason && rippleResult.reason.message);
+
+        const rankedCherrion = rankStreamSongs(cherrionSongs, track);
+        const rankedRipple = rankStreamSongs(rippleSongs, track);
+
+        for (const song of rankedCherrion.good) {
+            if (totalTried() >= STREAM_MAX_TRIES) break;
+            const result = await attemptCherrion(cherrionMetaFrom(song));
             if (result !== "fail") return result;
         }
-        leftovers.push(...ranked.loose);
+        for (const song of rankedRipple.good) {
+            if (totalTried() >= STREAM_MAX_TRIES) break;
+            const result = await attemptRipple(song.streamId);
+            if (result !== "fail") return result;
+        }
+
+        leftovers.push(...rankedCherrion.loose.map(song => ({ kind: "cherrion", song })));
+        leftovers.push(...rankedRipple.loose.map(song => ({ kind: "ripple", song })));
     }
 
-    if (tried.size < STREAM_MAX_TRIES && leftovers.length > 0) {
-        const result = await attempt(leftovers[0].streamId);
+    if (totalTried() < STREAM_MAX_TRIES && leftovers.length > 0) {
+        const { kind, song } = leftovers[0];
+        const result = kind === "cherrion" ? await attemptCherrion(cherrionMetaFrom(song)) : await attemptRipple(song.streamId);
         if (result !== "fail") return result;
     }
 
@@ -2079,9 +2184,12 @@ function onPlaybackStarted(track, via) {
     if (via.type === "stream") {
         track.streamId = via.id;
         if (track.source !== "ripple") rememberWorkingStream(track.key, via.id);
-    } else if (track.source !== "youtube") {
+    } else if (via.type === "cherrion") {
+        track.streamId = via.id;
+        if (track.source !== "cherrion") rememberWorkingCherrion(track.key, via.meta);
+    } else if (via.type === "video") {
         track.videoId = via.id;
-        rememberWorkingVideo(track.key, via.id);
+        if (track.source !== "youtube") rememberWorkingVideo(track.key, via.id);
     }
     showTrackInDock(track, false);
     updatePlayButton();
