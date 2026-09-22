@@ -690,6 +690,15 @@ body.text-hide .nav-right .nav-divider {
     flex-grow: 1;
 }
 
+#readingcorner-resource-iframe,
+#sciencequiz-resource-iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+}
+
 .hero-container {
     display: flex;
     flex-direction: column;
