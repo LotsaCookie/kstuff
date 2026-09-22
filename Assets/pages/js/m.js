@@ -52,7 +52,7 @@ const STREAM_MAX_TRIES = 3;
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
-const WISP_URL = "wss://wisp.mercurywork.shop/";
+const WISP_URL = "wss://girlspreples.org/wi/";
 const BAREMUX_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/+esm";
 const BAREMUX_WORKER_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.1.9/dist/worker.js";
 const EPOXY_TRANSPORT_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.1.28/dist/index.mjs";
