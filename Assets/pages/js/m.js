@@ -95,6 +95,12 @@ const INVIDIOUS_BASE = "https://invidious.f5.si";
 const WISP_URL = "wss://girlspreples.org/wi/";
 const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
 
+let epoxyModuleNonce = 0;
+
+function epoxyModuleUrl() {
+    return epoxyModuleNonce === 0 ? EPOXY_MODULE_URL : `${EPOXY_MODULE_URL}?reinit=${epoxyModuleNonce}`;
+}
+
 const DEEZER_API = "https://api.deezer.com";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
 const ITUNES_SEARCH_API = "https://itunes.apple.com/search";
@@ -164,7 +170,7 @@ let epoxyBindingsPromise = null;
 function getEpoxyBindings() {
     if (!epoxyBindingsPromise) {
         epoxyBindingsPromise = (async () => {
-            const mod = await import(EPOXY_MODULE_URL);
+            const mod = await import(epoxyModuleUrl());
             if (typeof mod.default === "function") {
                 await mod.default();
             }
@@ -209,6 +215,11 @@ function getEpoxyClient(forceNew = false) {
     return epoxyClientPromise;
 }
 
+function isPanicError(err) {
+    const msg = (err && err.message ? err.message : String(err || "")).toLowerCase();
+    return msg.includes("dropped") || msg.includes("recursively") || msg.includes("closure") || msg.includes("panic");
+}
+
 function isConnectionError(err) {
     const msg = (err && err.message ? err.message : String(err || "")).toLowerCase();
     return err instanceof TypeError
@@ -245,6 +256,15 @@ async function wispFetchAttempt(url, timeoutMs, forceNew, init) {
             return result;
         } catch (err) {
             lastErr = err;
+            if (isPanicError(err)) {
+                wispCooldownUntil = Date.now() + WISP_COOLDOWN_MS;
+                epoxyClientPromise = null;
+                disposeEpoxyClient(epoxyClientInstance);
+                epoxyClientInstance = null;
+                epoxyBindingsPromise = null;
+                epoxyModuleNonce++;
+                throw lastErr;
+            }
             if (isConnectionError(err)) {
                 wispFailCount++;
                 if (wispFailCount >= WISP_FAIL_LIMIT) {
