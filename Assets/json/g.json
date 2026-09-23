@@ -7,7 +7,7 @@
   },
   {
     "title": "-b",
-    "url": "${truffled}/games/minusbog/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/web-ports/baldi-mods@HEAD/-b/index.html",
     "category": "Puzzle",
     "image": "https://i.ytimg.com/vi/bg5grqMn1DQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDuJuUePhvZmkS2Rg4HvF1icxWYMg"
   },
