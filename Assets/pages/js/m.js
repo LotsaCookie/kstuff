@@ -157,10 +157,19 @@ function disposeEpoxyClient(client) {
     try { client.close && client.close(); } catch (e) {}
 }
 
+async function loadEpoxyBindings() {
+    const mod = await import(EPOXY_MODULE_URL);
+    if (mod.EpoxyClient && mod.EpoxyClientOptions) return mod;
+    if (typeof mod.default === "function") {
+        const initialized = await mod.default();
+        if (initialized && initialized.EpoxyClient && initialized.EpoxyClientOptions) return initialized;
+    }
+    if (mod.default && mod.default.EpoxyClient && mod.default.EpoxyClientOptions) return mod.default;
+    throw new Error("Epoxy bindings unavailable from module");
+}
+
 async function createEpoxyClient() {
-    const epoxyModule = await import(EPOXY_MODULE_URL);
-    const initEpoxy = epoxyModule.default;
-    const { EpoxyClient, EpoxyClientOptions } = await initEpoxy();
+    const { EpoxyClient, EpoxyClientOptions } = await loadEpoxyBindings();
     const options = new EpoxyClientOptions();
     options.user_agent = navigator.userAgent;
     return await new EpoxyClient(WISP_URL, options);
