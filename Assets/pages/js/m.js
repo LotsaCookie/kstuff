@@ -182,6 +182,7 @@ async function createEpoxyClient() {
     const { EpoxyClient, EpoxyClientOptions } = await getEpoxyBindings();
     const options = new EpoxyClientOptions();
     options.user_agent = navigator.userAgent;
+    options.wisp_v2 = true;
     return await new EpoxyClient(WISP_URL, options);
 }
 
