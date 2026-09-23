@@ -44,11 +44,30 @@
 
                 const res = await fetch(targetUrl);
                 const text = await res.text();
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+
+                const adScripts = doc.querySelectorAll('script[src*="googletagmanager.com"], script[src*="google-analytics.com"]');
+                adScripts.forEach(script => script.remove());
+
+                const inlineScripts = doc.querySelectorAll('script:not([src])');
+                inlineScripts.forEach(script => {
+                  if (script.textContent.includes('gtag') || script.textContent.includes('dataLayer')) {
+                    script.remove();
+                  }
+                });
+
+                const adElements = doc.querySelectorAll('#sidebarad1, #sidebarad2, #imaContainer');
+                adElements.forEach(el => el.remove());
+
+                const cleanText = doc.documentElement.outerHTML;
+
                 const frame = document.getElementById('fm');
                 const fdoc = frame.contentDocument || frame.contentWindow.document;
 
                 fdoc.open();
-                fdoc.write(text);
+                fdoc.write(cleanText);
                 fdoc.close();
               } catch (e) {
                 console.error('Loader error:', e);
