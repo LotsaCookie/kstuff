@@ -93,7 +93,7 @@ function richMetaFrom(obj) {
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_URL = "wss://girlspreples.org/wi/";
-const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
+const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/full/epoxy-module-bundled.js";
 
 const DEEZER_API = "https://api.deezer.com";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
@@ -159,13 +159,9 @@ function disposeEpoxyClient(client) {
 
 async function loadEpoxyBindings() {
     const mod = await import(EPOXY_MODULE_URL);
-    let resolved;
-    if (typeof mod.default === "function") {
-        resolved = await mod.default();
-    }
-    if (mod.EpoxyClient && mod.EpoxyClientOptions) return mod;
-    if (resolved && resolved.EpoxyClient && resolved.EpoxyClientOptions) return resolved;
-    throw new Error("Epoxy bindings unavailable from module");
+    await mod.default();
+    if (!mod.EpoxyClient || !mod.EpoxyClientOptions) throw new Error("Epoxy bindings unavailable from module");
+    return mod;
 }
 
 async function createEpoxyClient() {
