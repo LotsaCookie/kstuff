@@ -124,5 +124,12 @@
     "category": "Entertainment",
     "url": "${static}https://soundcloud.com/",
     "image": ""
+  },
+  {
+    "title": "Tubi",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://tubi.tv/",
+    "image": ""
   }
 ]
