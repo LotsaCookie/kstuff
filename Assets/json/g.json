@@ -13,7 +13,7 @@
   },
   {
     "title": "1",
-    "url": "${truffled}/games/1/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/gmshelf/ugs@HEAD/ugs/cl1.html",
     "category": "Puzzle",
     "image": "https://static.wikia.nocookie.net/2048-game/images/e/e6/Tile_0_4.png/revision/latest?cb=20260224130549"
   },
