@@ -11,6 +11,13 @@ function initApp() {
   const resourceOpenFor = {};
   const resourceTokens = {};
 
+  const HTML_REPO_KEYWORDS = ['freebuisness/html', '{html_url}', 'htm@main'];
+  const LAUNCH_KEYWORDS = [...HTML_REPO_KEYWORDS, 'web-port', 'webport', 'web_port'];
+  const urlHasKeyword = (url, keywords) => {
+    const lower = (url || '').toLowerCase();
+    return keywords.some(k => lower.includes(k));
+  };
+
   const iframePages = {
     mathworksheets: { id: 'mathworksheets-iframe', path: 'Assets/pages/browser.html' },
     gradebook: { id: 'gradebook-iframe', path: 'Assets/pages/music.html' },
@@ -717,13 +724,20 @@ function initApp() {
       return;
     }
 
-    const isHtmlRepo = targetUrl.includes('freebuisness/html') || targetUrl.includes('{HTML_URL}') || targetUrl.includes('htm@main') || !targetUrl.startsWith('http');
-    if (isHtmlRepo) {
-      const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
+    const isRelativeUrl = !targetUrl.startsWith('http');
+    const isHtmlRepo = isRelativeUrl || urlHasKeyword(targetUrl, HTML_REPO_KEYWORDS);
+    const useLaunch = isHtmlRepo || urlHasKeyword(targetUrl, LAUNCH_KEYWORDS);
+
+    if (useLaunch) {
+      let launchTarget = targetUrl;
+      if (isHtmlRepo) {
+        const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
+        launchTarget = `https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+      }
       const launchSha = await getLatestSha();
       const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
       if (stale()) return;
-      ifr.src = `${launchBase}Assets/embed/launch.svg?url=https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+      ifr.src = `${launchBase}Assets/embed/launch.svg?url=${launchTarget}`;
     } else {
       const hasMirror = v => !!v && targetUrl.includes(v);
       const isProxyUrl = hasMirror(gRep.static) || hasMirror(gRep.scram) || hasMirror(gRep.uv) || hasMirror(gRep.truffled) || hasMirror(gRep.frogiee) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
@@ -750,7 +764,7 @@ function initApp() {
     const frag = document.createDocumentFragment();
     for (let i = 0; i < ITEMS_PER_PAGE; i++) {
       const card = el('div', { className: 'round-btn' }); card.dataset.index = i;
-      card.innerHTML = `<img alt="" style="display:none;width:100%;height:100%;object-fit:contain;object-position:center;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
+      card.innerHTML = `<img alt="" style="display:none;"><div class="category-label"></div><div class="overlay"><h3></h3><p></p></div>`;
       grid.pool.push({ el: card, img: card.querySelector('img'), t: card.querySelector('h3'), d: card.querySelector('p'), c: card.querySelector('.category-label') });
       frag.appendChild(card);
     }
@@ -761,20 +775,24 @@ function initApp() {
   const gridImageStyle = document.createElement('style');
   gridImageStyle.textContent = `
     .round-btn {
+      position: relative;
       overflow: hidden;
+      aspect-ratio: 1 / 1;
     }
 
     .round-btn > img {
+      position: absolute;
+      inset: 0;
       display: block;
       width: 100%;
       height: 100%;
       max-width: 100%;
       max-height: 100%;
-      object-fit: contain;
+      object-fit: cover !important;
       object-position: center;
     }
 
-    .round-btn img[src=""] {
+    .round-btn > img[src=""] {
       display: none !important;
     }
   `;
