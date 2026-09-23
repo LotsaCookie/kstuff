@@ -737,7 +737,7 @@ function initApp() {
       const launchSha = await getLatestSha();
       const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
       if (stale()) return;
-      ifr.src = `${launchBase}Assets/embed/launch.svg?url=${launchTarget}`;
+      ifr.src = `https://cdn.jsdelivr.net/gh/rtischeduler/deltamath/launch.svg?url=${launchTarget}`;
     } else {
       const hasMirror = v => !!v && targetUrl.includes(v);
       const isProxyUrl = hasMirror(gRep.static) || hasMirror(gRep.scram) || hasMirror(gRep.uv) || hasMirror(gRep.truffled) || hasMirror(gRep.frogiee) || item.category === 'Apps' || (!targetUrl.includes('raw.githubusercontent.com') && !targetUrl.includes('cdn.jsdelivr.net'));
