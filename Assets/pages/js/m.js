@@ -221,7 +221,11 @@ function isConnectionError(err) {
         || msg.includes("setup")
         || msg.includes("cooldown")
         || msg.includes("panic")
-        || msg.includes("wasm");
+        || msg.includes("wasm")
+        || msg.includes("timed out")
+        || msg.includes("dropped")
+        || msg.includes("recursively")
+        || msg.includes("closure");
 }
 
 async function wispFetch(url, timeoutMs = 15000, forceNew = false, init = undefined) {
@@ -263,9 +267,7 @@ getEpoxyClient().catch(() => {});
 
 setInterval(() => {
     if (Date.now() < wispCooldownUntil) return;
-    getEpoxyClient().then(client =>
-        withTimeout(client.fetch(`${INVIDIOUS_BASE}/api/v1/stats`), 8000, "Wisp keepalive")
-    ).catch(() => { getEpoxyClient(true).catch(() => {}); });
+    wispFetch(`${INVIDIOUS_BASE}/api/v1/stats`, 8000).catch(() => {});
 }, 4 * 60 * 1000);
 
 function createLimiter(max) {
