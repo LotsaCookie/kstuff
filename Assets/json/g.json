@@ -1,7 +1,7 @@
 [
   {
     "title": "-3",
-    "url": "${truffled}/games/minus3/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/web-ports/baldi-mods@HEAD/-3/index.html",
     "category": "Puzzle",
     "image": "https://i.ytimg.com/vi/bN1qRK4biCU/mqdefault.jpg"
   },
