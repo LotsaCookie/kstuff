@@ -93,7 +93,7 @@ function richMetaFrom(obj) {
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_URL = "wss://girlspreples.org/wi/";
-const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/full/epoxy-module-bundled.js";
+const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
 
 const DEEZER_API = "https://api.deezer.com";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
@@ -157,15 +157,27 @@ function disposeEpoxyClient(client) {
     try { client.close && client.close(); } catch (e) {}
 }
 
-async function loadEpoxyBindings() {
-    const mod = await import(EPOXY_MODULE_URL);
-    await mod.default();
-    if (!mod.EpoxyClient || !mod.EpoxyClientOptions) throw new Error("Epoxy bindings unavailable from module");
-    return mod;
+let epoxyBindingsPromise = null;
+
+function getEpoxyBindings() {
+    if (!epoxyBindingsPromise) {
+        epoxyBindingsPromise = (async () => {
+            const mod = await import(EPOXY_MODULE_URL);
+            if (typeof mod.default === "function") {
+                await mod.default();
+            }
+            if (!mod.EpoxyClient || !mod.EpoxyClientOptions) throw new Error("Epoxy bindings unavailable from module");
+            return mod;
+        })().catch(err => {
+            epoxyBindingsPromise = null;
+            throw err;
+        });
+    }
+    return epoxyBindingsPromise;
 }
 
 async function createEpoxyClient() {
-    const { EpoxyClient, EpoxyClientOptions } = await loadEpoxyBindings();
+    const { EpoxyClient, EpoxyClientOptions } = await getEpoxyBindings();
     const options = new EpoxyClientOptions();
     options.user_agent = navigator.userAgent;
     return await new EpoxyClient(WISP_URL, options);
