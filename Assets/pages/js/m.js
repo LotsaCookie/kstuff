@@ -159,12 +159,12 @@ function disposeEpoxyClient(client) {
 
 async function loadEpoxyBindings() {
     const mod = await import(EPOXY_MODULE_URL);
-    if (mod.EpoxyClient && mod.EpoxyClientOptions) return mod;
+    let resolved;
     if (typeof mod.default === "function") {
-        const initialized = await mod.default();
-        if (initialized && initialized.EpoxyClient && initialized.EpoxyClientOptions) return initialized;
+        resolved = await mod.default();
     }
-    if (mod.default && mod.default.EpoxyClient && mod.default.EpoxyClientOptions) return mod.default;
+    if (mod.EpoxyClient && mod.EpoxyClientOptions) return mod;
+    if (resolved && resolved.EpoxyClient && resolved.EpoxyClientOptions) return resolved;
     throw new Error("Epoxy bindings unavailable from module");
 }
 
