@@ -43,7 +43,7 @@
   },
   {
     "title": "2048",
-    "url": "${truffled}/games/2048/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/gmshelf/ugs@HEAD/ugs/cl2048.html",
     "category": "Puzzle",
     "image": ""
   },
