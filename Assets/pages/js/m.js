@@ -92,7 +92,7 @@ function richMetaFrom(obj) {
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
-const WISP_URL = "wss://girlspreples.org/wi/";
+const WISP_URL = "wss://wisp.mercurywork.shop/";
 const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
 
 let epoxyModuleNonce = 0;
