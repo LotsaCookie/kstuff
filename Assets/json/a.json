@@ -103,5 +103,26 @@
     "category": "Entertainment",
     "url": "${static}https://vscode.dev/",
     "image": "https://cdn-1.webcatalog.io/catalog/vs-code/vs-code-social-preview.png?v=1714776407457"
+  },
+  {
+    "title": "Hulu",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://www.hulu.com/",
+    "image": ""
+  },
+  {
+    "title": "Disney Plus",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://disneyplus.com/",
+    "image": ""
+  },
+  {
+    "title": "Soundcloud",
+    "description": "",
+    "category": "Entertainment",
+    "url": "${static}https://soundcloud.com/",
+    "image": ""
   }
 ]
