@@ -19,7 +19,7 @@
   },
   {
     "title": "1 on 1 Soccer",
-    "url": "${truffled}/games/1on1soccer/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/VISION-RUBX/1on1soccer@HEAD/index.html",
     "category": "Sports",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZtp5bQH1i4_x-3u2hrpFV9DBSx2GHsbx4Mg&s"
   },
