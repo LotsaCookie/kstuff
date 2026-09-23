@@ -1642,6 +1642,10 @@
     "image": "https://static.cdnlogo.com/logos/g/86/garrys-mod.svg"
   },
   {
+    "title": "Gang Beasts, Webport",
+    "url": "${truffled}/games/gangbeasts/index.html"
+  },
+  {
     "title": "GO TO BED",
     "url": "${truffled}/games/GTB/index.html",
     "category": "Horror",
