@@ -169,7 +169,7 @@
   },
   {
     "title": "Angry Birds 2",
-    "url": "${truffled}/games/angrybirds2/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/NaoTomori1/AngryBirds2/index.html",
     "category": "Puzzle",
     "image": ""
   },
