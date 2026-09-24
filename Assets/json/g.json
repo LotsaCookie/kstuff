@@ -31,7 +31,7 @@
   },
   {
     "title": "1v1.LOL",
-    "url": "${truffled}/gamefile/1v1.html",
+    "url": "https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack/offline/1v1.lol.html",
     "category": "Multiplayer",
     "image": "https://img.utdstc.com/icon/983/22a/98322a3b2be892eed31589906ffd949b68bcccc9a21ba562987965b5ec6bc6de:200"
   },
@@ -241,6 +241,7 @@
   },
   {
     "title": "Ages of Conflict",
+    "url": "https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack/offline/ages-of-conflict.html",
     "category": "Simulation"  
   },
   {
