@@ -1,18 +1,6 @@
 {
   "games": [
     {
-      "name": "1v1.lol",
-      "url": "/gamefile/1v1.html",
-      "thumbnail": "png/games/1v1.webp",
-      "frameType": "iframe"
-    },
-    {
-      "name": "20 Minutes Till Dawn",
-      "url": "/games/20minutesbog/index.html",
-      "thumbnail": "/png/games/20mtd.webp",
-      "frameType": "unity"
-    },
-    {
       "name": "30",
       "url": "/games/30dolar/index.html",
       "thumbnail": "/png/games/30.webp",
@@ -71,12 +59,6 @@
       "url": "/games/adventure/index.html",
       "thumbnail": "/png/games/adventure.webp",
       "frameType": "iframe"
-    },
-    {
-      "name": "Ages Of Conflict, Webport",
-      "url": "/games/agesofconflict/index.html",
-      "thumbnail": "/png/games/aoc.webp",
-      "frameType": "unity"
     },
     {
       "name": "Alien Hominid",
