@@ -92,14 +92,8 @@ function richMetaFrom(obj) {
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
-const WISP_URL = "wss://wisp.mercurywork.shop/";
+const WISP_URL = "wss://girlspreples.org/wi/";
 const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
-
-let epoxyModuleNonce = 0;
-
-function epoxyModuleUrl() {
-    return epoxyModuleNonce === 0 ? EPOXY_MODULE_URL : `${EPOXY_MODULE_URL}?reinit=${epoxyModuleNonce}`;
-}
 
 const DEEZER_API = "https://api.deezer.com";
 const APPLE_CHARTS_API = "https://rss.applemarketingtools.com/api/v2/us/music/most-played";
@@ -153,16 +147,25 @@ let epoxyClientInstance = null;
 let epoxyClientGeneration = 0;
 
 let wispFailCount = 0;
-const WISP_FAIL_LIMIT = 3;
+const WISP_FAIL_LIMIT = 4;
 let wispCooldownUntil = 0;
-const WISP_COOLDOWN_MS = 3 * 60 * 1000;
-
-const wispRequestLimiter = createLimiter(1);
+const WISP_COOLDOWN_MS = 20 * 1000;
+const failedClients = new WeakSet();
 
 function disposeEpoxyClient(client) {
     if (!client) return;
-    try { client.free && client.free(); } catch (e) {}
-    try { client.close && client.close(); } catch (e) {}
+    setTimeout(() => {
+        try { client.free && client.free(); } catch (e) {}
+    }, 30000);
+}
+
+function resetEpoxyClient(failedClient) {
+    if (failedClient && epoxyClientInstance && failedClient !== epoxyClientInstance) return;
+    const old = epoxyClientInstance;
+    epoxyClientPromise = null;
+    epoxyClientInstance = null;
+    epoxyClientGeneration++;
+    disposeEpoxyClient(old);
 }
 
 let epoxyBindingsPromise = null;
@@ -170,7 +173,7 @@ let epoxyBindingsPromise = null;
 function getEpoxyBindings() {
     if (!epoxyBindingsPromise) {
         epoxyBindingsPromise = (async () => {
-            const mod = await import(epoxyModuleUrl());
+            const mod = await import(EPOXY_MODULE_URL);
             if (typeof mod.default === "function") {
                 await mod.default();
             }
@@ -188,107 +191,114 @@ async function createEpoxyClient() {
     const { EpoxyClient, EpoxyClientOptions } = await getEpoxyBindings();
     const options = new EpoxyClientOptions();
     options.user_agent = navigator.userAgent;
-    options.wisp_v2 = true;
     return await new EpoxyClient(WISP_URL, options);
 }
 
-function getEpoxyClient(forceNew = false) {
-    if (Date.now() < wispCooldownUntil) {
-        return Promise.reject(new Error("wisp in cooldown"));
-    }
-    if (forceNew) epoxyClientPromise = null;
+function getEpoxyClient() {
     if (epoxyClientPromise) return epoxyClientPromise;
-
     const myGeneration = ++epoxyClientGeneration;
-    const oldInstance = epoxyClientInstance;
-    epoxyClientPromise = createEpoxyClient().then(client => {
+    const promise = createEpoxyClient().then(client => {
         if (epoxyClientGeneration === myGeneration) {
             epoxyClientInstance = client;
-            disposeEpoxyClient(oldInstance);
-            wispFailCount = 0;
+        } else {
+            disposeEpoxyClient(client);
         }
         return client;
-    }).catch(err => {
-        if (epoxyClientGeneration === myGeneration) epoxyClientPromise = null;
-        throw err;
     });
-    return epoxyClientPromise;
-}
-
-function isPanicError(err) {
-    const msg = (err && err.message ? err.message : String(err || "")).toLowerCase();
-    return msg.includes("dropped") || msg.includes("recursively") || msg.includes("closure") || msg.includes("panic");
+    epoxyClientPromise = promise;
+    promise.catch(() => {
+        if (epoxyClientPromise === promise) epoxyClientPromise = null;
+    });
+    return promise;
 }
 
 function isConnectionError(err) {
     const msg = (err && err.message ? err.message : String(err || "")).toLowerCase();
-    return err instanceof TypeError
-        || msg.includes("websocket")
+    return msg.includes("websocket")
         || msg.includes("closed")
         || msg.includes("network")
         || msg.includes("failed to fetch")
         || msg.includes("not ready")
         || msg.includes("wisp")
         || msg.includes("setup")
-        || msg.includes("cooldown")
-        || msg.includes("panic")
-        || msg.includes("wasm")
         || msg.includes("timed out")
-        || msg.includes("dropped")
-        || msg.includes("recursively")
-        || msg.includes("closure");
+        || msg.includes("reset")
+        || msg.includes("panic")
+        || msg.includes("unreachable")
+        || msg.includes("recursive use")
+        || msg.includes("null pointer")
+        || msg.includes("wasm");
 }
 
-async function wispFetch(url, timeoutMs = 15000, forceNew = false, init = undefined) {
-    if (Date.now() < wispCooldownUntil) {
-        throw new Error("wisp in cooldown");
+function noteWispFailure(client) {
+    if (client) {
+        if (failedClients.has(client)) return;
+        failedClients.add(client);
     }
-    return wispRequestLimiter(() => wispFetchAttempt(url, timeoutMs, forceNew, init));
+    wispFailCount++;
+    if (wispFailCount >= WISP_FAIL_LIMIT) {
+        wispFailCount = 0;
+        wispCooldownUntil = Date.now() + WISP_COOLDOWN_MS;
+    }
 }
 
-async function wispFetchAttempt(url, timeoutMs, forceNew, init) {
+async function readWispBody(response, idleMs = 20000) {
+    const status = response.status;
+    const type = (response.headers && response.headers.get("content-type")) || "";
+    const noBody = status === 204 || status === 205 || status === 304;
+    let blob = null;
+
+    if (!noBody) {
+        const stream = response.body;
+        if (stream && typeof stream.getReader === "function") {
+            const reader = stream.getReader();
+            const chunks = [];
+            try {
+                for (;;) {
+                    const { done, value } = await withTimeout(reader.read(), idleMs, "Wisp body");
+                    if (done) break;
+                    if (value) chunks.push(value);
+                }
+            } catch (err) {
+                Promise.resolve(reader.cancel()).catch(() => {});
+                throw err;
+            }
+            blob = new Blob(chunks, { type });
+        } else {
+            blob = await withTimeout(response.blob(), idleMs * 2, "Wisp body");
+        }
+    }
+
+    return new Response(noBody ? null : blob, {
+        status,
+        statusText: response.statusText || "",
+        headers: type ? { "content-type": type } : {}
+    });
+}
+
+async function wispFetch(url, timeoutMs = 15000, critical = true) {
     let lastErr = null;
     for (let attempt = 0; attempt < 2; attempt++) {
+        if (Date.now() < wispCooldownUntil) throw new Error("wisp in cooldown");
+        let client = null;
         try {
-            const client = await withTimeout(getEpoxyClient(forceNew && attempt === 0), 10000, "Wisp setup");
-            const result = await withTimeout(init ? client.fetch(url, init) : client.fetch(url), timeoutMs, "Wisp fetch");
+            client = await withTimeout(getEpoxyClient(), 10000, "Wisp setup");
+            const raw = await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
+            const result = await readWispBody(raw);
             wispFailCount = 0;
             return result;
         } catch (err) {
             lastErr = err;
-            if (isPanicError(err)) {
-                wispCooldownUntil = Date.now() + WISP_COOLDOWN_MS;
-                epoxyClientPromise = null;
-                disposeEpoxyClient(epoxyClientInstance);
-                epoxyClientInstance = null;
-                epoxyBindingsPromise = null;
-                epoxyModuleNonce++;
-                throw lastErr;
-            }
-            if (isConnectionError(err)) {
-                wispFailCount++;
-                if (wispFailCount >= WISP_FAIL_LIMIT) {
-                    wispCooldownUntil = Date.now() + WISP_COOLDOWN_MS;
-                    epoxyClientPromise = null;
-                    disposeEpoxyClient(epoxyClientInstance);
-                    epoxyClientInstance = null;
-                    throw lastErr;
-                }
-                await sleep(200 * (attempt + 1));
-                continue;
-            }
-            throw err;
+            if (!isConnectionError(err) || !critical) throw err;
+            noteWispFailure(client);
+            resetEpoxyClient(client);
+            await sleep(150);
         }
     }
     throw lastErr || new Error("Wisp fetch failed");
 }
 
 getEpoxyClient().catch(() => {});
-
-setInterval(() => {
-    if (Date.now() < wispCooldownUntil) return;
-    wispFetch(`${INVIDIOUS_BASE}/api/v1/stats`, 8000).catch(() => {});
-}, 4 * 60 * 1000);
 
 function createLimiter(max) {
     let active = 0;
@@ -310,7 +320,7 @@ function createLimiter(max) {
 
 const externalLimiter = createLimiter(3);
 const musicApiLimiter = createLimiter(4);
-const imageLimiter = createLimiter(6);
+const imageLimiter = createLimiter(3);
 const cacheDownloadLimiter = createLimiter(2);
 
 async function fetchInvidiousJSON(path, proxyTimeout = 20000, directTimeout = 8000) {
@@ -330,27 +340,15 @@ async function fetchInvidiousJSON(path, proxyTimeout = 20000, directTimeout = 80
 }
 
 async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
-    if (Date.now() < wispCooldownUntil) {
-        throw new Error("wisp in cooldown");
+    const response = await wispFetch(url, timeoutMs, true);
+    if (!response.ok) {
+        let bodyText = "";
+        try { bodyText = (await response.text()).slice(0, 200); } catch (e) {}
+        throw new Error(`Proxy HTTP ${response.status} ${response.statusText || ""} ${bodyText}`.trim());
     }
-    let lastErr = null;
-    for (let attempt = 0; attempt < 2; attempt++) {
-        try {
-            const response = await wispFetch(url, timeoutMs, false);
-            if (!response.ok) {
-                let bodyText = "";
-                try { bodyText = (await response.text()).slice(0, 200); } catch (e) {}
-                throw new Error(`Proxy HTTP ${response.status} ${response.statusText || ""} ${bodyText}`.trim());
-            }
-            const blob = await response.blob();
-            if (!blob || blob.size === 0) throw new Error("Empty audio blob");
-            return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
-        } catch (err) {
-            lastErr = err;
-            console.warn(`fetchBlobViaWisp attempt ${attempt + 1}/2 failed for ${url}:`, err && err.message ? err.message : err);
-        }
-    }
-    throw lastErr || new Error("fetchBlobViaWisp failed");
+    const blob = await response.blob();
+    if (!blob || blob.size === 0) throw new Error("Empty audio blob");
+    return new Blob([blob], { type: mime || blob.type || "audio/mp4" });
 }
 
 async function fetchExternalOnce(url, wispMs = 10000, directMs = 6000) {
@@ -1018,7 +1016,7 @@ async function fetchImageBlobViaWisp(url) {
         let lastErr = null;
         for (let attempt = 0; attempt < 2; attempt++) {
             try {
-                const response = await wispFetch(url, 15000);
+                const response = await wispFetch(url, 15000, false);
                 if (!response.ok) throw new Error(`Proxy HTTP ${response.status}`);
                 const blob = await withTimeout(response.blob(), 15000, "Wisp image body");
                 if (!blob || blob.size === 0) throw new Error("Empty image");
