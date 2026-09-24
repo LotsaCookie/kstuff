@@ -157,13 +157,13 @@
   },
   {
     "title": "Among us",
-    "url": "${truffled}/games/amongus/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack/offline/among-us.html",
     "category": "Multiplayer",
     "image": ""
   },
   {
     "title": "Angry Birds",
-    "url": "${truffled}/gamefile/Angrybirds.html",
+    "url": "https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack/offline/angry-birds.html",
     "category": "Puzzle",
     "image": "https://static.wikia.nocookie.net/angrybirds/images/7/70/AngryBirds_Classic_GameIcon_Vector_2.png"
   },
@@ -187,7 +187,7 @@
   },
   {
     "title": "Angry Birds Showdown",
-    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/angry-birds-showdown.html",
+    "url": "https://cdn.jsdelivr.net/gh/CoolDude2349/Offline-HTML-Games-Pack/offline/angry-birds-showdown.html",
     "category": "Puzzle",
     "image": ""
   },
