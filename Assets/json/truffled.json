@@ -1,33 +1,9 @@
 {
   "games": [
     {
-      "name": "1",
-      "url": "/games/1/index.html",
-      "thumbnail": "png/games/1.webp",
-      "frameType": "iframe"
-    },
-    {
-      "name": "1 on 1 Soccer",
-      "url": "/games/1on1soccer/index.html",
-      "thumbnail": "/png/games/12.webp",
-      "frameType": "iframe"
-    },
-    {
-      "name": "10 Minutes Till Dawn",
-      "url": "/games/10minutestilldawn/index.html",
-      "thumbnail": "/png/games/10.webp",
-      "frameType": "unity"
-    },
-    {
       "name": "1v1.lol",
       "url": "/gamefile/1v1.html",
       "thumbnail": "png/games/1v1.webp",
-      "frameType": "iframe"
-    },
-    {
-      "name": "2048",
-      "url": "/games/2048/index.html",
-      "thumbnail": "png/games/2048.webp",
       "frameType": "iframe"
     },
     {
@@ -49,12 +25,6 @@
       "frameType": "iframe"
     },
     {
-      "name": "-3",
-      "url": "/games/minus3/index.html",
-      "thumbnail": "/png/games/minus3.webp",
-      "frameType": "unity"
-    },
-    {
       "name": "-b",
       "url": "/games/minusbog/index.html",
       "thumbnail": "/png/games/qq.webp",
@@ -70,12 +40,6 @@
       "name": "A Game About Feeding A Blackhole",
       "url": "/gamefile/blackhole.html",
       "thumbnail": "/png/games/blackhole.webp",
-      "frameType": "iframe"
-    },
-    {
-      "name": "A Small World Cup",
-      "url": "/gamefile/aswc.html",
-      "thumbnail": "png/games/worldcup.webp",
       "frameType": "iframe"
     },
     {
