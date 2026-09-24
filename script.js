@@ -1640,7 +1640,7 @@ function initApp() {
       console.error('Science Quiz initialization failed:', error);
       return [];
     }),
-    fetchWithProxy('Assets/json/truffled.json').catch(error => {
+    fetchWithProxy('Assets/json/truffled.DISABLED').catch(error => {
       console.error('Truffled initialization failed:', error);
       return null;
     })
