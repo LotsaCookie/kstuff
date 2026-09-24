@@ -92,7 +92,10 @@ function richMetaFrom(obj) {
 
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
-const WISP_URL = "wss://girlspreples.org/wi/";
+const WISP_URLS = [
+    "wss://girlspreples.org/wi/",
+    "wss://wisp.mercurywork.shop/"
+];
 const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
 
 const DEEZER_API = "https://api.deezer.com";
@@ -146,11 +149,41 @@ let epoxyClientPromise = null;
 let epoxyClientInstance = null;
 let epoxyClientGeneration = 0;
 
-let wispFailCount = 0;
-const WISP_FAIL_LIMIT = 4;
-let wispCooldownUntil = 0;
-const WISP_COOLDOWN_MS = 20 * 1000;
+const WISP_FAIL_LIMIT = 2;
+const WISP_COOLDOWN_MS = 30 * 1000;
+const BLOCKED_STATUSES = new Set([403, 429, 503]);
+const wispFails = WISP_URLS.map(() => 0);
+const wispCooldowns = WISP_URLS.map(() => 0);
+let wispIndex = 0;
 const failedClients = new WeakSet();
+const clientServer = new WeakMap();
+
+function nextAvailableWisp(startFrom) {
+    const now = Date.now();
+    for (let i = 0; i < WISP_URLS.length; i++) {
+        const idx = (startFrom + i) % WISP_URLS.length;
+        if (wispCooldowns[idx] <= now) return idx;
+    }
+    return -1;
+}
+
+function penalizeWisp(client, hard) {
+    let idx = wispIndex;
+    if (client) {
+        if (clientServer.has(client)) idx = clientServer.get(client);
+        if (failedClients.has(client)) return;
+        failedClients.add(client);
+    }
+    wispFails[idx]++;
+    if (hard || wispFails[idx] >= WISP_FAIL_LIMIT) {
+        wispFails[idx] = 0;
+        wispCooldowns[idx] = Date.now() + WISP_COOLDOWN_MS;
+        if (idx === wispIndex) {
+            const next = nextAvailableWisp(idx + 1);
+            if (next >= 0) wispIndex = next;
+        }
+    }
+}
 
 function disposeEpoxyClient(client) {
     if (!client) return;
@@ -187,17 +220,22 @@ function getEpoxyBindings() {
     return epoxyBindingsPromise;
 }
 
-async function createEpoxyClient() {
+async function createEpoxyClient(serverIndex) {
     const { EpoxyClient, EpoxyClientOptions } = await getEpoxyBindings();
     const options = new EpoxyClientOptions();
     options.user_agent = navigator.userAgent;
-    return await new EpoxyClient(WISP_URL, options);
+    const client = await new EpoxyClient(WISP_URLS[serverIndex], options);
+    try { clientServer.set(client, serverIndex); } catch (e) {}
+    return client;
 }
 
 function getEpoxyClient() {
     if (epoxyClientPromise) return epoxyClientPromise;
+    const serverIndex = nextAvailableWisp(wispIndex);
+    if (serverIndex < 0) return Promise.reject(new Error("wisp in cooldown"));
+    wispIndex = serverIndex;
     const myGeneration = ++epoxyClientGeneration;
-    const promise = createEpoxyClient().then(client => {
+    const promise = createEpoxyClient(serverIndex).then(client => {
         if (epoxyClientGeneration === myGeneration) {
             epoxyClientInstance = client;
         } else {
@@ -208,6 +246,7 @@ function getEpoxyClient() {
     epoxyClientPromise = promise;
     promise.catch(() => {
         if (epoxyClientPromise === promise) epoxyClientPromise = null;
+        penalizeWisp(null, true);
     });
     return promise;
 }
@@ -227,18 +266,6 @@ function isConnectionError(err) {
         || msg.includes("recursive use")
         || msg.includes("null pointer")
         || msg.includes("wasm");
-}
-
-function noteWispFailure(client) {
-    if (client) {
-        if (failedClients.has(client)) return;
-        failedClients.add(client);
-    }
-    wispFailCount++;
-    if (wispFailCount >= WISP_FAIL_LIMIT) {
-        wispFailCount = 0;
-        wispCooldownUntil = Date.now() + WISP_COOLDOWN_MS;
-    }
 }
 
 async function readWispBody(response, idleMs = 20000) {
@@ -278,20 +305,26 @@ async function readWispBody(response, idleMs = 20000) {
 async function wispFetch(url, timeoutMs = 15000, critical = true) {
     let lastErr = null;
     for (let attempt = 0; attempt < 2; attempt++) {
-        if (Date.now() < wispCooldownUntil) throw new Error("wisp in cooldown");
         let client = null;
         try {
             client = await withTimeout(getEpoxyClient(), 10000, "Wisp setup");
             const raw = await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
             const result = await readWispBody(raw, timeoutMs > 30000 ? 45000 : 20000);
-            wispFailCount = 0;
+
+            if (critical && attempt === 0 && WISP_URLS.length > 1 && BLOCKED_STATUSES.has(result.status)) {
+                penalizeWisp(client, true);
+                resetEpoxyClient(client);
+                continue;
+            }
+
+            if (client && clientServer.has(client)) wispFails[clientServer.get(client)] = 0;
             return result;
         } catch (err) {
             lastErr = err;
             const errMsg = (err && err.message ? err.message : String(err || "")).toLowerCase();
             const softTimeout = errMsg.includes("timed out") && timeoutMs <= 30000;
             if (!(isConnectionError(err) || softTimeout) || !critical) throw err;
-            noteWispFailure(client);
+            penalizeWisp(client, isConnectionError(err));
             resetEpoxyClient(client);
             await sleep(150);
         }
@@ -1936,17 +1969,7 @@ async function tryPlayStream(meta, myToken) {
             audioPlayer.src = url;
             audioPlayer.volume = volumeBar.value;
             await attemptToPlay(audioPlayer, 9000);
-            if (myToken !== playRequestToken) return "stale";
-
-            if (myToken === playRequestToken) {
-                cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000, false))
-                    .then(blob => {
-                        if (myToken === playRequestToken) cacheAudioBlob(cacheKey, blob);
-                    })
-                    .catch(() => {});
-            }
-
-            return "ok";
+            return myToken === playRequestToken ? "ok" : "stale";
         } catch (err) {
             console.warn(`Direct stream playback failed for ${streamId} @ ${base}:`, err && err.message ? err.message : err);
         }
@@ -1992,17 +2015,7 @@ async function tryPlayCherrionStream(meta, myToken) {
         audioPlayer.src = url;
         audioPlayer.volume = volumeBar.value;
         await attemptToPlay(audioPlayer, 9000);
-        if (myToken !== playRequestToken) return "stale";
-
-        if (myToken === playRequestToken) {
-            cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000, false))
-                .then(blob => {
-                    if (myToken === playRequestToken) cacheAudioBlob(cacheKey, blob);
-                })
-                .catch(() => {});
-        }
-
-        return "ok";
+        return myToken === playRequestToken ? "ok" : "stale";
     } catch (err) {
         console.warn(`Direct cherrion playback failed for ${meta.id}:`, err && err.message ? err.message : err);
     }
