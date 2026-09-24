@@ -25,12 +25,6 @@
       "frameType": "iframe"
     },
     {
-      "name": "-b",
-      "url": "/games/minusbog/index.html",
-      "thumbnail": "/png/games/qq.webp",
-      "frameType": "unity"
-    },
-    {
       "name": "A Difficult Game About Climbing, Webport",
       "url": "/gamefile/adgac.html",
       "thumbnail": "png/games/adgac.webp",
