@@ -175,7 +175,7 @@
   },
   {
     "title": "Angry Birds Epic",
-    "url": "${truffled}/games/Epic/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/DarkTerraYT/EpicWeb/index.html",
     "category": "RPG",
     "image": ""
   },
@@ -211,7 +211,7 @@
   },
   {
     "title": "Antonblast",
-    "url": "${truffled}/games/antonblast/runner.html",
+    "url": "https://cdn.jsdelivr.net/gh/web-ports/antonblast/index.html",
     "category": "Platformer",
     "image": ""
   },
@@ -223,7 +223,7 @@
   },
   {
     "title": "Apes VS Helium",
-    "url": "${truffled}/games/AVHPort/index.html",
+    "url": "https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets/apesvshelium/index.html",
     "category": "Action",
     "image": "https://img.itch.zone/aW1nLzE0MDQ3Mzk4LnBuZw==/original/mC%2FX0t.png"
   },
