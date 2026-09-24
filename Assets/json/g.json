@@ -1,17 +1,5 @@
 [
   {
-    "title": "-3",
-    "url": "https://cdn.jsdelivr.net/gh/web-ports/baldi-mods@HEAD/-3/index.html",
-    "category": "Puzzle",
-    "image": "https://i.ytimg.com/vi/bN1qRK4biCU/mqdefault.jpg"
-  },
-  {
-    "title": "-b",
-    "url": "https://cdn.jsdelivr.net/gh/web-ports/baldi-mods@HEAD/-b/index.html",
-    "category": "Puzzle",
-    "image": "https://i.ytimg.com/vi/bg5grqMn1DQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDuJuUePhvZmkS2Rg4HvF1icxWYMg"
-  },
-  {
     "title": "1",
     "url": "https://cdn.jsdelivr.net/gh/gmshelf/ugs@HEAD/ugs/cl1.html",
     "category": "Puzzle",
@@ -46,18 +34,6 @@
     "url": "https://cdn.jsdelivr.net/gh/gmshelf/ugs@HEAD/ugs/cl2048.html",
     "category": "Puzzle",
     "image": ""
-  },
-  {
-    "title": "30",
-    "url": "${truffled}/games/30dolar/index.html",
-    "category": "Puzzle",
-    "image": ""
-  },
-  {
-    "title": "3D Bowling",
-    "url": "${uv}https://3d-bowling.game-files.crazygames.com/3d-bowling/1/index.html",
-    "category": "Sports",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPtt27aNc80dh2QxgSxqQnt2L8gs20AVVxrQ&s"
   },
   {
     "title": "60 Seconds",
@@ -102,46 +78,16 @@
     "image": ""
   },
   {
-    "title": "Achievement Unlocked",
-    "url": "${truffled}/games/achieveunlocked/index.html",
-    "category": "Platformer",
-    "image": ""
-  },
-  {
-    "title": "Achievement Unlocked 2",
-    "url": "${truffled}/games/achivement2/index.html",
-    "category": "Platformer",
-    "image": ""
-  },
-  {
-    "title": "Achievement Unlocked 3",
-    "url": "${truffled}/games/achivement3/index.html",
-    "category": "Platformer",
-    "image": ""
-  },
-  {
     "title": "AdVenture Capatalist",
     "url": "${truffled}/games/adventure/index.html",
     "category": "Idle",
     "image": "https://tse3.mm.bing.net/th/id/OIP.LR4KzCF5uJVoHZd2qHMJ6QAAAA?cb=12&rs=1&pid=ImgDetMain&o=7"
   },
   {
-    "title": "Adventure Drivers",
-    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/adventure-drivers.html",
-    "category": "Driving",
-    "image": ""
-  },
-  {
     "title": "Agar.io",
     "url": "${uv}https://agar.io",
     "category": "Multiplayer",
     "image": "https://upload.wikimedia.org/wikipedia/commons/d/d6/Agar.io_App_Store.png"
-  },
-  {
-    "title": "Alien Hominid",
-    "url": "${truffled}/games/alien/index.html",
-    "category": "Action",
-    "image": ""
   },
   {
     "title": "Amanda The Adventurer",
@@ -1644,7 +1590,7 @@
   },
   {
     "title": "Gang Beasts, Webport",
-    "url": "${truffled}/games/gangbeasts/index.html"
+    "url": "${truffled}/games/gangbeasts/index.html",
     "category": "Action",
     "image":""
   },
