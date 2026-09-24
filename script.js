@@ -55,10 +55,12 @@ function initApp() {
   const FETCH_TIMEOUT = 10000;
   const SHA_FETCH_TIMEOUT = 6000;
   const SHA_TTL = 30000;
+  const SHA_FAIL_TTL = 60000;
   const IFRAME_SHOW_TIMEOUT = 2500;
   const BACKEND_LINK_TIMEOUT = 15000;
   const BACKEND_WATCHDOG_INTERVAL = 4000;
   const AUTH_TIMEOUT = 90000;
+  const MAIN_REPO = 'lotsacookie/kstuff';
   const BACKEND_URLS = [
     'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset/backend.svg',
     'https://cdn.jsdelivr.net/gh/lotsacookie/Dnekcabtset@main/backend.svg',
@@ -322,39 +324,38 @@ function initApp() {
     } finally { clearTimeout(timer); }
   };
 
-  const shaState = { sha: '', at: 0, pending: null };
+  const shaStates = {};
 
-  async function getLatestSha(force = false) {
+  async function getLatestSha(force = false, repo = MAIN_REPO) {
+    const st = shaStates[repo] || (shaStates[repo] = { sha: '', at: 0, failAt: 0, pending: null });
     const now = Date.now();
-    if (!force && shaState.sha && now - shaState.at < SHA_TTL) return shaState.sha;
-    if (shaState.pending) return shaState.pending;
-    shaState.pending = (async () => {
+    if (!force && st.sha && now - st.at < SHA_TTL) return st.sha;
+    if (!force && !st.sha && st.failAt && now - st.failAt < SHA_FAIL_TTL) return '';
+    if (st.pending) return st.pending;
+    st.pending = (async () => {
       try {
-        const data = await timedFetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main', false, SHA_FETCH_TIMEOUT);
+        const data = await timedFetch(`https://api.github.com/repos/${repo}/commits/main`, false, SHA_FETCH_TIMEOUT);
         const sha = data?.sha;
         if (typeof sha === 'string' && /^[0-9a-f]{40}$/i.test(sha)) {
-          shaState.sha = sha;
-          shaState.at = Date.now();
+          st.sha = sha;
+          st.at = Date.now();
+          st.failAt = 0;
           return sha;
         }
       } catch {}
-      shaState.sha = '';
+      st.sha = '';
+      st.failAt = Date.now();
       return '';
     })();
     try {
-      return await shaState.pending;
+      return await st.pending;
     } finally {
-      shaState.pending = null;
+      st.pending = null;
     }
   }
 
-  async function fetchWithProxy(path, asText = false) {
+  async function fetchFromSources(path, asText, sources) {
     const cb = (path.includes('?') ? '&' : '?') + '_=' + Date.now();
-    const sha = await getLatestSha();
-    const sources = [];
-    if (sha) sources.push([`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${sha}/`, SHA_FETCH_TIMEOUT]);
-    sources.push(['', FETCH_TIMEOUT]);
-    sources.push([`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`, FETCH_TIMEOUT]);
     let lastErr = null;
     for (const [base, ms] of sources) {
       try {
@@ -365,6 +366,25 @@ function initApp() {
     }
     console.error('All sources failed for', path, lastErr);
     throw new Error("Proxies failed: " + path);
+  }
+
+  async function fetchRepoFile(repo, path, asText = false, ms = FETCH_TIMEOUT) {
+    const sha = await getLatestSha(false, repo);
+    const sources = [];
+    if (sha) sources.push([`https://cdn.jsdelivr.net/gh/${repo}@${sha}/`, ms]);
+    sources.push([`https://raw.githubusercontent.com/${repo}/main/`, ms]);
+    sources.push([`https://cdn.jsdelivr.net/gh/${repo}@main/`, ms]);
+    return fetchFromSources(path, asText, sources);
+  }
+
+  async function fetchWithProxy(path, asText = false) {
+    const sha = await getLatestSha(false, MAIN_REPO);
+    const sources = [];
+    if (sha) sources.push([`https://cdn.jsdelivr.net/gh/${MAIN_REPO}@${sha}/`, SHA_FETCH_TIMEOUT]);
+    sources.push([`https://raw.githubusercontent.com/${MAIN_REPO}/main/`, FETCH_TIMEOUT]);
+    sources.push(['', FETCH_TIMEOUT]);
+    sources.push([`https://cdn.jsdelivr.net/gh/${MAIN_REPO}@main/`, FETCH_TIMEOUT]);
+    return fetchFromSources(path, asText, sources);
   }
 
   function applyCustomDropdown(selectEl) {
@@ -732,10 +752,10 @@ function initApp() {
       let launchTarget = targetUrl;
       if (isHtmlRepo) {
         const cleanPath = targetUrl.replace(/\$?\{HTML_URL\}\/?/gi, '').replace(/^https?:\/\/[^\/]+\/(?:gh\/)?freebuisness\/html(?:@|\/)?(?:main\/)?/gi, '').replace(/^https?:\/\/[^\/]+\/freebuisness\/html\//gi, '').replace(/^\/+/, '');
-        launchTarget = `https://cdn.jsdelivr.net/gh/freebuisness/html@main/${cleanPath}`;
+        const htmlSha = await getLatestSha(false, 'freebuisness/html');
+        if (stale()) return;
+        launchTarget = `https://cdn.jsdelivr.net/gh/freebuisness/html@${htmlSha || 'main'}/${cleanPath}`;
       }
-      const launchSha = await getLatestSha();
-      const launchBase = launchSha ? `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${launchSha}/` : `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/`;
       if (stale()) return;
       ifr.src = `https://cdn.jsdelivr.net/gh/rtischeduler/deltamath/launch.svg?url=${launchTarget}`;
     } else {
@@ -844,7 +864,7 @@ function initApp() {
             p.img.style.display = 'block';
           }
         } else {
-          if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none'; }
+          if (p.img) { p.img.onload = p.img.onerror = null; p.img.src = ''; p.img.removeAttribute('src'); p.img.style.display = 'none'; delete p.img.dataset.src; }
           if (p.c) p.c.textContent = ''; delete p.el.dataset.tooltip;
         }
       }
@@ -1195,6 +1215,7 @@ function initApp() {
       if (grids[tId]) {
         buildPool(tId);
         await renderGrid(tId, false);
+        refreshGridSource(tId);
       } else if (iframePages[tId]) {
         const iframeData = iframePages[tId];
         const iframeEl = $(iframeData.id);
@@ -1341,7 +1362,7 @@ function initApp() {
   const rData = async (t, p, resetPage = true, mode = 'updating', silent = false) => {
     try {
       const n = await fetchWithProxy(p).catch(err => { console.error('rData fetch failed', p, err); return null; });
-      if (!n?.length) { if (!silent) toggleLoader(false); return false; }
+      if (!Array.isArray(n)) { if (!silent) toggleLoader(false); return false; }
 
       if (t === 'sciencequiz') rawSciencequizData = n;
       const processed = proc(n);
@@ -1363,66 +1384,54 @@ function initApp() {
   };
 
   const fetchReadingCornerRaw = async () => {
-    const pTypes = ['jsdelivr'];
-    const getUrl = (repo, path, pt) => `https://cdn.jsdelivr.net/gh/freebuisness/${repo}@main/${path}`;
-    const manualRes = await fetchWithProxy('Assets/json/g.json').catch(() => []);
+    const coverBase = 'https://cdn.jsdelivr.net/gh/freebuisness/covers@main';
+    const htmlBase = 'https://cdn.jsdelivr.net/gh/freebuisness/html@main';
+    const manualRes = await fetchWithProxy('Assets/json/g.json').catch(() => null);
+    const manualList = Array.isArray(manualRes) ? manualRes : [];
     const manualMap = new Map();
-    if (Array.isArray(manualRes)) manualRes.forEach(item => { if (item && item.title) manualMap.set(item.title.toLowerCase().trim(), item); });
-    for (const pt of pTypes) {
-      try {
-        const zUrl = getUrl('assets', 'zones.json', pt) + `?_=${Date.now()}`;
-        const json = await timedFetch(zUrl, false, 12000);
-        if (!Array.isArray(json)) continue;
-        const coverBase = getUrl('covers', '', pt).replace(/\/$/, '');
-        const htmlBase = getUrl('html', '', pt).replace(/\/$/, '');
-        const mappedData = [];
-        json.forEach(item => {
-          const titleLower = (item.name || '').toLowerCase().trim();
-          const manualMatch = manualMap.get(titleLower);
-          let finalUrl = item.url, finalCover = item.cover, finalTitle = item.name, finalCategory = 'All';
-          if (manualMatch) {
-            if (manualMatch.url) finalUrl = manualMatch.url;
-            if (manualMatch.category) finalCategory = manualMatch.category;
-            if (manualMatch.image || manualMatch.img) finalCover = manualMatch.image || manualMatch.img;
-            manualMap.delete(titleLower);
-          }
-          if (finalTitle && finalTitle.includes('[!]')) return;
+    manualList.forEach(item => { if (item && item.title) manualMap.set(item.title.toLowerCase().trim(), item); });
+
+    try {
+      const json = await fetchRepoFile('freebuisness/assets', 'zones.json', false, 12000);
+      if (!Array.isArray(json)) throw new Error('zones.json is not an array');
+      const mappedData = [];
+      json.forEach(item => {
+        const titleLower = (item.name || '').toLowerCase().trim();
+        const manualMatch = manualMap.get(titleLower);
+        let finalUrl = item.url, finalCover = item.cover, finalTitle = item.name, finalCategory = 'All';
+        if (manualMatch) {
+          if (manualMatch.url) finalUrl = manualMatch.url;
+          if (manualMatch.category) finalCategory = manualMatch.category;
+          if (manualMatch.image || manualMatch.img) finalCover = manualMatch.image || manualMatch.img;
+          manualMap.delete(titleLower);
+        }
+        if (finalTitle && finalTitle.includes('[!]')) return;
+        mappedData.push({
+          title: finalTitle,
+          image: (finalCover || '').replace('{COVER_URL}', coverBase + '/'),
+          url: (finalUrl || '').replace('{HTML_URL}', htmlBase + '/'),
+          category: finalCategory,
+          description: ''
+        });
+      });
+      manualMap.forEach(manualItem => {
+        if (manualItem.title && !manualItem.title.includes('[!]')) {
           mappedData.push({
-            title: finalTitle,
-            image: (finalCover || '').replace('{COVER_URL}', coverBase + '/'),
-            url: (finalUrl || '').replace('{HTML_URL}', htmlBase + '/'),
-            category: finalCategory,
+            title: manualItem.title,
+            image: manualItem.image || manualItem.img || '',
+            url: manualItem.url || '',
+            category: manualItem.category || 'Manual',
             description: ''
           });
-        });
-        manualMap.forEach((manualItem) => {
-          if (manualItem.title && !manualItem.title.includes('[!]')) {
-            mappedData.push({
-              title: manualItem.title,
-              image: manualItem.image || manualItem.img || '',
-              url: manualItem.url || '',
-              category: manualItem.category || 'Manual',
-              description: ''
-            });
-          }
-        });
-        return { data: mappedData };
-      } catch (e) { console.error('fetchReadingCornerRaw proxy type failed', pt, e); }
-    }
-    const fallbackRaw = await fetchWithProxy('Assets/json/g.json').catch(()=>[]);
-    const fallbackJson = Array.isArray(fallbackRaw) ? fallbackRaw : [];
+        }
+      });
+      return { data: mappedData };
+    } catch (e) { console.error('fetchReadingCornerRaw zones failed', e); }
+
     const fallbackMapped = [];
-    fallbackJson.forEach(item => {
-      const titleLower = (item.title || '').toLowerCase().trim();
-      const manualMatch = manualMap.get(titleLower);
-      let finalUrl = item.url, finalCategory = item.category || 'All', finalImage = item.image;
-      if (manualMatch) {
-        if (manualMatch.url) finalUrl = manualMatch.url;
-        if (manualMatch.category) finalCategory = manualMatch.category;
-        if (manualMatch.image || manualMatch.img) finalImage = manualMatch.image || manualMatch.img;
-      }
-      if (item.title && item.title.includes('[!]')) return;
-      fallbackMapped.push({ ...item, url: finalUrl, category: finalCategory, image: finalImage });
+    manualList.forEach(item => {
+      if (!item || !item.title || item.title.includes('[!]')) return;
+      fallbackMapped.push({ ...item, image: item.image || item.img || '', category: item.category || 'All' });
     });
     return { data: fallbackMapped };
   };
@@ -1449,6 +1458,13 @@ function initApp() {
       if (!silent) toggleLoader(false);
       return false;
     }
+  };
+
+  const refreshGridSource = (tId, silent = true) => {
+    if (resourceOpenFor[tId]) return Promise.resolve(false);
+    if (tId === 'readingcorner') return refreshReadingCorner(false, 'updating', silent);
+    if (tId === 'sciencequiz') return rData('sciencequiz', 'Assets/json/a.json', false, 'updating', silent);
+    return Promise.resolve(false);
   };
 
   $('readingcorner-refresh-btn')?.addEventListener('click', () => refreshReadingCorner());
@@ -1876,14 +1892,9 @@ function initApp() {
         return;
       }
 
-      const upstreamChanged = window.kstuffMirrors?.lastUpdate > (window.kstuffLastRefresh || 0);
-      if (!upstreamChanged) return;
-      window.kstuffLastRefresh = Date.now();
-
-      if (tId === 'readingcorner') {
-        await refreshReadingCorner(false, 'updating', true);
-      } else if (tId === 'sciencequiz') {
-        await rData('sciencequiz', 'Assets/json/a.json', false, 'updating', true);
+      if (grids[tId]) {
+        window.kstuffLastRefresh = Date.now();
+        await refreshGridSource(tId, true);
       }
     } finally {
       autoRefreshBusy = false;
