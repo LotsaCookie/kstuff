@@ -1164,6 +1164,11 @@ body.text-hide .nav-right .nav-divider {
     overflow: visible !important;
 }
 
+.settings-modal-content.settings-wide {
+    width: 640px;
+    max-width: 92vw;
+}
+
 .modal-settings-body {
     background: transparent !important;
     box-shadow: none !important;
@@ -1172,6 +1177,102 @@ body.text-hide .nav-right .nav-divider {
     max-width: 100% !important;
     max-height: none !important; 
     overflow: visible !important;
+}
+
+.settings-layout {
+    display: flex;
+    flex-direction: row;
+    min-height: 380px;
+}
+
+.settings-nav {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.22rem;
+    width: 170px;
+    flex-shrink: 0;
+    padding: 1rem 0.55rem;
+    border-right: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.settings-tab {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    font-family: inherit;
+    font-weight: 900 !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    width: 100%;
+    height: 36px;
+    min-height: 36px;
+    flex-shrink: 0;
+    padding: 0 0.7rem;
+    border-radius: 7px;
+    cursor: pointer;
+    position: relative;
+    text-align: left;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-tab i {
+    font-size: 1.1rem;
+    font-weight: 900 !important;
+    flex-shrink: 0;
+    filter: brightness(0.5);
+    transition: filter 0.3s ease;
+}
+
+.settings-tab span {
+    font-size: 0.85rem;
+    font-weight: 900 !important;
+    white-space: nowrap;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.settings-tab:hover i,
+.settings-tab.active i {
+    filter: brightness(1);
+}
+
+.settings-tab:hover span,
+.settings-tab.active span {
+    opacity: 1;
+}
+
+.settings-nav-indicator {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 36px;
+    background-color: var(--text-color);
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 20;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-content {
+    flex: 1;
+    min-width: 0;
+    padding: 1.5rem;
+    position: relative;
+}
+
+.settings-panel {
+    display: none;
+}
+
+.settings-panel.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
 }
 
 .custom-select-wrapper {
@@ -1329,6 +1430,24 @@ body.text-hide .nav-right .nav-divider {
     .nav-right #teachertouchbar {
         width: var(--nav-width);
         padding-top: 0.55rem;
+    }
+
+    .settings-nav {
+        width: 52px;
+        padding: 1rem 0.28rem;
+    }
+
+    .settings-tab {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .settings-tab span {
+        display: none;
+    }
+
+    .settings-content {
+        padding: 1.25rem 1rem;
     }
 }
 
