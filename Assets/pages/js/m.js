@@ -219,9 +219,8 @@ function isConnectionError(err) {
         || msg.includes("network")
         || msg.includes("failed to fetch")
         || msg.includes("not ready")
-        || msg.includes("wisp")
+        || msg.includes("wisp server")
         || msg.includes("setup")
-        || msg.includes("timed out")
         || msg.includes("reset")
         || msg.includes("panic")
         || msg.includes("unreachable")
@@ -284,12 +283,14 @@ async function wispFetch(url, timeoutMs = 15000, critical = true) {
         try {
             client = await withTimeout(getEpoxyClient(), 10000, "Wisp setup");
             const raw = await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
-            const result = await readWispBody(raw);
+            const result = await readWispBody(raw, timeoutMs > 30000 ? 45000 : 20000);
             wispFailCount = 0;
             return result;
         } catch (err) {
             lastErr = err;
-            if (!isConnectionError(err) || !critical) throw err;
+            const errMsg = (err && err.message ? err.message : String(err || "")).toLowerCase();
+            const softTimeout = errMsg.includes("timed out") && timeoutMs <= 30000;
+            if (!(isConnectionError(err) || softTimeout) || !critical) throw err;
             noteWispFailure(client);
             resetEpoxyClient(client);
             await sleep(150);
@@ -339,8 +340,8 @@ async function fetchInvidiousJSON(path, proxyTimeout = 20000, directTimeout = 80
     return await response.json();
 }
 
-async function fetchBlobViaWisp(url, mime, timeoutMs = 60000) {
-    const response = await wispFetch(url, timeoutMs, true);
+async function fetchBlobViaWisp(url, mime, timeoutMs = 60000, critical = true) {
+    const response = await wispFetch(url, timeoutMs, critical);
     if (!response.ok) {
         let bodyText = "";
         try { bodyText = (await response.text()).slice(0, 200); } catch (e) {}
@@ -1938,7 +1939,7 @@ async function tryPlayStream(meta, myToken) {
             if (myToken !== playRequestToken) return "stale";
 
             if (myToken === playRequestToken) {
-                cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000))
+                cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000, false))
                     .then(blob => {
                         if (myToken === playRequestToken) cacheAudioBlob(cacheKey, blob);
                     })
@@ -1953,6 +1954,7 @@ async function tryPlayStream(meta, myToken) {
         if (myToken !== playRequestToken) return "stale";
 
         try {
+            setLoadingHint(currentTrackInfo, "downloading via proxy");
             const blob = await fetchBlobViaWisp(url, null, 90000);
             if (myToken !== playRequestToken) return "stale";
 
@@ -1993,7 +1995,7 @@ async function tryPlayCherrionStream(meta, myToken) {
         if (myToken !== playRequestToken) return "stale";
 
         if (myToken === playRequestToken) {
-            cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000))
+            cacheDownloadLimiter(() => fetchBlobViaWisp(url, null, 90000, false))
                 .then(blob => {
                     if (myToken === playRequestToken) cacheAudioBlob(cacheKey, blob);
                 })
@@ -2033,7 +2035,7 @@ async function playViaStreamApi(track, myToken) {
         const idKey = String(meta.id);
         if (triedRipple.has(idKey)) return "fail";
         triedRipple.add(idKey);
-        if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
+        setLoadingHint(track, totalTried() > 1 ? `trying stream ${totalTried()}` : "loading stream");
 
         let result = "fail";
         try {
@@ -2050,7 +2052,7 @@ async function playViaStreamApi(track, myToken) {
         const idKey = String(meta.id);
         if (triedCherrion.has(idKey)) return "fail";
         triedCherrion.add(idKey);
-        if (totalTried() > 1) setLoadingHint(track, `trying stream ${totalTried()}`);
+        setLoadingHint(track, totalTried() > 1 ? `trying stream ${totalTried()}` : "loading stream");
 
         let result = "fail";
         try {
