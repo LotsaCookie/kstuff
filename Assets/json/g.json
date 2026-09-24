@@ -156,12 +156,6 @@
     "image": "https://tse3.mm.bing.net/th/id/OIP.C0tn1PKzcJGyFEJ7fRZAlwAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
-    "title": "Antonblast",
-    "url": "https://cdn.jsdelivr.net/gh/web-ports/antonblast/index.html",
-    "category": "Platformer",
-    "image": ""
-  },
-  {
     "title": "Antonblast 64",
     "url": "${truffled}/games/antonblast64/index.html",
     "category": "Platformer",
@@ -178,12 +172,6 @@
     "url": "${uv}https://unblocked-games.s3.amazonaws.com/games/2021/unity3/armedforces-io/index.html",
     "category": "FPS",
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ931GCtIBiWcI53KOhLlmfIinkJbdkBOl3tg&s"
-  },
-  {
-    "title": "Arthur's Nightmare",
-    "url": "${truffled}/gamefile/arthur.html",
-    "category": "Horror",
-    "image": ""
   },
   {
     "title": "Ages of Conflict",
@@ -209,12 +197,6 @@
     "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTclmySjSLNua4e0reW0mo3OIUKkIUQ2wos1Q&s"
   },
   {
-    "title": "Bad time Simulator",
-    "url": "${truffled}/games/bts/index.html",
-    "category": "Action",
-    "image": ""
-  },
-  {
     "title": "Balatro",
     "url": "${truffled}/games/balatro/index.html",
     "category": "Cards",
@@ -227,12 +209,6 @@
     "image": ""
   },
   {
-    "title": "Baldi's Basics",
-    "url": "${truffled}/games/baldis-basics/index.html",
-    "category": "Horror",
-    "image": "https://is2-ssl.mzstatic.com/image/thumb/Purple123/v4/9a/2c/dc/9a2cdc52-a3ce-35f7-67cd-93f97546a3dd/source/512x512bb.jpg"
-  },
-  {
     "title": "Baldi's Basics Birthday Bash",
     "url": "${truffled}/games/bday/index.html",
     "category": "Horror",
@@ -240,16 +216,6 @@
   },
   {
     "title": "Baldi's Basics Classic Remastered",
-    "url": "${truffled}/games/BBCR/index.html",
-    "category": "Horror",
-    "image": ""
-  },
-  {
-    "title": "Baldi's Basics Plus",
-    "url": "${truffled}/gamefile/bbp.html",
-    "category": "Horror",
-    "image": ""
-  },
   {
     "title": "Baldi's Basics Ultra Decompile",
     "url": "${truffled}/gamefile/baldidecomp.html",
@@ -275,40 +241,10 @@
     "image": ""
   },
   {
-    "title": "Bart Bash",
-    "url": "${truffled}/gamefile/bartbash.html",
-    "category": "Action",
-    "image": ""
-  },
-  {
-    "title": "Bart Blast",
-    "url": "${truffled}/gamefile/bart.html",
-    "category": "Action",
-    "image": ""
-  },
-  {
-    "title": "Baseball Bros",
-    "url": "${truffled}/games/baseballbros/index.html",
-    "category": "Sports",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTGWZozIdCtkaeHj2Sumbv-_Q4EjnUQvr5DcSp-i5L9-qpxRb98txgz5dJUc8fRhjpIoE&usqp=CAU"
-  },
-  {
     "title": "Basket Random",
     "url": "${truffled}/games/basket-random/index.html",
     "category": "Sports",
     "image": "https://images.sftcdn.net/images/t_app-icon-m/p/7aae58f2-284c-4343-807a-c3820029e5d9/378063004/basket-random-game-logo"
-  },
-  {
-    "title": "Basketball stars",
-    "url": "${truffled}/games/basketballstars/index.html",
-    "category": "Sports",
-    "image": ""
-  },
-  {
-    "title": "Beatblock",
-    "url": "${truffled}/games/beatblock/index.html",
-    "category": "Rhythm",
-    "image": ""
   },
   {
     "title": "Bee Movie Game",
@@ -317,24 +253,12 @@
     "image": ""
   },
   {
-    "title": "Bendy And The Ink Machine",
-    "url": "${truffled}/games/bendy/index.html",
-    "category": "Horror",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1wjFuS4ZWhKwCZYYoT0_BBqwLx2xs6ZS3q2uFvAF3aumfcJMO6BBLoHgHzTkU-tCArJfIuyLQa5VTYgMRZxHVwQjjV4IDw35B2Xtylw"
-  },
-  {
     "title": "BERGENTRUCK 201x",
     "category": "Driving"
   },
   {
     "title": "Bfdia 5b",
     "url": "${truffled}/games/bfdia 5b/index.html",
-    "category": "Platformer",
-    "image": ""
-  },
-  {
-    "title": "Big Tower Tiny Square",
-    "url": "${truffled}/games/btts/index.html",
     "category": "Platformer",
     "image": ""
   },
@@ -353,48 +277,6 @@
   {
     "title": "BlackJack",
     "category": "Cards"
-  },
-  {
-    "title": "Block Blast",
-    "url": "${truffled}/games/block-blast/index.html",
-    "category": "Puzzle",
-    "image": "https://play-lh.googleusercontent.com/_10wdOCIixQBK90QucfNsRXuv-ViimqUJuJrxIkQOeRQYTZ5JsaEZC1_ZMJgcMOWgxxK"
-  },
-  {
-    "title": "BLOODMONEY!",
-    "url": "${truffled}/games/bloodmoney/index.html",
-    "category": "Action",
-    "image": "https://img.itch.zone/aW1nLzIyNDMzMTYyLnBuZw==/original/tX1Cbj.png"
-  },
-  {
-    "title": "Bloons TD",
-    "url": "${truffled}/games/bloonstd/index.html",
-    "category": "Strategy",
-    "image": "https://is1-ssl.mzstatic.com/image/thumb/Purple/v4/99/2d/3a/992d3af1-69d0-f4ca-3e31-26b9f3dd9d00/source/512x512bb.jpg"
-  },
-  {
-    "title": "Bloons TD 2",
-    "url": "${truffled}/games/bloonstd2/index.html",
-    "category": "Strategy",
-    "image": "https://th.bing.com/th/id/R.9dcd5afd5d626c8d355f6e9c1daa7f2f?rik=knr1xiHENRHsRg&riu=http%3a%2f%2f1.bp.blogspot.com%2f-ZStL5BdZmhE%2fUpDeHbNDOBI%2fAAAAAAAABRk%2fOorcv503zn0%2fs400%2fBloons%2bTD%2b2.jpeg&ehk=ZygWrc%2bXCDdXpXgKqT17teHXYvM3CIBlLQy4TAoAVs8%3d&risl=&pid=ImgRaw&r=0"
-  },
-  {
-    "title": "Bloons TD 3",
-    "url": "${truffled}/games/btd3/index.html",
-    "category": "Strategy",
-    "image": "https://tse1.mm.bing.net/th/id/OIP.-vQpoV6Ayf3fsDx8ZSsNsAHaFh?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Bloons TD 4",
-    "url": "${truffled}/gamefile/bloonstd4.html",
-    "category": "Strategy",
-    "image": "https://tse4.mm.bing.net/th/id/OIP.CVJ-AaRA88cyf8PclFar_AAAAA?rs=1&pid=ImgDetMain&o=7&rm=3"
-  },
-  {
-    "title": "Bloons TD 5",
-    "url": "${truffled}/games/btd5/index.html",
-    "category": "Strategy",
-    "image": "https://assets1.ignimgs.com/2017/05/05/bloons-td-5-1494021512734.jpg"
   },
   {
     "title": "Bloons TD Battles 2",
@@ -450,27 +332,7 @@
   },
   {
     "title": "Brotato",
-    "url": "https://tdataserver.netlify.app/gdata/qnjvdgf0bw==/",
     "category": "Action",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxDd9JNo6lF_D7C5O8ayNlhPGcUjtI6tx0aA&s"
-  },
-  {
-    "title": "Brotato Paws And Claws",
-    "url": "${truffled}/games/brotato2/index.html",
-    "category": "Action",
-    "image": ""
-  },
-  {
-    "title": "Buckshot Roulette",
-    "url": "${truffled}/games/buckshot/index.html",
-    "category": "Horror",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCH1_KX9ZsQU6F9mmaF8hP2lVd-oE6BjFujw&s"
-  },
-  {
-    "title": "Burger and Frights",
-    "url": "https://html-classic.itch.zone/html/5033568/index.html",
-    "category": "Horror",
-    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQL-8AFCNa1vRpaXno46rRXszXCzxWYfrY0_g&s"
   },
   {
     "title": "Burrito Bison",
@@ -492,9 +354,7 @@
   },
   {
     "title": "Candy Crush",
-    "url": "${uv}https://q10games.com/Candy_Crush/candy-crush/index.html",
     "category": "Puzzle",
-    "image": "https://tse3.mm.bing.net/th/id/OIP.wJ-5mmeqZ7Thia3KAk1m3AHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
   },
   {
     "title": "Capuchin",
@@ -510,27 +370,13 @@
   },
   {
     "title": "CaseOhs Basics in Eating and Fast Food",
-    "url": "${truffled}/gamefile/caseoh.html",
     "category": "Horror",
-    "image": ""
   },
   {
     "title": "Call of Duty: WWII",
     "url": "https://raw.githack.com/l0tzie-bug/Spectra-Cloud/main/index.html?launch=Call of Duty: WWII",
     "category": "FPS",
     "image": "https://static.wikia.nocookie.net/callofduty/images/6/6c/COD_WWII_cover.JPG"
-  },
-  {
-    "title": "Cannon Basketball",
-    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/cannon-basketball.html",
-    "category": "Puzzle",
-    "image": ""
-  },
-  {
-    "title": "Cannon Basketball 2",
-    "url": "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/embed/self-hosted/cannon-basketball2.html",
-    "category": "Puzzle",
-    "image": ""
   },
   {
     "title": "Celeste",
@@ -548,12 +394,6 @@
     "title": "Celeste 64",
     "url": "${truffled}/games/celeste64/index.html",
     "category": "Platformer",
-    "image": ""
-  },
-  {
-    "title": "Cheese Rolling",
-    "url": "${truffled}/gamefile/cheese.html",
-    "category": "Arcade",
     "image": ""
   },
   {
