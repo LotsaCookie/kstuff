@@ -1059,7 +1059,7 @@ function initApp() {
     flushBackendQueue();
   };
 
-  const mountBackendFrame = url => {
+  const mountBackendFrame = async url => {
     clearTimeout(backendLinkTimer);
     closeBackendPort();
 
@@ -1076,11 +1076,10 @@ function initApp() {
     frame.setAttribute('hidden', '');
     frame.style.setProperty('display', 'none', 'important');
     frame.addEventListener('load', () => linkBackend(frame));
-    frame.src = url;
 
     backendFrame = frame;
     body.appendChild(frame);
-    dbg('iframe mounted', url);
+    dbg('iframe created, fetching backend html', url);
 
     backendLinkTimer = setTimeout(() => {
       if (backendLinked || frame !== backendFrame) return;
@@ -1089,6 +1088,21 @@ function initApp() {
       backendUrlIndex++;
       startBackend();
     }, BACKEND_LINK_TIMEOUT);
+
+    try {
+      const html = await timedFetch(url, true, BACKEND_LINK_TIMEOUT);
+      if (frame !== backendFrame) return;
+      dbg('backend html fetched, injecting srcdoc', url);
+      frame.srcdoc = html;
+    } catch (err) {
+      console.error('backend fetch failed', url, err);
+      if (frame !== backendFrame) return;
+      dbg('backend fetch failed, trying next backend url');
+      clearTimeout(backendLinkTimer);
+      backendAttempts = Math.min(backendAttempts + 1, 6);
+      backendUrlIndex++;
+      startBackend();
+    }
   };
 
   function startBackend() {
