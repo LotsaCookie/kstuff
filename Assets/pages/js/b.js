@@ -25,7 +25,7 @@ const defaultShortcuts = [
     ['VT', 'kstuff://t' + 'v', 'ph-monitor-play'],
     ['IA', 'kstuff://a' + 'i', 'ph-robot'],
     ['sMV', 'kstuff://vm' + 's', 'ph-desktop'],
-  //  ['tahC', 'kstuff://ch' + 'at', 'ph-chats']
+    ['tahC', 'kstuff://ch' + 'at', 'ph-chats']
 ];
 
 let flashcards = JSON.parse(localStorage.getItem('study_flashcards')) || [];
