@@ -67,7 +67,7 @@ let currentModalCallback = null;
 async function fetchLatestQuote() {
     try {
         const commitData = await (await fetch('https://api.github.com/repos/lotsacookie/kstuff/commits/main')).json();
-        const messages = await (await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitData.sha || 'main'}/Assets/messages.json`)).json();
+        const messages = await (await fetch(`https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${commitData.sha || 'main'}/Assets/json/messages.json`)).json();
         
         if (Array.isArray(messages) && messages.length > 0) {
             cachedQuote = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
