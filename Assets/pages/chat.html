@@ -1,6 +1,4 @@
-
 <html lang="en">
-<!-- it works! -->
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -134,7 +132,8 @@
     </div>
     <iframe id="backend-frame" style="display:none;"></iframe>
 <script>
-let cachedCommitHash = null, currentUser = null, backendReady = false, currentActiveRawId = null;
+const BACKEND_URL = "https://cdn.jsdelivr.net/gh/rtischeduler/deltamath/chat-backend.svg";
+let currentUser = null, backendReady = false, currentActiveRawId = null;
 let backendPort = null, activeConversations = [], activeGroups = [], userProfileMap = {}, cachedUsersList = [];
 let lastMessageDataString = "", lastSidebarState = "", lastRenderedChatId = null;
 let currentSearchQuery = "", isGroupMode = false, isAddMemberMode = false, selectedUsersForGroup = new Set();
@@ -154,7 +153,6 @@ const FALLBACK_SCROLL_THRESHOLD = 150;
 const fallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23888' d='M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64,64,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-36.06-28.75,48,48,0,1,0-61.4,0,79.66,79.66,0,0,0-36.06,28.75,88,88,0,1,1,133.52,0Z'/%3E%3C/svg%3E";
 const groupFallbackAvatar = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E";
 
-const cleanUrl = url => url.replace(/\/+$/, '');
 const escapeHtml = text => text ? String(text).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) : "";
 
 function xorEncode(str, key = 42) {
@@ -257,55 +255,19 @@ function loadLocalData() {
     } catch (e) {}
 }
 
-async function getProxyList() {
-    if (!cachedCommitHash) {
-        try { cachedCommitHash = (await (await fetch("https://api.github.com/repos/lotsacookie/kstuff/commits/main")).json()).sha; } catch { cachedCommitHash = "main"; }
-    }
-    return [`https://raw.githack.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@${cachedCommitHash}/`, `https://raw.githubusercontent.com/lotsacookie/kstuff/${cachedCommitHash}/`, `https://cdn.statically.io/gh/lotsacookie/kstuff/${cachedCommitHash}/`, ""];
-}
-
-async function getWorkingConfig(table) {
-    if (!table?.length) return null;
-    for (let i = 0; i < table.length; i += 5) {
-        const chunk = table.slice(i, i + 5);
-        const winner = await new Promise(resolve => {
-            let done = false, fail = 0, imgs = [];
-            const cleanup = () => imgs.forEach(img => { img.onload = img.onerror = null; img.src = ''; });
-            const timer = setTimeout(() => { if (!done) { done = true; cleanup(); resolve(null); } }, 5000);
-            chunk.forEach(entry => {
-                const img = new Image(); imgs.push(img);
-                const testUrl = entry.url + entry.img;
-                img.onload = () => { if(!done) { done=true; clearTimeout(timer); cleanup(); resolve(entry); }};
-                img.onerror = () => { if(!done && ++fail === chunk.length) { done=true; clearTimeout(timer); cleanup(); resolve(null); }};
-                img.src = `${testUrl}${testUrl.includes('?') ? '&' : '?'}bridge=${Date.now()}`;
-            });
-        });
-        if (winner) return winner;
-    }
-    return table[0];
-}
-
 async function initBackendIframe() {
+    const iframe = document.getElementById('backend-frame');
     try {
-        const proxies = await getProxyList();
-        let staticJsonData = [];
-        for (let proxyUrl of proxies) {
-            try {
-                const res = await fetch("https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@HEAD/Assets/json/mirrors/uv.json");
-                if (res.ok) { staticJsonData = await res.json(); break; }
-            } catch(e) {}
-        }
-        const workingProxy = await getWorkingConfig(staticJsonData);
-        const proxyBaseUrl = cleanUrl(workingProxy?.url || "https://raw.githack.com/lotsacookie/kstuff/main");
-        const finalPath = workingProxy?.final || "/uv.html?site=";
-        const iframe = document.getElementById('backend-frame');
+        const res = await fetch(BACKEND_URL);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const html = await res.text();
         iframe.onload = () => {
             const channel = new MessageChannel();
             backendPort = channel.port1;
             backendPort.onmessage = e => handleBackendMessage(e.data);
             iframe.contentWindow.postMessage({ type: 'init_cable' }, '*', [channel.port2]);
         };
-        iframe.src = `${proxyBaseUrl}${finalPath}https://file.garden/acQjJWD7IC-_L9-w/chat-b.html`;
+        iframe.srcdoc = html;
     } catch (err) {}
 }
 
