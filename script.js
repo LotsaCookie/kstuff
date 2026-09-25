@@ -1364,7 +1364,7 @@ function initApp() {
     setC('readingcorner-category-select', c.Games, 'readingcorner'); setC('sciencequiz-category-select', c.Apps, 'sciencequiz');
   }).catch(err => console.error('categories.json failed', err));
 
-  fetchWithProxy('Assets/change-log.json').then(l => {
+  fetchWithProxy('Assets/json/change-log.json').then(l => {
     if (!l) return;
     if ($('changelog-timestamp')) $('changelog-timestamp').textContent = l.timestamp || "Unknown";
     if ($('changelog-content')) $('changelog-content').innerHTML = l.changes?.length ? `<ul style="padding-left:1.5rem;margin:0;">${l.changes.map(c => `<li style="margin-bottom:0.5rem;">${c}</li>`).join('')}</ul>` : "No recent changes found.";
