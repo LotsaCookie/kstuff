@@ -93,6 +93,7 @@ function richMetaFrom(obj) {
 const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_URLS = [
+    "wss://athollcottage.com/connection/",
     "wss://girlspreples.org/wi/",
     "wss://wisp.mercurywork.shop/"
 ];
@@ -150,21 +151,14 @@ let epoxyClientInstance = null;
 let epoxyClientGeneration = 0;
 
 const WISP_FAIL_LIMIT = 2;
-const WISP_COOLDOWN_MS = 30 * 1000;
 const BLOCKED_STATUSES = new Set([403, 429, 503]);
 const wispFails = WISP_URLS.map(() => 0);
-const wispCooldowns = WISP_URLS.map(() => 0);
 let wispIndex = 0;
 const failedClients = new WeakSet();
 const clientServer = new WeakMap();
 
-function nextAvailableWisp(startFrom) {
-    const now = Date.now();
-    for (let i = 0; i < WISP_URLS.length; i++) {
-        const idx = (startFrom + i) % WISP_URLS.length;
-        if (wispCooldowns[idx] <= now) return idx;
-    }
-    return -1;
+function nextWispIndex(startFrom) {
+    return ((startFrom % WISP_URLS.length) + WISP_URLS.length) % WISP_URLS.length;
 }
 
 function penalizeWisp(client, hard) {
@@ -177,10 +171,8 @@ function penalizeWisp(client, hard) {
     wispFails[idx]++;
     if (hard || wispFails[idx] >= WISP_FAIL_LIMIT) {
         wispFails[idx] = 0;
-        wispCooldowns[idx] = Date.now() + WISP_COOLDOWN_MS;
         if (idx === wispIndex) {
-            const next = nextAvailableWisp(idx + 1);
-            if (next >= 0) wispIndex = next;
+            wispIndex = nextWispIndex(idx + 1);
         }
     }
 }
@@ -231,8 +223,7 @@ async function createEpoxyClient(serverIndex) {
 
 function getEpoxyClient() {
     if (epoxyClientPromise) return epoxyClientPromise;
-    const serverIndex = nextAvailableWisp(wispIndex);
-    if (serverIndex < 0) return Promise.reject(new Error("wisp in cooldown"));
+    const serverIndex = nextWispIndex(wispIndex);
     wispIndex = serverIndex;
     const myGeneration = ++epoxyClientGeneration;
     const promise = createEpoxyClient(serverIndex).then(client => {
