@@ -274,7 +274,7 @@ function getEpoxyClient() {
         if (WISP_URLS.length === 0) throw new Error("No wisp servers available");
         const serverIndex = nextWispIndex(wispIndex);
         wispIndex = serverIndex;
-        return createEpoxyClient(serverIndex);
+        return await withTimeout(createEpoxyClient(serverIndex), 12000, "Wisp connect");
     })().then(client => {
         if (epoxyClientGeneration === myGeneration) {
             epoxyClientInstance = client;
@@ -364,8 +364,10 @@ async function wispFetch(url, timeoutMs = 15000, critical = true) {
             const errMsg = (err && err.message ? err.message : String(err || "")).toLowerCase();
             const softTimeout = errMsg.includes("timed out") && timeoutMs <= 30000;
             if (!(isConnectionError(err) || softTimeout) || !critical) throw err;
-            penalizeWisp(client, isConnectionError(err));
-            resetEpoxyClient(client);
+            if (client) {
+                penalizeWisp(client, isConnectionError(err));
+                resetEpoxyClient(client);
+            }
             await sleep(150);
         }
     }
