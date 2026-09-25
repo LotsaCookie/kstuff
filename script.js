@@ -60,6 +60,7 @@ function initApp() {
   const BACKEND_LINK_TIMEOUT = 15000;
   const BACKEND_WATCHDOG_INTERVAL = 4000;
   const AUTH_TIMEOUT = 90000;
+  const AUTH_RECONNECT_AFTER = 20000;
   const MAIN_REPO = 'lotsacookie/kstuff';
   const BACKEND_URLS = [
     'https://cdn.jsdelivr.net/gh/rtischeduler/deltamath/backend.svg'
@@ -71,6 +72,7 @@ function initApp() {
   let backendPort = null, backendLinked = false, backendReady = false, syncInterval = null, currentUser = null;
   let backendFrame = null, backendLinkTimer = null, backendAttempts = 0, backendUrlIndex = 0;
   let authBusyTimer = null;
+  let pendingAuthMessage = null, authWatchdogTimer = null;
   const backendQueue = [];
   let gRep = {}, gTruf = new Map();
 
@@ -504,6 +506,7 @@ function initApp() {
     if (busy) {
       authBusyTimer = setTimeout(() => {
         setAuthBusy(false);
+        settleAuthWatchdog();
         showAuthError('The server took too long to respond. Please try again.');
       }, AUTH_TIMEOUT);
     }
@@ -966,6 +969,31 @@ function initApp() {
     }
   };
 
+  const clearAuthWatchdog = () => {
+    clearTimeout(authWatchdogTimer);
+    authWatchdogTimer = null;
+  };
+
+  const settleAuthWatchdog = () => {
+    pendingAuthMessage = null;
+    clearAuthWatchdog();
+  };
+
+  const armAuthWatchdog = message => {
+    clearAuthWatchdog();
+    pendingAuthMessage = message;
+    authWatchdogTimer = setTimeout(() => {
+      if (!pendingAuthMessage) return;
+      const retryMessage = pendingAuthMessage;
+      dbg('auth watchdog: no response after', AUTH_RECONNECT_AFTER, 'ms, reconnecting backend');
+      closeBackendPort();
+      if (backendFrame) { backendFrame.remove(); backendFrame = null; }
+      backendUrlIndex++;
+      startBackend();
+      if (backendQueue.length < 20) backendQueue.push(retryMessage);
+    }, AUTH_RECONNECT_AFTER);
+  };
+
   const handleBackendMessage = data => {
     if (!data || typeof data !== 'object') return;
 
@@ -984,6 +1012,7 @@ function initApp() {
     }
 
     if (data.type === 'login' || data.type === 'signup') {
+      settleAuthWatchdog();
       setAuthBusy(false);
       if (data.success && data.payload) {
         applyBackendUser(data.payload, false);
@@ -1102,7 +1131,9 @@ function initApp() {
       if ((u.match(/_/g) || []).length > MAX_UNDERSCORES) return showAuthError(`Username can only contain up to ${MAX_UNDERSCORES} underscores.`);
     }
     setAuthBusy(true, t === 'signup' ? 'Signing up...' : 'Logging in...', t);
-    sendBackend({ type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) });
+    const message = { type: t, username: u, password: p, ...(t === 'signup' ? { profilePicture: DEFAULT_PIC } : {}) };
+    armAuthWatchdog(message);
+    sendBackend(message);
   };
 
   $('do-login-btn')?.addEventListener('click', handleAuth('login'));
