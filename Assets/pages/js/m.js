@@ -344,17 +344,19 @@ async function readWispBody(response, idleMs = 20000) {
 
 async function wispFetch(url, timeoutMs = 15000, critical = true) {
     let lastErr = null;
-    for (let attempt = 0; attempt < 2; attempt++) {
+    const serverCount = Math.max(WISP_URLS.length, 1);
+    const perAttemptCap = timeoutMs > 30000 ? 3 : 6;
+    const maxAttempts = critical ? Math.max(2, Math.min(serverCount, perAttemptCap)) : 2;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
         let client = null;
         try {
             client = await withTimeout(getEpoxyClient(), 10000, "Wisp setup");
             const raw = await withTimeout(client.fetch(url), timeoutMs, "Wisp fetch");
             const result = await readWispBody(raw, timeoutMs > 30000 ? 45000 : 20000);
 
-            if (critical && attempt === 0 && WISP_URLS.length > 1 && BLOCKED_STATUSES.has(result.status)) {
-                penalizeWisp(client, true);
-                resetEpoxyClient(client);
-                continue;
+            if (critical && WISP_URLS.length > 1 && BLOCKED_STATUSES.has(result.status)) {
+                throw new Error(`Wisp server blocked (HTTP ${result.status})`);
             }
 
             if (client && clientServer.has(client)) wispFails[clientServer.get(client)] = 0;
@@ -363,10 +365,17 @@ async function wispFetch(url, timeoutMs = 15000, critical = true) {
             lastErr = err;
             const errMsg = (err && err.message ? err.message : String(err || "")).toLowerCase();
             const softTimeout = errMsg.includes("timed out") && timeoutMs <= 30000;
-            if (!(isConnectionError(err) || softTimeout) || !critical) throw err;
+            const retryable = isConnectionError(err) || softTimeout;
+            const hasMoreServers = attempt < maxAttempts - 1 && WISP_URLS.length > 1;
+
+            if (!critical) throw err;
+            if (!retryable || !hasMoreServers) throw err;
+
             if (client) {
-                penalizeWisp(client, isConnectionError(err));
+                penalizeWisp(client, true);
                 resetEpoxyClient(client);
+            } else {
+                penalizeWisp(null, true);
             }
             await sleep(150);
         }
