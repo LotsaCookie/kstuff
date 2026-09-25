@@ -94,11 +94,7 @@ const INVIDIOUS_BASE = "https://invidious.f5.si";
 
 const WISP_LIST_URL = "https://cdn.jsdelivr.net/gh/lotsacookie/kstuff@main/Assets/json/wss.json";
 
-let WISP_URLS = [
-    "wss://athollcottage.com/connection/",
-    "wss://girlspreples.org/wi/",
-    "wss://wisp.mercurywork.shop/"
-];
+let WISP_URLS = [];
 const EPOXY_MODULE_URL = "https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-tls/+esm";
 
 const DEEZER_API = "https://api.deezer.com";
@@ -189,7 +185,7 @@ async function loadWispUrlsFromRemote() {
         wispFails = WISP_URLS.map(() => 0);
         wispIndex = 0;
     } catch (e) {
-        console.warn("Failed to load remote wisp list, keeping built-in defaults:", e && e.message ? e.message : e);
+        console.error("Failed to load remote wisp list, no wisp servers available:", e && e.message ? e.message : e);
     }
 }
 
@@ -205,10 +201,12 @@ const failedClients = new WeakSet();
 const clientServer = new WeakMap();
 
 function nextWispIndex(startFrom) {
+    if (WISP_URLS.length === 0) return 0;
     return ((startFrom % WISP_URLS.length) + WISP_URLS.length) % WISP_URLS.length;
 }
 
 function penalizeWisp(client, hard) {
+    if (WISP_URLS.length === 0) return;
     let idx = wispIndex;
     if (client) {
         if (clientServer.has(client)) idx = clientServer.get(client);
@@ -270,10 +268,14 @@ async function createEpoxyClient(serverIndex) {
 
 function getEpoxyClient() {
     if (epoxyClientPromise) return epoxyClientPromise;
-    const serverIndex = nextWispIndex(wispIndex);
-    wispIndex = serverIndex;
     const myGeneration = ++epoxyClientGeneration;
-    const promise = createEpoxyClient(serverIndex).then(client => {
+    const promise = (async () => {
+        await wispUrlsReady;
+        if (WISP_URLS.length === 0) throw new Error("No wisp servers available");
+        const serverIndex = nextWispIndex(wispIndex);
+        wispIndex = serverIndex;
+        return createEpoxyClient(serverIndex);
+    })().then(client => {
         if (epoxyClientGeneration === myGeneration) {
             epoxyClientInstance = client;
         } else {
